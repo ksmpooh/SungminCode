@@ -1,2 +1,2 @@
-# SungMin's Code
-Korea
+# SungMin Code
+Sungmin Code
