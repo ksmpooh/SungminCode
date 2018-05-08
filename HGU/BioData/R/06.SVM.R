@@ -1,6 +1,3 @@
-//install.packages("e1071")
-//install.packages("rpart")
-//install.packages("caret")
 library(e1071)
 library(rpart)
 library(caret)
@@ -14,13 +11,16 @@ for(i in 0:4){
   for(j in 1:5){
     test <-data[data$index == j,]
     train <-data[data$index != j, ]
-    test <- sebset(test, select = -c(index,patient,cancer_code))  
-    train <- sebset(train, select = -c(index,patient,cancer_code))
+    test <- subset(test, select = -c(index,patient,cancer_code))  
+    train <- subset(train, select = -c(index,patient,cancer_code))
     
-    svm_model <- svm(result~.,data = train, kernel = "sigmoid", cost = 0.1, gamma= 0.45,coef.0 = 0 ,epsilon = 0.1)
-    pred <- predict(svm_model,test)
-    result_table<- table(pred,test$result)
-    auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
+    #svm_model <- svm(result~.,data = train, kernel = "sigmoid", cost = 0.1, gamma= 0.45,coef.0 = 0 ,epsilon = 0.1)
+    #pred <- predict(svm_model,test)
+    #result_table<- table(pred,test$result)
+    #auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
+    #confusionMatrix(train$result,predict(svm_model))
+    #svm_tune<-tune.svm(result~.,data = train,kernel = 'sigmoid',gamma = c(0.1,0.5,1,1.5,2,3,5),coef0 = c(0.1,0.5,1,2,3,5),cost = c(0.001,0.01,0.1,0.5,1,2,5,10))
+    
     result[j,1] = auc
     result[j,2] = j
   }
