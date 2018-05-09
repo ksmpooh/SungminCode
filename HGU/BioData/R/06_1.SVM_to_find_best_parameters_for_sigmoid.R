@@ -4,8 +4,8 @@ library(caret)
 data <- read.csv("/home/tjahn/Data/input_ensemble/selected_model_0_data.csv", sep = ",", header = T)
 data$result <-as.factor(data$result)
 
-test <-data[data$index == 0,]
-train <-data[data$index != 0, ]
+test <-data[data$index == 1,]
+train <-data[data$index != 1, ]
 test <- subset(test, select = -c(index,patient,cancer_code))  
 train <- subset(train, select = -c(index,patient,cancer_code))
 
