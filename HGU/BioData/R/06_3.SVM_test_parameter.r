@@ -50,10 +50,11 @@ ta <- twListToDF(a)
                    write(svm_data$best.parameters,"/home/tjahn/tf_save_data/sungmin/svm_data.csv")
                    
                    
-svm_model <- svm(result~.,data = train, kernel = "sigmoid", type = "C-classification",cost = 0.005, gamma= 0.5,coef.0 = 0.1 ,epsilon = 0.1)
-e<-confusionMatrix(train$result,predict(svm_model))
-a<-predict(svm_model,test)
-a
+svm_model_data <- svm(result~.,data = data, kernel = "sigmoid", type = "C-classification",cost = 0.005, gamma= 0.5,coef.0 = 0.1 ,epsilon = 0.1)
+#e<-confusionMatrix(train$result,predict(svm_model))
+#a<-predict(svm_model_data,data$result)
+confusionMatrix(data$result,predict(svm_model_data))
+
 pred <- predict(svm_model,test)
 result_table<- table(pred,test$result)
 result_table
