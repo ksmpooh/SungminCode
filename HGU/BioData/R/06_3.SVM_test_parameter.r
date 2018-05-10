@@ -40,22 +40,27 @@ pred2
 pred3
 pred4
 
-list
 #svm_train<-tune.svm(result~.,data = train,kernel = 'sigmoid',gamma = c(0.1,0.3,0.5,0.7,1,1.5,2,3,5),coef0 = c(0.1,0.3,0.5,0.7,1,1.5,2,3,5),cost = c(0.001,0.005,0.01,0.05,0.1,0.3,0.5,1,1.5,2,5,10))
 #svm_data<-tune.svm(result~.,data = data,kernel = 'sigmoid',gamma = c(0.1,0.3,0.5,0.7,1,1.5,2,3,5),coef0 = c(0.1,0.3,0.5,0.7,1,1.5,2,3,5),cost = c(0.001,0.005,0.01,0.05,0.1,0.3,0.5,1,1.5,2,5,10)
 library(twitteR)
 ta <- twListToDF(a)
                    
-                   write(svm_train$best.parameters,"/home/tjahn/tf_save_data/sungmin/svm_train.csv")
-                   write(svm_data$best.parameters,"/home/tjahn/tf_save_data/sungmin/svm_data.csv")
+write(svm_train$best.parameters,"/home/tjahn/tf_save_data/sungmin/svm_train.csv")
+write(svm_data$best.parameters,"/home/tjahn/tf_save_data/sungmin/svm_data.csv")
                    
                    
-svm_model_data <- svm(result~.,data = data, kernel = "sigmoid", type = "C-classification",cost = 0.005, gamma= 0.5,coef.0 = 0.1 ,epsilon = 0.1)
+svm_model_data <- svm(result~.,data = data, kernel = "radial",cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
+
+
+svm_model <- svm(result~.,data = train, kernel = "sigmoid", cost = 1, coef.0 = 0.1 ,epsilon = 0.1)
+
 #e<-confusionMatrix(train$result,predict(svm_model))
 #a<-predict(svm_model_data,data$result)
 confusionMatrix(data$result,predict(svm_model_data))
-
+??svm
 pred <- predict(svm_model,test)
 result_table<- table(pred,test$result)
 result_table
 confusionMatrix(test$result,pred)
+
+plot(svm_model_data,data)
