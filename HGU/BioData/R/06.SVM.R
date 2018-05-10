@@ -14,7 +14,7 @@ for(i in 0:4){
     test <- subset(test, select = -c(index,patient,cancer_code))  
     train <- subset(train, select = -c(index,patient,cancer_code))
     
-    svm_model <- svm(result~.,data = train, kernel = "sigmoid", cost = 0.1, gamma= 0.45,coef.0 = 0 ,epsilon = 0.1)
+    svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
     pred <- predict(svm_model,test)
     result_table<- table(pred,test$result)
     auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
@@ -24,5 +24,5 @@ for(i in 0:4){
     result[j,1] = auc
     result[j,2] = j
   }
-  write.csv(result,paste0("/home/tjahn/tf_save_data/sungmin/result/SVM/result_",i,".csv"))
+  write.csv(result,paste0("/home/tjahn/tf_save_data/sungmin/result/SVM/radial_result_",i,".csv"))
 }
