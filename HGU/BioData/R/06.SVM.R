@@ -13,7 +13,7 @@ for(i in 0:4){
     train <-data[data$index != j, ]
     test <- subset(test, select = -c(index,patient,cancer_code))  
     train <- subset(train, select = -c(index,patient,cancer_code))
-    #kernel 4types
+    #kernel 4types ????
     svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
     pred <- predict(svm_model,test)
     result_table<- table(pred,test$result)
