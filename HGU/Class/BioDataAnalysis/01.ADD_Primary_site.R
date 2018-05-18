@@ -79,3 +79,19 @@ a<-rbind(a,f)
 #### 7. 결과 저장 write.csv(저장된 변수이름,"저장할 파일 경로 및 이름")
 write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
 
+CESC_names
+COAD_names
+PAAD_names
+STAD_names
+UCEC_names
+UCS_names
+
+a <- as.factor(CESC_names)
+b <- as.factor(COAD_names)
+c <- as.factor(PAAD_names)
+d <- STAD_names
+e<- UCEC_names
+f<-UCS_names
+name<-colnames(TCGA)
+name<-gsub("\\.","\\-",name[2:1535])
+intersect(name,CESC_names)
