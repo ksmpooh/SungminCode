@@ -1,22 +1,21 @@
-
 ###1. 파일 읽어 오기
 #저장할 변수 이름 <-read.csv("파일경로",sep='구분자',header = colname 유무)
-#TCGA<-read.csv("C:/Users/sungmin/Downloads/gene_expression_RNAseq_RSEM_fpkm#1.csv",sep = ',', header = T)
-TCGA<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/phenotype/gene_expression_RNAseq_RSEM_fpkm#1.csv",sep = ',', header = T)
+TCGA<-read.csv("C:/Users/sungmin/Downloads/gene_expression_RNAseq_RSEM_fpkm#1.csv",sep = ',', header = T)
+#TCGA<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/phenotype/gene_expression_RNAseq_RSEM_fpkm#1.csv",sep = ',', header = T)
 
-#CESC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/CESC phenotype.csv",sep = ',', header = T)
-#COAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/COAD phenotype.csv",sep = ',', header = T)
-#PAAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/PAAD phenotype.csv",sep = ',', header = T)
-#STAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/STAD phenotype.csv",sep = ',', header = T)
-#UCEC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCEC phenotype.csv",sep = ',', header = T)
-#UCS<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCS phenotype.csv",sep = ',', header = T)
+CESC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/CESC phenotype.csv",sep = ',', header = T)
+COAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/COAD phenotype.csv",sep = ',', header = T)
+PAAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/PAAD phenotype.csv",sep = ',', header = T)
+STAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/STAD phenotype.csv",sep = ',', header = T)
+UCEC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCEC phenotype.csv",sep = ',', header = T)
+UCS<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCS phenotype.csv",sep = ',', header = T)
 
-CESC<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/CESC phenotype.csv",sep = ',', header = T)
-COAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/COAD phenotype.csv",sep = ',', header = T)
-PAAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/PAAD phenotype.csv",sep = ',', header = T)
-STAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/STAD phenotype.csv",sep = ',', header = T)
-UCEC<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/UCEC phenotype.csv",sep = ',', header = T)
-UCS<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/UCS phenotype.csv",sep = ',', header = T)
+#CESC<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/CESC phenotype.csv",sep = ',', header = T)
+#COAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/COAD phenotype.csv",sep = ',', header = T)
+#PAAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/PAAD phenotype.csv",sep = ',', header = T)
+#STAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/STAD phenotype.csv",sep = ',', header = T)
+#UCEC<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/UCEC phenotype.csv",sep = ',', header = T)
+#UCS<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/UCS phenotype.csv",sep = ',', header = T)
 
 #2. TCAG파일(gene 다 합친거, 정리 작업)
 gene_name <- TCGA$sample #sample이란 column에 gene이름이 저장되어 있는 것을 따로 gene_name변수를 만들어 저장
@@ -79,3 +78,4 @@ a<-rbind(a,f)
 
 #### 7. 결과 저장 write.csv(저장된 변수이름,"저장할 파일 경로 및 이름")
 write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv")
+
