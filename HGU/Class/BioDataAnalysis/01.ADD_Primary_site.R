@@ -77,5 +77,5 @@ a<-rbind(a,f)
 
 
 #### 7. 결과 저장 write.csv(저장된 변수이름,"저장할 파일 경로 및 이름")
-write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv")
+write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
 
