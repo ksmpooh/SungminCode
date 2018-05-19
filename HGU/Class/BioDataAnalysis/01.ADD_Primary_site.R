@@ -49,6 +49,10 @@ STAD_names<-STAD$X_INTEGRATION
 UCEC_names<-UCEC$X_INTEGRATION
 UCS_names<-UCS$X_INTEGRATION
 
+####3_1 TCGA rownames가 "TCGA.2W.A8yy"이런 형식으로 되어 있다. 이것을 - 이런 형식으로 바꾸어주는 작업
+#name<-rownames(tTCGA)
+name<-gsub("\\.","\\-",rownames(tTCGA))  #rownames(tTCGA)에 있는 . 을 - 로 바꾼다.
+#intersect(name,CESC_names)
 
 ####4. tTCGA file에서 각 파일별 name을 row에서 불어와서 그것과 매칭되는 object 값을 따로 저장
 #tTCGA[CESC_names,"Primary_site"] <- CESC$X_primary_site
@@ -79,19 +83,19 @@ a<-rbind(a,f)
 #### 7. 결과 저장 write.csv(저장된 변수이름,"저장할 파일 경로 및 이름")
 write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
 
-CESC_names
-COAD_names
-PAAD_names
-STAD_names
-UCEC_names
-UCS_names
+#CESC_names
+#COAD_names
+#PAAD_names
+#STAD_names
+#UCEC_names
+#UCS_names
 
-a <- as.factor(CESC_names)
-b <- as.factor(COAD_names)
-c <- as.factor(PAAD_names)
-d <- STAD_names
-e<- UCEC_names
-f<-UCS_names
-name<-colnames(TCGA)
-name<-gsub("\\.","\\-",name[2:1535])
-intersect(name,CESC_names)
+#a <- as.factor(CESC_names)
+#b <- as.factor(COAD_names)
+#c <- as.factor(PAAD_names)
+#d <- STAD_names
+#e<- UCEC_names
+#f<-UCS_names
+#name<-colnames(TCGA)
+#name<-gsub("\\.","\\-",name[2:1535])
+#intersect(name,CESC_names)
