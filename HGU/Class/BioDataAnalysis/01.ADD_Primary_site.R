@@ -9,6 +9,16 @@ PAAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/P
 STAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/STAD phenotype.csv",sep = ',', header = T)
 UCEC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCEC phenotype.csv",sep = ',', header = T)
 UCS<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCS phenotype.csv",sep = ',', header = T)
+#setwd("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/")
+#filelist<-c("CESC","COAD","PAAD","STAD","UCEC","UCS")
+
+
+#for(i in filelist){
+#  i<-read.csv(paste(i,"phenotype.csv",sep=" "),header=TRUE)
+#  rownames(df)<-df$X_INTEGRATION
+#  
+#}
+
 
 #CESC<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/CESC phenotype.csv",sep = ',', header = T)
 #COAD<-read.csv("/home/tjahn/BioDataAnalysis/BioMarker/COAD phenotype.csv",sep = ',', header = T)
@@ -31,8 +41,8 @@ colnames(tTCGA)<-gene_name   #변수(colname)을 이전에 저장한 gene_name으로 변환
 #STAD<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/STAD phenotype.csv",sep = ',', header = T)
 #UCEC<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCEC phenotype.csv",sep = ',', header = T)
 #UCS<-read.csv("C:/Users/sungmin/Downloads/drive-download-20180517T041248Z-001/UCS phenotype.csv",sep = ',', header = T)
-#filelist<-c(CESC,COAD,PAAD,STAD,UCEC,UCS)
 
+#rownames(filelist)[1]
 
 ###3.파일별 TCGA이름 저장 및 rowname을 숫자(1,2,3,4,...)에서 TCGA(TCGA_a10 /....)이름으로 변환
 rownames(CESC)<-CESC$X_INTEGRATION
@@ -50,12 +60,15 @@ UCEC_names<-UCEC$X_INTEGRATION
 UCS_names<-UCS$X_INTEGRATION
 
 ####3_1 TCGA rownames가 "TCGA.2W.A8yy"이런 형식으로 되어 있다. 이것을 - 이런 형식으로 바꾸어주는 작업
-name<-rownames(tTCGA)
 rownames(tTCGA)<-gsub("\\.","\\-",rownames(tTCGA))  #rownames(tTCGA)에 있는 . 을 - 로 바꾼다.
+name<-rownames(tTCGA)     #name이란 변수에 tTCGA에 있는 사람이름 저장
+
 #intersect(name,CESC_names)
 #rownames(tTCGA)
 ####4. tTCGA file에서 각 파일별 name을 row에서 불어와서 그것과 매칭되는 object 값을 따로 저장
 #tTCGA[CESC_names,"Primary_site"] <- CESC$X_primary_site
+
+#4.1 먼저 name(tTCGA)과 phenoty name matching하는 것 찾아서 저장
 CESC_names<-intersect(name,CESC_names)
 COAD_names<-intersect(name,COAD_names)
 PAAD_names<-intersect(name,PAAD_names)
@@ -63,7 +76,14 @@ STAD_names<-intersect(name,STAD_names)
 UCEC_names<-intersect(name,UCEC_names)
 UCS_names<-intersect(name,UCS_names)
 
+CESC_names <- as.factor(CESC_names)
+COAD_names <- as.factor(COAD_names)
+PAAD_names <- as.factor(PAAD_names)
+STAD_names <- as.factor(STAD_names)
+UCEC_names<- as.factor(UCEC_names)
+UCS_names<-as.factor(UCS_names)
 
+#4.1 tTCGA[row,col]  row에 매칭하길 원하는 변수를 추가하여 a 에 저장
 a<-tTCGA[CESC_names,]
 b<-tTCGA[COAD_names,]
 c<-tTCGA[PAAD_names,]
@@ -72,12 +92,13 @@ e<-tTCGA[UCEC_names,]
 f<-tTCGA[UCS_names,]
 
 ####5. 따로 저장한 것에 "Primary_site"라는 variable를 만들어 col에 저장하고, 각 파일에서 얻는 site 값을 새로 만든 col에 저장 
-a[,"Primary_site"]<-CESC$X_primary_site
-b[,"Primary_site"]<-COAD$X_primary_site
-c[,"Primary_site"]<-PAAD$X_primary_site
-d[,"Primary_site"]<-STAD$X_primary_site
-e[,"Primary_site"]<-UCEC$X_primary_site
-f[,"Primary_site"]<-UCS$X_primary_site
+#a[,"Primary_site"]<-CESC$X_primary_site[1:nrow(a)]
+a[,"Primary_site"]<-CESC$X_primary_site[nrow(a)]
+b[,"Primary_site"]<-COAD$X_primary_site[nrow(b)]
+c[,"Primary_site"]<-PAAD$X_primary_site[nrow(c)]
+d[,"Primary_site"]<-STAD$X_primary_site[nrow(d)]
+e[,"Primary_site"]<-UCEC$X_primary_site[nrow(e)]
+f[,"Primary_site"]<-UCS$X_primary_site[nrow(f)]
 
 #### 6. 나눈 파일들을 다시 하나로 만들기
 #list <- c("b","c","d","e","f")
@@ -89,8 +110,8 @@ a<-rbind(a,f)
 
 
 #### 7. 결과 저장 write.csv(저장된 변수이름,"저장할 파일 경로 및 이름")
-write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
-
+#write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
+write.csv(a,"C:/Users/sungmin/Desktop/result.csv",row.names = T)
 #CESC_names
 #COAD_names
 #PAAD_names
@@ -106,4 +127,4 @@ write.csv(a,"/home/tjahn/BioDataAnalysis/BioMarker/result.csv",row.names = T)
 #f<-UCS_names
 #name<-colnames(TCGA)
 #name<-gsub("\\.","\\-",name[2:1535])
-intersect(name,CESC_names)
+#intersect(name,CESC_names)
