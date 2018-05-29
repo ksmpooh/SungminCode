@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define SIZE 100
 #define IFN 999999
 typedef struct nodes node;
-int count;
+enum id {white = 0, gray, black};
 char matrix[SIZE][SIZE][SIZE]; //temp[row][col][number_of_string]
 
 
@@ -16,10 +17,10 @@ typedef struct nodes{
     int weight;
     int d;
     char predecessor[20];
-    bool Set_or_not;
+    enum id color;
 }node;
 
-void init_node(node *vertex){
+void init_node(node *vertex,int count){
   int row, col, index;
   index = 0;
   for(col = 1; col <= count ; col++){
@@ -40,20 +41,21 @@ void init_node(node *vertex){
   }
 }
 
-void init_Set_or_not(node *vertex){
+void init_color(node *vertex,int count){
   int i;
   for(i = 0; i < count; i++){
-    vertex[i].Set_or_not = false;
+    vertex[i].color = white;
   }
 }
 
-void init_single_source(node *vertex, int s){
+void init_single_source(node *vertex, int s,int count){
   int i;
   for(i = 0; i < count; i++){
     strcpy(vertex[i].predecessor,NULL);
     vertex[i].d = IFN;  //무한을 IFN으로
   }
   vertex[s].d = 0;
+  vertex[s].color = black;
 }
 
 void Relax(node *vertex, int row, int col, int w){
@@ -65,21 +67,47 @@ void Relax(node *vertex, int row, int col, int w){
     strcpy(vertex[col].predecessor,vertex[row].predecessor);
   }
 }
-
-void Dijkstra(node *vertex, int w, int s){
-  init_single_source(vertex, s);
-  init_Set_or_not(vertex);
+int Extract_min(node *vertex, int count){
+  int min_edge = IFN;
+  int index;
   int i;
+  for(i = 0 ; i < count; i ++){
+    if(vertex[i].color == gray && vertex[i].d < min_edge){
+        min_edge = vertex[i].d;
+        index = i;
+    }
+  }
+  return index;
+}
+
+void Dijkstra(node *vertex, int w, int s,int count){
+  init_single_source(vertex, s, count);
+  init_color(vertex,count);
+  int i;
+  int u;
   int remain = count;
-  int Q[count];
+  //int Q[count];
+  //for(i = 0 ; i < count ; i ++)
+  //  Q[i] = IFN;
+
   for(i = 0 ; i < count ; i ++){
-    //Q[i] = vertex.d
+    if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
+      vertex[i].color = gray;
+      //Q[i] = vertex[s].adj[i];
+      vertex[i].d = vertex[s].adj[i];
+    }
   }
   while (remain != 0) {
-    
+    u = Extract_min(vertex,count);
+    for(i = 0; i < count; i++){
+      if(vertex[u].adj[i] != IFN && vertex[u].adj[i] != 0 )
+        Relax(vertex,u,i,vertex[u].adj[i]);
+    }
+      
+    remain--;
   }
-
 }
+
 void copy_string(char from[],int row, int col){
   int c = 0;
 
@@ -90,7 +118,7 @@ void copy_string(char from[],int row, int col){
   matrix[row][col][c] = '\0';
 }
 
-void split_string(char *line, int row) {
+void split_string(char *line, int row,int count) {
     const char delimiter[] = "\t";
     int col = 0;
     char *tmp;
@@ -117,7 +145,7 @@ void split_string(char *line, int row) {
 int split_string_first(char *line, int row) {
     //rintf("result\n");
     const char delimiter[] = " \t";
-    int j , k = 0;
+    int j , count = 0;
     char *tmp;
     tmp = strtok(line, delimiter);
     count++;
@@ -141,7 +169,8 @@ int split_string_first(char *line, int row) {
 
 int main(int argc, char const *argv[]) {
   int i;
-  count = 0;
+
+  int count = 0;
   size_t data_size;
   FILE *fin;
   fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
@@ -157,13 +186,13 @@ int main(int argc, char const *argv[]) {
       count = split_string_first(line,i);
       printf("count : %d\n",count);
     }else{
-      split_string(line,i);
+      split_string(line,i,count);
     }
   }
   fclose(fin);
 /********************************************************/
   node vertex[count];
-  init_node(vertex);
+  init_node(vertex,count);
 
   return 0;
 }
