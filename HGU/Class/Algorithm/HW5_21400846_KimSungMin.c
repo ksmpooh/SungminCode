@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define SIZE 100
+#define IFN 999999
 typedef struct nodes node;
 int count;
 char matrix[SIZE][SIZE][SIZE]; //temp[row][col][number_of_string]
@@ -9,19 +11,73 @@ char matrix[SIZE][SIZE][SIZE]; //temp[row][col][number_of_string]
 
 typedef struct nodes{
     char name[20];
+    int index;
     int adj[20];
     int weight;
+    int d;
+    char predecessor[20];
+    bool Set_or_not;
 }node;
 
-void init_single_source(){
-
+void init_node(node *vertex){
+  int row, col, index;
+  index = 0;
+  for(col = 1; col <= count ; col++){
+    strcpy(vertex[index].name,matrix[0][col]);
+    //printf("%s ",vertex[index].name);
+    vertex[index].index = col;
+  }
+  for(index = 0,row = 1 ; row <= count ; row++,index++){
+    for(col = 1; col <= count ; col++){
+      if(row == col){
+        vertex[index].adj[(col-1)] = 0;}
+      else if(strcmp(matrix[row][col],"IFN") != true){
+        vertex[index].adj[(col-1)] = atoi(matrix[row][col]);
+        //printf("\n%d",vertex[index].adj[col-1]);
+      }else
+        vertex[index].adj[(col-1)] = IFN;
+    }
+  }
 }
 
-void Relax(){
-
+void init_Set_or_not(node *vertex){
+  int i;
+  for(i = 0; i < count; i++){
+    vertex[i].Set_or_not = false;
+  }
 }
 
-void Dijkstra(G,w,s){
+void init_single_source(node *vertex, int s){
+  int i;
+  for(i = 0; i < count; i++){
+    strcpy(vertex[i].predecessor,NULL);
+    vertex[i].d = IFN;  //무한을 IFN으로
+  }
+  vertex[s].d = 0;
+}
+
+void Relax(node *vertex, int row, int col, int w){
+  int temp;
+  temp = vertex[row].d + w;
+  if(vertex[col].d > temp){
+    vertex[col].d = temp;
+    //vertex[col]->predecessor =
+    strcpy(vertex[col].predecessor,vertex[row].predecessor);
+  }
+}
+
+void Dijkstra(node *vertex, int w, int s){
+  init_single_source(vertex, s);
+  init_Set_or_not(vertex);
+  int i;
+  int remain = count;
+  int Q[count];
+  for(i = 0 ; i < count ; i ++){
+    //Q[i] = vertex.d
+  }
+  while (remain != 0) {
+    
+  }
 
 }
 void copy_string(char from[],int row, int col){
@@ -106,8 +162,8 @@ int main(int argc, char const *argv[]) {
   }
   fclose(fin);
 /********************************************************/
-
-
+  node vertex[count];
+  init_node(vertex);
 
   return 0;
 }
