@@ -51,9 +51,10 @@ void init_color(node *vertex,int count){
 void init_single_source(node *vertex, int s,int count){
   int i;
   for(i = 0; i < count; i++){
-    strcpy(vertex[i].predecessor,NULL);
+    strcpy(vertex[i].predecessor,"\0");
     vertex[i].d = IFN;  //무한을 IFN으로
   }
+  printf("good\n");
   vertex[s].d = 0;
   vertex[s].color = black;
 }
@@ -80,8 +81,10 @@ int Extract_min(node *vertex, int count){
   return index;
 }
 
-void Dijkstra(node *vertex, int w, int s,int count){
+void Dijkstra(node *vertex, int s,int count){
+  //printf("good\n");
   init_single_source(vertex, s, count);
+  //printf("good\n");
   init_color(vertex,count);
   int i;
   int u;
@@ -89,21 +92,28 @@ void Dijkstra(node *vertex, int w, int s,int count){
   //int Q[count];
   //for(i = 0 ; i < count ; i ++)
   //  Q[i] = IFN;
+  //printf("good\n");
 
   for(i = 0 ; i < count ; i ++){
     if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
       vertex[i].color = gray;
       //Q[i] = vertex[s].adj[i];
       vertex[i].d = vertex[s].adj[i];
+      printf("%d\n", vertex[i].d);
     }
   }
+  remain--;
+
   while (remain != 0) {
     u = Extract_min(vertex,count);
+    vertex[u].color = black;
     for(i = 0; i < count; i++){
-      if(vertex[u].adj[i] != IFN && vertex[u].adj[i] != 0 )
+      if(vertex[u].adj[i] != IFN && vertex[u].adj[i] != 0 ){
         Relax(vertex,u,i,vertex[u].adj[i]);
+        vertex[i].color = gray;
+      }
     }
-      
+
     remain--;
   }
 }
@@ -126,7 +136,7 @@ void split_string(char *line, int row,int count) {
     if (tmp == NULL)
       return;
     copy_string(tmp,row,col);
-    printf("%d:%d : %s\n", row,col,matrix[row][col]);
+    //printf("%d:%d : %s\n", row,col,matrix[row][col]);
 
     col++;
     //printf("fs %s\n", tmp);
@@ -137,7 +147,7 @@ void split_string(char *line, int row,int count) {
             break;
         //printf("%d %s\n",i, tmp);
         copy_string(tmp,row,col);
-        printf("%d:%d : %s\n", row,col,matrix[row][col]);
+        //printf("%d:%d : %s\n", row,col,matrix[row][col]);
 
     }
 }
@@ -157,7 +167,7 @@ int split_string_first(char *line, int row) {
         if (tmp == NULL){
           break;
         }
-        printf("%d %s\n", j, tmp);
+        //printf("%d %s\n", j, tmp);
         count++;
         copy_string(tmp,row,count);
         //printf("0:%d : %s\n", count,matrix[0][count]);
@@ -193,6 +203,13 @@ int main(int argc, char const *argv[]) {
 /********************************************************/
   node vertex[count];
   init_node(vertex,count);
+  Dijkstra(vertex,1,count);
+  for(i=0;i<count;i++){
+    printf("%d ", vertex[i].color);
+    printf( "%d ", vertex[i].d );
+    printf("\n");
+  }
+  printf("\n");
 
   return 0;
 }
