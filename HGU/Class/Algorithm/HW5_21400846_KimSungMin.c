@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define SIZE 100
 #define IFN 999999
@@ -54,7 +55,7 @@ void init_single_source(node *vertex, int s,int count){
     strcpy(vertex[i].predecessor,"\0");
     vertex[i].d = IFN;  //무한을 IFN으로
   }
-  printf("good\n");
+  //printf("good\n");
   vertex[s].d = 0;
   vertex[s].color = black;
 }
@@ -80,7 +81,17 @@ int Extract_min(node *vertex, int count){
   }
   return index;
 }
+void search_and_change_color(node *vertex, int index, int count){
+  int i;
+  for(i = 0 ; i < count ; i ++){
+    if(vertex[i].color == black)
+      continue;
+    else if(vertex[index].adj[i] != 0 && vertex[index].adj[i] != IFN){
+      vertex[i].color = gray;
+    }
 
+  }
+}
 void Dijkstra(node *vertex, int s,int count){
   //printf("good\n");
   init_single_source(vertex, s, count);
@@ -99,7 +110,7 @@ void Dijkstra(node *vertex, int s,int count){
       vertex[i].color = gray;
       //Q[i] = vertex[s].adj[i];
       vertex[i].d = vertex[s].adj[i];
-      printf("%d\n", vertex[i].d);
+      //printf("%d\n", vertex[i].d);
     }
   }
   remain--;
@@ -107,6 +118,7 @@ void Dijkstra(node *vertex, int s,int count){
   while (remain != 0) {
     u = Extract_min(vertex,count);
     vertex[u].color = black;
+    search_and_change_color(vertex,u,count);
     for(i = 0; i < count; i++){
       if(vertex[u].adj[i] != IFN && vertex[u].adj[i] != 0 ){
         Relax(vertex,u,i,vertex[u].adj[i]);
@@ -115,6 +127,14 @@ void Dijkstra(node *vertex, int s,int count){
     }
 
     remain--;
+  }
+}
+
+void Bellman_Ford(node *vertex,int count, int s ){
+  int i;
+  init_single_source(vertex,s, count);
+  for( i = 0 ; i < count; i ++){
+
   }
 }
 
@@ -178,12 +198,13 @@ int split_string_first(char *line, int row) {
 
 
 int main(int argc, char const *argv[]) {
-  int i;
+  int i, j ;
 
   int count = 0;
   size_t data_size;
   FILE *fin;
   fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
+  //fin = fopen(argv[1],"r");
   char *line = NULL;
   if(fin)
     printf("File is open!\n");
@@ -202,14 +223,32 @@ int main(int argc, char const *argv[]) {
   fclose(fin);
 /********************************************************/
   node vertex[count];
+
   init_node(vertex,count);
-  Dijkstra(vertex,1,count);
-  for(i=0;i<count;i++){
-    printf("%d ", vertex[i].color);
-    printf( "%d ", vertex[i].d );
+  printf("\nOutput\n");
+/////1. Dijkstra
+  clock_t start = clock();
+  for(i = 0 ; i < count; i ++)
+    Dijkstra(vertex,j,count);
+
+
+  double duration =(double)(clock() - start);
+
+  printf("time : %f \n", duration );
+  printf("          ");
+  for(i = 0; i < count; i ++){
+    printf("%-10s",matrix[0][i+1]);}
+  for(j = 0 ; j <  count; j ++){
+    Dijkstra(vertex,j,count);
+    printf("\n%-10s",matrix[j+1][0] );
+    for(i=0;i<count;i++){
+      //printf("%d ", vertex[i].color);
+      printf("%-10d", vertex[i].d );
+      //printf("\n");
+    }
     printf("\n");
   }
-  printf("\n");
 
+/////2. Bellman_Ford's Algorithm
   return 0;
 }
