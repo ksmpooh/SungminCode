@@ -42,18 +42,12 @@ void init_node(node *vertex,int count){
   }
 }
 
-void init_color(node *vertex,int count){
-  int i;
-  for(i = 0; i < count; i++){
-    vertex[i].color = white;
-  }
-}
-
 void init_single_source(node *vertex, int s,int count){
   int i;
-  for(i = 0; i < count; i++){
+  for(i = 0; i < count ; i++){
     strcpy(vertex[i].predecessor,"\0");
     vertex[i].d = IFN;  //무한을 IFN으로
+    vertex[i].color = white;
   }
   //printf("good\n");
   vertex[s].d = 0;
@@ -96,15 +90,10 @@ void Dijkstra(node *vertex, int s,int count){
   //printf("good\n");
   init_single_source(vertex, s, count);
   //printf("good\n");
-  init_color(vertex,count);
+  //init_color(vertex,count);
   int i;
   int u;
   int remain = count;
-  //int Q[count];
-  //for(i = 0 ; i < count ; i ++)
-  //  Q[i] = IFN;
-  //printf("good\n");
-
   for(i = 0 ; i < count ; i ++){
     if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
       vertex[i].color = gray;
@@ -114,7 +103,6 @@ void Dijkstra(node *vertex, int s,int count){
     }
   }
   remain--;
-
   while (remain != 0) {
     u = Extract_min(vertex,count);
     vertex[u].color = black;
@@ -131,9 +119,22 @@ void Dijkstra(node *vertex, int s,int count){
 }
 
 void Bellman_Ford(node *vertex,int count, int s ){
-  int i;
+  int i,j;
   init_single_source(vertex,s, count);
-  for( i = 0 ; i < count; i ++){
+  for(i = 0; i < count ; i ++){
+    if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
+      vertex[i].d = vertex[s].adj[i];
+    }
+  }
+  for(i = 0 ; i < count; i ++){
+    if(i == s)
+      continue;
+    else{
+      for(j = 0; j < count; j ++){
+        if(vertex[i].adj[j] != IFN && vertex[i].adj[j] != 0)
+          Relax(vertex,i,j,vertex[i].adj[j]);
+      }
+    }
 
   }
 }
@@ -196,7 +197,23 @@ int split_string_first(char *line, int row) {
     return count;
 }
 
+void print_algorithm(node *vertex,int count,char model){
+  int i,j;
 
+  printf("          ");
+  for(i = 0; i < count; i ++){
+    printf("%-10s",matrix[0][i+1]);}
+  for(j = 0 ; j <  count; j ++){
+    Dijkstra(vertex,j,count);
+    printf("\n%-10s",matrix[j+1][0] );
+    for(i=0;i<count;i++){
+      //printf("%d ", vertex[i].color);
+      printf("%-10d", vertex[i].d );
+      //printf("\n");
+    }
+    printf("\n");
+  }
+}
 int main(int argc, char const *argv[]) {
   int i, j ;
 
@@ -250,5 +267,8 @@ int main(int argc, char const *argv[]) {
   }
 
 /////2. Bellman_Ford's Algorithm
+
+
+
   return 0;
 }
