@@ -110,7 +110,7 @@ void Dijkstra(node *vertex, int s,int count){
     for(i = 0; i < count; i++){
       if(vertex[u].adj[i] != IFN && vertex[u].adj[i] != 0 ){
         Relax(vertex,u,i,vertex[u].adj[i]);
-        vertex[i].color = gray;
+        //vertex[i].color = gray;
       }
     }
 
