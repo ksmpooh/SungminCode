@@ -16,15 +16,17 @@ typedef struct nodes{
     int index;
     int adj[20];
     int weight;
+    int edge;
     int d;
     char predecessor[20];
     enum id color;
 }node;
 
 void init_node(node *vertex,int count){
-  int row, col, index;
+  int row, col, index, edge;
   index = 0;
-  for(col = 1; col <= count ; col++){
+  edge = 0;
+  for(col = 1; col <= count ; col++,index++){
     strcpy(vertex[index].name,matrix[0][col]);
     //printf("%s ",vertex[index].name);
     vertex[index].index = col;
@@ -35,10 +37,12 @@ void init_node(node *vertex,int count){
         vertex[index].adj[(col-1)] = 0;}
       else if(strcmp(matrix[row][col],"IFN") != true){
         vertex[index].adj[(col-1)] = atoi(matrix[row][col]);
+        edge++;
         //printf("\n%d",vertex[index].adj[col-1]);
       }else
         vertex[index].adj[(col-1)] = IFN;
     }
+    vertex[index].edge = edge;
   }
 }
 
@@ -86,7 +90,7 @@ void search_and_change_color(node *vertex, int index, int count){
 
   }
 }
-void Dijkstra(node *vertex, int s,int count){
+void Dijkstra(node *vertex, int count,int s){
   //printf("good\n");
   init_single_source(vertex, s, count);
   //printf("good\n");
@@ -113,31 +117,43 @@ void Dijkstra(node *vertex, int s,int count){
         //vertex[i].color = gray;
       }
     }
-
     remain--;
   }
 }
 
 void Bellman_Ford(node *vertex,int count, int s ){
-  int i,j;
-  init_single_source(vertex,s, count);
+  int i,j,k;
+  k = 0;
+  int remain  = count -1;
+  int seq[remain];
+  init_single_source(vertex, s, count);
   for(i = 0; i < count ; i ++){
     if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
       vertex[i].d = vertex[s].adj[i];
+      seq[k] = i;
+      k++;
+      vertex[s].color = gray;
     }
   }
-  for(i = 0 ; i < count; i ++){
-    if(i == s)
-      continue;
-    else{
+  int index = 0;
+  while (remain!=0) {
+    
+      for()
+  }
+
+  /*for(i = 0 ; i < count; i ++){
+    if(i == s){
+        continue;
+    }else{
       for(j = 0; j < count; j ++){
         if(vertex[i].adj[j] != IFN && vertex[i].adj[j] != 0)
           Relax(vertex,i,j,vertex[i].adj[j]);
       }
     }
+  }*/
 
-  }
 }
+
 
 void copy_string(char from[],int row, int col){
   int c = 0;
@@ -197,23 +213,6 @@ int split_string_first(char *line, int row) {
     return count;
 }
 
-void print_algorithm(node *vertex,int count,char model){
-  int i,j;
-
-  printf("          ");
-  for(i = 0; i < count; i ++){
-    printf("%-10s",matrix[0][i+1]);}
-  for(j = 0 ; j <  count; j ++){
-    Dijkstra(vertex,j,count);
-    printf("\n%-10s",matrix[j+1][0] );
-    for(i=0;i<count;i++){
-      //printf("%d ", vertex[i].color);
-      printf("%-10d", vertex[i].d );
-      //printf("\n");
-    }
-    printf("\n");
-  }
-}
 int main(int argc, char const *argv[]) {
   int i, j ;
 
@@ -245,18 +244,20 @@ int main(int argc, char const *argv[]) {
   printf("\nOutput\n");
 /////1. Dijkstra
   clock_t start = clock();
-  for(i = 0 ; i < count; i ++)
-    Dijkstra(vertex,j,count);
 
-
-  double duration =(double)(clock() - start);
+  for(i = 0 ; i < count; i ++){
+    Dijkstra(vertex,count,j);}
+  start = clock() - start;
+  double duration = ((double)start)/CLOCKS_PER_SEC;
+  //double duration = ((double)start);
+  //double duration =(double)(clock() - start);
 
   printf("time : %f \n", duration );
   printf("          ");
   for(i = 0; i < count; i ++){
     printf("%-10s",matrix[0][i+1]);}
   for(j = 0 ; j <  count; j ++){
-    Dijkstra(vertex,j,count);
+    Dijkstra(vertex,count,j);
     printf("\n%-10s",matrix[j+1][0] );
     for(i=0;i<count;i++){
       //printf("%d ", vertex[i].color);
@@ -267,7 +268,20 @@ int main(int argc, char const *argv[]) {
   }
 
 /////2. Bellman_Ford's Algorithm
-
+  printf("          ");
+  //Bellman_Ford(vertex,count,j);
+  for(i = 0; i < count; i ++){
+    printf("%-10s",matrix[0][i+1]);}
+  for(j = 0 ; j <  count; j ++){
+    Bellman_Ford(vertex,count,j);
+    printf("\n%-10s",matrix[j+1][0] );
+    for(i=0;i<count;i++){
+      //printf("%d ", vertex[i].color);
+      printf("%-10d", vertex[i].d );
+      //printf("\n");
+    }
+    printf("\n");
+  }
 
 
   return 0;

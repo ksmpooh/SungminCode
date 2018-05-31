@@ -1,7 +1,6 @@
 library(heatmap3)
 library(RColorBrewer)
 library(gplots)
-
 for(i in 0:4){
   #assign(paste0("model_",i),read.csv(paste0("C:/Users/sungmin/Downloads/heatmap_ppeong/model_ppeong/heatmap_ppeong_model",i,".csv")))
   df <- read.csv(paste0("C:/Users/sungmin/Downloads/heatmap_ppeong/model_ppeong/heatmap_ppeong_model",i,".csv"))
@@ -16,7 +15,8 @@ fresult <-function(result){
 
 model<-model_3
 gc <- factor(model$cancer_code)
-CancerCode_color <- rainbow(100)[as.integer(gc)]
+cancer_code<-model$cancer_code
+CancerCode_color <- rainbow(19)[as.integer(gc)]
 result_color<-unlist(lapply(model$real_y,fresult))
 myCols <- cbind(result_color,CancerCode_color)
 colnames(myCols)[1] <- "Result"
@@ -31,22 +31,23 @@ input<-data.matrix(model)
 #myclust=function(c) {hclust(c,method="average")}
 #input <- round(input, digits = 3)
 #x = legend("topright",legend = c("Cancer","Normal"),fill = c("red","green"))
-png("pre_3.png",width = 2000, height = 2000)
+png("pre_3.png",width = 1000, height = 1000)
 #heatmep3 model_3, w = 1000, height = 100
 #??heatmap3
-heatmap3(t(input),col = bluered(100),cexRow = 0.5, cexCol = 0.5,
+heatmap3(t(input),col = bluered(100000),cexRow = 0.5, cexCol = 0.5,
          main = "ppeng_3",
-         margins = c(2,16),#Colv = NA, #breaks,
-         #breaks = seq(-1,1,length.out= 1001),
-         #ColSideColors = myCols,
-         scale = "row"
+         margins = c(3,16),Colv = NA, #breaks,
+         breaks = seq(-1,1,length.out= 100001),
+         ColSideColors = myCols,
+         keysize = 1.5,
+         scale = "none"
 ) 
 
-heatmap(t(input),col = bluered(111111))
-#heatmap3
-legend("topright",legend = c("Cancer","Normal"),fill = c("red","green")
-       ,border = FALSE,bty = "n", y.intersp =2.0,cex = 2.0)
-
+#heatmap(t(input),col = bluered(111111))
+??heatmap3
+legend(title = "Result","topright",legend = c("Cancer","Normal"),fill = c("red","green")
+       ,border = FALSE,bty = "n", y.intersp =1.5,cex = 1.5)
+legend(title = "Cancer_code","right",legend = levels(cancer_code),fill = rainbow(19))
 dev.off()
 
 graphics.off()
@@ -57,3 +58,4 @@ graphics.off()
 summary(model_3)
 min(model)
 a<-input[1:10,1:10]
+table(model_3$cancer_code)
