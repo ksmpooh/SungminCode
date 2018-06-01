@@ -16,7 +16,7 @@ typedef struct nodes{
     int index;
     int adj[20];
     int weight;
-    int edge;
+    //int edge;
     int d;
     char predecessor[20];
     enum id color;
@@ -25,24 +25,26 @@ typedef struct nodes{
 void init_node(node *vertex,int count){
   int row, col, index, edge;
   index = 0;
-  edge = 0;
+  //edge = 0;
   for(col = 1; col <= count ; col++,index++){
     strcpy(vertex[index].name,matrix[0][col]);
     //printf("%s ",vertex[index].name);
     vertex[index].index = col;
   }
   for(index = 0,row = 1 ; row <= count ; row++,index++){
+    strcpy(vertex[index].predecessor,"\0");
     for(col = 1; col <= count ; col++){
       if(row == col){
         vertex[index].adj[(col-1)] = 0;}
       else if(strcmp(matrix[row][col],"IFN") != true){
         vertex[index].adj[(col-1)] = atoi(matrix[row][col]);
-        edge++;
+        //edge++;
         //printf("\n%d",vertex[index].adj[col-1]);
       }else
         vertex[index].adj[(col-1)] = IFN;
     }
-    vertex[index].edge = edge;
+
+    //vertex[index].edge = edge;
   }
 }
 
@@ -127,6 +129,7 @@ void Bellman_Ford(node *vertex,int count, int s ){
   int remain  = count -1;
   int seq[remain];
   init_single_source(vertex, s, count);
+
   for(i = 0; i < count ; i ++){
     if(vertex[s].adj[i] != IFN && vertex[s].adj[i] != 0){
       vertex[i].d = vertex[s].adj[i];
@@ -136,9 +139,20 @@ void Bellman_Ford(node *vertex,int count, int s ){
     }
   }
   int index = 0;
-  while (remain!=0) {
-    
-      for()
+
+  for (i = 0 ; remain != 0 ; i++) {
+      index = seq[i];
+      for(j = 0 ; j < count; j ++){
+        if(vertex[index].adj[j] != IFN && vertex[index].adj[j] &&  vertex[j].color != gray && vertex[j].d != 0 ){
+            vertex[j].color = gray;
+            seq[k] = j;
+            k ++ ;
+        }
+        if(vertex[index].adj[j] != IFN && vertex[index].adj[j]){
+          Relax(vertex,index,j,vertex[index].adj[j]);
+        }
+      }
+      remain--;
   }
 
   /*for(i = 0 ; i < count; i ++){
@@ -151,6 +165,8 @@ void Bellman_Ford(node *vertex,int count, int s ){
       }
     }
   }*/
+}
+void Floyd_Warshall(node *vertex, int count){
 
 }
 
@@ -243,6 +259,7 @@ int main(int argc, char const *argv[]) {
   init_node(vertex,count);
   printf("\nOutput\n");
 /////1. Dijkstra
+  printf("1. Dijkstra's Algorithm\n");
   clock_t start = clock();
 
   for(i = 0 ; i < count; i ++){
@@ -268,8 +285,18 @@ int main(int argc, char const *argv[]) {
   }
 
 /////2. Bellman_Ford's Algorithm
+
+  printf("\n2. Bellman_Ford's Algorithm\n");
+  ini_node(vertex,count);
+  start = clock();
+  for(i = 0 ; i < count; i ++){
+    Dijkstra(vertex,count,j);}
+  start = clock() - start;
+  duration = ((double)start)/CLOCKS_PER_SEC;
+  printf("time : %f \n", duration );
+
   printf("          ");
-  //Bellman_Ford(vertex,count,j);
+
   for(i = 0; i < count; i ++){
     printf("%-10s",matrix[0][i+1]);}
   for(j = 0 ; j <  count; j ++){
@@ -283,6 +310,9 @@ int main(int argc, char const *argv[]) {
     printf("\n");
   }
 
+  //3. Floyd's Algorithm
+  printf("\n3. Floyd's Algorithm\n");
+  ini_node(vertex,count);
 
   return 0;
 }
