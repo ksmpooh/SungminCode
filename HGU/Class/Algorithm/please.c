@@ -8,8 +8,8 @@
 #define IFN 999999
 typedef struct nodes node;
 enum id {white = 0, gray, black};
-char matrix[SIZE][SIZE][100]; //temp[row][col][number_of_string]
-
+//char matrix[SIZE][SIZE][100]; //temp[row][col][number_of_string]
+//char*** matrix = (char***)malloc(sizeof(char));
 int predecessor_ap[SIZE][SIZE];
 int d[SIZE][SIZE];
 
@@ -24,7 +24,7 @@ typedef struct nodes{
     enum id color;
 }node;
 
-void init_node(node *vertex,int count){
+void init_node(node *vertex,int count,char ***matrix){
   int row, col, index, edge;
   index = 0;
   //edge = 0;
@@ -199,7 +199,7 @@ void Floyd_Warshall(node *vertex, int count){
 }
 
 
-void copy_string(char from[],int row, int col){
+void copy_string(char from[],int row, int col,char ***matrix){
   int c = 0;
 
   while(from[c] != '\0'){
@@ -209,14 +209,14 @@ void copy_string(char from[],int row, int col){
   matrix[row][col][c] = '\0';
 }
 
-void split_string(char *line, int row,int count) {
+void split_string(char *line, int row,int count,char ***matrix) {
     const char delimiter[] = "\t";
     int col = 0;
     char *tmp;
     tmp = strtok(line, delimiter);
     if (tmp == NULL)
       return;
-    copy_string(tmp,row,col);
+    copy_string(tmp,row,col,matrix);
     //printf("%d:%d : %s\n", row,col,matrix[row][col]);
 
     col++;
@@ -227,13 +227,13 @@ void split_string(char *line, int row,int count) {
         if (tmp == NULL)
             break;
         //printf("%d %s\n",i, tmp);
-        copy_string(tmp,row,col);
+        copy_string(tmp,row,col,matrix);
         //printf("%d:%d : %s\n", row,col,matrix[row][col]);
 
     }
 }
 
-int split_string_first(char *line, int row) {
+int split_string_first(char *line, int row,char ***matrix) {
     //rintf("result\n");
     const char delimiter[] = " \t";
     int j , count = 0;
@@ -241,7 +241,7 @@ int split_string_first(char *line, int row) {
     tmp = strtok(line, delimiter);
     count++;
     //printf("count:%d, %s\n", count,tmp);
-    copy_string(tmp,row,count);
+    copy_string(tmp,row,count,matrix);
     //printf("0:1 : %s\n", matrix[0][count]);
     for (j = 1; j <20; j ++) {
         tmp = strtok(NULL, delimiter);
@@ -250,7 +250,7 @@ int split_string_first(char *line, int row) {
         }
         //printf("%d %s\n", j, tmp);
         count++;
-        copy_string(tmp,row,count);
+        copy_string(tmp,row,count,matrix);
         //printf("0:%d : %s\n", count,matrix[0][count]);
 
     }
@@ -259,12 +259,31 @@ int split_string_first(char *line, int row) {
 
 int main(int argc, char const *argv[]) {
   int i, j ;
+  int count = (int)malloc(sizeof(int));
+  /*char ***matrix = (char***)malloc(sizeof(char**)*SIZE);
+  for(i = 0 ;i <SIZE; i++){
+    **(matrix + i) = (char**)malloc(sizeof(char*)*SIZE);
+    for(j =0; j <SIZE; j++){
+      *(matrix + j) = (char*)malloc(sizeof(char)*SIZE);
+    }
+  }*/
+char ***matrix;
+matrix = malloc(SIZE * sizeof(char**));
+//assert(z != NULL);
+for( i = 0 ; i < SIZE; i++){
+  matrix[i] = malloc(SIZE* sizeof(char*));
+  //assert(matrix[i] != NULL);
+  for(j = 0; j < SIZE ; j++){
+    matrix[i][j] = malloc(SIZE);
+    //assert(matrix[i][j] != NULL);
+  }
+}
 
-  int count = 0;
+  //int count = 0;
   size_t data_size;
   FILE *fin;
-  //fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
-  fin = fopen(argv[1],"r");
+  fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
+  //fin = fopen(argv[1],"r");
   char *line = NULL;
   if(fin)
     printf("File is open!\n");
@@ -274,17 +293,19 @@ int main(int argc, char const *argv[]) {
   }
   for(i = 0 ; getline(&line, &data_size, fin) != -1 ; i++ ){
     if(i == 0){
-      count = split_string_first(line,i);
+      count = split_string_first(line,i,matrix);
       printf("number of cities : %d\n",count);
     }else{
-      split_string(line,i,count);
+      split_string(line,i,count,matrix);
     }
   }
   fclose(fin);
 /********************************************************/
-  node vertex[count];
+  //node vertex[count];
+  //node* vertex = (node*)malloc(sizeof(node)*count);
+  node *vertex = malloc(count*sizeof(node));
 
-  init_node(vertex,count);
+  init_node(vertex,count,matrix);
   printf("\nOutput\n");
 
 
@@ -293,6 +314,7 @@ int main(int argc, char const *argv[]) {
   clock_t start = clock();
 
   for(i = 0 ; i < count; i ++){
+    //printf("hi\n");
     Dijkstra(vertex,count,j);}
   start = clock() - start;
   double duration = ((double)start)/CLOCKS_PER_SEC;
@@ -318,7 +340,7 @@ int main(int argc, char const *argv[]) {
 
   printf("\n2. Bellman_Ford's Algorithm\n");
 
-  init_node(vertex,count);
+  init_node(vertex,count,matrix);
   start = clock();
   for(i = 0 ; i < count; i ++){
     Bellman_Ford(vertex,count,i);}
@@ -326,7 +348,7 @@ int main(int argc, char const *argv[]) {
   duration = ((double)start)/CLOCKS_PER_SEC;
   printf("It take %f time seconds to compute shortest path between cities with Bellman_Ford algorithm as follows. \n", duration );
 
-  init_node(vertex,count);
+  init_node(vertex,count,matrix);
   printf("          ");
   //init_node(vertex,count);
   for(i = 0; i < count; i ++){
@@ -344,7 +366,7 @@ int main(int argc, char const *argv[]) {
 
   //3. Floyd's Algorithm
   printf("\n3. Floyd's Algorithm\n");
-  init_node(vertex,count);
+  init_node(vertex,count,matrix);
   start = clock();
 
   Floyd_Warshall(vertex, count);
@@ -367,7 +389,13 @@ int main(int argc, char const *argv[]) {
     printf("\n");
   }
   printf("\n");
-
-
+  free(vertex);
+  for(i = 0; i < SIZE; i++){
+    for(j = 0; j < SIZE; j++){
+      free(**(matrix+j));
+    }
+    free(*(matrix+i));
+  }
+  //free(count);
   return 0;
 }

@@ -1,0 +1,6 @@
+	aaaa	bbbb	cccc	dddd	eeee
+aaaa	0	-6	7	IFN	IFN
+bbbb	-6	0	-3	IFN	-6
+cccc	7	-3	0	8	1
+dddd	IFN	IFN	8	0	2
+eeee	IFN	-6	1	2	0			

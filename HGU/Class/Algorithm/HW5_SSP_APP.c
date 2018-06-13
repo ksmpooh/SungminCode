@@ -8,16 +8,16 @@
 #define IFN 999999
 typedef struct nodes node;
 enum id {white = 0, gray, black};
-char matrix[SIZE][SIZE][100]; //temp[row][col][number_of_string]
+char matrix[SIZE][SIZE][10]; //temp[row][col][number_of_string]
 
 int predecessor_ap[SIZE][SIZE];
 int d[SIZE][SIZE];
 
 typedef struct nodes{
-    char name[20];
+    char name[10];
     int index;
     int adj[20];
-    int weight;
+    //int weight;
     //int edge;
     int d;
     char predecessor[20];
@@ -263,8 +263,8 @@ int main(int argc, char const *argv[]) {
   int count = 0;
   size_t data_size;
   FILE *fin;
-  //fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
-  fin = fopen(argv[1],"r");
+  fin = fopen("D:/git/SungminCode/HGU/Class/Algorithm/hw5..data","r");
+  //fin = fopen(argv[1],"r");
   char *line = NULL;
   if(fin)
     printf("File is open!\n");
@@ -302,10 +302,10 @@ int main(int argc, char const *argv[]) {
   printf("It take %f time seconds to compute shortest path between cities with Dijkstra's algorithm as follows. \n", duration );
   printf("          ");
   for(i = 0; i < count; i ++){
-    printf("%-10s",matrix[0][i+1]);}
+    printf("%-10s",vertex[i].name);}
   for(j = 0 ; j <  count; j ++){
     Dijkstra(vertex,count,j);
-    printf("\n%-10s",matrix[j+1][0] );
+    printf("\n%-10s",vertex[j].name );
     for(i=0;i<count;i++){
       //printf("%d ", vertex[i].color);
       printf("%-10d", vertex[i].d );
@@ -318,7 +318,7 @@ int main(int argc, char const *argv[]) {
 
   printf("\n2. Bellman_Ford's Algorithm\n");
 
-  init_node(vertex,count);
+  //init_node(vertex,count);
   start = clock();
   for(i = 0 ; i < count; i ++){
     Bellman_Ford(vertex,count,i);}
@@ -330,10 +330,10 @@ int main(int argc, char const *argv[]) {
   printf("          ");
   //init_node(vertex,count);
   for(i = 0; i < count; i ++){
-    printf("%-10s",matrix[0][i+1]);}
+    printf("%-10s", vertex[i].name);}
   for(j = 0 ; j <  count; j ++){
     Bellman_Ford(vertex,count,j);
-    printf("\n%-10s",matrix[j+1][0] );
+    printf("\n%-10s",vertex[j].name );
     for(i=0;i<count;i++){
       //printf("%d ", vertex[i].color);
       printf("%-10d", vertex[i].d );
@@ -344,7 +344,7 @@ int main(int argc, char const *argv[]) {
 
   //3. Floyd's Algorithm
   printf("\n3. Floyd's Algorithm\n");
-  init_node(vertex,count);
+  //init_node(vertex,count);
   start = clock();
 
   Floyd_Warshall(vertex, count);
@@ -356,9 +356,9 @@ int main(int argc, char const *argv[]) {
   //printf("SSP result");
   printf("          ");
   for(i = 0; i < count; i ++){
-    printf("%-10s",matrix[0][i+1]);}
+    printf("%-10s", vertex[i].name);}
   for(j = 0 ; j <  count; j ++){
-    printf("\n%-10s",matrix[j+1][0] );
+    printf("\n%-10s",vertex[j].name );
     for(i=0;i<count;i++){
       //printf("%d ", vertex[i].color);
       printf("%-10d", d[i][j] );
