@@ -89,4 +89,8 @@ for (feature in lists){
   print(Union)
 }
 
+a<-read.csv("C:/Users/sungmin/Documents/카카오톡 받은 파일/foundation_308.csv")
+a
 result
+length(union(a$x,Annotated_colnames))
+length(intersect(a$x,Annotated_colnames))
