@@ -6,11 +6,12 @@ library(heatmap3)
 library(RColorBrewer)
 library(gplots)
 
-data<-read.csv("D:/git/SungminCode/HGU/BioData/HowTo/heatmap/sample.csv",header = T,sep = ',')
-dim(data)
+od<-read.csv("D:/git/SungminCode/HGU/BioData/HowTo/heatmap/sample.csv",header = T,sep = ',')
+dim(od)
 
 
 ## data processing
+data<-od
 rownames(data)<-data$patient  #data 의 row names을 data의 patient이름으로
 data<-subset(data,select = -c(patient,index)) # heatmap3에는 index와 patient이름이 필요가 없다.
 
@@ -95,7 +96,7 @@ dev.off()
 ##heatmap 위에 원하는 index bar 추가!
 # heatmap에 cancer code와 result 값을 추가!
 #이전에 orginat data를 다시 가공해야함
-model <-data
+model <-od
 model <- model[order(-model$result,model$cancer_code),]
 gc <- factor(model$cancer_code)
 cancer_code<-model$cancer_code
@@ -114,10 +115,26 @@ colnames(myCols)[2] <- "CancerCode"
 model<-subset(model,select = -c(patient,cancer_code,result,index))
 input<-data.matrix(model)
 
-#png("heatmap_scale.png")
+png("heatmap_extra_colbar.png")
 #Scale, colv 값을 조절하면서 보면 차이를 확일 할 수 잇다.
 heatmap3(t(input),col = mc, #scale = 'none',
          breaks = col_breaks, Colv = NA, 
          margins = c(3,16),
          ColSideColors = myCols)  
+dev.off()
+
+
+##legend 추가 , 추가 설명하는 figure
+
+png("heatmap_extra_colbar_with_legend.png")
+#Scale, colv 값을 조절하면서 보면 차이를 확일 할 수 잇다.
+heatmap3(t(input),col = mc, #scale = 'none',
+         breaks = col_breaks, Colv = NA, 
+         margins = c(3,16),
+         ColSideColors = myCols)  
+
+
+legend(title = "Result","topright",legend = c("Cancer","Normal"),fill = c("red","green")
+       ,border = FALSE,bty = "n", y.intersp =1.0,cex = 1.0)
+
 dev.off()

@@ -11,9 +11,7 @@ library(e1071)
 
 #data를 불러온다.
   data<- read.csv("파일경로/이름")
-  
-  우리가 사용하는 data는 ensemble model_3.
-
+  fold에 포함되어 있는 "sample.csv" 사용
 #data 정보
   300 obs, 104 varibales(genes(100),patient,result,index,cancercode)
   
