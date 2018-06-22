@@ -1,0 +1,131 @@
+BioData Lab  <the best model "SVM" defore deep learning >
+
+by 김성민, 2018.6.22
+
+#SVM이 들어 있는 libaray 
+
+  e1071
+```{r}
+library(e1071)
+```
+
+#data를 불러온다.
+  data<- read.csv("파일경로/이름")
+  
+  우리가 사용하는 data는 ensemble model_3.
+
+#data 정보
+  300 obs, 104 varibales(genes(100),patient,result,index,cancercode)
+  
+  -->row: samples, col: gene
+  
+  patient: 환자 labeling
+  
+  result: Cancer = 1, normal = 0
+  
+  index: CV를 하기 위한 index(5 folds)
+  
+  cancercode: 암 종류 labeling
+  
+```{r}
+data<-read.csv("D:/git/SungminCode/HGU/BioData/HowTo/heatmap/sample.csv",header = T,sep = ',')
+dim(data)
+
+```
+
+#Data processing for SVM
+
+  data$[output] <-as.factor(data$output)
+  
+  SVM를 통해 예측하려는 variable을 as.factor
+```{r}
+data$result <-as.factor(data$result)
+
+```
+  
+  five fold 하기를 원하면 for문을 만들 가능.
+  
+  이곳에서는 index 값이 1인 것을 test, 1이 아닌것을 train set으로 이용
+  
+```{r}
+j = 1;
+test <-data[data$index == j,]
+train <-data[data$index != j, ]
+
+```
+  
+  prediction model에 필요 없는 것을 삭제한다.
+```{r}
+test <- subset(test, select = -c(index,patient,cancer_code))  
+train <- subset(train, select = -c(index,patient,cancer_code))
+```
+
+# SVM model
+
+  4 types of kernel(linear, polynomial, radial, sigmoid)
+  
+  hyper parameter(조절해서 최적의 모델 찾기)
+  
+  
+  degree  (default : 3): for polynomial
+  
+  gamma   (default : 1/(data dimension)) : except linear
+  
+  codf0   (default : 0) : for polynomial and sigmoid
+  
+  cost    (default : 1) : cost of constraints violation
+  
+  epsilon (defualt : 0.1) : inssensitive - loss function
+  
+```{r}
+svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
+svm_model
+```
+
+#test data set을 prediction model(svm_model)에 적용
+  auc도 확인
+```{r}
+pred <- predict(svm_model,test)
+result_table<- table(pred,test$result)
+result_table
+auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
+auc
+
+```
+
+#confusionMatrix
+
+confusionMatrix를 활용하면 prediction model에  대한 정보를 얻을 수 있다.
+
+library(caret) #confusion Matrix는 caret library 안에 있다.
+
+confustionMatrix([train_data]$[output],predict(model))
+```{r}
+library(caret)
+confusionMatrix(train$result,predict(svm_model))
+```
+
+
+#나중에 시간이 되면 최적의 parameter를 찾기 위해 tune.svm을 이용.
+```{r}
+svm_tune<-tune.svm(result~.,data = train,kernel = 'radial',gamma = c(0.1,0.2),coef0 = c(0.1,0.5),cost = c(0.001,0.01))
+svm_tune
+```
+
+#더 궁금한건.. ?SVM을 통해..
+
+## Default SVM method:
+svm(x, y = NULL, scale = TRUE, type = NULL, 
+
+kernel ="radial", degree = 3, gamma = if (is.vector(x)) 1 else 1 / ncol(x),
+
+coef0 = 0, cost = 1, nu = 0.5,
+
+class.weights = NULL, cachesize = 40, 
+
+tolerance = 0.001, epsilon = 0.1,
+
+shrinking = TRUE, cross = 0, probability = FALSE, fitted = TRUE,
+
+..., subset, na.action = na.omit)
+
