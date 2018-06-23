@@ -1,4 +1,6 @@
 BioData_lab 
 
-1. SVM
-2. heatmap3
+*Language : R
+
+1. SVM (2018.6.22, by Sungmin)
+2. heatmap3 (2018.6.22, by Sungmin)
