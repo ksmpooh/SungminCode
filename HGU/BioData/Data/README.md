@@ -1,7 +1,7 @@
-##BioDataLab
+## BioDataLab
 
 
-#7.Union   2018.6.24
+# 7.Union   2018.6.24
 
   To know the number of Union Set(5 ensemble data)
    1. CV
@@ -12,4 +12,4 @@
   
   Use 4000 feature data, and use function to split data set. 
   
-#8. SVM Using split function   2018.6.24
+# 8. SVM Using split function   2018.6.24
