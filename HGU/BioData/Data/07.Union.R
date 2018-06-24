@@ -1,6 +1,11 @@
 ##Union count
 # unique(c(A,B))
-
+## ensemble model data.
+# 1. CV
+# 2. Mean
+# 3. Var
+# 4. annotation 308
+# 5. annotation 2267
 #################################################### VarianceTest ####################################################
 GetVar<-function(genes){
   VAR<-apply(genes,2,sd)
@@ -60,37 +65,40 @@ TopMean <- function(genes, feature){
 }
 
 
-CV <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_CV_2500.csv",header = T, sep = ",")
-Mean <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_Mean_2500.csv",header = T, sep = ",")
-Var <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_VAR_2500.csv",header = T, sep = ",")
-Annotated<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_308.csv",header = T,sep = ",")
+CV <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_CV_4000.csv",header = T, sep = ",")
+Mean <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_Mean_4000.csv",header = T, sep = ",")
+Var <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_VAR_4000.csv",header = T, sep = ",")
+Annotated_308<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_308.csv",header = T,sep = ",")
+Annotated_2267<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_2267.csv",header = T, sep = ',')
 
-CV <- subset(CV,select = -c(index,result,cancer_code,patient))
-Mean <- subset(Mean,select = -c(index,result,cancer_code,patient))
-Var <- subset(Var,select = -c(index,result,cancer_code,patient))
-Annotated <- subset(Annotated,select = -c(index,result,cancer_code,patient))
-Annotated_colnames<-colnames(Annotated)
-lists <- c(50,100,200,500,1000,2500)
+CV_union <- subset(CV,select = -c(index,result,cancer_code,patient))
+Mean_union <- subset(Mean,select = -c(index,result,cancer_code,patient))
+Var_union <- subset(Var,select = -c(index,result,cancer_code,patient))
+Annotated_308union <- subset(Annotated_308,select = -c(index,result,cancer_code,patient))
+Annotated_308colnames<-colnames(Annotated_308union)
+Annotated_2267union <- subset(Annotated_2267,select = -c(index,result,cancer_code,patient))
+Annotated_2267colnames<-colnames(Annotated_2267union)
+
+lists <- c(500,1000,1500,2000,2500,3000,3500,4000)
 result <-data.frame()
 for (feature in lists){
-  var_ <- TopVar(Var,feature)
-  Mean_ <- TopMean(Mean,feature)
-  CV_ <- TopCV(CV,feature)
+  var_ <- TopVar(Var_union,feature)
+  Mean_ <- TopMean(Mean_union,feature)
+  CV_ <- TopCV(CV_union,feature)
   Mean_colnames <- colnames(Mean_)
   var_colnames <- colnames(var_)
   CV_colnames <- colnames(CV_)
+  feature_sum <- sum(feature * 3, 308, 2267)
   df <- union(Mean_colnames,var_colnames)
   df <- union(df,CV_colnames)
-  df <- union(df,Annotated_colnames)
+  df <- union(df,Annotated_308colnames)
+  df <- union(df,Annotated_2267colnames)
   Union <- length(df)
-  df <- data.frame(feature,Union,stringsAsFactors = F)
+  df <- data.frame(feature,feature_sum,Union,stringsAsFactors = F)
   result <- rbind(result,df)
   print(feature)
   print(Union)
 }
 
-a<-read.csv("C:/Users/sungmin/Documents/카카오톡 받은 파일/foundation_308.csv")
-a
-result
-length(union(a$x,Annotated_colnames))
-length(intersect(a$x,Annotated_colnames))
+
+write.csv(result,"D:/biodatalab/2018-1/Result/Union.csv",row.names = F)
