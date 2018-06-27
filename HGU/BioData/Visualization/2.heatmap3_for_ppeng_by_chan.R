@@ -9,7 +9,7 @@ fresult <-function(result){
   else{"#00FF00"}
 }
 
-df<-read.csv("D:/biodatalab/2018-1/heatmap_ppeong/model_ppeong/heatmap_ppeong_model3.csv",row.names = 1)
+df<-read.csv("D:/biodatalab/2018-1/heatmap_ppeong/heatmap_ppeong_model3.csv",row.names = 1)
 df <-df[order(-df$original_prob),]
 df$prob_group<-cut(df$original_prob,breaks = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1),labels = c("0~10%","10~20%","20~30%","30~40%","40~50%","50~60%","60~70%","70~80%","80~90%","90~100%"),include.lowest = TRUE)
 df$prob_group<-as.factor(df$prob_group)
@@ -45,41 +45,46 @@ input<-input[-which(apply(input,1,function(x){sd(x)==0})),]
 
 #png("genes_2500_by_diff.png",width = 1000, height = 1000)
 ### Cluster Analysis Modifying ####
-hcluster<-hclust(dist(t(input)))
-hcluster2<-hclust(dist(input))
+#hcluster<-hclust(dist(t(input)))
+#hcluster2<-hclust(dist(input))
 
-dend1 <- as.dendrogram(hcluster)
-dend2 <- as.dendrogram(hcluster2)
+#dend1 <- as.dendrogram(hcluster)
+#dend2 <- as.dendrogram(hcluster2)
 
-dend1<-reorder(dend1,rowMeans(t(input),na.rm = TRUE))
-dend2<-reorder(dend2,rowMeans(input,na.rm = TRUE))
-cols_branches <- rainbow(7)
-dend1 <- color_branches(dend1, k = 7, col = cols_branches)
-dend2 <- color_branches(dend2, k = 7, col = cols_branches)
+#dend1<-reorder(dend1,rowMeans(t(input),na.rm = TRUE))
+#dend2<-reorder(dend2,rowMeans(input,na.rm = TRUE))
+#cols_branches <- rainbow(7)
+#dend1 <- color_branches(dend1, k = 7, col = cols_branches)
+#dend2 <- color_branches(dend2, k = 7, col = cols_branches)
 
 ###################
-hclustfunc <- function(x) hclust(x, method="complete")
-distfunc <- function(x) dist(x, method="euclidean")
+#hclustfunc <- function(x) hclust(x, method="complete")
+#distfunc <- function(x) dist(x, method="euclidean")
 
-hcluster<-hclustfunc(distfunc(t(input)))
-hcluster2<-hclustfunc(distfunc(input))
-mycl <- cutree(hcluster, k=7)
-clusterCols <- rainbow(length(unique(mycl)))
-myClusterSideBar <- clusterCols[mycl]
+#hcluster<-hclustfunc(distfunc(t(input)))
+#hcluster2<-hclustfunc(distfunc(input))
+#mycl <- cutree(hcluster, k=7)
+#clusterCols <- rainbow(length(unique(mycl)))
+#myClusterSideBar <- clusterCols[mycl]
 
 ##################
 
 hMap<-heatmap3(t(input),
                col = bluered(4001),
                main = "Model3",
-               Colv = dend2,
-               Rowv = dend1,
+               #Colv = dend2,
+               #Rowv = dend1,
                breaks = col_breaks,
                ColSideColors = myCols,
                #RowSideColors= myClusterSideBar,
+               keep.dendro = F,
+               
                scale = "none")
 
+??pheatmap
 ##############################################
+#a<-as.hclust(hMap$rowDendrogram)
+
 
 white_score<-apply(model,1,function(x){sum(abs(x))})
 df$white_score<-white_score
@@ -92,3 +97,9 @@ df$white_score<-white_score
 
 #dev.off()
 #graphics.off()
+
+
+
+heatmap.2(t(input),col = bluered,breaks = col_breaks
+          )
+
