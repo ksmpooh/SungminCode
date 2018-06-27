@@ -1,6 +1,10 @@
 #SVM Using split function
 # 1/2 train, 1/2 test
+
+library(e1071)
+library(caret)
 #################################################### VarianceTest ####################################################
+
 GetVar<-function(genes){
   VAR<-apply(genes,2,sd)
   return(VAR)
@@ -60,57 +64,127 @@ TopMean <- function(genes, feature){
 #####################
 
 ##data
-CV_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_CV_4000.csv",header = T, sep = ",")
-Mean_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_Mean_4000.csv",header = T, sep = ",")
-Var_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_VAR_4000.csv",header = T, sep = ",")
+#CV_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_CV_4000.csv",header = T, sep = ",")
+#Mean_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_Mean_4000.csv",header = T, sep = ",")
+#Var_test <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_VAR_4000.csv",header = T, sep = ",")
 Annotated_308_test<-read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_foundation_308.csv.csv",header = T,sep = ",")
 Annotated_2267_test<-read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_foundation_2267.csv",header = T, sep = ',')
 
-CV_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_CV_4000.csv",header = T, sep = ",")
-Mean_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_Mean_4000.csv",header = T, sep = ",")
-Var_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_VAR_4000.csv",header = T, sep = ",")
+#CV_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_CV_4000.csv",header = T, sep = ",")
+#Mean_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_Mean_4000.csv",header = T, sep = ",")
+#Var_train <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_VAR_4000.csv",header = T, sep = ",")
 Annotated_308_train<-read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_foundation_308.csv.csv",header = T,sep = ",")
 Annotated_2267_train<-read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_train_foundation_2267.csv",header = T, sep = ',')
 ##local
 #CV <- read.csv("/home/tjahn/Data/TCGA_with_GEO/train/TCGA_with_GEO_input_ensemble_test_CV_4000.csv",header = T, sep = ",")
 #Mean <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_Mean_4000.csv",header = T, sep = ",")
 #Var <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_VAR_4000.csv",header = T, sep = ",")
-Annotated_308_train<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/TCGA_with_GEO_input_ensemble_train_foundation_308.csv",header = T,sep = ",")
+#Annotated_308_train<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/TCGA_with_GEO_input_ensemble_train_foundation_308.csv",header = T,sep = ",")
 #Annotated_2267<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_2267.csv",header = T, sep = ',')
-Annotated_308_test<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/TCGA_with_GEO_input_ensemble_test_foundation_308.csv",header = T,sep = ",")
+#Annotated_308_test<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/TCGA_with_GEO_input_ensemble_test_foundation_308.csv",header = T,sep = ",")
 
 
-lists <- c(500,1000,1500,2000,2500,3000,3500,4000)
+result<-data.frame()
+#train_result<-data.frame()
+#test_result<-data.frame()
+Method <- "SVM"
+
+test_result <- data.frame()
+number_of_gene <- c(500,1000,1500,2000,2500,3000,3500,4000)
+lists<-c("CV","Mean","VAR")
 for(list in lists){
-  
-}
-colnames(Annotated_308)
-Annotated_308$index
+  for(gene in number_of_gene){
 
-result <- data.frame()
-data <- Annotated_308
-data$result <-as.factor(data$result)
-
-
-for(i in 0:4){
-  result <- data.frame()
-  data <- read.csv(paste0("/home/tjahn/Data/input_ensemble/selected_model_",i,"_data.csv"), sep = ",", header = T)
-  data$result <-as.factor(data$result)
-  for(j in 1:5){
-    test <-data[data$index == j,]
-    train <-data[data$index != j, ]
-    test <- subset(test, select = -c(index,patient,cancer_code))  
-    train <- subset(train, select = -c(index,patient,cancer_code))
-    #kernel 4types ????
-    svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
-    pred <- predict(svm_model,test)
-    result_table<- table(pred,test$result)
-    auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
-    #confusionMatrix(train$result,predict(svm_model))
-    #svm_tune<-tune.svm(result~.,data = train,kernel = 'sigmoid',gamma = c(0.1,0.5,1,1.5,2,3,5),coef0 = c(0.1,0.5,1,2,3,5),cost = c(0.001,0.01,0.1,0.5,1,2,5,10))
+    train<- read.csv(paste0("/home/tjahn/Data/TCGA_with_GEO/",train,"/TCGA_with_GEO_input_ensemble_",train,"_",list,"_",gene,".csv"),header = T, sep = ",")
+    test <- read.csv(paste0("/home/tjahn/Data/TCGA_with_GEO/",test,"/TCGA_with_GEO_input_ensemble_",test,"_",list,"_",gene,".csv"),header = T, sep = ",")
+    train$result <- as.factor(train$result)
+    test$result <- as.factor(test$result)
     
-    result[j,1] = auc
-    result[j,2] = j
+    svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
+    
+    pred_train <- predict(svm_model,train)
+    pred_test <- predict(svm_model,test)
+    
+    result_table1 <- table(pred_train,train)
+    
+    Train_Sensitivity <- sensitivity(pred_train)
+    Train_Specificity <- specificity(pred_train)
+    Train_Accuracy <- sum(result_table1[1,1],result_table1[2,2])/sum(result_table1)
+    
+    Gene_selection <- list
+    Gene_num <- gene
+    
+    result_table2 <- table(pred_train,test)
+    
+    Test_Sensitivity <- sensitivity(pred_test)
+    Test_Specificity <- specificity(pred_test)
+    Test_Accuracy <- sum(result_table2[1,1],result_table2[2,2])/sum(result_table2)
+    
+    df <- data.frame(Gene_selection,Gene_num,Method,Train_Accuracy,Train_Sensitivity,Train_Specificity,
+                     Test_Accuracy,Test_Sensitivity,Test_Specificity)
+    result <-rbind(result,df)
+    
   }
-  write.csv(result,paste0("/home/tjahn/tf_save_data/sungmin/result/SVM/radial_result_",i,".csv"))
 }
+
+train <- Annotated_308_train
+test <- Annotated_308_test
+
+train$result <- as.factor(train$result)
+test$result <- as.factor(test$result)
+
+svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
+
+pred_train <- predict(svm_model,train)
+pred_test <- predict(svm_model,test)
+
+result_table1 <- table(pred_train,train)
+
+Train_Sensitivity <- sensitivity(pred_train)
+Train_Specificity <- specificity(pred_train)
+Train_Accuracy <- sum(result_table1[1,1],result_table1[2,2])/sum(result_table1)
+
+Gene_selection <- "Foundation_308"
+Gene_num <- "308"
+
+result_table2 <- table(pred_train,test)
+
+Test_Sensitivity <- sensitivity(pred_test)
+Test_Specificity <- specificity(pred_test)
+Test_Accuracy <- sum(result_table2[1,1],result_table2[2,2])/sum(result_table2)
+
+df <- data.frame(Gene_selection,Gene_num,Method,Train_Accuracy,Train_Sensitivity,Train_Specificity,
+                 Test_Accuracy,Test_Sensitivity,Test_Specificity)
+result <-rbind(result,df)
+
+train <- Annotated_2267_train
+test <- Annotated_2267_test
+
+train$result <- as.factor(train$result)
+test$result <- as.factor(test$result)
+
+svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
+
+pred_train <- predict(svm_model,train)
+pred_test <- predict(svm_model,test)
+
+result_table1 <- table(pred_train,train)
+
+Train_Sensitivity <- sensitivity(pred_train)
+Train_Specificity <- specificity(pred_train)
+Train_Accuracy <- sum(result_table1[1,1],result_table1[2,2])/sum(result_table1)
+
+Gene_selection <- "Foundation_2267"
+Gene_num <- "2267"
+
+result_table2 <- table(pred_train,test)
+
+Test_Sensitivity <- sensitivity(pred_test)
+Test_Specificity <- specificity(pred_test)
+Test_Accuracy <- sum(result_table2[1,1],result_table2[2,2])/sum(result_table2)
+
+df <- data.frame(Gene_selection,Gene_num,Method,Train_Accuracy,Train_Sensitivity,Train_Specificity,
+                 Test_Accuracy,Test_Sensitivity,Test_Specificity)
+result <-rbind(result,df)
+
+write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_06_28/result.csv",row.names = F)
