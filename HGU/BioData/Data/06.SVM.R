@@ -17,11 +17,11 @@ for(i in 0:4){
     svm_model <- svm(result~.,data = train, kernel = "radial", cost = 1,coef.0 = 0.1 ,epsilon = 0.1)
     pred <- predict(svm_model,test)
     result_table<- table(pred,test$result)
-    auc <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
+    accuracy <- sum(result_table[1,1],result_table[2,2])/sum(result_table)
     #confusionMatrix(train$result,predict(svm_model))
     #svm_tune<-tune.svm(result~.,data = train,kernel = 'sigmoid',gamma = c(0.1,0.5,1,1.5,2,3,5),coef0 = c(0.1,0.5,1,2,3,5),cost = c(0.001,0.01,0.1,0.5,1,2,5,10))
     
-    result[j,1] = auc
+    result[j,1] = accuracy
     result[j,2] = j
   }
   write.csv(result,paste0("/home/tjahn/tf_save_data/sungmin/result/SVM/radial_result_",i,".csv"))
