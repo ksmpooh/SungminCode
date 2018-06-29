@@ -15,6 +15,7 @@ colnames(kyul_ts)[4:6] <- col_test
 
 result <- merge.data.frame(kyul_tr,kyul_ts)
 result <- rbind(result,svm)
+result["Foundataion","Gene_selection"]
   
 ?cbind
 
