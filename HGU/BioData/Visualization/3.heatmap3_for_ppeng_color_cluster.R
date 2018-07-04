@@ -100,28 +100,32 @@ dend2 <- hMap$Colv
 #cols_branches <- rainbow(7)
 #cols_branches_row <- rainbow(4)
 
-dend1 <- color_branches(dend1, k = 15,groupLabels = T)
-dend2 <- color_branches(dend2, k = 7,groupLabels = T)
+dend1 <- color_branches(dend1, k = 15,groupLabels = F)
+dend2 <- color_branches(dend2, k = 7,groupLabels = F)
 #get_leaves_branches_attr(dend1)
-labels_colors(dend1) <- get_leaves_branches_col(dend1)
-plot(dend1)
-labels_colors(dend1)
+#labels_colors(dend1) <- get_leaves_branches_col(dend1)
+#plot(dend1)
+#labels_colors(dend1)
 
 #library(plotrix)
-sapply(labels_colors(dend1),color.id)
+#sapply(labels_colors(dend1),color.id)
 
+
+pdf("Model3.pdf")
 hMap1<-heatmap3(t(input),
-               col = bluered(4001),
-               main = "Model3",
-               Colv = dend2,
-               Rowv = dend1,
-              
-               breaks = col_breaks,
-               ColSideColors = myCols,
-               #RowSideColors= myClusterSideBar,
-               keep.dendro = T,
-               scale = "none")
+                col = bluered(4001),
+                main = "Model3",
+                Colv = dend2,
+                Rowv = dend1,
+                cexRow = 0.1,
+                cexCol = 0.01,  
+                breaks = col_breaks,
+                ColSideColors = myCols,
+                #RowSideColors= myClusterSideBar,
+                keep.dendro = T,
+                scale = "none")
 
+dev.off()
 
 sapply(get_leaves_branches_col(dend1),color.id)
 get_leaves_branches_col(dend1)
@@ -130,22 +134,38 @@ table(get_leaves_branches_col(dend1))
 labels_colors(dend1) <- get_leaves_branches_col(dend1)
 
 
-
+??heatmap3
 plot(dend1)
-a<-labels_colors(dend1)
+row_gene<-labels_colors(dend1)
 table(labels_colors(dend1))
+row_gene <- row_gene[which(row_gene == "#C33DBA")]
+row_gene
+#row_gene <- sapply(labels_colors(dend1),color.id)
+#sapply("#C33DBA",color.id)
 
-a <- sapply(labels_colors(dend1),color.id)
-sapply("#C33DBA",color.id)
-
-a[which(a == "#C33DBA")]
 
 
 get_leaves_branches_col(dend2)
 table(get_leaves_branches_col(dend2)) 
 labels_colors(dend2) <- get_leaves_branches_col(dend2)
-a<-labels_colors(dend2)
+col_gene<-labels_colors(dend2)
 
-col2 <- a[which(a == "#5D8400")]
-col3 <- a[which(a == "#A86B00")]
+col2 <- col_gene[which(col_gene == "#5D8400")]
+col3 <- col_gene[which(col_gene == "#A86B00")]
 col2 <-as.data.frame(col2)
+col3 <-as.data.frame(col3)
+
+df$cancer_code
+col2<-df[row.names(col2),c("GSM_ID","cancer_code")]
+col3<-df[row.names(col3),c("GSM_ID","cancer_code")]
+
+col2
+col3
+
+col <- rbind(col2,col3)
+col
+
+write.csv(col,"d:/biodatalab/2018-1/Result/rusult_of_white_area_for_model3_in_heatmap3.csv")
+
+df[df$GSM_ID=="GSM493919","cancer_code"]
+

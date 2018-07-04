@@ -26,3 +26,5 @@ for(i in 0:4){
   }
   write.csv(result,paste0("/home/tjahn/tf_save_data/sungmin/result/SVM/radial_result_",i,".csv"))
 }
+
+
