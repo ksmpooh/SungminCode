@@ -8,107 +8,85 @@
 # 5. annotation 2267
 
 library(VennDiagram)
-#################################################### VarianceTest ####################################################
-GetVar<-function(genes){
-  VAR<-apply(genes,2,sd)
-  return(VAR)
-}
-
-TopVar <- function(genes, feature){
-  VAR <- GetVar(genes)
-  gene_ch <- rbind(genes, VAR)
-  gene_ch_VAR <- gene_ch[,rev(order(gene_ch[nrow(gene_ch),]))]
-  gene_sub <-gene_ch_VAR[-nrow(gene_ch_VAR), 1:feature]
-  return(gene_sub)
-}
-
-#################################################### DiffTest ####################################################
-GetDiff <- function(genes, result){
-  negative <- apply(genes[result==0,],2,mean)
-  positive <- apply(genes[result==1,],2,mean)
-  Diff <- abs(positive - negative)
-  return(Diff)
-}
-
-TopDiff <- function(genes, result, feature){
-  Diff <- GetDiff(genes, result)
-  gene_ch <- rbind(genes, Diff)
-  gene_ch_Diff <- gene_ch[,rev(order(gene_ch[nrow(gene_ch),]))]
-  gene_sub <-gene_ch_Diff[-nrow(gene_ch_Diff), 1:feature]
-  return(gene_sub)
-}
-
-#################################################### Coefficient of Variance ##########################################
-GetCV <- function(genes){
-  CV<-apply(genes, 2, sd)/apply(genes, 2, mean)
-  return(CV)
-}
-
-TopCV <- function(genes, feature){
-  CV <- GetCV(genes)
-  gene_ch <- rbind(genes, CV)
-  gene_ch_CV <- gene_ch[,rev(order(gene_ch[nrow(gene_ch),]))]
-  gene_sub <-gene_ch_CV[-nrow(gene_ch_CV), 1:feature]
-  return(gene_sub)
-}
-
-#################################################### VarianceTest ####################################################
-GetMean<-function(genes){
-  MEAN<-apply(genes,2,mean)
-  return(MEAN)
-}
-
-TopMean <- function(genes, feature){
-  MEAN <- GetMean(genes)
-  gene_ch <- rbind(genes, MEAN)
-  gene_ch_MEAN <- gene_ch[,rev(order(gene_ch[nrow(gene_ch),]))]
-  gene_sub <-gene_ch_MEAN[-nrow(gene_ch_MEAN), 1:feature]
-  return(gene_sub)
-}
 
 
-CV <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_CV_4000.csv",header = T, sep = ",")
-Mean <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_Mean_4000.csv",header = T, sep = ",")
-Var <- read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_VAR_4000.csv",header = T, sep = ",")
-Annotated_308<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_308.csv",header = T,sep = ",")
-Annotated_2267<-read.csv("D:/biodatalab/2018-1/GEO_ensemble_input_final/GEO_input_ensemble_foundation_2267.csv",header = T, sep = ',')
+CV <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_CV_3000.csv",header = T, sep = ",")
+Mean <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_Mean_3000.csv",header = T, sep = ",")
+Var <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_VAR_3000.csv",header = T, sep = ",")
+Annotated_308<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_foundation_308.csv",header = T,sep = ",")
+Annotated_2267<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_foundation_2267.csv",header = T, sep = ',')
 
-CV_union <- subset(CV,select = -c(index,result,cancer_code,patient))
-Mean_union <- subset(Mean,select = -c(index,result,cancer_code,patient))
-Var_union <- subset(Var,select = -c(index,result,cancer_code,patient))
-Annotated_308union <- subset(Annotated_308,select = -c(index,result,cancer_code,patient))
-Annotated_308colnames<-colnames(Annotated_308union)
-Annotated_2267union <- subset(Annotated_2267,select = -c(index,result,cancer_code,patient))
-Annotated_2267colnames<-colnames(Annotated_2267union)
+#CV_union <- subset(CV,select = -c(index,result,cancer_code,patient))
+#Mean_union <- subset(Mean,select = -c(index,result,cancer_code,patient))
+#Var_union <- subset(Var,select = -c(index,result,cancer_code,patient))
+#Annotated_308union <- subset(Annotated_308,select = -c(index,result,cancer_code,patient))
+#Annotated_308colnames<-colnames(Annotated_308union)
+#Annotated_2267union <- subset(Annotated_2267,select = -c(index,result,cancer_code,patient))
+#Annotated_2267colnames<-colnames(Annotated_2267union)
 
 #lists <- c(500,1000,1500,2000,2500,3000,3500,4000)
-result <-data.frame()
+#colnames(CV) <- "CV"
+#colnames(Mean) <- "Mean"
+#colnames(Var) <- "Var"
+#colnames(Annotated_308) <- "Foundation_308"
+#colnames(Annotated_2267) <- "Foundation_2267"
 
-#for (feature in lists){
-feature <- 3000
-var_ <- TopVar(Var_union,feature)
-Mean_ <- TopMean(Mean_union,feature)
-CV_ <- TopCV(CV_union,feature)
-Mean_colnames <- colnames(Mean_)
-var_colnames <- colnames(var_)
-CV_colnames <- colnames(CV_)
-feature_sum <- sum(feature * 3, 308, 2267)
-#df_merge<-merge(Mean_colnames,var_colnames,CV_colnames,Annotated_2267colnames,Annotated_308colnames)
-Mean_colnames <- as.data.frame(Mean_colnames)
-var_colnames <- as.data.frame(var_colnames)
-CV_colnames <- as.data.frame(CV_colnames)
-  
-df <- merge(Mean_colnames,var_colnames)
-  
-df <- union(Mean_colnames,var_colnames)
-df <- union(df,CV_colnames)
-df <- union(df,Annotated_308colnames)
-df <- union(df,Annotated_2267colnames)
-Union <- length(df)
-df <- data.frame(feature,feature_sum,Union,stringsAsFactors = F)
-result <- rbind(result,df)
-print(feature)
-print(Union)
+result <-union(CV$x,Mean$x)
+result <-union(result,Var$x)
+result <-union(result,Annotated_2267)
+result <-union(result,Annotated_308)
+
+all_gene <- Reduce(rbind,result)
+all_gene <- as.data.frame(all_gene)
+
+all_gene <- t(all_gene)
+all_gene <-as.data.frame(all_gene)
+colnames(all_gene)<-result
+
+all_gene$index <- "all"
 
 
-write.csv(result,"D:/biodatalab/2018-1/Result/Union.csv",row.names = F)
+CV_ <-t(CV)
+CV_ <-as.data.frame(CV_)
+colnames(CV_)<- CV$x
+CV_$index <- "CV"
+
+Mean_ <-t(Mean)
+Mean_ <-as.data.frame(Mean_)
+colnames(Mean_) <- Mean$x
+Mean_$index <-"Mean"
+
+Annotated_2267_ <-t(Annotated_2267)
+Annotated_2267_ <-as.data.frame(Annotated_2267_)
+colnames(Annotated_2267_) <- Annotated_2267$x
+Annotated_2267_$index <-"Foundation_2267"
+
+Annotated_308_ <-t(Annotated_308)
+Annotated_308_ <-as.data.frame(Annotated_308_)
+colnames(Annotated_308_) <- Annotated_308$x
+Annotated_308_$index <-"Foundation_308"
+
+Var_ <-t(Var)
+Var_ <-as.data.frame(Var_)
+colnames(Var_) <- Var$x
+Var_$index <-"Var"
+
+df <-data.frame()
+
+df <- bind_rows(all_gene,CV_)
+df <- bind_rows(df,Mean_)
+df <- bind_rows(df,Var_)
+df <- bind_rows(df,Annotated_308_)
+df <- bind_rows(df,Annotated_2267_)
+
+
+#u<-data.frame()
+#rownames(u)<-result
+
+
+venn.diagram(x=list(CV,Mean,Var,Annotated_2267,Annotated_308),
+             category.names = c("CV","Mean","Var","Foundation_2267","Annotated_308")
+             ,filename = "Union of Gene.png"
+             )
+
+#write.csv(result,"D:/biodatalab/2018-1/Result/Union.csv",row.names = F)
