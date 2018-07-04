@@ -20,6 +20,7 @@
 
 ### 8_1.SVM_for_20_data_sets.R 2018.7.5
   gene_number = 3000
+  
   gene_selection{
    1. CV
    2. Mean
