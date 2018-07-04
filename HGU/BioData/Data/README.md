@@ -13,10 +13,10 @@
   Use 4000 feature data, and use function to split data set. 
   
 ### 7_1.Union with venn Diagram 2018.7.4
-	Using 3000 genes(CV, Mean, Var) with two annotation gene.
+ Using 3000 genes(CV, Mean, Var) with two annotation gene.
 
 
 # 8. SVM Using split function   2018.6.24
 # 9. Merge data 2018.06.29
-	SVM ledge lasso EN
-	(Have to do : Foundation --> foundataion)
+ SVM ledge lasso EN
+ (Have to do : Foundation --> foundataion)
