@@ -17,6 +17,17 @@
 
 
 # 8. SVM Using split function   2018.6.24
+
+### 8_1.SVM_for_20_data_sets.R 2018.7.5
+  gene_number = 3000
+  gene_selection = 
+   1. CV
+   2. Mean
+   3. Var
+   4. annotation 308
+   5. annotation 2267
+  Using 20 index files(train, test) by sang ik  
+  
 # 9. Merge data 2018.06.29
  SVM ledge lasso EN
  (Have to do : Foundation --> foundataion)
