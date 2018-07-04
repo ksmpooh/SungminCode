@@ -79,7 +79,8 @@ Annotated_308colnames<-colnames(Annotated_308union)
 Annotated_2267union <- subset(Annotated_2267,select = -c(index,result,cancer_code,patient))
 Annotated_2267colnames<-colnames(Annotated_2267union)
 
-lists <- c(500,1000,1500,2000,2500,3000,3500,4000)
+#lists <- c(500,1000,1500,2000,2500,3000,3500,4000)
+lists <-c(3000)
 result <-data.frame()
 for (feature in lists){
   var_ <- TopVar(Var_union,feature)

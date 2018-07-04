@@ -7,8 +7,9 @@
 # 4. annotation 308
 # 5. annotation 2267
 
-library(VennDiagram)
-
+#library(VennDiagram)
+library(limma)
+library(gplots)
 
 CV <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_CV_3000.csv",header = T, sep = ",")
 Mean <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_Mean_3000.csv",header = T, sep = ",")
@@ -33,8 +34,8 @@ Annotated_2267<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_inp
 
 result <-union(CV$x,Mean$x)
 result <-union(result,Var$x)
-result <-union(result,Annotated_2267)
-result <-union(result,Annotated_308)
+result <-union(result,Annotated_2267$x)
+result <-union(result,Annotated_308$x)
 
 all_gene <- Reduce(rbind,result)
 all_gene <- as.data.frame(all_gene)
@@ -79,14 +80,19 @@ df <- bind_rows(df,Var_)
 df <- bind_rows(df,Annotated_308_)
 df <- bind_rows(df,Annotated_2267_)
 
+rownames(df)<-df$index
+df<-subset(df,select = -index)
 
-#u<-data.frame()
-#rownames(u)<-result
+df_ <- t(df)
+df_ <-as.data.frame(df_)
+#colnames(df_)
+#rownames(df_)
+df_ <-subset(df_,select = -all)
 
+id <- (df_!="")
+id[is.na(id)]<-FALSE 
+id.df<-as.data.frame(id)
 
-venn.diagram(x=list(CV,Mean,Var,Annotated_2267,Annotated_308),
-             category.names = c("CV","Mean","Var","Foundation_2267","Annotated_308")
-             ,filename = "Union of Gene.png"
-             )
+vennCounts(id.df)
+venn(id.df)
 
-#write.csv(result,"D:/biodatalab/2018-1/Result/Union.csv",row.names = F)
