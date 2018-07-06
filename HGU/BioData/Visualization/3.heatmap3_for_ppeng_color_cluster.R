@@ -3,7 +3,7 @@ library(RColorBrewer)
 library(gplots)
 library(dplyr)
 library(dendextend)
-library(plotrix)
+#library(plotrix)
 
 ## Start From Here ##
 fresult <-function(result){
@@ -83,14 +83,13 @@ input<-input[-which(apply(input,1,function(x){sd(x)==0})),]
 
 hMap<-heatmap3(t(input),
                col = bluered(4001),
-               main = "Model3",
+               main = "Foundation_308",
                #Colv = dend2,
                #Rowv = dend1,
                breaks = col_breaks,
                ColSideColors = myCols,
                #RowSideColors= myClusterSideBar,
                keep.dendro = T,
-               
                
                scale = "none")
 
@@ -114,7 +113,7 @@ dend2 <- color_branches(dend2, k = 7,groupLabels = F)
 pdf("Model3.pdf")
 hMap1<-heatmap3(t(input),
                 col = bluered(4001),
-                main = "Model3",
+                main = "Foundation_308",
                 Colv = dend2,
                 Rowv = dend1,
                 cexRow = 0.1,
@@ -124,6 +123,9 @@ hMap1<-heatmap3(t(input),
                 #RowSideColors= myClusterSideBar,
                 keep.dendro = T,
                 scale = "none")
+
+legend(title = "Result","topright",legend = c("Cancer","Normal"),fill = c("red","green")
+       ,border = FALSE,bty = "n", y.intersp =1.5,cex = 1.5)
 
 dev.off()
 
