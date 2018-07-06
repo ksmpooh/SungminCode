@@ -16,18 +16,17 @@ result<-data.frame()
 Model <- "SVM"
 Gene_selection <- "foundation_308"
 
-train_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/train/"
-test_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/test/"
+train_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/Train/"
+test_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/Test/"
 mother <- read.csv("/home/tjahn/Data/TCGA_with_GEO/Mother/for_Model_Generation/TCGA_with_GEO_input_ensemble_foundation_308.csv",header = T,sep = ',')
-
+rownames(mother) <- mother$patient
 for(i in 1:20){
   train_index <- read.csv(paste0(train_dir,"Train_",i,".csv"),header = T,sep = ',')
   test_index <- read.csv(paste0(test_dir,"Test_",i,".csv"),header = T,sep = ',')
-  colnames(train_index) <- c("a","b")
-  colnames(test_index) <- c("a","b")
   
-  train <- mother[train_index$b,]
-  test <- mother[test_index$b,]
+  
+  train <- mother[train_index$x,]
+  test <- mother[test_index$x,]
   
   train$result <- as.factor(train$result)
   test$result <- as.factor(test$result)
