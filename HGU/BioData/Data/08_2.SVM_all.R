@@ -20,7 +20,7 @@ Model <- "SVM"
 train_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/Train/"
 test_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/Test/"
 
-lists <- c("SVM_3000","VAR_3000","Mean_3000","foundation_308","foundation_2267")
+lists <- c("CV_3000","VAR_3000","Mean_3000","foundation_308","foundation_2267")
 for(list in lists){
   mother <-read.csv(paste0("/home/tjahn/Data/TCGA_with_GEO/Mother/for_Model_Generation/TCGA_with_GEO_input_ensemble_",list,".csv"),sep = ',',header = T)
   rownames(mother)<-mother$patient
