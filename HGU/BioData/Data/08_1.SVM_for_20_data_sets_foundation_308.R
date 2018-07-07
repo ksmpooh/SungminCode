@@ -59,4 +59,4 @@ for(i in 1:20){
 }
 
 
-write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_05/foundation_308_result_20_data_set.csv",row.names = F)
+write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_07/foundation_308_result_20_data_set.csv",row.names = F)
