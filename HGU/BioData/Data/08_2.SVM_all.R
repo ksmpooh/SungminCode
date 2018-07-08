@@ -31,8 +31,10 @@ for(list in lists){
     test_index <- read.csv(paste0(test_dir,"Test_",i,".csv"),header = T,sep = ',')
     
     
-    train <- mother[train_index$x,]
-    test <- mother[test_index$x,]
+    #train <- mother[train_index$x,]
+    #test <- mother[test_index$x,]
+    train <- mother[as.character(train_index$x),]
+    test <- mother[as.character(test_index$x),]
     
     train$result <- as.factor(train$result)
     test$result <- as.factor(test$result)
@@ -67,4 +69,4 @@ for(list in lists){
 }
 
 
-write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/all_result.csv",row.names = F)
+write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/all_result(2).csv",row.names = F)
