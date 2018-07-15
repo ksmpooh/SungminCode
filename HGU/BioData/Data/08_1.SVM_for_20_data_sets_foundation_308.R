@@ -21,8 +21,8 @@ test_dir <- "/home/tjahn/Data/TCGA_with_GEO/index/Test/"
 mother <- read.csv("/home/tjahn/Data/TCGA_with_GEO/Mother/for_Model_Generation/TCGA_with_GEO_input_ensemble_foundation_308.csv",header = T,sep = ',')
 rownames(mother) <- mother$patient
 for(i in 1:20){
-  train_index <- read.csv(paste0(train_dir,"Train_",i,".csv"),header = T,sep = ',')
-  test_index <- read.csv(paste0(test_dir,"Test_",i,".csv"),header = T,sep = ',')
+  train_index <- read.csv(paste0(train_dir,"train_",i,".csv"),header = T,sep = ',')
+  test_index <- read.csv(paste0(test_dir,"test_",i,".csv"),header = T,sep = ',')
   
   
   #train <- mother[train_index$x,]
@@ -60,4 +60,4 @@ for(i in 1:20){
 }
 
 
-write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_09/foundation_308_result_20_data_set.csv",row.names = F)
+write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_15/foundation_308_result_20_data_set.csv",row.names = F)
