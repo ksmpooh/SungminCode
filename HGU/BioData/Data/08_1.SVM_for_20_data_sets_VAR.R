@@ -61,4 +61,4 @@ for(i in 1:20){
 }
 
 
-write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_15/VAR_result_20_data_set.csv",row.names = F)
+write.csv(result,"/home/tjahn/tf_save_data/sungmin/result/SVM/SVM_2018_07_16/VAR_result_20_data_set.csv",row.names = F)
