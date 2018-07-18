@@ -110,10 +110,10 @@ dend2 <- color_branches(dend2, k = 7,groupLabels = F)
 #sapply(labels_colors(dend1),color.id)
 
 
-pdf("Model3.pdf")
+pdf("heatmap3_model3.pdf")
 hMap1<-heatmap3(t(input),
                 col = bluered(4001),
-                main = "Foundation_308",
+                #main = "Foundation_308",
                 Colv = dend2,
                 Rowv = dend1,
                 cexRow = 0.1,
