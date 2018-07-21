@@ -10,12 +10,22 @@
 #library(VennDiagram)
 library(limma)
 library(gplots)
+library(dplyr)
 
+##옛날 data
 CV <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_CV_3000.csv",header = T, sep = ",")
 Mean <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_Mean_3000.csv",header = T, sep = ",")
 Var <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_VAR_3000.csv",header = T, sep = ",")
 Annotated_308<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_foundation_308.csv",header = T,sep = ",")
 Annotated_2267<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_input_ensemble_foundation_2267.csv",header = T, sep = ',')
+
+
+##최근 data  %%확인 필요!
+CV <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/CV_3000.csv")
+Mean <-  read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/Mean_3000.csv")
+Var <-  read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/VAR_3000.csv")
+Annotated_2267<- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/foundation_2267.csv")
+Annotated_308 <- read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/foundation_308.csv")
 
 #CV_union <- subset(CV,select = -c(index,result,cancer_code,patient))
 #Mean_union <- subset(Mean,select = -c(index,result,cancer_code,patient))
@@ -29,8 +39,8 @@ Annotated_2267<-read.csv("D:/biodatalab/2018-1/TCGA_with_GEO/union/names_GEO_inp
 #colnames(CV) <- "CV"
 #colnames(Mean) <- "Mean"
 #colnames(Var) <- "Var"
-#colnames(Annotated_308) <- "Foundation_308"
-#colnames(Annotated_2267) <- "Foundation_2267"
+#colnames(Annotated_308) <- "Annotated_308"
+#colnames(Annotated_2267) <- "Annotated_2267"
 
 result <-union(CV$x,Mean$x)
 result <-union(result,Var$x)
@@ -60,12 +70,12 @@ Mean_$index <-"Mean"
 Annotated_2267_ <-t(Annotated_2267)
 Annotated_2267_ <-as.data.frame(Annotated_2267_)
 colnames(Annotated_2267_) <- Annotated_2267$x
-Annotated_2267_$index <-"Foundation_2267"
+Annotated_2267_$index <-"Annotated_2267"
 
 Annotated_308_ <-t(Annotated_308)
 Annotated_308_ <-as.data.frame(Annotated_308_)
 colnames(Annotated_308_) <- Annotated_308$x
-Annotated_308_$index <-"Foundation_308"
+Annotated_308_$index <-"Annotated_308"
 
 Var_ <-t(Var)
 Var_ <-as.data.frame(Var_)

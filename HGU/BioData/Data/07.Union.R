@@ -94,6 +94,7 @@ for (feature in lists){
   df <- union(df,CV_colnames)
   df <- union(df,Annotated_308colnames)
   df <- union(df,Annotated_2267colnames)
+  df_n<-df
   Union <- length(df)
   df <- data.frame(feature,feature_sum,Union,stringsAsFactors = F)
   result <- rbind(result,df)
