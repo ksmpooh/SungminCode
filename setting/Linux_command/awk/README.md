@@ -8,6 +8,6 @@ To search, control and print from file, text and data in Linux
 https://recipes4dev.tistory.com/171
 
 
-###Basic 
+### Basic 
 
 ![awk_picture](awk_picture.png)
