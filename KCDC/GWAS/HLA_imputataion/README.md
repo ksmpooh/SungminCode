@@ -12,3 +12,5 @@ Human Leukocyte Antigen
  - ABO 다음으로 중요한 antigen
 
 
+## HLA imputation tool comparison
+![HLA_imputation_tool](HLA_imputation_tool.png)
