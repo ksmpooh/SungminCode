@@ -1,5 +1,7 @@
 This is a memo about HLA imputation
+
 #HLA imputation
+
 Human Leukocyte Antigen
 
 ## Why is it important to research HLA?
