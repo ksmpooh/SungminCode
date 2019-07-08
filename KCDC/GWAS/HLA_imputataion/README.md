@@ -1,6 +1,6 @@
 This is a memo about HLA imputation
 
-#HLA imputation
+# HLA imputation
 
 Human Leukocyte Antigen
 
