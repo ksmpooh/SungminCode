@@ -5,7 +5,8 @@ Created on 2019. 5. 31.
 '''
 
 import os, glob, gzip
-from fileInOut import fileInOut
+
+from fileInOut import fileInOut  #from fileInOut, load fileInOut class 
 fileIO = fileInOut()
 
 class assoClass(object):

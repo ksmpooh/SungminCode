@@ -2,6 +2,11 @@
 Created on 2013. 10. 18.
 
 @author: aldud20011
+
+
+
+Code study..smkim on 2019.07.10
+make shell script using python
 '''
 
 import os, gzip
