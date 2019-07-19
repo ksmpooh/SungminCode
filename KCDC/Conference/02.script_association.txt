@@ -1,0 +1,313 @@
+﻿sh /BiO/data/rsyncSH.sh
+
+cd ~/02_ASSO/
+mkdir OUTPUT
+
+
+###############################################
+### 1. Association - Single variant test
+###############################################
+### 1-1. Moving to the analysis path
+cd ~/02_ASSO/ASSO/
+
+
+### 1-2. Checking INPUT FILEs
+### - KOGO.vcf, KOGO.vcf.gz / imputation data generated in the previous step (16:54000023-)
+### - KOGO.Phenotype.ped / subject phenotype (ex. age, sex)
+
+less -NS KOGO.vcf.gz
+less -NS KOGO.Phenotype.ped
+
+
+### 1-3. IF INPUT FILE = KOGO.vcf
+### Compressing
+### - bgzip -c KOGO.vcf > ../OUTPUT/KOGO.vcf.gz
+### Indexing
+### - tabix -f -p vcf ../OUTPUT/KOGO.vcf.gz
+### There is no 'KOGO.vcf' file to reduce the current transfer time. Can be used by decompressing a 'KOGO.vcf.gz' file.
+### gunzip KOGO.vcf.gz
+
+
+### 1-4. IF INPUT FILE = KOGO.vcf.gz
+### Indexing
+### - tabix -f -p vcf ../OUTPUT/KOGO.vcf.gz
+
+ls -althr KOGO.vcf.*
+### data size
+### - KOGO.vcf (18G) -> KOGO.vcf.gz (2.2G), KOGO.vcf.tbi (1.7K)
+
+
+### 1-5. Running the Single Variant Test 
+epacts single \
+--vcf KOGO.anno.vcf.gz \
+--ped KOGO.Phenotype.ped --pheno HDL --cov AGE --cov SEX -no-plot \
+--test q.linear --run 4 --field DS --min-mac 5 --min-maf 0.001 --min-callrate 0.95 --missing NA \
+--out ../OUTPUT/KOGO.HDL.single.q.linear --region 16:54770000-55780000
+
+
+### 1-6. Checking OUTPUT FILE(s)
+ls -alhtr ../OUTPUT/
+less -NS ../OUTPUT/KOGO.HDL.single.q.linear.epacts.gz
+
+
+
+
+
+########################################################
+### 2. Association - Gene-based test 
+########################################################
+### 2-1. Checking INFUT FILEs
+### - KOGO.Phenotype.ped / subject phenotype (ex. age, sex)
+### - KOGO.anno.vcf / annotated file of "KOGO.vcf.gz” file 
+###   * Annotation build : gencode v14 (hg19, GRCh37)
+
+
+### 2-2. Annotating
+#epacts anno -buildver hg19 \
+#-in KOGO.vcf.gz \
+#-out ../OUTPUT/KOGO.anno.vcf
+#bgzip -c KOGO.anno.vcf > ../OUTPUT/KOGO.anno.vcf.gz 
+
+less -NS KOGO.anno.vcf.gz
+less -NS KOGO.vcf.gz
+
+
+### 2-3. Making group meaning gene 
+epacts make-group \
+--vcf KOGO.anno.vcf.gz \
+--out ../OUTPUT/KOGO.gene.all.grp --format epacts --nonsyn
+
+
+### 2-4. Gene selection (to reduce analysis time)
+grep IRX6 KOGO.gene.all.grp > ../OUTPUT/KOGO.gene.grp
+
+less -NS KOGO.gene.all.grp
+less -NS KOGO.gene.grp
+
+
+### 2-5. Running the Gene-Based Test 
+epacts group --vcf KOGO.anno.vcf.gz \
+--ped KOGO.Phenotype.ped --groupf KOGO.gene.grp \
+--min-mac 5 --pheno HDL --cov AGE --cov SEX --test skat \
+--skat-o --unit 1 -min-callrate 0.90 --run 4 --field DS --missing NA \
+--out ../OUTPUT/KOGO.HDL.gene.skat  
+
+
+### 2-6. Checking OUTPUT FILE(s)
+less -NS ../OUTPUT/KOGO.HDL.gene.skat.epacts
+
+
+
+
+
+###############################################
+### 3. Meta analysis
+###############################################
+### 3-1. Moving to the analysis path
+cd ~/02_ASSO/META/
+
+
+### 3-2. Checking INPUT FILEs
+less -NS ../ASSO/KOGO.HDL.single.q.linear.epacts.gz 
+less -NS BBJ.HDL-C.autosome.txt
+
+### - BBJ.HDL.FINAL.txt / analysis results provided by Bio Bank Japan (BBJ)
+###   * URL: http://jenger.riken.jp/en/result
+###   * Search : High-density-lipoprotein cholesterol (HDL-C) (autosome)
+###   * File to download : BBJ.HDL-C.autosome.txt.gz
+###   * Command for uncompression : gzip -d BBJ.HDL-C.autosome.txt
+
+
+### 3-3. File formatting to use METAL tool
+### Input fiel 1. KOGO.HDL.single.q.linear.epacts.gz
+### 1 #CHROM  BEGIN   END     MARKER_ID       NS      AC      CALLRATE        MAF     PVALUE  BETA    SEBETA  TSTAT   R2
+### 2 16      54500021        54500021        16:54500021_G/A_16:54500021:G:A 35000   130.89  1       0.0018698       0.51816 2.5292  3.914   0.64619 1.1931e-05
+###
+### Input file 2. BBJ.HDL-C.autosome.txt
+### 1 SNP     CHR     POS     REF     ALT     Frq     Rsq     BETA    SE      P       LOG10P  N
+### 2 rs12922563      16      53001788        T       C       0.8626  0.751   0.003753        0.008767        0.6686  0.1748  70657
+###
+### => MARKER_ID	CHR	POS	REF	ALT	BETA	SE	PVALUE	N
+
+zcat ../ASSO/KOGO.HDL.single.q.linear.epacts.gz | \
+tail -n+2 | awk '{split($4,arr,":|_|/"); print $4"\t"$1"\t"$2"\t"arr[3]"\t"arr[4]"\t"$10"\t"$11"\t"$9"\t"$5 }' > KOGO.HDL.txt
+cat TITLE.txt KOGO.HDL.txt > ../OUTPUT/KOGO.HDL.FINAL.txt
+
+zcat BBJ.HDL-C.autosome.txt.gz | \
+awk '$2 == 16 {print $2":"$3"_"$4"/"$5"_"$2":"$3":"$4":"$5"\t"$2"\t"$3"\t"$4"\t"$5"\t"$8"\t"$9"\t"$10"\t"$12}' > BBJ.HDL.txt
+cat TITLE.txt BBJ.HDL.txt > ../OUTPUT/BBJ.HDL.FINAL.txt
+
+
+head TITLE.txt
+head KOGO.HDL.FINAL.txt
+head BBJ.HDL.FINAL.txt
+
+
+### 3-4. Accessing the METAL
+metal
+
+
+### 3-5. Connecting column names between METAL and INPUT FILEs
+MARKER MARKER_ID
+ALLELE REF ALT
+EFFECT BETA
+PVALUE PVALUE
+PROCESS KOGO.HDL.FINAL.txt
+PROCESS BBJ.HDL.FINAL.txt
+OUTFILE ../OUTPUT/KCHIP_BBJ_QT_HDL .txt
+
+### WARNING?
+q
+grep 16:54502816_A/G_16:54502816:A:G BBJ.HDL.FINAL.txt
+grep 16:54502816_A/G_16:54502816:A:G KOGO.HDL.FINAL.txt
+
+
+### 3-6. Running the METAL
+metal
+
+MARKER MARKER_ID
+ALLELE ALT REF
+EFFECT BETA
+PVALUE PVALUE
+PROCESS KOGO.HDL.FINAL.txt
+PROCESS BBJ.HDL.FINAL.txt
+OUTFILE ../OUTPUT/KCHIP_BBJ_QT_HDL .txt
+
+ANALYZE HETEROGENEITY
+
+
+
+### 3-7. Checking OUTPUT FILE(s)
+q
+less -NS ../OUTPUT/KCHIP_BBJ_QT_HDL1.txt
+
+
+### 3-7. Selecting only markers that match the condition
+### You can check the results of the analysis by opening it in Excel
+awk '$11 > 0.05{print}' ../OUTPUT/KCHIP_BBJ_QT_HDL1.txt | more
+awk '$7 == "--" {print }' ../OUTPUT/KCHIP_BBJ_QT_HDL1.txt |  more
+awk '$7 == "--" || $7 == "++" {print }' ../OUTPUT/KCHIP_BBJ_QT_HDL1.txt |  more
+awk '$7 == "--" || $7 == "++" {print }' ../OUTPUT/KCHIP_BBJ_QT_HDL1.txt > ../OUTPUT/metal.result
+
+
+
+
+
+
+###############################################
+### 4. Conditional analysis
+###############################################
+### 4-1. Moving to the analysis path
+cd ~/02_ASSO/CONDI/
+
+
+### 4-2. Making INPUT FILEs (extraction of markers present in 1M window of top signal)
+### - top sig. : 55521755
+plink --vcf ../ASSO/KOGO.anno.vcf.gz \
+--chr 16 --from-bp 55021755 --to-bp 56021755 --make-bed --out ../OUTPUT/KOGO.HDL.TOP
+
+ls -althr ../OUTPUT/
+
+
+### 4-3. Making the file containing calculated frequency of ALT allele
+gcta --bfile KOGO.HDL.TOP --freq --out ../OUTPUT/KOGO.HDL.TOP_freq
+head ../OUTPUT/KOGO.HDL.TOP_freq.freq
+
+
+### 4-4. File formatting to use GCTA tool
+python gctaINPUT.py KOGO.HDL.TOP_freq.freq ../ASSO/KOGO.HDL.single.q.linear.epacts.gz ../OUTPUT/GCTA.input
+less -NS ../OUTPUT/GCTA.input
+
+
+### 4-5. One marker selection among markers in ‘GCTA.input’ file
+grep 16:55521755 KOGO.HDL.TOP_freq.freq
+echo 16:55521755 > HDL.TOP
+head HDL.TOP
+
+
+### 4-6. Running the conditional analysis
+gcta --bfile KOGO.HDL.TOP --chr 16 --maf 0.01 --cojo-file GCTA.input --cojo-slct --out ../OUTPUT/KOGO.HDL.TOP.CONDI
+
+
+### 4-7. Checking OUTPUT FILE(s)
+ls -althr ../OUTPUT/
+head ../OUTPUT/KOGO.HDL.TOP.CONDI.ldr.cojo
+head ../OUTPUT/KOGO.HDL.TOP.CONDI.jma.cojo
+
+
+### 4-8. Comparing with the p value of 1st signal
+zcat ../ASSO/KOGO.HDL.single.q.linear.epacts.gz | grep 16:55521755
+
+
+
+
+
+###############################################
+### 5. GRS calculation
+###############################################
+### 5-1. Moving to the analysis path
+cd ~/02_ASSO/GRS/
+
+
+### 5-2. Checking INPUT FILEs
+head -10 GRS_TEST.bim 
+head -10 GRS_TEST.fam
+head -10 GRS_TEST.bed  
+
+#Tip. method of checking the data in the '.bim' file
+#plink --bfile GRS_TEST --recodeA --out ../OUTPUT/TEST
+#head -10 ../OUTPUT/TEST.raw
+
+
+### 5-3. Calculating the genotypic OR
+plink --bfile GRS_TEST --logistic --out ../OUTPUT/GRS_ASSO
+less -NS ../OUTPUT/GRS_ASSO.assoc.logistic
+
+
+### 5-4. Extracting only required variables & converting OR to coefficient (log substitution)
+awk '{OFS="\t";}{print $2,$4,log($7)}' ../OUTPUT/GRS_ASSO.assoc.logistic > ../OUTPUT/GRS_ASSO.input
+less -NS ../OUTPUT/GRS_ASSO.input
+
+
+### 5-5. Calculating the GRS (weighted sum of the number of risk alleles)
+plink --bfile GRS_TEST --allow-no-sex --out ../OUTPUT/GRS_OUT --score ../OUTPUT/GRS_ASSO.input 1 2 3 header sum
+
+
+### 5-6. Checking OUTPUT FILE(s)
+less -NS ../OUTPUT/GRS_ASSO.input
+less -NS ../OUTPUT/GRS_OUT.profile | more
+
+
+### 5-7. Calculating by hand using EXCEL
+plink --bfile GRS_TEST --recodeA --out TEST
+head -10 TEST.raw
+less -NS ../OUTPUT/GRS_ASSO.input
+
+
+### 5-8. Accessing the R for GRS standardization
+R
+
+getwd()
+
+setwd("~/02_ASSO/OUTPUT")
+
+getwd()
+
+dir()
+
+data <- read.table("GRS_OUT.profile", header=T)
+
+data$SCORESUM_norm <- scale(data$SCORESUM)
+aggregate(SCORESUM_norm~PHENO, data, mean)
+
+summary(glm(PHENO ~ SCORESUM_norm, data=data))
+
+
+### 5-9. Plotting the standardized GRS
+pdf("../OUTPUT/GRS.pdf", height = 10, width = 10)
+hist(data[data$PHENO == 1,]$SCORESUM_norm, breaks=10, col=rgb(0,0,1,0.2), main="", xlab="GRS score", xlim=c(-2,4))
+hist(data[data$PHENO == 2,]$SCORESUM_norm, breaks=10, col=rgb(1,0,0,0.2), add=T)
+legend(2.5,300,fil=c(rgb(0,0,1,0.2), rgb(1,0,0,0.2)), legend=c("Control","Case"))
+dev.off()
+
+q()

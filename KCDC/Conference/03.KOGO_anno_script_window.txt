@@ -1,0 +1,205 @@
+###KOGO annotation Script
+
+cd 03_ANNO/1_manhattan_miami/
+
+ls
+
+##gunzip
+gunzip -d KOGO.HDL.*
+
+#####1. Manhattan plot
+
+R
+
+library(qqman)
+epacts <- read.table("./KOGO.HDL.ALL.epacts")
+head(epacts)
+colnames(epacts) <- c("CHROM","BEGIN", "END", "MARKER_ID", "NS", "AC", "CALLRATE", "MAF", "PVALUE", "BETA", "SEBETA", "TSTAT", "R2")
+head(epacts)
+epacts_noNApval <- na.omit(epacts)
+pdf("./result/Single.manhattan.pdf")
+manhattan(epacts_noNApval, main="epacts", chr='CHROM', bp='BEGIN', p='PVALUE', snp='MARKER_ID', suggestiveline=FALSE, genomewideline = FALSE, cex=0.5, col = c("blue4", "orange3"))
+dev.off()
+
+q()
+n
+
+###R library example
+vignette("qqman")
+
+###miami plot
+manhattan
+
+#####2.Miami plot
+
+R
+
+library(qqman)
+
+epacts_m <- read.table("./KOGO.HDL.MALE.epacts")
+epacts_f <- read.table("./KOGO.HDL.FEMALE.epacts")
+
+colnames(epacts_m) <- c("CHROM","BEGIN", "END", "MARKER_ID", "NS", "AC", "CALLRATE", "MAF", "PVALUE", "BETA", "SEBETA", "TSTAT", "R2")
+colnames(epacts_f) <- c("CHROM","BEGIN", "END", "MARKER_ID", "NS", "AC", "CALLRATE", "MAF", "PVALUE", "BETA", "SEBETA", "TSTAT", "R2")
+
+epacts_m_noNApval <- na.omit(epacts_m)
+epacts_f_noNApval <- na.omit(epacts_f)
+
+##parameter
+x <- epacts_m_noNApval
+y <- epacts_f_noNApval
+chr='CHROM'
+bp='BEGIN'
+p='PVALUE'
+snp='MARKER_ID'
+col = c("blue4", "orange3")
+#col = c("gray10","gray60")
+logp = TRUE 
+
+## chr, pos, p-value
+d = data.frame(CHR = x[[chr]], BP = x[[bp]], P = x[[p]])
+d = transform(d, SNP = x[[snp]])
+d <- subset(d, (is.numeric(CHR) & is.numeric(BP) & is.numeric(P)))
+d <- d[order(d$CHR, d$BP), ]
+d$logp <- -log10(d$P)
+d$pos = NA
+d$index = NA
+
+d2 = data.frame(CHR = y[[chr]], BP = y[[bp]], P = y[[p]])
+d2 = transform(d2, SNP = y[[snp]])
+d2 <- subset(d2, (is.numeric(CHR) & is.numeric(BP) & is.numeric(P)))
+d2 <- d2[order(d2$CHR, d2$BP), ]
+d2$logp <- -log10(d2$P)
+d2$pos = NA
+d2$index = NA
+
+d3 <- d2
+d3$logp <- -d2$logp
+d <- rbind(d, d3)
+
+##index create
+ind = 0
+for (i in unique(d$CHR)) {
+  ind = ind + 1
+  d[d$CHR == i, ]$index = ind
+}
+ind = 0
+for (i in unique(d2$CHR)) {
+  ind = ind + 1
+  d2[d2$CHR == i, ]$index = ind
+}
+
+pdf("./result/Single.miami.pdf")  
+nchr = length(unique(d$CHR))
+d$pos = d$BP
+ticks = floor(length(d$pos))/2 + 1
+xlabel = paste("Chromosome", unique(d$CHR), "position")
+labs = ticks
+  
+lastbase = 0
+ticks = NULL
+for (i in unique(d$index)) {
+ if (i == 1) {
+  d[d$index == i, ]$pos = d[d$index == i, ]$BP
+  }
+ else {
+  lastbase = lastbase + tail(subset(d, index == i-1)$BP, 1)
+  d[d$index == i, ]$pos = d[d$index == i, ]$BP + lastbase
+  }
+  ticks = c(ticks, (min(d[d$index == i, ]$pos) + max(d[d$index == i, ]$pos))/2 + 1)
+ }
+ 
+xlabel = "Chromosome"
+labs <- unique(d$CHR)
+  
+xmax = ceiling(max(d$pos) * 1.03)
+xmin = floor(max(d$pos) * -0.03)
+def_args <- list(xaxt = "n", bty = "n", xaxs = "i", yaxs = "i", las = 1, pch = 20, xlim = c(xmin, xmax), ylim = c(-25,25), xlab = xlabel, ylab = expression(-log[10](italic(p))))
+dotargs <- list(main="epacts", cex=0.6)
+do.call("plot", c(NA, dotargs, def_args[!names(def_args) %in% names(dotargs)]))
+axis(1, at = ticks, labels = labs)
+  
+col = rep(col, max(d$CHR))
+icol = 1
+for (i in unique(d$index)) {
+  with(d[d$index == unique(d$index)[i], ], points(pos, logp, col = col[icol], pch = 20))
+  icol = icol + 1
+}
+dev.off()
+
+q()
+
+n
+
+#####3.locuszoom
+cd ~/03_ANNO/2_locuszoom/
+
+head METAANALYSIS_DIAGRAM_locuszoom.txt
+
+##basic locuszoom plot
+locuszoom --plotonly --metal METAANALYSIS_DIAGRAM_locuszoom_chr4.txt --refsnp chr4:185708807 \
+--flank 500kb --prefix ./result/basic --build hg19 --pop EUR \
+--source 1000G_Nov2014 --delim tab --pvalcol P-value --markercol MarkerName \
+--snpset HapMap geneFontSize=.8 smallDot=.3 largeDot=.9 format=pdf \
+ymax=10 legend=auto metalRug='Plotted SNPs'
+
+##Plotting BED tracks
+locuszoom --plotonly --metal METAANALYSIS_DIAGRAM_locuszoom_chr4.txt --refsnp chr4:185708807 \
+--flank 500kb --bed-tracks wgEncodeBroadHmmGm12878HMM.bed  --prefix ./result/bed --build hg19 \
+--pop EUR --source 1000G_Nov2014 --delim tab --pvalcol P-value --markercol MarkerName --snpset HapMap \
+geneFontSize=.8 smallDot=.3 largeDot=.9 format=pdf ymax=10 legend=auto metalRug='Plotted SNPs' \
+rfrows=10 weightCol=Weight showRecomb=TRUE warnMissingGenes=T showAnnot=FALSE
+
+##Plotting LD with additional reference SNPs
+locuszoom --plotonly --metal METAANALYSIS_DIAGRAM_locuszoom_chr11.txt --refsnp chr11:2663891 --add-refsnps chr11:2857194 \
+--flank 500kb --prefix ./result/add --build hg19 --pop EUR --source 1000G_Nov2014 --delim tab --pvalcol P-value \
+--markercol MarkerName --snpset HapMap geneFontSize=.8 smallDot=.3 largeDot=.9 format=pdf ymax=10 legend=auto \
+metalRug='Plotted SNPs' rfrows=10 weightCol=Weight showRecomb=TRUE warnMissingGenes=T showAnnot=FALSE
+
+##Labeling multiple SNPs
+locuszoom --plotonly --metal METAANALYSIS_DIAGRAM_locuszoom_chr11.txt --refsnp chr11:2663891 \
+--add-refsnps chr11:2857194 --flank 600kb --denote-markers-file lable.txt --prefix ./result/lable \
+--build hg19 --pop EUR --source 1000G_Nov2014 --delim tab --pvalcol P-value --markercol MarkerName \
+--snpset HapMap geneFontSize=.8 smallDot=.3 largeDot=.9 format=pdf ymax=10 legend=auto metalRug='Plotted SNPs' \
+rfrows=10 weightCol=Weight showRecomb=TRUE warnMissingGenes=T showAnnot=FALSE
+####4.paintor
+cd ~/03_ANNO/3_paintor/
+
+##annotation file 
+python /BiO/apps/PAINTOR_V3.0/PAINTOR_Utilities/AnnotateLocus.py --input annotation_list --locus locus1 \
+--out locus1.annotations --chr chr --pos pos
+
+##paintor_mapping_pipeline
+/BiO/apps/PAINTOR_V3.0/PAINTOR -input input.files -Zhead tg.Zscore -LDname ld -in ./ -out ./result/ \
+-annotations E066-H3K27ac.narrowPeak.Adult_Liver,E066-H3K4me1.narrowPeak.Adult_Liver -mcmc -Gname Enrich.Final -Lname BF.Final  /BiO/apps/PAINTOR_V3.0/PAINTOR -input input.files -Zhead tg.Zscore -LDname ld -in ./ -out ./result/ \
+-annotations E066-H3K27ac.narrowPeak.Adult_Liver,E066-H3K4me1.narrowPeak.Adult_Liver -enumerate 2 -Gname Enrich.Final -Lname BF.Final  
+
+
+##visualization
+python /BiO/apps/PAINTOR_V3.0/CANVIS/CANVIS.py -o locus1_v2 -l ./result/locus1.results \
+-z tg.Zscore -r locus1.ld -a locus1.annotations -s E066-H3K27ac.narrowPeak.Adult_Liver E066-H3K4me1.narrowPeak.Adult_Liver \
+-t 99 -i 3381705 3507346
+
+
+##cp facecolor
+##axisbg > facecolor
+
+#####5.snpeff/snpsift 
+cd ~/03_ANNO/4_snpeff/
+##snpeff hg19
+java -jar /BiO/apps/snpEff/snpEff.jar -v hg19 KOGO.vcf.gz > ./result/KOGO_snpeff.vcf
+
+##snpsift
+java -jar /BiO/apps/snpEff/SnpSift.jar dbnsfp -v -db /BiO/database/dbNSFP2.9.txt.gz ./result/KOGO_snpeff.vcf > ./result/KOGO_snpeff_dbnsfp.vcf
+
+##GWAS catalog
+java -jar /BiO/apps/snpEff/SnpSift.jar gwasCat -v -db gwascatalog.txt ./result/KOGO_snpeff.vcf > ./result/KOGO_snpeff_gwas.vcf
+
+###example
+# SNPeffect nonsynonymous variants
+java -jar /BiO/apps/snpEff/SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') | (ANN[*].EFFECT has 'start_lost') | \
+(ANN[*].EFFECT has 'stop_gained') | (ANN[*].EFFECT has 'stop_lost') | (exists dbNSFP_SIFT_pred) | \
+(exists dbNSFP_Polyphen2_HDIV_pred) | (exists dbNSFP_Polyphen2_HVAR_pred) | (exists dbNSFP_LRT_pred) | \
+(exists dbNSFP_MutationTaster_pred) | (exists dbNSFP_MutationAssessor_pred) | (exists dbNSFP_FATHMM_pred) | \
+(exists dbNSFP_MetaSVM_pred) | (exists dbNSFP_PROVEAN_pred)" ./result/KOGO_snpeff_dbnsfp.vcf \
+> ./result/KOGO_snpeff_dbnsfp_nonsy.vcf
