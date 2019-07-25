@@ -1,0 +1,10 @@
+genetics/
+HGU/
+KCDC/
+Linux_command/
+list.txt
+Python/
+R/
+README.md
+setting/
+Untitled.ipynb
