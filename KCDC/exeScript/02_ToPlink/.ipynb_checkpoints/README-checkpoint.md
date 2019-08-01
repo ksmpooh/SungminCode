@@ -1,9 +1,9 @@
 #Genotype call to Plink code
 
 <ped><code>
-    
-    python DataPrep.py 0 50000 Sample.Info.txt Axiom_KORV1_1.na35.annot.extract.txt	outDir
-    
+python DataPrep.py 0 50000 Sample.Info.txt
+Axiom_KORV1_1.na35.annot.extaract.txt callDir
+
 </code></ped>
 
 -callDir : Axiom.call.txt directory
