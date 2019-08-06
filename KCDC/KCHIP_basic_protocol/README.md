@@ -15,6 +15,8 @@ First genotype call using APT ( Affymetrix Power Tool)
 #### 2.1 Imputation
 #### 2.2 Association
 #### 2.3 Annotation & Visualization
+
+
 ## Data handling
 #### VCF file to data frame in R
 VCF (수정필요) vcf file로 실습 안해봄
