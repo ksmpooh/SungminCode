@@ -18,6 +18,8 @@
 
 
 ## Protocol
+
+
 ### 1. Quality control
 This process call QC. 
 #### 1.1 Genotype calling
