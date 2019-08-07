@@ -12,6 +12,9 @@
 #### 2.1 Imputation
 #### 2.2 Association
 #### 2.3 Annotation & Visualization
+## Data handling
+## command
+## Tool
 
 
 ## Protocol
@@ -22,7 +25,11 @@ To make plink file
 Original chip data format is CEL file. 
 We need to change Plink file format(ped and map).
 First genotype call using APT ( Affymetrix Power Tool) 
+
+In this step, it needs CEL files and CEL files list txt(colnames : cel_files)
+
 #### 1.2 SNPolisher (by batch)
+
 #### 1.3 Sample QC (by batch)
 #### 1.4 merge
 #### 1.4 SNP QC
