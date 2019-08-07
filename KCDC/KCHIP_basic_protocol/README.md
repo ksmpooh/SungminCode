@@ -1,4 +1,19 @@
 # KCHIP_BASIC_PROTOCOL
+
+
+## Protocol
+### 1. Quality control
+#### 1.1 Genotype calling
+#### 1.2 SNPolisher (by batch)
+#### 1.3 Sample QC (by batch)
+#### 1.4 merge
+#### 1.4 SNP QC
+### 2. Association
+#### 2.1 Imputation
+#### 2.2 Association
+#### 2.3 Annotation & Visualization
+
+
 ## Protocol
 ### 1. Quality control
 This process call QC. 
