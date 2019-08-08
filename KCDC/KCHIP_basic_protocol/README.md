@@ -30,11 +30,13 @@ First genotype call using APT ( Affymetrix Power Tool)
 
 In this step, it needs CEL files and CEL files list txt(colnames : cel_files)
 
+
 #### 1.2 SNPolisher (by batch)
 
 #### 1.3 Sample QC (by batch)
 #### 1.4 merge
 #### 1.4 SNP QC
+
 ### 2. Association
 #### 2.1 Imputation
 #### 2.2 Association
