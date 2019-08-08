@@ -23,7 +23,7 @@
 ### 1. Quality control
 This process call QC. 
 #### 1.1 Genotype calling
-To make plink file
+To make plink file\n
 Original chip data format is CEL file. 
 We need to change Plink file format(ped and map).
 First genotype call using APT ( Affymetrix Power Tool) 
