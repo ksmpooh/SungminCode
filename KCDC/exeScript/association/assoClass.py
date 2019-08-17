@@ -4,7 +4,7 @@ Created on 2019. 5. 31.
 @author: myhwang
 
 
-Code study..smkim on 2019.07.10
+Code study..smkim
 
 '''
 

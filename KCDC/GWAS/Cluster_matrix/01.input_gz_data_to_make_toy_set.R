@@ -21,27 +21,29 @@ toy <- data.frame()
 # }
 # for (f in file_list[1]){
 #   assign(paste0(f),read.table(paste0("new_set/new_",f,".txt"),header = T))
-# # }
-# for (f in file_list){
-#   toy <- read.table(paste0("new_set/v1tov2/new_",f,".txt"),header = T)
-#   toy <- subset(toy,(ConversionType == "Other" | ConversionType == "OTV" | ConversionType =="callRateBelowThreshold"))
-#   write.table(toy,paste0("new_set/only_error_set/only_error_",f,".txt"),quote = F, row.names = F, col.names = T)
 # }
+
+
+
+for (f in file_list){
+  toy <- read.table(paste0("new_set/v1tov2/new_",f,".txt"),header = T)
+  toy <- subset(toy,(ConversionType == "Other" | ConversionType == "OTV" | ConversionType =="CallRateBelowThreshold"))
+  write.table(toy,paste0("only_error_set/only_error_",f,".txt"),quote = F, row.names = F, col.names = T)
+}
 
 
 #####################
 venn <-toy
 for (f in file_list){
-  #assign(paste0(f),read.table(paste0("new_set/only_error_set/only_error_",f,".txt"),header = T))
-  toy <- read.table(paste0("new_set/only_error_set/only_error_",f,".txt"),header = T)
+  assign(paste0(f),read.table(paste0("only_error_set/only_error_",f,".txt"),header = T))
+  #toy <- read.table(paste0("only_error_set/only_error_",f,".txt"),header = T)
   #rownames(toy)<-toy$probeset_id
-  toy<-subset(toy,select = probeset_id)
+  #toy<-subset(toy,select = probeset_id)
   #assign(paste0(f),toy)
-  venn <- merge(venn,toy,all = TRUE)
+  #venn <- merge(venn,toy,all = TRUE)
 }
 
-write.table(venn,"new_set/only_error_set/merge_error_marker_id.txt",row.names = F,col.names = T,quote = F)
+write.table(venn,"merge_error_marker_id.txt",row.names = F,col.names = T,quote = F)
 
-venn <-merge(AS_V1_B1_2nd,AS_V1_B1_2nd,all = "True")
 dim(venn)
 str(venn)
