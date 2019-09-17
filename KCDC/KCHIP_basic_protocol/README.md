@@ -2,12 +2,14 @@
 
 
 ## Protocol
+
 ### 1. Quality control
 #### 1.1 Genotype calling
 #### 1.2 SNPolisher (by batch)
 #### 1.3 Sample QC (by batch)
 #### 1.4 merge
 #### 1.4 SNP QC
+
 ### 2. Association
 #### 2.1 Imputation
 #### 2.2 Association
@@ -15,7 +17,6 @@
 ## Data handling
 ## command
 ## Tool
-
 
 ## Protocol
 
@@ -65,4 +66,4 @@ colnames(e)<-unlist(d) #list type으로 되어 있는 d 를 unlist 해준다!
 
 
 
-[1. quality-control](### 1. Quality controlheading)
+
