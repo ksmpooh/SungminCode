@@ -61,3 +61,8 @@ colnames(e)<-unlist(d) #list type으로 되어 있는 d 를 unlist 해준다!
 
 ## command
 ## tool
+
+
+
+
+[1. quality-control](https://github.com/ksmpooh/SungminCode/tree/master/KCDC/KCHIP_basic_protocol#1-quality-controlheading)
