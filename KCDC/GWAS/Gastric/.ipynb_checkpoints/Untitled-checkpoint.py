@@ -32,26 +32,20 @@ def fileRead(fileIn):
 bim = pd.read_csv(wdir+"Case_Control_merge_rmfreq.bim",delim_whitespace = True,header = None)
 ref = pd.read_csv(wdir+"Axiom_KOR.annot.extract.addINDEL.Final.REF.txt",delim_whitespace = True,header = None)
 
-ref.index = ref[0]
-name_list = list(bim[1])
-new_ref = ref.loc[name_list]
-new_ref = new_ref.reset_index(drop = True)
+
 
 new_id = []
 for i in range(0,len(bim)):
-    if i % 10000 == 0:
-        print(i)
-    index = new_ref.loc[ref[0] == bim[1][i]]
+    index = ref.loc[ref[0] == bim[1][i]]
     if (index[1] == bim[4][i]).bool():
         new_id.append(str(bim[0][i]) + ":" + str(bim[3][i]) +"_"+str(bim[4][i])+"/"+str(bim[5][i]))
     else:
         new_id.append(str(bim[0][i]) + ":" + str(bim[3][i]) +"_"+str(bim[5][i])+"/"+str(bim[4][i]))
-        tmp = bim.loc[i,5]
-        bim.loc[i,5] = bim.loc[i,4]
-        bim.loc[i,4] = tmp
-        
+	tmp = bim[4][i]
+	bim[4][i] = bim[5][i]
+	bim[5][i] = tmp
 bim.loc[:,1] = new_id
-bim.to_csv(wdir+"match_ref_merge.bim",header=False,index = False,sep='\t')
+bim.to_csv(wdir+"match_ref_merge.bim",header = False,index = False, sep = '\t')
 
 
 
