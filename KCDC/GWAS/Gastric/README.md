@@ -1,11 +1,18 @@
 # Gastric protocol
 
-## Protoco
+## Protocol
 
 ### 1. Quality control
 #### 1.1 1st QC
 ##### 1.1.1 Genotype calling 
+##### 1.1.2 SNPolisher
+##### 1.1.3  
 #### 1.2 2nd QC
+
+
+
+
+
 
 ### 2. Association
 #### 2.1 Imputation
