@@ -49,6 +49,8 @@ legend(x = 0 ,y = 0.3,list,col = color,cex = 1,pch = 16)
 dev.off()
 
 ################################################
+
+setwd("c:/Users/user/Desktop/KCDC/Gastric/PCA/")
 pca <- read.table("PCA.txt",header = T)
 #gnomad <- read.table("1000genome_ID.txt",header = F)
 samplegnomad<- read.table("1000GP_Phase3.sample",header = T)
@@ -94,10 +96,3 @@ legend(x = 0 ,y = 0.3,list,col = color,cex = 1,pch = 16)
 dev.off()
 ##########################################################################3
 
-pca <-read.table("PCA.txt",header = T)
-##
-samp <- read.table("ALL.sample",header = T)
-dat <- merge(pca,samp,by = "FID")
-pdf("1kgp,gastric.PCA.pop.pdf",height =10, width = 10)
-plot(dat$PC1,dat$PC2,col=rgb(0,0,1,0.3),xlab = "PC1",ylab = "PC2",main = "1kgp,gastric.PCA.pop",cex = 1.5, pch =16)
-points(dat[dat$GRUOP == "AFR",]$PC1,dat[dat$GRUOP == "AFR",]$PC2,col = rgb(0,0,1,0.3), cex= 1.5,pch = 16)
