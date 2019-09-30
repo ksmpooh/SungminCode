@@ -1,0 +1,10 @@
+PLINK v1.90b3h 64-bit (12 Mar 2015)
+1 argument: --geno
+Hostname: genome-107
+Working directory: /DATA/smkim/Gastric/SCRIPTs
+Start time: Tue Aug 27 14:49:53 2019
+
+Error: No input dataset.
+For more information, try 'plink --help [flag name]' or 'plink --help | more'.
+
+End time: Tue Aug 27 14:49:53 2019

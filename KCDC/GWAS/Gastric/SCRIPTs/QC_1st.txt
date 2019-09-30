@@ -1,0 +1,196 @@
+
+#het
+plink --bfile KNIH.RAW.Gastric.rmSNP --het --out KNIH.RAW.Gastric.rmSNP.het 
+
+
+#R
+
+miss <-read.table("KNIH.RAW.Gastric.rmSNP.MISS.imiss",header = T)
+het <- read.table("KNIH.RAW.Gastric.rmSNP.het.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("PDF/KNIH.RAW.Gastric.rmSNP.rmLQSamples.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs. heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+#abline(v=30, col=rgb(1,0,0,1), lty=3, lwd=2)
+#abline(v=33.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+#abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.3 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.3 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+#rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.4 | 17 < lowSample$HET,]
+#dim(rmList)
+
+#write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+##sample QC
+
+#SNP pruning
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --out KNIH.RAW.Gastric.rmSNP.SNP
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --extract KNIH.RAW.Gastric.rmSNP.SNP.prune.in --make-bed --out KNIH.RAW.Gastric.rmSNP.SNP.Pruned
+
+
+
+#PCA
+
+flashpca --bfile KNIH.RAW.Gastric.rmSNP.SNP.Pruned --outpc KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt
+
+
+#R
+pca <- read.table("KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt", header=T)
+
+head(pca)
+
+pdf("../PDF/KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15), 
+	xlab="PC1", ylab="PC2", main="PCA", cex=1.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1, 
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+#rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
+#dim(rmList)
+
+#write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+
+
+
+
+
+
+
+
+
+
+#Excessive singletons
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --hardy --out KNIH.RAW.Gastric.rmSNP.checkSIN
+
+awk '{if($3 == "ALL") print $6"\t"$2}'  KNIH.RAW.Gastric.rmSNP.checkSIN.hwe | awk -F"\/" '{if(($1+$2)==1) print $1,$2,$3,$3}' > selectSingleton.txt
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --recodeA --extract selectSingleton.txt --out KNIH.RAW.Gastric.rmSNP.selectSIN
+
+#plink2 --bfile KNIH.RAW.Gastric.rmSNP --remove rmSIN.txt --make-bed --out KNIH.RAW.Gastric.rmSNP_rmSIN
+
+
+
+
+#Relationship inference 
+
+king -b KNIH.RAW.Gastric.rmSNP.bed --fam KNIH.RAW.Gastric.rmSNP.fam --bim KNIH.RAW.Gastric.rmSNP.bim --related --cpus 3 --prefix KNIH.RAW.Gastric.rmSNP
+
+
+awk '0.354<=$10{print $1}'  KNIH.RAW.Gastric.rmSNP.kin0 | uniq | tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > rmKING.txt
+
+#awk '0.117<$10{print}' KNIH.RAW.Gastric.rmSNP.kin0 |uniq |tail -n+2 | awk '{print $1"\t"$1}' |sort -k 1 | uniq > rmKING_0.117_1st.txt
+
+
+
+
+
+
+##remove chr6 14 befor PCA
+#plink2 --bfile KNIH.RAW.Gastric.rmSNP --exclude chr6_14_rm.txt --make-bed --out KNIH.RAW.Gastric.rmSNP.rmchr6n14
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out KNIH.RAW.Gastric.rmSNP.rmchr6n14_snp
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP --extract KNIH.RAW.Gastric.rmSNP.rmchr6n14_snp.prune.in --make-bed --out KNIH.RAW.Gastric.rmSNP.rmchr6n14_snp.Pruned
+
+flashpca --bfile KNIH.RAW.Gastric.rmSNP.rmchr6n14_snp.Pruned --outpc KNIH.RAW.Gastric.rmSNP.rmchr6n14_snp.Pruned.PCA.txt
+
+
+
+#R
+pca <- read.table("KNIH.RAW.Gastric.rmSNP.rmchr6n14.Pruned.PCA.txt",header = T)
+pdf("../PDF/KNIH.RAW.Gastric.rmSNP.rmchr6n14.Pruned.PCA.txt.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="PCA_rmchr6n14", cex=1.5, pch=16)
+abline(v=-0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.065, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.05 | 0.06 < pca$PC1 | pca$PC2 < -0.05 | 0.065 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.05 | 0.06 < pca$PC1 | pca$PC2 < -0.05 | 0.065 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+------------------------------------------------------------------------------------------------------
+#start 4414 sample KNIH.RAW.Gastric.rmSNP
+
+##remove 41 low quality samples from Missing-hetrozygosity
+
+miss <-read.table("KNIH.RAW.Gastric.rmSNP.MISS.imiss",header = T)
+het <- read.table("KNIH.RAW.Gastric.rmSNP.het.het", header = T)
+
+
+R
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.4 | 17 < lowSample$HET,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP  --remove rmLQSamples.txt --make-bed --out KNIH.RAW.Gastric.rmSNP.rmLQSamples
+
+##SNP pruning
+plink2 --bfile KNIH.RAW.Gastric.rmSNP.rmLQSamples --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp
+
+plink2 --bfile KNIH.RAW.Gastric.rmSNP.rmLQSamples --extract KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.prune.in --make-bed --out KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.Pruned
+
+flashpca --bfile KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.Pruned --outpc KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.Pruned.txt
+
+
+#PCA 
+
+R
+
+pca <- read.table("KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.Pruned.txt",header = T)
+
+
+
+pdf("../PDF/KNIH.RAW.Gastric.rmSNP.rmLQSamples.rmchr6n14_snp.Pruned.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="1st_QC_PCA_rmSNP_rmLQSamples_rmchr6n14", cex=1.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)

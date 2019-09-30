@@ -1,0 +1,185 @@
+##rm affy snp
+#case
+grep AFFX KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.bim > affy_snp_list.txt
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples --exclude affy_snp_list.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy
+
+-->SNP 798674
+
+#contorl
+grep AFF V2_MERGED_RAW.bim > affy_snp_list.txt
+plink --bfile V2_MERGED_RAW --exclude affy_snp_list.txt --make-bed --out V2_MERGED_RAW.rmaffy
+
+
+##
+#filter case -->600877
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy --geno 0.05 --maf 0.01 --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil
+
+#filter control -->496559
+plink --bfile V2_MERGED_RAW.rmaffy --geno 0.1 --hwe 0.001 --maf 0.01 --make-bed --out V2_MERGED_RAW.rmaffy.fil
+
+#control marker = 496903, case marker = 601256
+cat control_fil_markerID.txt case_fil_markerID.txt | sort | uniq -c | awk '$1 == 2 {print $2}' > intersect_markerID.txt
+
+before intersect_markerID = 488005
+
+after rmaffy intersect_markerID = 487662
+
+
+
+##convert and indel
+python Indel/ConvertToBim.py Indel/Axiom_KORV1_1.na35.annot.extract.txt CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert
+
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel
+
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CONTROL/V2_MERGED_RAW.rmaffy.fil CONTROL/V2_MERGED_RAW.rmaffy.fil.indel
+
+
+#intersect
+plink --bfile V2_MERGED_RAW.rmaffy.fil.indel --extract intersect_markerID.txt --make-bed --out V2_MERGED_RAW.rmaffy.fil.indel.intersect
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel --extract intersect_markerID.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect
+
+##freq
+plink --bfile CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE_ref
+plink --bfile CONTROL/V2_MERGED_RAW.rmaffy.fil.indel.intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL_ref
+
+
+R
+
+case <- read.table("CASE_ref.frq",header=T)
+control <- read.table("CONTROL_ref.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+awk '{print $1}' rm_snp_frq.txt >rm_snp_frq_id.txt
+
+
+
+##Performing single-pass merge (81920 people, 487662 variants).
+
+plink --bfile CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect --bmerge CONTROL/V2_MERGED_RAW.rmaffy.fil.indel.intersect \
+--allow-no-sex --make-bed --out merge/CASE_CONTROL_MERGE
+
+
+###rm_snp_frq_id = 23
+plink --bfile merge/CASE_CONTROL_MERGE --exclude rm_snp_frq_id.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq
+
+
+
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out merge/CASE_CONTROL_MERGE_rmfreq
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --extract merge/CASE_CONTROL_MERGE_rmfreq.prune.in --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.pruned
+flashpca_x86-64 --bfile merge/CASE_CONTROL_MERGE_rmfreq.pruned --outpc merge/1PCA.txt
+
+
+
+
+## after python Match1st.py make 1st trash(101 snps) file
+python MatchAlleleAndChange
+
+#######using merge/CASE_CONTROL_MERGE_rmfreq.bim run python MATCING code out 2nd_new_merge
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --exclude merge/trash.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.rmtrash
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --exclude merge/trash.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.rmtrash
+cp merge/CASE_CONTROL_MERGE_rmfreq.rmtrash.bim merge/CASE_CONTROL_MERGE_rmfreq.rmtrash.ori.bim
+
+
+python MatchAlleleAndChange2nd.py
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq.rmtrash --make-bed --out 2nd_New_merge/NEW_MERGE
+
+    487538 NEW_MERGE.bim
+     81920 NEW_MERGE.fam
+
+########################################################king
+
+king -b 2nd_New_merge/NEW_MERGE.bed --related --prefix 2nd_New_merge/NEW_MERGE --cpu 10
+
+awk '0.354<=$10{print $1}' 2nd_New_merge/NEW_MERGE.kin0 | uniq | tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > rmKING.txt
+
+rmking = 8
+
+plink --bfile 2nd_New_merge/NEW_MERGE --remove rmKING.txt --make-bed --out 2nd_New_merge/NEW_MERGE_rmKing
+
+
+##
+python extract.py 
+python make_merge_list.py 
+python pop_divide.py
+
+####
+awk '{print $1"\t"$1}' afrID.samples.txt >sample.txt
+cp sample.txt afrID.samples.txt 
+awk '{print $1"\t"$1}' amrID.samples.txt >sample.txt
+cp sample.txt amrID.samples.txt 
+awk '{print $1"\t"$1}' easID.samples.txt >sample.txt
+cp sample.txt easID.samples.txt 
+awk '{print $1"\t"$1}' sasID.samples.txt >sample.txt
+cp sample.txt sasID.samples.txt 
+awk '{print $1"\t"$1}' eurID.samples.txt >sample.txt
+cp sample.txt eurID.samples.txt 
+
+
+
+################number of each sample
+
+
+
+  661 afrID.samples
+  347 amrID.samples
+  504 easID.samples
+  503 eurID.samples
+  489 sasID.samples
+ 2504 total
+
+
+###################
+awk '{print $1"\t"$1}' ../OUTPUTs/CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect.fam > case.samples.txt
+awk '{print $1"\t"$1}' ../OUTPUTs/CONTROL/V2_MERGED_RAW.rmaffy.fil.indel.intersect.fam > control.samples.txt
+
+plink --bfile Last_merge/Gastric_merge --keep ../INPUTs/case.samples.txt --make-bed --out Last_merge/Gastric_case
+plink --bfile Last_merge/Gastric_merge --keep ../INPUTs/control.samples.txt --make-bed --out Last_merge/Gastric_control
+
+#####
+   4334 case.samples.txt
+  77586 control.samples.txt
+
+
+
+    661 1Kgenome_afrID.samples.fam
+    347 1Kgenome_amrID.samples.fam
+    504 1Kgenome_easID.samples.fam
+    503 1Kgenome_eurID.samples.fam
+    489 1Kgenome_sasID.samples.fam
+   2504 1kg_merge.fam
+   4326 Gastric_case.fam     (4334 - 8(king))
+  77586 Gastric_control.fam
+
+###############################plink --maf 0.05 
+ 2700  python 04.frq_eachPOP.py 
+
+ 2715  plink --bfile Last_merge/Gastric_case --maf 0.05 --freq --allow-no-sex --a1-allele ../INPUTs/change_SNPID_type_Axiom_KOR.annot.extract.addINDEL.FINAL.REF_onlyOne.txt --make-bed --out Last_merge/Gastric_case_frq
+ 2716  plink --bfile Last_merge/Gastric_control --maf 0.05 --freq --a1-allele ../INPUTs/change_SNPID_type_Axiom_KOR.annot.extract.addINDEL.FINAL.REF_onlyOne.txt --make-bed --out Last_merge/Gastric_control_frq
+
+############merge
+cat 1Kgenome_*_frq.bim Gastric_*_frq.bim | sort |awk '{print $1"\t"$2}'| uniq -c | awk '$1 == 7{print $3}' > intersect_SNPID_sevenPOP.txt
+
+python 05.merge_all_pop.py 
+
+plink --bfile Last_merge/Gastric_control_frq_intersect --merge-list PCA_merge/merge_list.txt --allow-no-sex --make-bed --out PCA_merge/PCA_merge
+
+##
+######

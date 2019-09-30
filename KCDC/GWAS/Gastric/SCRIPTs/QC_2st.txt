@@ -1,0 +1,174 @@
+##genotype calling  
+
+cel_files : 4338
+
+###second QC
+
+# merge
+
+plink2 --file KNIH.RAW.0_50000 --merge-list ../INPUts/mergeList.txt --allow-no-sex --make-bed --out KNIH.RAW.Gastric.2nd
+
+
+#snpolisher
+
+cat CallRateBelowThreshold.ps OffTargetVariant.ps Other.ps |sort | uniq  > rmSNP_2nd.txt
+
+28731 snp
+
+plink2 --bfile KNIH.RAW.Gastric.2nd --exclude rmSNP_2nd.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP
+
+
+#827783 KNIH.RAW.Gastric.2nd.bim
+#799053 KNIH.RAW.Gastric.2nd.rmSNP.bim
+
+
+## --HET --MISSING
+plink2 --bfile KNIH.RAW.Gastric.2nd.rmSNP --het --out KNIH.RAW.Gastric.2nd.rmSNP.HET
+plink2 --bfile KNIH.RAW.Gastric.2nd.rmSNP --missing --out KNIH.RAW.Gastric.2nd.rmSNP.MISS
+
+
+R
+
+miss <-read.table("KNIH.RAW.Gastric.2nd.rmSNP.MISS.imiss",header = T)
+het <- read.table("KNIH.RAW.Gastric.2nd.rmSNP.HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("~/DATA/smkim/Gastric/QC_2nd/PDF/2nd_KNIH.RAW.Gastric.rmSNP.rmLQSamples.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="2nd Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.4, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.4 | 17 < lowSample$HET,]
+
+
+
+q
+
+
+#rmList == 4 samples, remain : 4334
+
+
+plink2 --bfile KNIH.RAW.Gastric.2nd.rmSNP --remove rmLQSamples.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples
+
+
+
+#filter case -->601256
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples --geno 0.05 --maf 0.01 --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil
+
+#filter control -->496903
+plink --bfile V2_MERGED_RAW --geno 0.1 --hwe 0.001 --maf 0.01 --make-bed --out V2_MERGED_RAW_fil
+
+#control marker = 496903, case marker = 601256
+cat control_fil_markerID.txt case_fil_markerID.txt | sort | uniq -c | awk '$1 == 2 {print $2}' > intersect_markerID.txt
+
+markerID = 488005
+
+################################################################################################3
+
+##convert
+#change allele ID(case to control)
+#indel
+python Indel/ConvertToBim.py Indel/Axiom_KORV1_1.na35.annot.extract.txt KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert.indel
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt V2_MERGED_RAW_fil V2_MERGED_RAW_fil.indel
+
+#intersect
+plink --bfile V2_MERGED_RAW_fil.indel --extract intersect_markerID.txt --make-bed --out V2_MERGED_RAW_fil.indel.intersect
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert.indel --extract intersect_markerID.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert.indel.intersect 
+
+
+#frq
+
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert.indel.intersect --freq --a1-allele ../Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE_ref
+plink --bfile V2_MERGED_RAW_fil.indel.intersect --freq --a1-allele ../Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL_ref
+
+
+
+R
+
+case <- read.table("CASE_ref.frq",header=T) 
+control <- read.table("CONTROL_ref.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+	data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+	col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 24
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+awk '{print $1}' rm_snp_frq.txt >rm_snp_frq_id.txt
+
+
+
+
+#merge 81920 people, 488005 variants
+
+
+
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.fil.convert.indel.intersect --bmerge V2_MERGED_RAW_fil.indel.intersect --allow-no-sex --make-bed --out CASE_CONTROL_MERGE
+
+plink --bfile CASE_CONTROL_MERGE --exclude rm_snp_frq_id.txt --make-bed --out CASE_CONTROL_MERGE_rmfreq
+
+
+
+#487981 snp
+
+#PCA
+plink --bfile CASE_CONTROL_MERGE_rmfreq --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out CASE_CONTROL_MERGE_rmfreq
+
+plink --bfile CASE_CONTROL_MERGE_rmfreq --extract CASE_CONTROL_MERGE_rmfreq.prune.in --make-bed --out CASE_CONTROL_MERGE_rmfreq.pruned
+flashpca_x86-64 --bfile CASE_CONTROL_MERGE_rmfreq.pruned --outpc PCA.txt
+
+
+#R
+
+pca <-read.table("PCA.txt",header = T)
+pdf("../PDF/2nd_Pruned.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="2nd_QC_PCA", cex=1.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+
+
+
+
+
+#########
+plink --bfile CASE_CONTROL_MERGE_rmfreq --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out CASE_CONTROL_MERGE_rmf
+plink --bfile CASE_CONTROL_MERGE_rmfreq --extract CASE_CONTROL_MERGE_rmfreq.prune.in --make-bed --out CASE_CONTROL_MERGE_rmfreq.pruned
+flashpca_x86-64 --bfile CASE_CONTROL_MERGE_rmfreq.pruned --outpc PCA.txt
+
+pca.txt = 81920
+
+
+
+
+
+python MatchAlleleAndChange2nd.py

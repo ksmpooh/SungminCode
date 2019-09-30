@@ -1,0 +1,188 @@
+
+##rm affy snp
+#case
+grep AFFX KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.bim > affy_snp_list.txt
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples --exclude affy_snp_list.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy
+
+-->SNP 798674
+
+#contorl
+grep AFF V2_MERGED_RAW.bim > affy_snp_list.txt
+plink --bfile V2_MERGED_RAW --exclude affy_snp_list.txt --make-bed --out V2_MERGED_RAW.rmaffy
+
+
+##
+#filter case -->600877
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy --geno 0.05 --maf 0.01 --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil
+
+#filter control -->496559
+plink --bfile V2_MERGED_RAW.rmaffy --geno 0.1 --hwe 0.001 --maf 0.01 --make-bed --out V2_MERGED_RAW.rmaffy.fil
+
+#control marker = 496903, case marker = 601256
+cat control_fil_markerID.txt case_fil_markerID.txt | sort | uniq -c | awk '$1 == 2 {print $2}' > intersect_markerID.txt
+
+before intersect_markerID = 488005
+
+after rmaffy intersect_markerID = 487662
+
+
+
+##convert and indel
+python Indel/ConvertToBim.py Indel/Axiom_KORV1_1.na35.annot.extract.txt CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert
+
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel
+
+python Indel/indelChange.py Indel/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CONTROL/V2_MERGED_RAW.rmaffy.fil CONTROL/V2_MERGED_RAW.rmaffy.fil.indel
+
+
+#intersect
+plink --bfile V2_MERGED_RAW.rmaffy.fil.indel --extract intersect_markerID.txt --make-bed --out V2_MERGED_RAW.rmaffy.fil.indel.intersect
+plink --bfile KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel --extract intersect_markerID.txt --make-bed --out KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect
+
+##freq
+plink --bfile CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE_ref
+plink --bfile CONTROL/V2_MERGED_RAW.rmaffy.fil.indel.intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL_ref
+
+
+R
+
+case <- read.table("CASE_ref.frq",header=T)
+control <- read.table("CONTROL_ref.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+awk '{print $1}' rm_snp_frq.txt >rm_snp_frq_id.txt
+
+
+
+##Performing single-pass merge (81920 people, 487662 variants).
+
+plink --bfile CASE/KNIH.RAW.Gastric.2nd.rmSNP.rmLQSamples.rmaffy.fil.convert.indel.intersect --bmerge CONTROL/V2_MERGED_RAW.rmaffy.fil.indel.intersect \
+--allow-no-sex --make-bed --out merge/CASE_CONTROL_MERGE
+
+
+###rm_snp_frq_id = 23
+plink --bfile merge/CASE_CONTROL_MERGE --exclude rm_snp_frq_id.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq
+
+
+
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out merge/CASE_CONTROL_MERGE_rmfreq
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --extract merge/CASE_CONTROL_MERGE_rmfreq.prune.in --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.pruned
+flashpca_x86-64 --bfile merge/CASE_CONTROL_MERGE_rmfreq.pruned --outpc merge/1PCA.txt
+
+
+
+
+## after python Match1st.py make 1st trash(101 snps) file
+python MatchAlleleAndChange
+
+#######using merge/CASE_CONTROL_MERGE_rmfreq.bim run python MATCING code out 2nd_new_merge
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --exclude merge/trash.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.rmtrash
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --exclude merge/trash.txt --make-bed --out merge/CASE_CONTROL_MERGE_rmfreq.rmtrash
+cp merge/CASE_CONTROL_MERGE_rmfreq.rmtrash.bim merge/CASE_CONTROL_MERGE_rmfreq.rmtrash.ori.bim
+
+
+python MatchAlleleAndChange2nd.py
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq.rmtrash --make-bed --out 2nd_New_merge/NEW_MERGE
+
+    487538 NEW_MERGE.bim
+     81920 NEW_MERGE.fam
+
+
+
+
+#############NEW_MERGE
+
+extract.chr.py
+
+import os
+chr_input_dir = "/DATA/KCHIP_2019/Gastric/OAS_Plink/"
+def extract():
+	for i in range(1,22+1):
+		os.system("plink --bfile NEW_MERGE --extract "+chr_input_dir+"chr"+str(i)+".txt --make-bed --out NEW_MERGE.chr"+str(i))
+extract()
+
+
+python extract.chr
+
+
+##1000genome DATA loc : /DATA/KCHIP_2019/Gastric/OAS_Plink
+
+### to make intersect ID 1000genome with new_merge
+python extract.from.1000gnomda.py 
+
+import os
+gm_input_dir="/DATA/KCHIP_2019/Gastric/OAS_Plink/"
+merge_input_dir="/DATA/smkim/Gastric/QC_2nd/OUTPUTs/2nd_New_merge/"
+out_dir = "/DATA/smkim/Gastric/QC_2nd/INPUTs/Merge_1000genomeID/"
+def extract_intersect_ID():
+	for i in range(1,22+1):
+		os.system("awk '{print $2}' "+gm_input_dir +"ALL.chr"+str(i)+".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bim > "+out_dir+"1000genomeID_chr"+str(i)+".txt")
+		os.system("awk '{print $2}' "+merge_input_dir +"NEW_MERGE.chr"+str(i)+".bim > "+out_dir+"mergeID_chr"+str(i)+".txt")
+		os.system("cat "+out_dir+"1000genomeID_chr"+str(i)+".txt "+out_dir+"mergeID_chr"+str(i)+".txt |sort|uniq -c|awk '$1 == 2{print $2}'  > chr"+str(i)+"_intersectID.txt") 
+extract_intersect_ID()
+
+
+
+
+###extract using plink
+python make_intersect_bim.py
+
+
+import os
+
+gm_input_dir="/DATA/KCHIP_2019/Gastric/OAS_Plink/"
+merge_input_dir="/DATA/smkim/Gastric/QC_2nd/OUTPUTs/2nd_New_merge/"
+out_dir = "/DATA/smkim/Gastric/QC_2nd/INPUTs/Merge_1000genomeID/"
+def extract_intersect_ID():
+	for i in range(1,22+1):
+		os.system("plink --bfile NEW_MERGE.chr"+str(i)+" --extract chr"+str(i)+"_intersectID.txt --make-bed --out NEW_MERGE.chr"+str(i)+".intersect")
+		os.system("plink --bfile "+gm_input_dir +"ALL.chr"+str(i)+".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes --extract chr"+str(i)+"_intersectID.txt --make-bed --out All.chr"+str(i)+".phase3.intersect")
+extract_intersect_ID()
+
+
+#######after make merge_list, run plink
+
+plink --bfile NEW_MERGE.chr1.intersect --merge-list merge_list.txt --make-bed --allow-no-sex --out ../MERGE_with1000genome/Gastric_merge
+plink --bfile All.chr1.phase3.intersect --merge-list ALL_merge_list.txt --allow-no-sex --make-bed --out ../MERGE_with1000genome/ALL_merge
+
+###merge gastirc and 1000genome
+
+plink --bfile Gastric_merge --bmerge ALL_merge --make-bed --out Last_merge
+
+
+##pca
+
+plink --bfile Last_merge --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --exclude ../chr6_14_rm.txt --chr 1-22 --out Last_merge
+plink --bfile Last_merge --extract Last_merge.prune.in --make-bed --out Last_merge.pruned
+
+flashpca_x86-64  --bfile Last_merge.pruned --outpc PCA.txt
+
+
+R(personal computer)
+
+pca <-read.table("PCA.txt",header = T)
+gnomad <- read.table("1000genome_ID.txt")
+case <- read.table("CASE_ID.txt")
+control <- read.table("CONTROL_ID.txt")
+
+
+
+
