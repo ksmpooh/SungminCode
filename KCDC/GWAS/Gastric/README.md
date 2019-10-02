@@ -64,8 +64,7 @@ plink --bfile input --missing --out plink_missing
   * Heterozygosity 계산 = (N(NM) - O(HOM)) / N(NM)
   (N(NM) : number of non-missing genotype, O(HOM)) : Observed number of homozygotes) 
 
-<pre><code>
-plink --bfile plink --het --out plink_het
+<pre><code> plink --bfile plink --het --out plink_het
 </code></pre>
  --het : sample 별 homo, hetero genotype count 측정
   
