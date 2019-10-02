@@ -54,11 +54,20 @@ plink --bfile input --exclude rmSNP.txt --make-bed --out output
   * low call rate samples은 DNA quality가 낮거나 실험상의 오류로 인해 발생할 수 있으므로 분석에서 제외
   * call rate : (1 - F_MISS)*100
 
-<code>
+<pre><code>
 plink --bfile input --missing --out plink_missing
-</code>
+</code></pre>
+ --missing : missing rate 계산( F_MISS)
+* Excessive heterozygosity
+  * Excessive heterozygosity일 경우 DNA quality가 낮거나 실험 중 sample contamination에 발생 가능성이 있으므로 제외
+  * Missing을 AA 혹은 BB call로 채워줄 가능성이 있음 (calling bias)
+  * Heterozygosity 계산 = (N(NM) - O(HOM)) / N(NM)
+  (N(NM) : number of non-missing genotype, O(HOM)) : Observed number of homozygotes) 
 
-* heterozygosity
+<pre><code>
+plink --bfile plink --het --out plink_het
+</code></pre>
+ --het : sample 별 homo, hetero genotype count 측정
   
 
 #### 1.2 2nd QC
