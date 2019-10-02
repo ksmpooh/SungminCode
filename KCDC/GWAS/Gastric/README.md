@@ -14,7 +14,8 @@ apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_K
 </code></pre>
 
 * plink를 이용하여 file merge
-
+ * inputfile : ped, map
+ * listfile.txt : ...ped\t...map
 <pre><code>
 plink --file inputfile --merge_list listfile.txt --allow-no-sex --make-bed --out outputfile
 </code></pre>
