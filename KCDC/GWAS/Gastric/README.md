@@ -33,9 +33,9 @@ ps-classification-supplemental --performance-file outDir/Ps.performance.txt --su
 
 
 * SNPolisher를 통한 row quality SNP 제거
-** CAllRateBelowThreshold.ps
-** OffTargetVariant.ps
-** Other.ps
+  * * CAllRateBelowThreshold.ps
+  * OffTargetVariant.ps
+  Other.ps
 
 <pre><code>
 cat CallRateBelowThreshold.ps OffTargetVariant.ps Other.ps |sort | uniq  > rmSNP_2nd.txt
