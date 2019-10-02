@@ -29,8 +29,18 @@ ps-metrics --posterior-file outDir/AxiomGT1.snp-posteriors.txt --call-file outDi
 ps-classification --species-type human --metrics-file outDir/AxiomGT1.out.txt --output-dir outDir/
 
 ps-classification-supplemental --performance-file outDir/Ps.performance.txt --summary-file outDir/AxiomGT1.summary.txt --call-file outDir/AxiomGT1.calls.txt --posterior-file outDir/AxiomGT1.snp-posteriors.txt --output-dir outDir/
-
 </code></pre>
+
+
+* SNPolisher를 통한 row quality SNP 제거
+** CAllRateBelowThreshold.ps
+** OffTargetVariant.ps
+** Other.ps
+
+<pre><code>
+cat CallRateBelowThreshold.ps OffTargetVariant.ps Other.ps |sort | uniq  > rmSNP_2nd.txt
+</code></pre>
+
 
 
 
