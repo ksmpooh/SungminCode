@@ -39,7 +39,7 @@ ps-classification-supplemental --performance-file outDir/Ps.performance.txt --su
   * OffTargetVariant(OTV) : AA, AB, BB genotype 외에 다른 cluster 형성된 marker
   * Other : 어떠한 분류에도 해당하지 않는 marker
 
-<pre><code> cat CallRateBelowThreshold.ps OffTargetVariant.ps Other.ps |sort | uniq  > rmSNP.txt
+<pre><code>cat CallRateBelowThreshold.ps OffTargetVariant.ps Other.ps |sort | uniq  > rmSNP.txt
 plink --bfile input --exclude rmSNP.txt --make-bed --out output
 </code></pre>
 
@@ -51,7 +51,8 @@ plink --bfile input --exclude rmSNP.txt --make-bed --out output
 
 <pre><code> plink --bfile input --missing --out plink_missing
 </code></pre>
- --missing : missing rate 계산( F_MISS)
+  * --missing : missing rate 계산( F_MISS)
+  * plink_missing.imiss file 생성
 * Excessive heterozygosity
   * Excessive heterozygosity일 경우 DNA quality가 낮거나 실험 중 sample contamination에 발생 가능성이 있으므로 제외
   * Missing을 AA 혹은 BB call로 채워줄 가능성이 있음 (calling bias)
@@ -60,9 +61,13 @@ plink --bfile input --exclude rmSNP.txt --make-bed --out output
 
 <pre><code> plink --bfile plink --het --out plink_het
 </code></pre>
- --het : sample 별 homo, hetero genotype count 측정
- 
-* missing-het 값 이용하여 row quality sample 제거(R code)
+  * --het : sample 별 homo, hetero genotype count 측정
+  * plink_het.HET file 생성
+  
+* missing-het 값 이용하여 row quality sample 제거
+  * R을 활용하여 missing, heterozygosity 값을 계산하여 기준 범위에 초과되는 sample을 제거
+  * plot을 통해 threshold 설정(주로 het은 < 0.03)
+  * R code
 <pre><code>miss <-read.table("KNIH.RAW.Gastric.2nd.rmSNP.MISS.imiss",header = T)
 het <- read.table("KNIH.RAW.Gastric.2nd.rmSNP.HET.het", header = T)
 
@@ -83,7 +88,11 @@ points(lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.03 < lowSample$F_
 dev.off()
 
 rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.4 | 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 </code></pre>
+  * plink 이용하여 row quality sample 제거
+<pre><code>plink --bfile plink --remove rmLQSamples.txt --make-bed --out plink_rmLQSamples</code></pre>
+
 
 
 #### 1.2 2nd QC
