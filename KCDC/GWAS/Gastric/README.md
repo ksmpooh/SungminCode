@@ -13,6 +13,12 @@
 apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis --arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml --dual-channel-normalization true --cel-files cel_file_list.txt --summaries --write-models --out-dir outDir/
 </code></pre>
 
+* plink를 이용하여 file merge
+
+<pre><code>
+plink --file inputfile --merge_list listfile.txt --allow-no-sex --make-bed --out outputfile
+</code></pre>
+
 
 
 
@@ -24,8 +30,9 @@ ps-classification --species-type human --metrics-file outDir/AxiomGT1.out.txt --
 
 ps-classification-supplemental --performance-file outDir/Ps.performance.txt --summary-file outDir/AxiomGT1.summary.txt --call-file outDir/AxiomGT1.calls.txt --posterior-file outDir/AxiomGT1.snp-posteriors.txt --output-dir outDir/
 
-
 </code></pre>
+
+
 
 ##### 1.1.3  
 #### 1.2 2nd QC
