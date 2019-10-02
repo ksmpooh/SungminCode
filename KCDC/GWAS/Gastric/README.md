@@ -61,7 +61,30 @@ plink --bfile input --exclude rmSNP.txt --make-bed --out output
 <pre><code> plink --bfile plink --het --out plink_het
 </code></pre>
  --het : sample 별 homo, hetero genotype count 측정
-  
+ 
+* missing-het 값 이용하여 row quality sample 제거(R code)
+<pre><code>miss <-read.table("KNIH.RAW.Gastric.2nd.rmSNP.MISS.imiss",header = T)
+het <- read.table("KNIH.RAW.Gastric.2nd.rmSNP.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("~/DATA/smkim/Gastric/QC_2nd/PDF/2nd_KNIH.RAW.Gastric.rmSNP.rmLQSamples.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="2nd Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.4, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.4 | 17 < lowSample$HET,]
+</code></pre>
+
 
 #### 1.2 2nd QC
 
