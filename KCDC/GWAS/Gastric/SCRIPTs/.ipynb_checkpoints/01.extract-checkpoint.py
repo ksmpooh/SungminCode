@@ -1,5 +1,4 @@
 ##extract each chr
-##chromosome 별로 나누기..for match intersect marker ID of 1000 genome 
 
 import os
 chr_input_dir = "/DATA/KCHIP_2019/Gastric/OAS_Plink/"
