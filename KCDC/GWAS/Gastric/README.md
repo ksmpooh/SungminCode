@@ -97,7 +97,6 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 
 #### 1.2 2nd QC
 
-
 <pre><code>
 
 </code></pre>
@@ -151,7 +150,6 @@ d <- strsplit(c,"\t") # 다시 그 string을 \t로 구분
 e =a
 colnames(e)<-unlist(d) #list type으로 되어 있는 d 를 unlist 해준다!
 </code></pre>
-
 
 
 
