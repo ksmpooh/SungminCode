@@ -51,8 +51,8 @@ plink --bfile input --exclude rmSNP.txt --make-bed --out output
 
 <pre><code> plink --bfile input --missing --out plink_missing
 </code></pre>
-  * --missing : missing rate 계산( F_MISS)
-  * plink_missing.imiss file 생성
+   * --missing : missing rate 계산( F_MISS)
+   * plink_missing.imiss file 생성
 * Excessive heterozygosity
   * Excessive heterozygosity일 경우 DNA quality가 낮거나 실험 중 sample contamination에 발생 가능성이 있으므로 제외
   * Missing을 AA 혹은 BB call로 채워줄 가능성이 있음 (calling bias)
