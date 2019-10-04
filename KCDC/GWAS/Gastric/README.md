@@ -97,8 +97,8 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
     * LD를 기반으로 대표 SNP 정보만 선별
     * 전체 데이터를 사용할 경우 매우 많은 시간이 소모
     * <pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --indep-pairwase 50 5 0.5 --out plink</code></pre>
-    --maf : Minor Allel Frequency 기준으로 제시된 수치 미만의 SNP 제외
-    --geno : SNP의 missing rate(1-call rate)가 제시된 수치를 초과한 SNP은 제외
+    * --maf : Minor Allel Frequency 기준으로 제시된 수치 미만의 SNP 제외
+    * --geno : SNP의 missing rate(1-call rate)가 제시된 수치를 초과한 SNP은 제외
     --hwe : Hardy Weinberg Equilibrium을 만족하지 않는  SNP제외
     
 <pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --indep-pairwase 50 5 0.5 --out plink</code></pre>
