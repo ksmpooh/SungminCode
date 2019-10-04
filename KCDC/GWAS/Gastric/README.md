@@ -99,11 +99,19 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
     * <pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --indep-pairwase 50 5 0.5 --out plink</code></pre>
     * --maf : Minor Allel Frequency 기준으로 제시된 수치 미만의 SNP 제외
     * --geno : SNP의 missing rate(1-call rate)가 제시된 수치를 초과한 SNP은 제외
-    --hwe : Hardy Weinberg Equilibrium을 만족하지 않는  SNP제외
+    * --hwe : Hardy Weinberg Equilibrium을 만족하지 않는  SNP제외
     
 <pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --indep-pairwase 50 5 0.5 --out plink</code></pre>
 
-    * 
+* PCA : Principal component analysis
+  * Reduce data dimension and minimum information loss
+  * population stratification 등의 가능성 존재
+  * 전체 샘플에서 벗어나는 sample 분석에서 제외 - plot을 그려서 확인
+  * ??PCA.txt 를 보면 PC1~10이 나온다. 1로 갈 수 더 중요한 분석결과?!
+  * P < 1e-6이  모두 CHR6,14에 있는 것으로 확인 됨, 해당 SNP 제거( LD관계가 밀집되어 있고 MHC region(6번)가 있어서 연관성이 크다고 크다고 나와 있을 수 있음)
+<pre><code>flashpca --bfile KNIH.RAW.Gastric.rmSNP.SNP.Pruned --outpc PCA.txt
+</code></pre>
+
 
 
 
