@@ -130,7 +130,7 @@ dev.off()
 
 rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
-</code></pre>     
+</code></pre> * 시험
 
 
 
@@ -138,7 +138,7 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 <pre><code>
 
-</code></pre>
+</code></pre>  * 
 
 
 
