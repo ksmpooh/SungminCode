@@ -100,8 +100,8 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
     * --maf : Minor Allel Frequency 기준으로 제시된 수치 미만의 SNP 제외
     * --geno : SNP의 missing rate(1-call rate)가 제시된 수치를 초과한 SNP은 제외
     * --hwe : Hardy Weinberg Equilibrium을 만족하지 않는  SNP제외
-    
-<pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --indep-pairwase 50 5 0.5 --out plink</code></pre>
+    * --extract : 해당 SNP 제거
+<pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --extract chr6_14.txt --indep-pairwase 50 5 0.5 --out plink</code></pre>
 
 * PCA : Principal component analysis
   * Reduce data dimension and minimum information loss
@@ -112,6 +112,25 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 <pre><code>flashpca --bfile KNIH.RAW.Gastric.rmSNP.SNP.Pruned --outpc PCA.txt
 </code></pre>
 
+* PCA plot 후 sample 제거
+  * plot 그리고 sample 뽑기
+<pre><code>pca <- read.table("KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt", header=T)
+
+pdf("../PDF/KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="PCA", cex=1.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+</code></pre>     
 
 
 
