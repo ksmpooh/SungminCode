@@ -24,24 +24,26 @@ matrix = []
 profile = []
 index = []
 
+before_chrom = '0'
+matrix = []
+profile = []
+index = []
 for i,line in enumerate(bim):
-	chrom,ID,trash,position,ref,alt = line.split('\t')
-	if before_chrom != chrom:
-		front = int(position)
-		front_index = i
-		before_chrom = chrom
-		continue
-	if int(position) >= front + windowSize:
-		profile = [chrom,front,int(position),front_index,i-1]
-		index.append(random.randrange(front_index,i))
-		front_index = i
-		front = int(position)
-		matrix.append(profile)
-
-
+    chrom,ID,trash,position,ref,alt = line.split("\t")
+    if before_chrom != chrom:
+        front = int(position)
+        front_index = i
+        before_chrom = chrom
+        continue
+    if int(position) >= (front + windowSize):
+        profile = [chrom,front,int(position),front_index,i-1]
+        index.append(random.randrange(front_index,i))
+        front_index = i
+        front = int(position)
+        matrix.append(profile)
 for i in index:
 	randomID_list.write(bim[i].split("\t")[1] + "\n")
 randomID_list.close()
 
-fileWrite(matrix,wdir+"chr_front_last_frontIndex_last_index.txt")
+#fileWrite(matrix,wdir+"chr_front_last_frontIndex_last_index.txt")
 
