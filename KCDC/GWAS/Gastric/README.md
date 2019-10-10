@@ -114,7 +114,7 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 
 * PCA plot 후 sample 제거
   * plot 그리고 sample 뽑기
-<pre><code>pca <- read.table("KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt", header=T)
+<pre><code>pca <- read.table("PCA.txt", header=T)
 
 pdf("../PDF/KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
