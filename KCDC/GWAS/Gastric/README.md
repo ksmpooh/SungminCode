@@ -130,7 +130,7 @@ dev.off()
 
 rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
-</code></pre> * 시험
+</code></pre> 
 
 
 
@@ -138,7 +138,15 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 <pre><code>
 
-</code></pre>  * 
+</code></pre>  
+##### 1.2.1 Genotype calling
+ * Do remove low qaulity samples which are from 1st sample QC before 2nd genotype calling, 
+ * Use different`
+#### 1.2 SNPolisher (by batch)
+
+#### 1.3 Sample QC (by batch)
+#### 1.4 merge
+#### 1.4 SNP QC
 
 
 
