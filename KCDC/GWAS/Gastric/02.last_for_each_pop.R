@@ -26,7 +26,12 @@ df <- rbind(df,control)
 
 df <- merge(df,pca, by = "FID")
 levels(df$GROUP)
-pdf("../../plot/ethnic.PCA.pdf",height =10, width = 10)
+#pdf("../../plot/ethnic.PCA.pdf",height =10, width = 10)
+
+png("../../plot/ethnic.PCA.png"
+    ,width = 1000, height = 1000,pointsize = 15
+    )
+
 plot(df$PC1,df$PC2,col = rgb(0,0,1,0.1),xlab = "PC1",ylab = "PC2",main="ethnic_PCA",
      cex.main = 3,cex = 1,pch = 16
 )
@@ -49,7 +54,7 @@ color <- c(
   rgb(0,1,0,1))
 list <- c("control","case","SAS","AFR","AMR","EAS","EUR")
 
-legend(x = 0 ,y = 0.6,list,col = color,cex = 1,pch = 16)
+legend(x = 1 ,y = 0.6,list,col = color,cex = 1.8,pch = 16)
 dev.off()
 
 
