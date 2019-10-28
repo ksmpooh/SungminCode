@@ -6,8 +6,13 @@
 </code></pre>
 
 ### 1. Quality control
+두번의 정도관리를 통해 low quality sample과 snp(marker)를 선별하는 작업
+1차 QC에서는 주로 low quality sample을 선별하여 제거하고
+2차 QC에서는 sample을 점검을 한 후 control data와 합쳐 이 후 작업(phasing, imputation, association 등)에 사용할 sample과 marker 선별.
+이 때 1000genome project의 data와 함께 PCA 분석을 하여 QC가 잘 되었는지 확인 및 검증
 
 #### 1.1 1st QC
+
 ##### 1.1.1 Genotype calling 
 <pre><code> apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis --arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml --dual-channel-normalization true --cel-files cel_file_list.txt --summaries --write-models --out-dir outDir/
 </code></pre>
@@ -143,8 +148,10 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  * Do remove low qaulity samples which are from 1st sample QC before 2nd genotype calling, 
  * Use different`
 #### 1.2 SNPolisher (by batch)
-
+ * 이전과 같음
 #### 1.3 Sample QC (by batch)
+ * 이전과 같음
+ * 추가된 사항 Relationship in
 #### 1.4 merge
 #### 1.4 SNP QC
 
