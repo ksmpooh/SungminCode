@@ -5,8 +5,8 @@ setwd("C:/Users/user/Desktop/KCDC/Gastric/")
 
 
 
-case <- read.table("QC/plotData/CASE.frq",header=T)
-control <- read.table("QC/plotData/CONTROL.frq",header=T)
+case <- read.table("plotDATA/CASE.frq",header=T)
+control <- read.table("plotDATA/CONTROL.frq",header=T)
 data <- merge(control,case,by="SNP")
 #pdf("plot/control&case_frequency.pdf",height = 10,width=10)
 png("plot/control&case_frequency.png")
