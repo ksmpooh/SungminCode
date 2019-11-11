@@ -151,7 +151,14 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  * 이전과 같음
 #### 1.3 Sample QC (by batch)
  * 이전과 같음
- * 추가된 사항 Relationship in
+ * 추가된 사항 Relationship inference
+ ##### 1.3.2 Relationship inference 
+ * 가족관계 가능성이 있는 경우 분석에서 제외
+ * king 프로그램을 이용하여 분석
+ - 예시
+<pre><code> king -b plink.bed --realted --rplot --cluster --degree 2 --cpu 5 --prefix plink_king
+</code></pre>  
+ 
 #### 1.4 merge
 #### 1.4 SNP QC
 
