@@ -155,8 +155,16 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  ##### 1.3.2 Relationship inference 
  * 가족관계 가능성이 있는 경우 분석에서 제외
  * king 프로그램을 이용하여 분석
- - 예시
-<pre><code> king -b plink.bed --realted --rplot --cluster --degree 2 --cpu 5 --prefix plink_king
+   * -b : input plink.bed file
+   * --related : 관계 분석. 결과 파일 .kin0 생성
+   * --cluster : 관계 분석, 가족 관계성 있는 것 끼리 grouping, .kin 파일 생성
+   * --degree [num] : num 촌수까지 결과 생성
+   * --rplot : 관계도와 결과를 plot으로 나타냄
+   * --cpu [num]: 사용할 cpu 갯수
+   * --prefix : output file name
+ * example result :
+ 
+<pre><code> king -b plink.bed --related --cluster --rplot --degree 2 --cpu 5 --prefix plink_king
 </code></pre>  
  
 #### 1.4 merge
