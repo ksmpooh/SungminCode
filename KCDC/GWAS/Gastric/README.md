@@ -173,7 +173,7 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
   * parent-offspring (PO) : (0.177, 0.354]
   * 2nd degree : (0.0884,0.177]
  * kinship과 relationship을 확인하여 ~2nd degree 까지 sample 추출
- <pre><code> grep 'DUZ|PO|FS|2nd' plink_king.kin0 | awk '{print $1'\t'$1}' > rmking.txt
+ <pre><code> grep -E "DUZ|PO|FS|2nd" plink_king.kin0 | awk '{print $1'\t'$1}' > rmking.txt
  plink --bfile plink --remove rmking.txt --make-bed --out plink_rmking
 </code></pre>  
  
