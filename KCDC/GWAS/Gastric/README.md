@@ -177,10 +177,11 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  plink --bfile plink --remove rmking.txt --make-bed --out plink_rmking
 </code></pre>  
  
- 
-#### 1.4 merge
 #### 1.4 SNP QC
-
+ * case와 Control 데이터를 merge 하기 위한 SNP QC
+ * 우선 SNP QC 를 한 후 공동된 marker를 찾고 frequency를 check하여 데이터의 이상이 있는 freq를 제거 해준다...
+ * csae control snp QC option은 연구에 따라 정한다.
+##### 1.4.1 
 
 
 ### 2. Association
