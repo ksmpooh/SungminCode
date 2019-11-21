@@ -1,14 +1,25 @@
 ######
 #tool -no_amf_align -buffer 1000 -int 1 12345 -h reference.hap.gz -l reference.legend.gz -m genetic_map -g phasing.haps.gz -o_gz -o chr1_1_12345
+
+###필요한 data
+###phasing 한 hap.gz
+### reference data(legend.gz)
+### map data(map.gz)
 import os,glob
 
-inDir = "/DATA/smkim/Gastric/Imputation/INPUTs/"
-#outDir = "/RDATA9/smkim/Gastric/Imputation/"
-outDir = "/DATA/smkim/Gastric/Imputation/OUTPUTs/"
+Dir = "/DATA/smkim/Gastric/" 
 
-shDir = "/DATA/smkim/Gastric/Imputation/SCRIPTs/01.imputationsh/"
-phasingDir = "/DATA/smkim/Gastric/Phasing/OUTPUTs/03.5Ksplit/"
-tool = "/DATA/smkim/Gastric/TOOLs/impute4.1.2_r300.2"
+inDir = "/DATA/smkim/Gastric/Imputation/INPUTs/"
+inDir = Dir + "/Imputation/INPUTs/"
+outDir = Dir + "/Imputation/OUTPUTs/"
+#outDir = "/RDATA9/smkim/Gastric/Imputation/"
+#outDir = "/DATA/smkim/Gastric/Imputation/OUTPUTs/"
+shDir = Dir + "/Imputation/SCRIPTs/01.imputationsh/"
+#shDir = "/DATA/smkim/Gastric/Imputation/SCRIPTs/01.imputationsh/"
+phasingDir = Dir + "Phasing/OUTPUTs/03.5Ksplit/"
+#phasingDir = "/DATA/smkim/Gastric/Phasing/OUTPUTs/03.5Ksplit/"
+tool = Dir + "TOOLs/impute"
+#tool = "/DATA/smkim/Gastric/TOOLs/impute4.1.2_r300.2"
 
 refDir = inDir + "KGP3KRG/"
 mapDir = inDir + "map/"
@@ -31,7 +42,7 @@ def main():
 #	sample_index = samples.replace("/DATA/smkim/Gastric/Phasing/INPUTs/5KsplitSample/","")
 
 	preposition = glob.glob(refDir+"chr*_*legend*")
-	position = [p.replace(refDir,"").replace(".legend.gz","").split('_') for p in preposition]
+	position = [p.replace(refDir,'').replace('.legend.gz','').split('_') for p in preposition]
 	for chr,front,tail in position:
 		if chr == "chr20":
 			mk_sh(sample_index,chr,front,tail)
