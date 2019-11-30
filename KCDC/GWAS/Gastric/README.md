@@ -183,7 +183,14 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  * csae control snp QC option은 연구에 따라 정한다.
 ##### 1.4.1 
 
+### 2. Phasing & Imputation
+#### 2.1 Pre-processing
+ * split plink file
+   * 
+ * map file, ref file,
+#### 2.2 Phasing
 
+#### 2.3 Imputation
 ### 2. Association
 #### 2.1 Imputation
 #### 2.2 Association
