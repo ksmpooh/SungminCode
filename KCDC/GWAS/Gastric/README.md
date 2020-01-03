@@ -147,12 +147,50 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 ##### 1.2.1 Genotype calling
  * Do remove low qaulity samples which are from 1st sample QC before 2nd genotype calling, 
  * Use different`
-#### 1.2 SNPolisher (by batch)
+#### 1.2.2 SNPolisher (by batch)
  * 이전과 같음
-#### 1.3 Sample QC (by batch)
+#### 1.2.3 SNP QC  & Sample QC(by batch)
  * 이전과 같음
- * 추가된 사항 Relationship inference
- ##### 1.3.2 Relationship inference 
+   * missing - hetrozygosity 계산하여 저품질 샘플 제거
+ * 추가된 사항 
+   * affy ID 가지고 있는 SNP 제거
+   * duplicated SNP 중 frequency 낮거나 missing rate높은 SNP 제거
+   * indel 처리
+   * filp 처리
+   * Relationship inference
+ ##### 1.2.3.1 Sample QC
+ * 저품질 sample 제거(이전과 같은) - R 이용하여 리스트를 뽑을 후 plink이용하여 제거
+ ##### 1.2.3.2 SNP QC
+ * 나중에 control data와 merge할때 필요없는 데이터와 분석에 문제가 생기는 SNP QC
+ * remove affy ID SNP
+ <pre><code> plink --bfile kchip.2nd --exclude affy_snp_list.txt --make-bed --out kchip.2nd_rmaffy
+</code></pre>  
+ * remove duplicated SNP 
+   * 중복된 SNP들이 있어 나중에 분석시 오류나 warning이 생김
+   * plink를 통해 missing rate과 duplicated SNP list 뽑기
+<pre><code> plink --bfile kchip.2nd_rmaffy --missing --list-dupicate-vars --out kchip.2nd_rmaffy
+</code></pre>  
+   * output file : .lmiss, .imiss, .dupvar 등 파일 생성
+     * .imiss 이전에 사용한 파일, sample에 대한 missing rate
+     * .lmiss : SNP에 대한 missing rate
+     * .dupvar : duplicated 된 position과 SNP ID    
+   * .lmiss file과 .dupvar를 이용하여 duplicated SNP 중 missing rate가 높은 SNP 선정하여 list 만들기
+   * plink --exclude를 사용하여 duplicated SNP 제거
+<pre><code> plink --bfile kchip.2nd_rmaffy --exclude duplicated_list.txt --make-bed --out kchip.2nd_rmaffy_rmdup
+</code></pre>  
+ * indel change
+   * 순서 : Convertobim --> indel
+   * 기존에 만든 python 파일을 이용
+
+<pre><code> python ConverToBim.py (ref.txt) (input name) (output name)
+ python ConvertToBim.py Axiom_KORV1_1.na35.annot.extract.txt kchip.2nd_rmaffy_rmdup kchip.2nd_rmaffy_rmdup_convert
+
+python indelChange.py (ref.txt) (input name) (output name)
+ python indelChange.py Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt 
+</code></pre>  
+   
+ 
+ ##### 1.2.3.2 Relationship inference 
  
  * 가족관계 가능성이 있는 경우 분석에서 제외
  * king 프로그램을 이용하여 분석
