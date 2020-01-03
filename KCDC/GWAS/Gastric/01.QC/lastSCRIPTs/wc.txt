@@ -1,0 +1,117 @@
+contorl
+   824266 V2_MERGED_RAW.bim
+   823887 V2_MERGED_RAW_rmaffy.bim
+   496559 V2_MERGED_RAW_rmaffy_fil.bim
+   496559 V2_MERGED_RAW_rmaffy_fil_indel.bim
+   487423 V2_MERGED_RAW_rmaffy_fil_indel_intersect.bim
+   487400 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq.bim
+   487400 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip.bim
+   487400 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip_updateSNPID.bim
+   496559 V2_MERGED_RAW_rmaffy_fil.ori.bim
+
+   77586 V2_MERGED_RAW.fam
+   77586 V2_MERGED_RAW_rmaffy.fam
+   77586 V2_MERGED_RAW_rmaffy_fil.fam
+   77586 V2_MERGED_RAW_rmaffy_fil_indel.fam
+   77586 V2_MERGED_RAW_rmaffy_fil_indel_intersect.fam
+   77586 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq.fam
+   77586 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip.fam
+   77586 V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip_updateSNPID.fam
+
+     487424 CONTROL.frq
+   13823420 CONTROL.hh
+        125 CONTROL.log
+     496559 control_markerID.txt
+        426 dup.dupvar
+
+case
+
+   4338 KNIH.RAW.Gastric.2nd.fam
+   4338 KNIH.RAW.Gastric.2nd_rmSNP.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_filp.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_filp_intersect.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq.fam
+   4326 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking.fam
+   4326 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp.fam
+   4326 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp_updateSNPID.fam
+   4334 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil.fam
+
+
+   827783 KNIH.RAW.Gastric.2nd.bim
+   799053 KNIH.RAW.Gastric.2nd_rmSNP.bim
+   799053 KNIH.RAW.Gastric.2nd_rmSNP_rmSample.bim
+   798677 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy.bim
+   798248 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_filp.bim
+   487423 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_filp_intersect.bim
+   487423 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect.bim
+   487400 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq.bim
+   487400 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking.bim
+   487400 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp.bim
+   487400 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp_updateSNPID.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert.ori.bim
+   600548 KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil.ori.bim
+
+    429 case_duplicateSNPID.txt
+ 600548 case_markerID.txt
+     41 kingallsegs.txt
+      0 rmKING.txt
+     41 testallsegs.txt
+487424 CASE.frq
+
+
+
+merge csae_control
+   81920 gastic.merge-merge.fam
+   81920 gastric.case.control.merge-merge.fam
+   81912 gastric.merge.after.flip.updateSNPID.fam
+   81920 gastric.merge.fam
+   81920 gastric.merge.pruned.fam
+
+  487400 gastric.merge.after.flip.updateSNPID.bim
+  487400 gastric.merge.bim
+   20452 gastric.merge.pruned.bim
+
+  487400 gastric.merge.after.flip.updateSNPID_sampleID.txt
+      41 gastric.mergeallsegs.txt
+   81921 PCA.txt
+       8 rmKING.txt
+
+
+ 487423 case_control_intersect_markerID.txt
+      10 eigenvalues.txt
+   84417 eigenvectors.txt
+      10 pve.txt
+      23 rm_snp_frq.txt
+
+
+1k
+  18750557 1kgp_merge.bed
+   7921558 1kgp_merge.bim
+      2504 1kgp_merge.fam
+     12621 1kgp_merge.log
+      2504 1kgp_merge.nosex
+   7921558 1kgp_merge_sampleID.txt
+
+
+
+all merge
+
+  303677 1kgp_merge_intersect.bim
+  303677 gastric.merge.after.flip.updateSNPID_intersect.bim
+  303677 merge.bim
+    5191 merge_pca.bim
+
+    5191 500K_distance_SNP_list.txt
+  303677 intersect_sampleID.txt
+   84417 pca.txt
+

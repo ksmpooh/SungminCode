@@ -1,0 +1,325 @@
+cd /DATA/smkim/Gastric/last_qc_2nd/OUTPUTs/CASE
+
+ 2861  plink --bfile KNIH.RAW.Gastric.2nd --exclude ../../INPUTs/CASE/rmSNP_2nd.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP
+ 2862  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP --remove ../../INPUTs/CASE/rmLQSamples.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample
+ 2863  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample --exclude ../../INPUTs/CASE/affy_snp_list.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy
+ 2828  python ../../SCRIPTs/01_select_dupID.py
+ 2864  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup
+
+cd ..
+
+ 3515  python ../SCRIPTs/indel/ConvertToBim.py ../INPUTs/Axiom_KORV1_1.na35.annot.extract.txt CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert
+ 3516  python ../SCRIPTs/indel/indelChange.py ../INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel
+ 3517  cd CASE
+ 3518  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel --flip ../../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip
+ 3519  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip --missing --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_miss
+ 3520  king -b KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip.bed --related --rplot --degree 2 --prefix KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip --cpu 20
+
+----------result
+
+
+Sorting autosomes...
+Total length of chromosomal segments usable for IBD segment analysis is 2683.9 MB
+  Information of these chromosomal segments can be found in file KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flipallsegs.txt
+
+Each family consists of one individual.
+A subset of informative SNPs will be used to screen close relatives.
+Relationship inference across families starts at Wed Oct 23 17:00:06 2019
+20 CPU cores are used...
+  Stages 1&2 (with 32768 SNPs): 21 pairs of relatives are detected (with kinship > 0.0625)
+                               Screening ends at Wed Oct 23 17:00:06 2019
+  Final Stage (with 772289 SNPs): 17 pairs of relatives (up to 2nd-degree) are confirmed
+                               Inference ends at Wed Oct 23 17:00:06 2019
+
+Relationship summary (total relatives: 0 by pedigree, 17 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	0	2	9	6
+
+
+Between-family relatives (kinship >= 0.08839) saved in file KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip.kin0
+Relationship plot is generated in KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_relplot.pdf
+  No pedigrees found in the dataset.
+Unique family plot is generated in KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_uniqfam0plot.pdf
+---------------------
+
+
+
+python ../../SCRIPTs/select_king.py
+
+
+
+ 3521  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip --remove case_kingID_selection.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking
+ 3522  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking --maf 0.01 --geno 0.05 --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil
+
+cd ..
+
+ 2877  plink --bfile V2_MERGED_RAW --exclude ../../INPUTs/CASE/affy_snp_list.txt --make-bed --out V2_MERGED_RAW_rmaffy
+ 3525  python ../SCRIPTs/indel/indelChange.py ../INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CONTROL/V2_MERGED_RAW_rmaffy CONTROL/V2_MERGED_RAW_rmaffy_indel
+ 3526  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel --flip ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip
+
+plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip  --geno 0.1 --maf 0.01 --hwe 0.001 --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil
+
+awk '{print $2}' CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil.bim > CASE/case_markerID.txt
+
+awk '{print $2}' CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil.bim > CONTROL/control_markerID.txt
+
+cat CASE/case_markerID.txt CONTROL/control_markerID.txt |sort|uniq -c | awk '$1 == 2{print $2}' > case_control_intersect_markerID.txt
+
+
+ 3541  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil --extract case_control_intersect_markerID.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil_intersect
+ 3542  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil --extract case_control_intersect_markerID.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_intersect
+ 3543  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil_intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE/CASE
+ 3544  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_intersect --freq --a1-allele ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL/CONTROL
+
+
+##R
+
+case <- read.table("CASE/CASE.frq",header=T)
+control <- read.table("CONTROL/CONTROL.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("../PDF/control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+
+ 3547  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil_intersect --exclude rm_snp_frq.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil_intersect_rmfrq
+ 3548  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_intersect --exclude rm_snp_frq.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_intersect_rmfrq
+ 3549  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_convert_indel_flip_rmking_fil_intersect_rmfrq --bmerge CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_intersect_rmfrq --allow-no-sex --make-bed --out MERGE/gastric.merge
+
+ 3554  plink --bfile gastric.merge  --indep-pairwise 50 5 0.01 --exclude ../../INPUTs/chr6_14_rm.txt --chr 1-22 --out gastric.merge.pruned
+ 3555  king -b gastric.merge.bed --related --degree 2 --rplot --prefix gastric.merge --cpu 20
+ 3556  king -b gastric.merge.bed --cluster --rplot --prefix test --degree 2 --cpu 20
+
+
+
+KING 2.2.2 - (c) 2010-2019 Wei-Min Chen
+
+KING starts at Wed Oct 23 17:43:28 2019
+Loading genotype data in PLINK binary format...
+Read in PLINK fam file gastric.merge.fam...
+  PLINK pedigrees loaded: 81903 samples
+Read in PLINK bim file gastric.merge.bim...
+  Genotype data consist of 468444 autosome SNPs, 18776 X-chromosome SNPs, 27 Y-chromosome SNPs, 44 mitochondrial SNPs
+  PLINK maps loaded: 487291 SNPs
+Read in PLINK bed file gastric.merge.bed...
+  PLINK binary genotypes loaded.
+  KING format genotype data successfully converted.
+Autosome genotypes stored in 7320 words for each of 81903 individuals.
+
+Options in effect:
+	--related
+	--degree 2
+	--cpus 20
+	--rplot
+	--prefix gastric.merge
+
+Sorting autosomes...
+Total length of chromosomal segments usable for IBD segment analysis is 2663.5 MB
+  Information of these chromosomal segments can be found in file gastric.mergeallsegs.txt
+
+Each family consists of one individual.
+A subset of informative SNPs will be used to screen close relatives.
+Relationship inference across families starts at Wed Oct 23 17:43:43 2019
+20 CPU cores are used...
+  Stages 1&2 (with 32768 SNPs): 1609 pairs of relatives are detected (with kinship > 0.0625)
+                               Screening ends at Wed Oct 23 17:44:39 2019
+  Final Stage (with 468444 SNPs): 178 pairs of relatives (up to 2nd-degree) are confirmed
+                               Inference ends at Wed Oct 23 17:44:39 2019
+
+Relationship summary (total relatives: 0 by pedigree, 187 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	8	13	41	116
+
+
+Between-family relatives (kinship >= 0.08839) saved in file gastric.merge.kin0
+Relationship plot is generated in gastric.merge_relplot.pdf
+  No pedigrees found in the dataset.
+Unique family plot is generated in gastric.merge_uniqfam0plot.pdf
+
+######################################################################
+KING starts at Wed Oct 23 17:47:34 2019
+Loading genotype data in PLINK binary format...
+Read in PLINK fam file gastric.merge.fam...
+  PLINK pedigrees loaded: 81903 samples
+Read in PLINK bim file gastric.merge.bim...
+  Genotype data consist of 468444 autosome SNPs, 18776 X-chromosome SNPs, 27 Y-chromosome SNPs, 44 mitochondrial SNPs
+  PLINK maps loaded: 487291 SNPs
+Read in PLINK bed file gastric.merge.bed...
+  PLINK binary genotypes loaded.
+  KING format genotype data successfully converted.
+
+Options in effect:
+	--cluster
+	--degree 2
+	--cpus 20
+	--rplot
+	--prefix test
+
+Family clustering starts at Wed Oct 23 17:47:44 2019
+Autosome genotypes stored in 7320 words for each of 81903 individuals.
+Sorting autosomes...
+Total length of chromosomal segments usable for IBD segment analysis is 2663.5 MB
+  Information of these chromosomal segments can be found in file testallsegs.txt
+
+20 CPU cores are used to compute the pairwise kinship coefficients...
+Clustering up to 2nd-degree relatives in families...
+Individual IDs are unique across all families.
+
+Relationship summary (total relatives: 0 by pedigree, 176 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	8	13	41	114
+
+Families are clustered into 175 new families
+Update-ID information is saved in file testupdateids.txt
+
+Pair-wise relatedness in newly clustered families saved in testcluster.kin.
+KING cluster analysis ends at Wed Oct 23 17:49:55 2019
+Plots of newly clustered families are generated in test_clusterplot.pdf
+
+
+
+
+
+
+--------------------------------------------
+ 2075  grep -E 'PO|MZ|FS|2nd' gastric.merge.kin0 > king_PO.MZ.FS.2nd.txt
+
+ 2093  grep -v 200801102563 king_PO.MZ.FS.2nd.txt > king_PO.MZ.FS.2nd_process.txt 
+ 2098  awk '{print $3"\t"$3}' king_PO.MZ.FS.2nd_process.txt > rmkingSampleID.txt
+ 2099  nano rmkingSampleID.txt 
+
+add 200801102563(case ID)
+
+
+
+
+
+
+plink --bfile gastric.merge --remove rmkingSampleID.txt --make-bed --out gastric.merge_rmking
+plink --bfile gastric.merge_rmking --indep-pairwise 50 5 0.01 --exclude ../../INPUTs/chr6_14_rm.txt --chr 1-22 --out gastric.merge_rmking_prune
+plink --bfile gastric.merge_rmking --extract gastric.merge_rmking_prune.prune.in --make-bed --out gastric.merge_rmking_pruned
+flashpca_x86-64 --bfile gastric.merge_rmking_pruned --outpc rm_king_PCA.txt
+R
+
+
+
+
+
+
+-------------------------pca
+
+pca <-read.table("rm_king_PCA.txt",header = T)
+pdf("/DATA/smkim/Gastric/last_qc_2nd/PDF/rm_king_PCA.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="Gastric_merge_PCA", cex=1.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+pca <-read.table("PCA.txt",header = T)
+pdf("/DATA/smkim/Gastric/last_qc_2nd/PDF/PCA.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="Gastric_case_contorl.PCA", cex=1.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+
+
+
+----------------------
+python updateSNP.py
+
+plink --bfile gastric.merge_rmking --update-name updateSNPID.txt --make-bed --out gastric.merge_rmking_updateSNPID
+
+ 2960  python ../SCRIPTs/02.1kgp_fre_nerge.py
+
+cat 1KGP/1kgp_merge.bim MERGE/gastric.merge_rmking_updateSNPID.bim | awk '{print $2}' | sort | uniq -c | awk '$1 == 2{print $2}' > ethnicPCA/1kgp.gastric.intersect.markerID.txt
+
+
+plink --bfile 1KGP/1kgp_merge --extract ethnicPCA/1kgp.gastric.intersect.markerID.txt --make-bed --out ethnicPCA/1kgp.merge_intersect
+plink --bfile MERGE/gastric.merge_rmking_updateSNPID --extract ethnicPCA/1kgp.gastric.intersect.markerID.txt --make-bed --out MERGE/gastric.merge_rmking_updateSNPID_intersect
+plink --bfile MERGE/gastric.merge_rmking_updateSNPID_intersect --bmerge ethnicPCA/1kgp.merge_intersect --allow-no-sex --make-bed --out ethnicPCA/merge
+python ../SCRIPTs/03.select_snpID_500K_distance.py 
+plink --bfile ethnicPCA/merge --extract ethnicPCA/500K_distance_SNP_list.txt --make-bed --out ethnicPCA/merge_pca
+flashpca_x86-64 --bfile ethnicPCA/merge_pca --outpc ethnicPCA/pca.txt
+
+-------------------
+
+
+pca <- read.table("ethnicPCA/pca.txt",header = T)
+#gnomad <- read.table("1000genome_ID.txt",header = F)
+samplegnomad<- read.table("../INPUTs/1000GP_Phase3.sample",header = T)
+case<-read.table("CASE/CASE_ID.txt",header = F)
+control <-read.table("CONTROL/CONTROL_ID.txt",header = F)
+
+colnames(case) <- "FID"
+colnames(control) <- "FID"
+
+case$FID <- as.factor(case$FID)
+control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+control$GROUP <- "CONTROL"
+
+df <- rbind(gnomad,case)
+df <- rbind(df,control)
+
+df <- merge(pca,df,by = "FID")
+pdf("../PDF/rm2nd_king_Last_PCA.pdf",height = 10,width = 10)
+
+plot(df$PC1,df$PC2,col = rgb(0,0,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic_PCA",
+     cex.main = 3,cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(1,0,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(0,1,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(0,1,0,0.3), cex = 1 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(1,1,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,0,0,0.3), cex = 1 , pch = 16)
+
+color <- c(
+  rgb(0,0,1,1),
+  rgb(1,0,0,1),
+  rgb(1,1,0,1),
+  rgb(1,0,1,1),
+  rgb(0,1,1,1),
+  rgb(0,0,0,1),
+  rgb(0,1,0,1))
+list <- c("control","case","SAS","AFR","AMR","EAS","EUR")
+
+legend(x = 0 ,y = 0.6,list,col = color,cex = 1,pch = 16)
+dev.off()
+
