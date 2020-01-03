@@ -215,6 +215,31 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
  <pre><code> grep -E "DUZ|PO|FS|2nd" plink_king.kin0 | awk '{print $1'\t'$1}' > rmking.txt
  plink --bfile plink --remove rmking.txt --make-bed --out plink_rmking
 </code></pre>  
+#### 1.3 SNP QC(filter) and Merge
+ * case와 Control 데이터를 merge 하기 위한 SNP QC
+ * 우선 SNP QC 를 한 후 공동된 marker를 찾고 frequency를 check하여 데이터의 이상이 있는 freq를 제거 해준다...
+ * csae control snp QC option은 연구에 따라 정한다.
+##### 1.3.1 SNP QC
+ * Case data SNP QC 
+   * maf : 0.01
+   * geno : 0.05
+ * Control data SNP QC 
+   * maf : 0.01
+   * geno : 0.01
+   * hwe : 0.001
+   * control data에 경우도 이미 low quality SNP은 이미 다 제거된 데이터 이지만, flip이나 duplicate, indel 처리 등이 안되어 있을 수 있으니 plink를 돌리면서 warning message를 잘 확인 한 후에, case QC와 마찮가지고 진행한 후에 filtering 진행
+<pre><code> plink --bfile plink --maf 0.01 --geno 0.01 --hwe 0.001 --make-bed --out plink_snpQC
+ * case control 각각 조건에 맞게 진행
+</code></pre>
+##### 1.3.2 common marker (intersect SNP ID)
+ * case와 control을 merge 하기 위해 공동된 SNP을 뽑는 과정
+ * 다양한 방법이 있지만 linux command 를 이용하는 방법이 제일 빠를듯
+<pre><code> awk '{print $2}' CASE_plink.bim > case_markerID.txt #case에 marker ID 뽑기
+awk '{print $2}' CONTROL_plink.bim > control_markerID.txt #control에 marker ID 뽑기
+cat case_markerID.txt control_markerID.txt | sort | uniq -c | awk '$1 == 2{print $2}' > intersectID.txt
+# 두개의 파일를 불러들이고(cat), sort를 한후 중복된 목록확인 후(uniq -c) 중복된것만 추려서(awk '$1 == 2...) 저장
+</code></pre>
+ 
  
 #### 1.4 SNP QC
  * case와 Control 데이터를 merge 하기 위한 SNP QC
