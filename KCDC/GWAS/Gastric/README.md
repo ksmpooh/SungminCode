@@ -185,11 +185,12 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 <pre><code> python ConverToBim.py (ref.txt) (input name) (output name)
  python ConvertToBim.py Axiom_KORV1_1.na35.annot.extract.txt kchip.2nd_rmaffy_rmdup kchip.2nd_rmaffy_rmdup_convert
 
-python indelChange.py (ref.txt) (input name) (output name)
- python indelChange.py Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt 
+ python indelChange.py (ref.txt) (input name) (output name)
+ python indelChange.py Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt kchip.2nd.*.convert kchip.2nd.*.convert_indel
 </code></pre>  
-   
- 
+  * flip : 
+    * <pre><code> plink --bfile kchip.2nd.*.convert_indel --flip Flip.txt --make-bed --out kchip.*.filp 
+</code></pre>
  ##### 1.2.3.2 Relationship inference 
  
  * 가족관계 가능성이 있는 경우 분석에서 제외
