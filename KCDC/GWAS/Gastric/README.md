@@ -239,6 +239,7 @@ cat case_markerID.txt control_markerID.txt | sort | uniq -c | awk '$1 == 2{print
 <pre><code> plink --bfile plink --extract intersectID.txt --make-bed --out plink_intersect
 </code></pre>  
 ##### 1.3.3 Allele frequency check
+ * batch 차이로 인해 연관성 분석에 영향을 미칠 수 있으므로, frequency차이가 큰 경우 제거
  * case, control 간에 allele frequency check를 통한 ?????????????????
  * plink --freq 옵션을 사용하면 output file .frq 파일 생성.
  * R을 이용하여 allele frequency plot을 그린 후 +-0.05 벗어나는 SNP 제거
