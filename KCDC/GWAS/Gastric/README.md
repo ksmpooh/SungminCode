@@ -140,10 +140,6 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 
 #### 1.2 2nd QC
-
-<pre><code>
-
-</code></pre>  
 ##### 1.2.1 Genotype calling
  * Do remove low qaulity samples which are from 1st sample QC before 2nd genotype calling, 
  * Use different`
@@ -212,7 +208,7 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
   * parent-offspring (PO) : (0.177, 0.354]
   * 2nd degree : (0.0884,0.177]
  * kinship과 relationship을 확인하여 ~2nd degree 까지 sample 추출
- <pre><code> grep -E "DUZ|PO|FS|2nd" plink_king.kin0 | awk '{print $1'\t'$1}' > rmking.txt
+ <pre><code>grep -E "DUZ|PO|FS|2nd" plink_king.kin0 | awk '{print $1'\t'$1}' > rmking.txt
  plink --bfile plink --remove rmking.txt --make-bed --out plink_rmking
 </code></pre>  
 #### 1.3 SNP QC(filter) and Merge
@@ -228,17 +224,33 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
    * geno : 0.01
    * hwe : 0.001
    * control data에 경우도 이미 low quality SNP은 이미 다 제거된 데이터 이지만, flip이나 duplicate, indel 처리 등이 안되어 있을 수 있으니 plink를 돌리면서 warning message를 잘 확인 한 후에, case QC와 마찮가지고 진행한 후에 filtering 진행
-<pre><code> plink --bfile plink --maf 0.01 --geno 0.01 --hwe 0.001 --make-bed --out plink_snpQC
+<pre><code>plink --bfile plink --maf 0.01 --geno 0.01 --hwe 0.001 --make-bed --out plink_snpQC
  * case control 각각 조건에 맞게 진행
 </code></pre>
 ##### 1.3.2 common marker (intersect SNP ID)
  * case와 control을 merge 하기 위해 공동된 SNP을 뽑는 과정
  * 다양한 방법이 있지만 linux command 를 이용하는 방법이 제일 빠를듯
-<pre><code> awk '{print $2}' CASE_plink.bim > case_markerID.txt #case에 marker ID 뽑기
+<pre><code>awk '{print $2}' CASE_plink.bim > case_markerID.txt #case에 marker ID 뽑기
 awk '{print $2}' CONTROL_plink.bim > control_markerID.txt #control에 marker ID 뽑기
 cat case_markerID.txt control_markerID.txt | sort | uniq -c | awk '$1 == 2{print $2}' > intersectID.txt
 # 두개의 파일를 불러들이고(cat), sort를 한후 중복된 목록확인 후(uniq -c) 중복된것만 추려서(awk '$1 == 2...) 저장
 </code></pre>
+ * common marker list를 plink --extract option을 이용하여 공동된 마커를 가지고 있는 plink file 만들기
+<pre><code> plink --bfile plink --extract intersectID.txt --make-bed --out plink_intersect
+</code></pre>  
+##### 1.3.3 Allele frequency check
+ * case, control 간에 allele frequency check를 통한 ?????????????????
+ * plink --freq 옵션을 사용하면 output file .frq 파일 생성.
+ * R을 이용하여 allele frequency plot을 그린 후 +-0.05 벗어나는 SNP 제거
+<pre><code>plink --bfile CASE_intersect --freq --a1-allele Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE
+plink --bfile CONTROL_intersect --freq --a1-allele Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL
+</code></pre>  
+ * output file로 CASE.frq 와 CONTROL.frq 가 생성 됨.
+ * --a1-allele을 하는 이유는 case,control 데이터 간에 a1-allele과 a2-allele을 맞춰주기 위함.
+   * 이것을 안할 경우 frequency가 반대로 나올 경우가 생긴다. 
+   * 예) case : a1 = C, a2 = G 경우 빈도수가 각각 0.9, 0.1 이라 가정하고 a1-allele을 기준으로 한다고 하면, frequency값이 0.9로 나오고 a2-allele을 기준으로 하면 frequency 값이 0.1로 나온다. 그래서 --a1-allele [REF] 에서 REF 파일에 기준 SNP을 정해주면 그 SNP을 기준으로 frequency 값이 계산되어 
+         
+         
  
  
 #### 1.4 SNP QC
