@@ -1,17 +1,22 @@
-#############
+#############make cell file list for 2nd QC
 library(stringr)
 
 setwd("C:/Users/user/Desktop/KCDC/transplantation/2nd/")
 df <- read.table("JG.list.txt")
 head(df)
+dim(df)
 #df$ID <- str_split_fixed(df$cel_files,"_",6)[,6]
 df$ID <- str_split_fixed(str_split_fixed(df$V1,"_",6)[,6],".CEL",2)[,1]
 
 rmID <- read.table("rm.1stQC.list.txt")
+head(rmID)
+out <- setdiff(df$ID,rmID$V1)
+
 row.names(df) <- df$ID
 
-out <-df[rmID$V1,]
+out <-df[out,]
 head(out)
+dim(out)
 write.table(out,"2nd_CEL_file_list.txt",row.names = F,col.names = F,quote = F,sep = "\t")
 
 ################3
