@@ -31,5 +31,28 @@ ref <- rbind(ref,KD)
 
 write.table(ref,"sample_info/sample.info.with.type.txt",col.names = T,row.names = F,quote = F,sep = '\t')
 
+head(ref)
 
 ############################3#############
+rmPCA <- read.table("1stQC/rmlist/rmPCA.txt")
+rmLQ <- read.table("1stQC/rmlist/rmLQSamples.txt")
+colnames(rmLQ) <- c("NewID","NewID1")
+colnames(rmPCA) <- c("NewID","NewID1")
+
+rmLQ <- merge(rmLQ,ref,by = "NewID")
+
+dim(rmLQ)
+table(rmLQ$type)
+head(rmLQ)
+
+
+rmPCA <- merge(rmPCA,ref,by = "NewID")
+dim(rmPCA)
+table(rmPCA$type)
+
+
+df <- rbind(rmLQ,rmPCA)
+df <- df[,c(1,3,4)]
+head(df)
+
+write.table(df,"1st.rmlist.with.type.txt",col.names = T,row.names = F,quote = F,sep = '\t')
