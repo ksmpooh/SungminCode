@@ -1,3 +1,5 @@
+setwd("c:/Users/user/Desktop/KCDC/transplantation/")
+
 ######################################
 setwd("c:/Users/user/Desktop/KCDC/transplantation/")
 
@@ -41,9 +43,11 @@ df <- read.table("sample_info/sample.info.with.type.txt",header = T)
 head(df)
 df <- merge(df,lowSample,by.x = "NewID",by.y = "FID")
 head(df)
-#pdf("PDF/KNIH.RAW.Gastric.rmSNP.rmLQSamples.pdf", height = 7, width = 10)
-plot(df$HET, df$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
-     ylab="missing rate", main="Missing vs. heterozygosity", col=rgb(0,0,0,0.5), cex=1.5, pch=20)
+pdf("1stQC/plotDATA/JG.1st.miss-het.pdf", height = 7, width = 10)
+plot(df$HET, df$F_MISS, 
+     xlim=c(10,25), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,0,0.3), cex=1.5, pch=20)
 abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
@@ -62,19 +66,19 @@ points(df[df$type == "LD" & (df$HET < 15 | 17 < df$HET | 0.03 < df$F_MISS),]$HET
        col = rgb(0,0,1,1), cex = 1 , pch = 20)
 
 color <- c(
-  rgb(0,0,0,1),
+  rgb(0,0,0,0.5),
   rgb(1,0,0,1),
   rgb(0,1,0,1),
   rgb(1,0,1,1),
   rgb(0,0,1,1))
 list <- c("Normal","KR","KD","LR","LD")
 legend(x = 23 ,y = 0.1,list,col = color,cex = 0.7,pch = 16)
-help(legend)
+#help(legend)
 dev.off()
 
 rmList <- df[0.03 < df$F_MISS | df$HET < 15 | 17 < df$HET,]
 dim(rmList)
-rmList$type
+table(rmList$type)
 
 #write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
@@ -83,11 +87,11 @@ df <- read.table("sample_info/sample.info.with.type.txt",header = T)
 pca <-read.table("1stQC/plotDATA/PCA.txt",header = T)
 head(pca)
 df <- merge(df,pca,by.x = "NewID",by.y ='FID')
-#pdf("PCA_gastric_case_merge.pdf", height = 10, width = 10)
 
-plot(df$PC1, df$PC2, col=rgb(0,0,0,0.3),
-     xlim=c(-0.25, 0.25), ylim=c(-0.15,0.15),
-     xlab="PC1", ylab="PC2", main="JG.1st.PCA", cex=1.5, pch=20)
+pdf("1stQC/plotDATA/JG.1st.PCA.pdf", height = 10, width = 10)
+plot(df$PC1, df$PC2, col=rgb(0,0,0,0.3)
+#     ,xlim=c(-0.25, 0.25), ylim=c(-0.15,0.15)
+     , xlab="PC1", ylab="PC2", main="JG.1st.PCA", cex=1.5, pch=20)
 abline(v=-0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(v=0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(h=0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
@@ -108,12 +112,14 @@ points(df[df$type == "LD" & (df$PC1 < -0.05 | 0.05 < df$PC1 | df$PC2 < -0.05 | 0
        col = rgb(0,0,1,1), cex = 1 , pch = 20)
 
 color <- c(
-  rgb(0,0,0,1),
+  rgb(0,0,0,0.5),
   rgb(1,0,0,1),
   rgb(0,1,0,1),
   rgb(0,1,1,1),
   rgb(0,0,1,1))
 list <- c("Normal","KR","KD","LR","LD")
-legend(x = -0.25 ,y = 0.15,list,col = color,cex = 0.7,pch = 16)
-
+#legend(x = -0.25 ,y = 0.15,list,col = color,cex = 0.7,pch = 16)
+legend(x = 0.2 ,y = 0.9,list,col = color,cex = 0.7,pch = 16)
 dev.off()
+rmlist <- df[0.05<df$PC1 | -0.05 > df$PC1 | df$PC2 < -0.05  | 0.05 < df$PC2,]
+table(rmlist$type)
