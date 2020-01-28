@@ -22,6 +22,8 @@ KR$type <- "KR"
 LD$type <- "LD"
 KD$type <- "KD"
 
+head(LD)
+
 colnames(LD) <- c("OriID","NewID","type")
 colnames(KD) <- c("OriID","NewID","type")
 
