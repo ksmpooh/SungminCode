@@ -97,3 +97,24 @@ list <- c("EAS","KR","KD","LR","LD")
 legend(x = 0 ,y = 0.1,list,col = color,cex = 1,pch = 16)
 dev.off()
 
+############################################miss-het
+miss <- read.table("2nd/JG.2nd.QC_snpolisher_miss-het.imiss",header = T)
+het <- read.table("2nd/JG.2nd.QC_snpolisher_miss-het.het",header = T)
+head(het)
+head(miss)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("2nd/JG.2nd.miss-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="2ndQC.Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1, pch=20)
+abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.3 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.4 | 17 < lowSample$HET | 0.3 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+

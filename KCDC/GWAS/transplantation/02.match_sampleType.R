@@ -58,3 +58,37 @@ df <- df[,c(1,3,4)]
 head(df)
 
 write.table(df,"1st.rmlist.with.type.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+
+
+
+
+
+######last sample type
+df <- read.table("sample_info/sample.info.with.type.txt",header = T)
+head(df)
+dim(df)
+
+dim(df)[1] - dim(liver)[1]*2 - dim(kidney)[1] * 2
+
+table(df$type)
+
+
+ori <- read.table("summary.info.txt")
+dim(ori)
+head(ori)
+ori <- ori[,c("V1","V5")]
+colnames(ori) <- c("NewID","sex")
+
+a <- merge(ori,df,by = "NewID")
+head(a)
+dim(a)
+table(a$type)
+cel <- read.table("cel_file_list.txt",header = T)
+head(cel)
+library(stringr)
+cel$ID <- str_split_fixed(str_split_fixed(cel$cel_files,"_",6)[,6],".CEL",2)[,1]
+head(cel)
+
+df <- merge(a,cel,by.x = 'NewID',by.y = 'ID')
+head(df)
+dim(df)
