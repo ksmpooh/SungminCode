@@ -20,6 +20,7 @@ dim(type)
 df <- read.table("sample_info/sample.info.with.type.txt",header = T)
 head(df)
 dim(df)
+table(df$type)
 
 dim(df)[1] - dim(liver)[1]*2 - dim(kidney)[1] * 2
 
