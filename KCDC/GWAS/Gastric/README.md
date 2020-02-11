@@ -121,7 +121,7 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
   * plot 그리고 sample 뽑기
 <pre><code>pca <- read.table("PCA.txt", header=T)
 
-pdf("../PDF/KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.txt.pdf", height = 10, width = 10)
+pdf("../PDF/KNIH.RAW.Gastric.rmSNP.SNP.Pruned.PCA.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
         xlab="PC1", ylab="PC2", main="PCA", cex=1.5, pch=16)
 abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
