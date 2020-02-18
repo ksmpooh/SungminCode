@@ -1,0 +1,60 @@
+cat CallRateBelowThreshold.ps Other.ps OffTargetVariant.ps | sort | uniq -c | awk '{print $2}' > /ADATA/smkim/JG/03.QC_2nd/INPUTs/snpolisher.txt
+
+    1313 CallRateBelowThreshold.ps
+    7709 OffTargetVariant.ps
+   27471 Other.ps
+
+plink --bfile JG.2nd.QC --exclude ../INPUTs/snpolisher.txt --make-bed --out JG.2nd.QC_snpolisher
+plink --bfile JG.2nd.QC_snpolisher --missing --het --out JG.2nd.QC_snpolisher_miss-het
+
+##R############
+miss <-read.table("JG.2nd.QC_snpolisher_miss-het.imiss",header = T)
+het <- read.table("JG.2nd.QC_snpolisher_miss-het.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("../PDF/JG.2nd.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(10,25), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15 | 17 < lowSample$HET,]
+#dim(rmList)
+
+#write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+####################
+plink --bfile JG.2nd.QC_snpolisher --remove ../INPUTs/notRelatedId.byking.txt --make-bed --out JG.2nd.QC_snpolisher_rmunrelated
+plink --bfile JG.2nd.QC_snpolisher_rmunrelated --exclude ../INPUTs/affy_snp_list.txt --make-bed --out JG.2nd.QC_snpolisher_rmunrelated_rmaffy
+python 01_select_dupID.py /ADATA/smkim/JG/03.QC_2nd/CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy
+
+plink --bfile JG.2nd.QC_snpolisher_rmunrelated_rmaffy --exclude ../case_duplicateSNPID.txt --make-bed --out JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup
+python indel/ConvertToBim.py ../../03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt ../../03.QC_2nd/CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup ../../03.QC_2nd/CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert
+
+plink --bfile JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel --flip ../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip
+
+
+
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip --update-name CASE/updateSNPID.txt --make-bed --out ethicalPCA/case.updated
+plink --bfile case.updated --maf 0.01 --geno 0.1 --hwe 0.001 --exclude ../INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out case.updated.fil
+
+cat ethicalPCA/case.updated.fil.bim 1KGP/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > ethicalPCA/intersectSNP.txt
+ plink --bfile 1KGP/1kgp_merge --extract ethicalPCA/intersectSNP.txt --make-bed --out ethicalPCA/1kgp_fil
+plink --bfile ethicalPCA/case.updated.fil --extract ethicalPCA/intersectSNP.txt --make-bed --out ethicalPCA/case.updated.fil.intersect
+
+plink --bfile case.updated.fil.intersect --bmerge 1kgp_fil --allow-no-sex --make-bed --out merge
+
+python 03..
+plink --bfile merge --extract 500K_distance_SNP_list.txt --make-bed --out merge_pca
+

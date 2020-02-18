@@ -1,0 +1,168 @@
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip --keep INPUTs/recipientID.txt --make-bed --out CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient --maf 0.01 --geno 0.05 --make-bed --out CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil
+plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil
+plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil --remove INPUTs/rmNC_IDlist.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC
+
+
+cat CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil.bim CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC.bim | awk '{print $2}' | sort| uniq -c | awk '$1==2{print $2}' > INPUTs/case.control.intersect.SNP.txt
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil --extract INPUTs/case.control.intersect.SNP.txt --make-bed --out CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil_intersect
+plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC --extract INPUTs/case.control.intersect.SNP.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect
+
+plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect --freq --a1-allele INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL/CONTROL
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil_intersect --freq --a1-allele INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out CASE/CASE --allow-no-sex
+
+
+case <- read.table("CASE/CASE.frq",header=T)
+control <- read.table("CONTROL/CONTROL.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("PDF/control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"INPUTs/rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+
+
+plink --bfile CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil_intersect --bmerge CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect --allow-no-sex --make-bed --out MERGE/JG.merge
+
+plink --bfile MERGE/JG.merge --exclude INPUTs/rm_snp_frq.txt --make-bed --out MERGE/JG.merge_rmfrq
+
+plink --bfile MERGE/JG.merge_rmfrq --exclude INPUTs/chr6_14_rm.txt --chr 1-22 --indep-pairwise 50 5 0.01 --out MERGE/JG.merge_rmfrq_pruning
+
+
+
+
+
+pca <-read.table("PCA.txt",header = T)
+pdf("../PDF/merge.PCA.pdf", height = 10, width = 10)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+xlim=c(-0.2, 0.2), ylim=c(-0.15,0.15),
+        xlab="PC1", ylab="PC2", main="JG.case.contorl.PCA", cex=1.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.075, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.075 < pca$PC1 | pca$PC2 < -0.075 | 0.075 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+
+
+
+
+----------------
+
+
+king -b JG.merge_rmfrq.bed --related --degree 2 --cpu 20 --rplot --prefix king/test
+
+
+###################################
+  Genotype data consist of 432559 autosome SNPs, 18450 X-chromosome SNPs, 27 Y-chromosome SNPs, 43 mitochondrial SNPs
+  PLINK maps loaded: 451079 SNPs
+Read in PLINK bed file JG.merge_rmfrq.bed...
+  PLINK binary genotypes loaded.
+  KING format genotype data successfully converted.
+Autosome genotypes stored in 6759 words for each of 77478 individuals.
+
+Options in effect:
+	--related
+	--degree 2
+	--cpus 20
+	--rplot
+	--prefix king/test
+
+Sorting autosomes...
+Total length of 40 chromosomal segments usable for IBD segment analysis is 2663.5 MB.
+  In addition to autosomes, 2 segments of length 151.7 MB on X-chr can be further used.
+  Information of these chromosomal segments can be found in file king/testallsegs.txt
+
+Each family consists of one individual.
+A subset of informative SNPs will be used to screen close relatives.
+Relationship inference across families starts at Tue Feb  4 14:59:49 2020
+20 CPU cores are used...
+  Stages 1&2 (with 32768 SNPs): 1472 pairs of relatives are detected (with kinship > 0.0625)
+                               Screening ends at Tue Feb  4 15:00:37 2020
+  Final Stage (with 432559 SNPs): 207 pairs of relatives (up to 2nd-degree) are confirmed
+                               Inference ends at Tue Feb  4 15:00:37 2020
+
+Relationship summary (total relatives: 0 by pedigree, 214 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	11	15	41	140
+
+
+Between-family relatives (kinship >= 0.08839) saved in file king/test.kin0
+  X-Chr IBD-sharing inference saved in file king/testX.kin0
+--related is done but R code king/test_relplot.R failed.
+
+#############################3
+
+
+
+   451100 CASE/CASE.bim
+   827783 CASE/JG.2nd.QC.bim
+   791293 CASE/JG.2nd.QC_snpolisher.bim
+   791293 CASE/JG.2nd.QC_snpolisher_rmunrelated.bim
+   790922 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient.bim
+   595635 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil.bim
+   451100 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil_intersect.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert.ori.bim
+   790513 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup.ori.bim
+   823887 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip.bim
+   459336 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil.bim
+   459336 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC.bim
+   451100 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect.bim
+ 12426376 total
+genome@genome102:/ADATA/smkim/JG/03.QC_2nd$ wc -l C*/*fam
+    3933 CASE/CASE.fam
+    6595 CASE/JG.2nd.QC.fam
+    6595 CASE/JG.2nd.QC_snpolisher.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip.fam
+    3933 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient.fam
+    3933 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil.fam
+    3933 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip_onlyrecipient_fil_intersect.fam
+    6589 CASE/JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup.fam
+   77586 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip.fam
+   77586 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil.fam
+   73545 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC.fam
+   73545 CONTROL/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect.fam
+  370718 total
+
+
+
+
+
+
+##########################################3
+grep MZ test.kin0 |awk '{print $1"\t"$1}' > rmkingMZ.txt
+plink --bfile JG.merge_rmfrq --remove king/rmkingMZ.txt --make-bed --out JG.merge_rmfrq_rmking
+
+
+#!/bin/bash
+
+	for chr in $(seq 1 22);do
+		plink --bfile /DATA/smkim/Gastric/last_qc_2nd/OUTPUTs/MERGE/gastric.merge_rmking --chr $chr --reference-allele /DATA/smkim/Gastric/last_qc_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /DATA/smkim/Gastric/Phasing/OUTPUTs/splitPlink/gastric.merge.chr$chr
+        done
+
+
