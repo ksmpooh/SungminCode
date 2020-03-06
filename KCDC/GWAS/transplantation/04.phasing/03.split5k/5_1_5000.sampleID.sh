@@ -1,0 +1,1 @@
+shapeit -convert --thread 2 --input-haps /ADATA/smkim/JG/04.phasing/OUTPUTs/03.5Ksplit/JG.phasing.chr5 --include-ind /ADATA/smkim/JG/04.phasing/INPUTs/5KsplitSample/1_5000.sampleID --output-haps /ADATA/smkim/JG/04.phasing/OUTPUTs/03.5Ksplit/JG.phasing.chr5.1_5000.sampleID --output-log /ADATA/smkim/JG/04.phasing/OUTPUTs/03.5Ksplit/JG.phasing.chr5.1_5000.sampleID
