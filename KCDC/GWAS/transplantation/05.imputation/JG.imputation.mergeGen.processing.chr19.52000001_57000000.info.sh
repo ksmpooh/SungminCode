@@ -1,0 +1,1 @@
+/ADATA/smkim/JG/TOOLs/qctool -g /ADATA/smkim/JG/05.imputation/OUTPUTs/02.mergeGen/JG.imputation.mergeGen.processing.chr19.52000001_57000000.gen.gz -snp-stats -osnp /ADATA/smkim/JG/05.imputation/OUTPUTs/03.info/JG.imputation.mergeGen.processing.chr19.52000001_57000000.info
