@@ -34,6 +34,8 @@ for (i in features){
   ngs.2d[,i] <- strtoi(ngs.2d[,i])
 }
 
+head(ngs.2d)
+
 td.ngs <- merge(td,ngs.2d,by.x = "ID",by.y = "KID")
 head(td.ngs)        
 

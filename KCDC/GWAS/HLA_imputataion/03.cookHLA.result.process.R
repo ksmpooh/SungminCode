@@ -257,4 +257,11 @@ df <- merge(df,drb,by = "ID")
 head(df)
 write.csv(df,"HLA.imputation.2digit.result.compare.sm.with.yj.csv",col.names = T,row.names = F,quote = F)
 
+nrow(df)
+sum(df$match.x + df$match + df$match.y)
+sum(df$wrong.x + df$wrong.y + df$wrong)
+sum(df$empty, df$empty.x, df$empty.y)
 
+sum(df$match.x + df$match + df$match.y)/(sum(df$match.x + df$match + df$match.y) + sum(df$wrong.x + df$wrong.y + df$wrong))
+
+  

@@ -52,36 +52,13 @@ head(c)
 out <- c[,c(1,8,2,4,5,7,3)]
 head(out)
 colnames(out) <- c('FID1','FID1.type','FID2','FID2.type','InfType','FID1.tubeID','FID2.tubeID')
+
+out[out$FID1 == "NIH19KT0016",]
+
+
+
+
 write.table(out,"2ndkingResult.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
 dim(out)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-##################
-
-x <- c(1,2,3,4,5,1)
-x
-unique(x)
-x
-
-x <- c$FID2
-table(c$FID2)
-x <- unique(x)
-
-
-
-l <- setdiff(d$FID1.y,c$FID1.y)
-
-d[d$FID1.y == l,]
