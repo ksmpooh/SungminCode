@@ -100,7 +100,25 @@ colnames(ngs.2d) <-c("ID","ngs.A1","ngs.A2","ngs.B1","ngs.B2","ngs.DRB1","ngs.DR
 ngs.2d[1:10,]
 
 
+A.2d <- read.table("HLAimputation/Result/HLA_imputation_A_allele_4d_without.3.allele.txt",header = T)
+A.2d <- merge(ngs.2d[1:255,c(1,2,3)],A.2d[,c(1,2,3)],by = "ID",all.x = T)
+head(A.2d)
 
+write.table(A.2d,"HLAimputation/Result/ngs.vs.sm.compare/HLA_imputation_A_allele_4d_without.3.allele.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+B.2d <- read.table("HLAimputation/Result/HLA_imputation_B_allele_4d_without.3.allele.txt",header = T)
+B.2d <- merge(ngs.2d[1:255,c(1,4,5)],B.2d[,c(1,2,3)],by = "ID",all.x = T)
+head(B.2d)
+
+write.table(B.2d,"HLAimputation/Result/ngs.vs.sm.compare/HLA_imputation_B_allele_4d_without.3.allele.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+DRB.2d <- read.table("HLAimputation/Result/HLA_imputation_DRB_allele_4d_without.3.allele.txt",header = T)
+DRB.2d <- merge(ngs.2d[1:255,c(1,6,7)],DRB.2d[,c(1,2,3)],by = "ID",all.x = T)
+head(DRB.2d)
+
+write.table(DRB.2d,"HLAimputation/Result/ngs.vs.sm.compare/HLA_imputation_DRB_allele_4d_without.3.allele.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
 
 
@@ -111,11 +129,9 @@ ngs.2d[1:10,]
 ######merge
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result/ngs.vs.sm.compare/")
 final_merge <- function(digit,A,B){
-  
   a <- paste0("HLA.imputation.A_allele.",as.character(digit),"digit.without.3.allele.compare.",A,".and.",B,".txt")
   b <- paste0("HLA.imputation.B_allele.",as.character(digit),"digit.without.3.allele.compare.",A,".and.",B,".txt")
   drb <- paste0("HLA.imputation.DRB_allele.",as.character(digit),"digit.without.3.allele.compare.",A,".and.",B,".txt")
-  
   a<-read.table(a,header = T)
   b<-read.table(b,header = T)
   drb<-read.table(drb,header = T)
@@ -131,5 +147,6 @@ final_merge <- function(digit,A,B){
 }
 
 df <- final_merge(2,"ngs","sm")
+df <- final_merge(4,"ngs","sm")
 ncol(df)
 head(df)
