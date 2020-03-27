@@ -1,5 +1,5 @@
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result/")
-df <- read.table("HLA_imputed_RAW.raw",header = T)
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
+df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 head(df)
 colnames(df)
 grep("*DRB1*",colnames(df))
@@ -81,21 +81,23 @@ hla.find<-function(df,concept){
 DRB_td <- hla.subset(DRB,2)
 head(DRB_td)
 DRB_td <- hla.find(DRB_td,"DRB")
-
+table(DRB_td$DRB3)
 ####
 a <- DRB_td[!is.na(DRB_td$DRB3),]
-#write.table(a,"HLAimputation.3alleles.in.DRB.2digit.txt",col.names = T,row.names = F,quote = F)
+write.table(a,"HLAimputation.3alleles.in.DRB.2digit.txt",col.names = T,row.names = F,quote = F)
 #####
 
-#DRB_td <- DRB_td[is.na(DRB_td$DRB3),]
+DRB_td <- DRB_td[is.na(DRB_td$DRB3),]
 
 DRB_td <- DRB_td[,c(1,2,ncol(DRB_td)-2,ncol(DRB_td)-1,ncol(DRB_td))]
+#DRB_td <- DRB_td[,c(1,2,ncol(DRB_td)-2,ncol(DRB_td)-1)]
 head(DRB_td)
 table(DRB_td$DRB3)
 
 
 A_td <- hla.subset(A,2)
 A_td <- hla.find(A_td,"A")
+
 A_td <- A_td[,c(1,2,ncol(A_td)-1,ncol(A_td))]
 head(A_td)
 
@@ -104,10 +106,13 @@ B_td <- hla.subset(B,2)
 B_td <- hla.find(B_td,"B")
 #######
 b <- B_td[!is.na(B_td$B3),]
-#write.table(a,"HLAimputation.3alleles.in.B.2digit.txt",col.names = T,row.names = F,quote = F)
+table(b$B3)
+write.table(b,"HLAimputation.3alleles.in.B.2digit.txt",col.names = T,row.names = F,quote = F)
 
 ####
+B_td <- B_td[is.na(B_td$B3),]
 B_td <- B_td[,c(1,2,ncol(B_td)-2,ncol(B_td)-1,ncol(B_td))]
+#B_td <- B_td[,c(1,2,ncol(B_td)-2,ncol(B_td)-1)]
 
 table(B_td$B3)
 head(B_td)
@@ -159,10 +164,10 @@ DRB_fd <- DRB_fd[,c(1,2,ncol(DRB_fd)-2,ncol(DRB_fd)-1,ncol(DRB_fd))]
 head(DRB_fd)
 table(DRB_fd$DRB3)
 
-#a <- DRB_fd[!is.na(DRB_fd$DRB3),]
-#write.table(a,"HLAimputation.3alleles.in.DRB.4digit.txt",col.names = T,row.names = F,quote = F)
+a <- DRB_fd[!is.na(DRB_fd$DRB3),]
+write.table(a,"HLAimputation.3alleles.in.DRB.4digit.txt",col.names = T,row.names = F,quote = F)
 
-DRB_fd <- DRB_fd[is.na(DRB_fd$DRB3),]
+#DRB_fd <- DRB_fd[is.na(DRB_fd$DRB3),]
 
 A_fd <- hla.subset(A,4)
 A_fd <- hla.find(A_fd,"A")
@@ -209,8 +214,9 @@ write.table(b,"HLA_imputation_B_allele_4d_without.3.allele.txt",col.names = T,ro
 write.table(drb,"HLA_imputation_DRB_allele_4d_without.3.allele.txt",col.names = T,row.names = F,quote = F,sep = '\t')
 
 
+
 ##################python data processing ÈÄ merge ÀÛ¾÷
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
 final_merge <- function(digit){
   
   a <- paste0("HLA.imputation.A_allele.",as.character(digit),"digit.without.3.allele.compare.sm.and.yj.txt")
@@ -224,10 +230,10 @@ final_merge <- function(digit){
   df <- merge(a,b,by = "ID")
   df <- merge(df,drb,by = "ID")
   out = paste0("HLA.imputation.",as.character(digit),"digit.result.compare.sm.with.yj.csv")
-  #write.csv(df,out,row.names = F,quote = F)
+  write.csv(df,out,row.names = F,quote = F)
   return(df)
 }
-
+df <- final_merge(2)
 df <- final_merge(4)
 head(df)
 
