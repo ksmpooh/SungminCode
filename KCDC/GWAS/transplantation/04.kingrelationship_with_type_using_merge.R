@@ -47,18 +47,21 @@ b <- b[2,]
 b$type <- "notpredict.prunedsnp"
 rownames(b) <- NULL
 c <- merge(c,b,all = T)
+c <- c[,c(4,6,3,2,1,5,7)]
 c
-
 ###############################################################################################################
+
+df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
+
 
 #df <- read.table("JG.2nd.merge.all.kin0",header = T)
 head(df)
 table(df$InfType)
 
+df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ'|df$InfType =='2nd',c(1,3,ncol(df))]
 
-df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ',c(1,3,ncol(df))]
-
-sample_info <- read.table("../../final_sample_info/last.sample.info.txt",header = T)
+sample_info <- read.table("../final_sample_info/last.sample.info.txt",header = T)
+#sample_info <- read.table("../../final_sample_info/last.sample.info.txt",header = T)
 head(sample_info)
 sample_info <- sample_info[,c(1,2,4)]
 head(df)
@@ -105,10 +108,11 @@ colnames(out) <- c('FID1','FID1.type','FID2','FID2.type','InfType','FID1.tubeID'
 
 out[out$FID1 == "NIH19KT0016",]
 
+out
 
 
-
-write.table(out,"2ndkingResult.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+write.table(out,"data.processing/2ndkingResult.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+write.csv(out,"data.processing/2ndkingResult.2ndDegree.allsnp.withType.csv",row.names = F)
 dim(out)
 
 

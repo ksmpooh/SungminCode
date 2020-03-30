@@ -92,6 +92,7 @@ head(df)
 df[df$KCHIP_ID == "NIH19KT0017",]
 
 write.table(df,"final_sample_info/pairtable/not.predicted.by.king.txt",col.names = T,row.names = F,quote = F)
+write.csv(df,"final_sample_info/pairtable/not.predicted.by.king.csv")
 head(df)
 table(df$Rela_Pair)
 table(df$Rela_Pair1)
