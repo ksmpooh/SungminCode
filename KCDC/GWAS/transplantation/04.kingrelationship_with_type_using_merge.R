@@ -1,7 +1,57 @@
-setwd("c:/Users/user/Desktop/KCDC/transplantation/2nd/all.king/")
+setwd("c:/Users/user/Desktop/KCDC/transplantation/king/")
+
 
 #df <- read.table("../king/test.kin0",header = T)
-df <- read.table("JG.2nd.merge.all.kin0",header = T)
+
+
+##########DATA result processing  ##################################
+df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
+df1 <- read.table("2ndDegree/01.all.sample/02.pruned.snp/01.related/JG.pruned.snp.2nd.related.kin0",header = T)
+
+a <- as.data.frame(table(df$InfType))
+a <- data.frame(t(as.data.frame(table(df$InfType))))
+colnames(a) <- as.data.frame(table(df$InfType))$Var1
+a <- a[2,]
+a$type <- "allsample.allsnp"
+rownames(a) <- NULL
+#a$UN <- 'NA'
+
+
+b <- as.data.frame(table(df1$InfType))
+b <- data.frame(t(as.data.frame(table(df1$InfType))))
+colnames(b) <- as.data.frame(table(df1$InfType))$Var1
+b <- b[2,]
+b$type <- "allsample.prunedsnp"
+rownames(b) <- NULL
+c <- merge(a,b,all=T)
+#c <- rbind(a,b)
+c
+df <- read.table("2ndDegree/02.notpredict/01.all.snp/01.related/JG.notpredict.related.2nd.kin0",header = T)
+df1 <- read.table("2ndDegree/02.notpredict/02.pruned.snp/01.related/JG.not.predict.pruned.related.2nd.kin0",header = T)
+
+a <- as.data.frame(table(df$InfType))
+a <- data.frame(t(as.data.frame(table(df$InfType))))
+colnames(a) <- as.data.frame(table(df$InfType))$Var1
+a <- a[2,]
+a$type <- "notpredict.allsnp"
+rownames(a) <- NULL
+#a$UN <- 'NA'
+a
+c <- merge(c,a,all = T)
+c
+
+b <- as.data.frame(table(df1$InfType))
+b <- data.frame(t(as.data.frame(table(df1$InfType))))
+colnames(b) <- as.data.frame(table(df1$InfType))$Var1
+b <- b[2,]
+b$type <- "notpredict.prunedsnp"
+rownames(b) <- NULL
+c <- merge(c,b,all = T)
+c
+
+###############################################################################################################
+
+#df <- read.table("JG.2nd.merge.all.kin0",header = T)
 head(df)
 table(df$InfType)
 
