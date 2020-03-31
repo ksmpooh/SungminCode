@@ -50,10 +50,9 @@ c <- merge(c,b,all = T)
 c <- c[,c(4,6,3,2,1,5,7)]
 c
 ###############################################################################################################
+setwd("c:/Users/user/Desktop/KCDC/transplantation/king/")
 
 df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
-
-
 #df <- read.table("JG.2nd.merge.all.kin0",header = T)
 head(df)
 table(df$InfType)
@@ -108,11 +107,12 @@ colnames(out) <- c('FID1','FID1.type','FID2','FID2.type','InfType','FID1.tubeID'
 
 out[out$FID1 == "NIH19KT0016",]
 
+#out[grep("6715",out$FID1),]
 out
 
 
-write.table(out,"data.processing/2ndkingResult.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
-write.csv(out,"data.processing/2ndkingResult.2ndDegree.allsnp.withType.csv",row.names = F)
+write.table(out,"Final/kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+write.csv(out,"Final/kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
 dim(out)
 
 

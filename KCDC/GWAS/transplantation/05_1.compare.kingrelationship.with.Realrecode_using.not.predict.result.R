@@ -4,8 +4,11 @@ setwd("c:/Users/user/Desktop/KCDC/transplantation/")
 library(dplyr)
 df <- read.table("king/data.processing/2ndkingResult.2ndDegree.allsnp.withType.txt",header = T)
 #df <- read.table("")
+head(df)
+df[grep("6715",df$FID2),]
 notpredict.allsnp <- read.table("king/2ndDegree/02.notpredict/01.all.snp/01.related/JG.notpredict.related.2nd.kin0",header = T)
 head(notpredict.allsnp)
+notpredict.allsnp[grep("6715",notpredict.allsnp$FID2),]
 notpredict.allsnp <- notpredict.allsnp[notpredict.allsnp$InfType == 'PO'|notpredict.allsnp$InfType == 'FS'|notpredict.allsnp$InfType == '2nd',c(1,3,14)]
 notpredict.allsnp
 
