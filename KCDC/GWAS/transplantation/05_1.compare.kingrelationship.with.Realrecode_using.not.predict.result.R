@@ -87,5 +87,13 @@ c<- merge(c,d,all = T)
 c
 #write.csv(c,"king/compare.not.predict/compare.notpredictlist.by.all.sample.king.with.king.Result,by.Notpredictlist.csv",row.names = F)
 
+########################rmlist
+rmlist <- read.table("final_sample_info/last.sample.info.txt",header = T)
+head(rmlist)
+rmlist <- subset(rmlist,rmlist$state == "remove",select = c("NewID","info","state"))
 
 
+head(c)
+d <- merge(c,rmlist,by.x = "KCHIP_ID",by.y = 'NewID',all.x = T)
+head(d)
+d$state
