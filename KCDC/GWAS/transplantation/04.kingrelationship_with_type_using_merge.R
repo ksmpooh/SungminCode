@@ -50,8 +50,8 @@ c <- merge(c,b,all = T)
 c <- c[,c(4,6,3,2,1,5,7)]
 c
 ###############################################################################################################
+# 데이터 정리한 곳에 type 추가
 setwd("c:/Users/user/Desktop/KCDC/transplantation/king/")
-
 df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
 #df <- read.table("JG.2nd.merge.all.kin0",header = T)
 head(df)
@@ -66,30 +66,52 @@ sample_info <- sample_info[,c(1,2,4)]
 head(df)
 
 #a <- merge(sample_info,df,by.y = 'FID1',by.x = 'NewID')
-a <- merge(df,sample_info,by.x = 'FID1',by.y = 'NewID')
+#a <- merge(df,sample_info,by.x = 'FID1',by.y = 'NewID')
+#colnames(a)[4:5] <- c("FID1.tubeID","FID1.type")
+#head(a)
+
+#b <- merge(df,sample_info,by.x = 'FID2',by.y = 'NewID')
+#colnames(b)[4:5] <- c("FID2.tubeID","FID2.type")
+#head(b)
+#head(df)
+
+#c <- merge(a,b,all = T)
+
+c <- df
+################20200401
+a <- merge(df,sample_info,by.x = 'FID1',by.y = 'NewID',all.x = T)
 colnames(a)[4:5] <- c("FID1.tubeID","FID1.type")
 head(a)
 
-b <- merge(df,sample_info,by.x = 'FID2',by.y = 'NewID')
+b <- merge(df,sample_info,by.x = 'FID2',by.y = 'NewID',all.x = T)
 colnames(b)[4:5] <- c("FID2.tubeID","FID2.type")
-head(b)
-head(df)
+a <- a[,c(1,2,5)]
+c <- merge(a,b,all = T)
 
-c <- df
-c <- merge(b[,c(1,2,4,5),],c,by = 'FID2')
+
+########################up 20200401
+
+################################최초 중복 제거 위한 코드###########################3
+## 다시 한 이유 : control 값이 사라짐
+#c <- merge(b[,c(1,2,4,5),],c,by = 'FID2')
 #d <- merge(b[,c(1,2,4,5),],d,by = 'FID2')
+#d<-c
 
-################################
-################################
-library(dplyr)
+#head(c)
 
-c <- distinct(c,FID1.x,FID2,.keep_all = TRUE) #중복된 값 제거
-c <- c[,c(1,2,3,4,6)]
-colnames(c)[2] <- 'FID1'
-head(c)
 
-c <- merge(c,a[,c(1,2,4,5)],by = 'FID1',all.x = TRUE)
-c <- distinct(c,FID2.x,FID1,.keep_all = TRUE)
+#library(dplyr)
+
+#c <- distinct(c,FID1.x,FID2,.keep_all = TRUE) #중복된 값 제거
+#head(d)
+#c <- c[,c(1,2,3,4,6)]
+#colnames(c)[2] <- 'FID1'
+#head(c)
+
+#c <- merge(c,a[,c(1,2,4,5)],by = 'FID1',all.x = TRUE)
+#c <- distinct(c,FID2.x,FID1,.keep_all = TRUE)
+################################last line#####최초 중복 제거 위한 코드###########################3
+
 
 levels <- levels(c$FID1.type)
 levels[length(levels) + 1] <- "control"
@@ -97,8 +119,10 @@ levels[length(levels) + 1] <- "control"
 # refactor Species to include "None" as a factor level
 # and replace NA with "None"
 c$FID1.type <- factor(c$FID1.type, levels = levels)
+c$FID2.type <- factor(c$FID2.type, levels = levels)
 #df$Species[is.na(df$Species)] <- "None"
 c[is.na(c$FID1.type),'FID1.type'] <- "control"
+c[is.na(c$FID2.type),'FID2.type'] <- "control"
 head(c)
 
 out <- c[,c(1,8,2,4,5,7,3)]

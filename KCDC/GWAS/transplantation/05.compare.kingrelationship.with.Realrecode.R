@@ -102,6 +102,7 @@ table(df$Rela_Pair1)
 
 
 
+
 ########################################FINAL
 ######using FINAL 20200331
 setwd("C:/Users/user/Desktop/KCDC/transplantation/")
