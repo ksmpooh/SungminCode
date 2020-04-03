@@ -58,7 +58,7 @@ head(df)
 table(df$InfType)
 
 df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ'|df$InfType =='2nd',c(1,3,ncol(df))]
-
+#df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ',c(1,3,ncol(df))]
 sample_info <- read.table("../final_sample_info/last.sample.info.txt",header = T)
 #sample_info <- read.table("../../final_sample_info/last.sample.info.txt",header = T)
 head(sample_info)
@@ -85,7 +85,8 @@ head(a)
 
 b <- merge(df,sample_info,by.x = 'FID2',by.y = 'NewID',all.x = T)
 colnames(b)[4:5] <- c("FID2.tubeID","FID2.type")
-a <- a[,c(1,2,5)]
+
+#a <- a[,c(1,2,5)]
 c <- merge(a,b,all = T)
 
 
@@ -122,21 +123,23 @@ c$FID1.type <- factor(c$FID1.type, levels = levels)
 c$FID2.type <- factor(c$FID2.type, levels = levels)
 #df$Species[is.na(df$Species)] <- "None"
 c[is.na(c$FID1.type),'FID1.type'] <- "control"
+
 c[is.na(c$FID2.type),'FID2.type'] <- "control"
 head(c)
 
-out <- c[,c(1,8,2,4,5,7,3)]
+out <- c[,c(1,5,4,2,7,6,3)]
+#out <- c[,c(1,8,2,4,5,7,3)]
 head(out)
-colnames(out) <- c('FID1','FID1.type','FID2','FID2.type','InfType','FID1.tubeID','FID2.tubeID')
+#colnames(out) <- c('FID1','FID1.type','FID2','FID2.type','InfType','FID1.tubeID','FID2.tubeID')
 
-out[out$FID1 == "NIH19KT0016",]
+out[out$FID2 == "NIH19KT0227",]
 
 #out[grep("6715",out$FID1),]
 out
 
 
-write.table(out,"Final/kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
-write.csv(out,"Final/kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
+write.table(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+write.csv(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
 dim(out)
 
 

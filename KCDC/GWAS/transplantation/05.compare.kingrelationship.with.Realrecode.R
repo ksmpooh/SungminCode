@@ -104,13 +104,14 @@ table(df$Rela_Pair1)
 
 
 ########################################FINAL
-######using FINAL 20200331
+######using FINAL 20200402
 setwd("C:/Users/user/Desktop/KCDC/transplantation/")
 
 library(readr)
 library(dplyr)
 real <- readr::read_csv("final_sample_info/pairtable/KOTRY_KCHIP_ID_full_20200306.csv",col_names = T)
 real <- as.data.frame(real)
+
 head(real)
 
 table(real$Rela_Pair)
@@ -125,16 +126,19 @@ real_pair <- real_pair[,c(1,6)]
 real_pair <-na.omit(real_pair)
 
 
-###04에서 작업해야함..
-result <- read.csv("king/Final/kingResult.allsample.2ndDegree.allsnp.withType.csv",header = T)
+###04에서 작업해야함..작업 후 나오는 fianl result
+result <- read.csv("king/Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.csv",header = T)
 head(result)
 ############2020.03.20
 table(result$FID1.type)
+table(result$FID2.type)
+
+
 result <- result[!result$FID1.type == 'control',]
 result[result$FID1 == "NIH19KT0017",]
 result[result$FID2 == "NIH19KT0017",]
 #####
-result_pair <- result[,c(1,3)]
+result_pair <- result[,c(1,4)]
 head(result_pair)
 
 head(real_pair)
@@ -160,7 +164,9 @@ result_pair[result_pair$FID1 == "NIH19KT0017",]
 
 head(result_pair)
 head(real_pair)
+
 df <- real_pair %>% anti_join(result_pair,by=c("FID1","FID2"))
+
 head(df)
 colnames(df) <- c("FID2","FID1")
 #colnames(real_pair)[1] <- "FID2"
@@ -170,6 +176,7 @@ df <- df %>%anti_join(result_pair,by=c("FID2","FID1"))
 head(df)
 colnames(df) <- c("FID1","FID2")
 df[df$FID1 == "NIH19KT0017",]
+df[df$FID2 == "NIH19KT0017",]
 head(df)
 
 colnames(df) <- c("KCHIP_ID","KCHIP_ID1")
@@ -209,15 +216,12 @@ head(df)
 
 subset(df,df$Rela_Pair == c(1,2,4,6))
 write.csv(subset(df,df$Rela_Pair == c(1,2,4,6)),"king/Final/not.predicted.rela_pair(1.2.4.6).list.by.allsample.allsnp.king.csv",row.names = F)
+length(union(df$KCHIP_ID,df$KCHIP_ID1))
+write.table(df$KCHIP_ID)
 table(df$Rela_Pair)
 table(df$Rela_Pair1)
 
 df_s <- subset(df,df$Rela_Pair == c(1,2,4,6))
 intersect(df_s$KCHIP_ID,df_s$KCHIP_ID1)
-write.table(union(df$KCHIP_ID,df$KCHIP_ID1),"king/Final/not.predicted.list.txt",row.names = F,quote = F,col.names = F)
-
-
-
-union(df$KCHIP_ID,df$KCHIP_ID1)
-
+write.table(union(df$KCHIP_ID,df$KCHIP_ID1),"king/Final/Final.not.predicted.list.txt",row.names = F,quote = F,col.names = F)
 
