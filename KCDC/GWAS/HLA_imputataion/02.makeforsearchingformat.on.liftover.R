@@ -1,8 +1,8 @@
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/after_filter/")
-setwd("E:/hlaimputation20200324/")
-bim <- read.table("test/JG.QCed.HLA_rmAmbiguous.bim.hg19")
+setwd("E:/hlaimputionHan20200407/")
+bim <- read.table("JG.QCed.HLA_rmAmbiguous.bim.hg19")
 head(bim)
-result <- read.table("test/hglft_genome_23bcd_b12390.bed")
+result <- read.table("hglft_genome_5b2f0_d20ac0.bed")
 
 head(bim)
 head(result)
