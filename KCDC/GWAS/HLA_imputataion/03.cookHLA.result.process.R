@@ -1,4 +1,5 @@
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/UsingHan/")
 df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 head(df)
 colnames(df)
@@ -7,10 +8,12 @@ grep("*DRB1*",colnames(df))
 
 library(stringr)
 
-A <- df[,c(1,2,grep("*_A_*",colnames(df)))]
-B <- df[,c(1,2,grep("*_B_*",colnames(df)))]
+A <- df[,c(1,2,grep("HLA_A_*",colnames(df)))]
+B <- df[,c(1,2,grep("HLA_B_*",colnames(df)))]
+
 DRB <- df[,c(1,2,grep("*DRB1*",colnames(df)))]
 head(DRB)
+head(A)
 
 hla.subset <- function(df,n){
   if( (n ==2) || (n == 4)){
@@ -20,6 +23,7 @@ hla.subset <- function(df,n){
 #    print(temp)
     if(n == 2){
       for (i in 3:ncol(df)){
+        #print(as.integer(str_split_fixed(colnames(df)[i],"_",4)[3]))
         if(as.integer(str_split_fixed(colnames(df)[i],"_",4)[3]) < 100){
           b <- df[,c(1,2,i)]
           temp <- merge(temp,b)
@@ -89,11 +93,21 @@ write.table(a,"HLAimputation.3alleles.in.DRB.2digit.txt",col.names = T,row.names
 
 DRB_td <- DRB_td[is.na(DRB_td$DRB3),]
 
-DRB_td <- DRB_td[,c(1,2,ncol(DRB_td)-2,ncol(DRB_td)-1,ncol(DRB_td))]
+#DRB_td <- DRB_td[,c(1,2,ncol(DRB_td)-2,ncol(DRB_td)-1,ncol(DRB_td))]
 #DRB_td <- DRB_td[,c(1,2,ncol(DRB_td)-2,ncol(DRB_td)-1)]
+DRB_td <- subset(DRB_td,select = c("FID","IID","DRB1","DRB2"))
 head(DRB_td)
 table(DRB_td$DRB3)
 
+
+####20200417 usnig Han processing
+grep("*N_P",colnames(A))
+colnames(A)[6]<-"HLA_A_0122_P"
+colnames(A)[19]<-"HLA_A_0253_P"
+
+#colnames(A)[6]<-"HLA_A_0122_P"
+colnames(A)[19]
+###20200417
 
 A_td <- hla.subset(A,2)
 A_td <- hla.find(A_td,"A")
@@ -104,6 +118,7 @@ head(A_td)
 
 B_td <- hla.subset(B,2)
 B_td <- hla.find(B_td,"B")
+
 #######
 b <- B_td[!is.na(B_td$B3),]
 table(b$B3)
@@ -113,7 +128,7 @@ write.table(b,"HLAimputation.3alleles.in.B.2digit.txt",col.names = T,row.names =
 B_td <- B_td[is.na(B_td$B3),]
 B_td <- B_td[,c(1,2,ncol(B_td)-2,ncol(B_td)-1,ncol(B_td))]
 #B_td <- B_td[,c(1,2,ncol(B_td)-2,ncol(B_td)-1)]
-
+B_td <- subset(B_td,select = c("FID","IID","B1","B2"))
 table(B_td$B3)
 head(B_td)
 ####################################################################################################
@@ -122,9 +137,15 @@ df <- merge(A_td,B_td)
 df <- merge(df,DRB_td)
 head(df)
 
+######allele 3이 있을경우
 df <-df[is.na(df$B3),]
 df <-df[is.na(df$DRB3),]
 df <- df[,c(2,3,4,5,6,8,9)]
+df <- subset(df,select = c("IID","A1","A2","B1","B2","DRB1","DRB2"))
+
+######2 allele 일경우
+
+
 colnames(df)[1] <- "ID"
 
 df[,2:ncol(df)] <- sapply(df[,2:ncol(df)],as.integer)
@@ -173,20 +194,23 @@ A_fd <- hla.subset(A,4)
 A_fd <- hla.find(A_fd,"A")
 A_fd <- A_fd[,c(1,2,ncol(A_fd)-1,ncol(A_fd))]
 head(A_fd)
-
+head(A_fd$A3)
 
 B_fd <- hla.subset(B,4)
 B_fd <- hla.find(B_fd,"B")
 head(B_fd)
-B_fd <- B_fd[,c(1,2,ncol(B_fd)-1,ncol(B_fd))]
+#B_fd <- B_fd[,c(1,2,ncol(B_fd)-1,ncol(B_fd))]
+B_fd <- subset(B_fd,select = c("FID","IID","B1","B2","B3"))
+
+#a <- B_fd[!is.na(B_fd$B3),]
 
 df <- merge(A_fd,B_fd)
 df <- merge(df,DRB_fd)
 
-
+df <-df[is.na(df$B3),]
 df <-df[is.na(df$DRB3),]
 head(df)
-df <- subset(df,select = -c(DRB3,FID))
+df <- subset(df,select = -c(DRB3,FID,B3))
 
 colnames(df)[1] <- "ID"
 
@@ -217,6 +241,7 @@ write.table(drb,"HLA_imputation_DRB_allele_4d_without.3.allele.txt",col.names = 
 
 ##################python data processing 후 merge 작업
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/UsingHan/")
 final_merge <- function(digit){
   
   a <- paste0("HLA.imputation.A_allele.",as.character(digit),"digit.without.3.allele.compare.sm.and.yj.txt")
