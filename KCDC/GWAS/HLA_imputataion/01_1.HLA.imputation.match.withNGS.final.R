@@ -1,4 +1,5 @@
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/UsingHan/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/UsingHan/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result2/")
 
 library(stringr)
 ori <- read.csv("../../transplantation/HLAtyping/HLA_NGS_typing_255samples_results_202002.csv")
