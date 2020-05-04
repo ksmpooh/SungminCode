@@ -1,10 +1,10 @@
 setwd("c:/Users/user/Desktop/KCDC/transplantation/HLAtyping/")
-#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/NGS/")
+
 td <- read.table("HLA_JG_2DGT_imputed.txt",header = T)
 fd <- read.table("HLA_JG_4DGT_imputed.txt",header = T)
 head(td)
 
-df <- read.csv("HLA_NGS_typing_255samples_results_202002_modify_alltype",header = T)
+df <- read.csv("HLA_NGS_typing_255samples_results_202002.csv",header = T)
 head(df)               
 #write.table(df,"HLA_NGS_sep.tab.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 #df <- read.table("HLA_NGS_sep.tab.txt",header = T,na.strings = "0")

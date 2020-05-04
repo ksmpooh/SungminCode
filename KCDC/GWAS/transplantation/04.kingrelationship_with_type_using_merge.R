@@ -51,15 +51,17 @@ c <- c[,c(4,6,3,2,1,5,7)]
 c
 ###############################################################################################################
 # 데이터 정리한 곳에 type 추가
-setwd("c:/Users/user/Desktop/KCDC/transplantation/king/")
-df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
+#setwd("c:/Users/user/Desktop/KCDC/transplantation/king/")
+setwd("c:/Users/user/Desktop/KCDC/FinalKing_JG/")
+#df <- read.table("2ndDegree/01.all.sample/01.all.snp/01.related/JG.all.snp.2nd.related.kin0",header = T)
+df <- read.table("02.mergeQC/01.allsnp/2ndDegree/JG.all.sample.2ndDegree.allsnp.related.kin0",header = T)
 #df <- read.table("JG.2nd.merge.all.kin0",header = T)
 head(df)
 table(df$InfType)
 
 df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ'|df$InfType =='2nd',c(1,3,ncol(df))]
 #df <- df[df$InfType == 'PO' | df$InfType == 'FS'|df$InfType =='Dup/MZ',c(1,3,ncol(df))]
-sample_info <- read.table("../final_sample_info/last.sample.info.txt",header = T)
+sample_info <- read.table("../transplantation/final_sample_info/last.sample.info.txt",header = T)
 #sample_info <- read.table("../../final_sample_info/last.sample.info.txt",header = T)
 head(sample_info)
 sample_info <- sample_info[,c(1,2,4)]
@@ -138,8 +140,11 @@ out[out$FID2 == "NIH19KT0227",]
 out
 
 
-write.table(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
-write.csv(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
+#write.table(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+#write.csv(out,"Final/Final.kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
+write.table(out,"03.FinalMatch/Final.kingResult.allsample.2ndDegree.allsnp.withType.txt",col.names = T,row.names = F,quote = F,sep = '\t')
+write.csv(out,"03.FinalMatch/Final.kingResult.allsample.2ndDegree.allsnp.withType.csv",row.names = F)
+
 dim(out)
 
 
