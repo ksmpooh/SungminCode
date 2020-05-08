@@ -15,3 +15,20 @@ for i in $(seq 1 22);do
 	zcat $epacts/*chr$i.*.gz | grep -v ^# >> $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt
 	gzip -c $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt > $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt.gz
 	done
+
+
+
+
+epacts='/epacts/Result/'
+merge='/epacts/Merge/'
+
+
+for i in $(seq 1 22);do
+        echo "chr[$i]...."
+        cp $merge/header.txt $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt
+        zcat $epacts/*chr$i.*.gz | grep -v ^# >> $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt
+        gzip -c $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt > $merge/chr$i.liver.organfailure.epacts.b.firth.result.txt.gz
+        done
+
+
+
