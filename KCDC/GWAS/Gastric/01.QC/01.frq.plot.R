@@ -2,9 +2,6 @@ getwd()
 setwd("C:/Users/user/Desktop/KCDC/Gastric/")
 
 
-
-
-
 case <- read.table("plotDATA/CASE.frq",header=T)
 control <- read.table("plotDATA/CONTROL.frq",header=T)
 data <- merge(control,case,by="SNP")
@@ -21,3 +18,7 @@ points(data[data$MAF.x-data$MAF.y >= 0.05|data$MAF.x-data$MAF.y<=-0.05,]$MAF.x,
        col = "red",cex = 1,pch = 1)
 
 dev.off()
+
+
+rmlist <- data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x-data$MAF.y<=-0.05,]
+dim(rmlist)
