@@ -254,12 +254,13 @@ plink --bfile CONTROL_intersect --freq --a1-allele Axiom_KOR.annot.extract.addIN
    * 예) case : a1 = C, a2 = G 경우 빈도수가 각각 0.9, 0.1 이라 가정하고 a1-allele을 기준으로 한다고 하면, frequency값이 0.9로 나오고 a2-allele을 기준으로 하면 frequency 값이 0.1로 나온다. 그래서 --a1-allele [REF] 에서 REF 파일에 기준 SNP을 정해주면 그 SNP을 기준으로 frequency 값이 계산되어 
 ###### 1.3.3.2 Allele frequency plot and extract outline SNP
  * R을 이용하여 allele frequency plot 그리기
-<pre><code>
+<pre><code>R
 case <- read.table("CASE.frq",header=T)
 control <- read.table("CONTROL.frq",header=T)
 data <- merge(control,case,by="SNP")
 pdf("plot/control&case_frequency.pdf",height = 10,width=10)
-plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency",col = "blue")
+
+plot(data$MAF.x,data$MAF.y,xlab = "Cont##### 1.3.3 Allele frequency checkrol",ylab = "Case",main = "Control & Case Frequency",col = "blue")
 abline(a = 0.05,b=1,col = "red",lty = 2)
 abline(a = -0.05,b=1, col = "red",lty = 2)
 points(data[data$MAF.x-data$MAF.y >= 0.05|data$MAF.x-data$MAF.y<=-0.05,]$MAF.x,
@@ -267,12 +268,22 @@ points(data[data$MAF.x-data$MAF.y >= 0.05|data$MAF.x-data$MAF.y<=-0.05,]$MAF.x,
        col = "red",cex = 1,pch = 1)
 dev.off()
 </code></pre>
-       
-<pre><code>
+ * allele frequency 차이가 +-0.05 이상나는 SNP list 만들기
+<pre><code>R (위에 plot 이어서 진행)
 rmlist <- data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x-data$MAF.y<=-0.05,]
 write.table(rmlist$SNP,"freq.SNP.remove.list.txt",col.names = F,quote = F,row.names = F)
 </code></pre>
+ * 해당 SNP list 제거 
+<pre><code> plink --bfile merge --extract freq.SNP.remove.list.txt --make-bed --out merge_rmfrq
+</code></pre>
 
+##### 1.3.4 test-missing
+ * 이건 새롭게 추가된 QC 방법
+ * 연관성 분석을 한 후 manhattan plot을 보면 뜬금 없는 위치에 SNP 한두개가 튀는것을 볼 수 있는데(false possitive) 이것을 해결하기 위한 QC
+ * plink의 --test-missing 옵션을 통해 case-control 간에 Fisher's exact test를 진행
+ * P value가 유의미 하지만, genotype calling quality가 나쁜 SNP들을 제거
+###### 1.3.4.1 test-missing 선행준비
+ * case-control간 test이기 때문에 phenotype 
 #### 1.4 SNP QC
  * case와 Control 데이터를 merge 하기 위한 SNP QC
  * 우선 SNP QC 를 한 후 공동된 marker를 찾고 frequency를 check하여 데이터의 이상이 있는 freq를 제거 해준다...
@@ -290,7 +301,8 @@ write.table(rmlist$SNP,"freq.SNP.remove.list.txt",col.names = F,quote = F,row.na
 ### 2. Association
 #### 2.1 Imputation
 #### 2.2 Association
-#### 2.3 Annotation & Visualization
+#### 2.3 An4otest-missing
+ * QC 
 ## Data handling
 ## command
 ## Tool
