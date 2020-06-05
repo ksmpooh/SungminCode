@@ -243,6 +243,7 @@ cat case_markerID.txt control_markerID.txt | sort | uniq -c | awk '$1 == 2{print
  * case, control 간에 allele frequency check를 통한 ?????????????????
  * plink --freq 옵션을 사용하면 output file .frq 파일 생성.
  * R을 이용하여 allele frequency plot을 그린 후 +-0.05 벗어나는 SNP 제거
+###### 1.3.3.1 Allele frequency check
 <pre><code>plink --bfile CASE_intersect --freq --a1-allele Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE
 plink --bfile CONTROL_intersect --freq --a1-allele Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL
 </code></pre>  
@@ -250,7 +251,7 @@ plink --bfile CONTROL_intersect --freq --a1-allele Axiom_KOR.annot.extract.addIN
  * --a1-allele을 하는 이유는 case,control 데이터 간에 a1-allele과 a2-allele을 맞춰주기 위함.
    * 이것을 안할 경우 frequency가 반대로 나올 경우가 생긴다. 
    * 예) case : a1 = C, a2 = G 경우 빈도수가 각각 0.9, 0.1 이라 가정하고 a1-allele을 기준으로 한다고 하면, frequency값이 0.9로 나오고 a2-allele을 기준으로 하면 frequency 값이 0.1로 나온다. 그래서 --a1-allele [REF] 에서 REF 파일에 기준 SNP을 정해주면 그 SNP을 기준으로 frequency 값이 계산되어 
-         
+###### 1.3.3.2 Allele frequency plot and extract outline SNP
          
  
  
