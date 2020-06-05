@@ -1,4 +1,4 @@
-# Gastric protocol
+# Transplantation KCHIP analysis protocol
 
 ## Protocol
 <pre><code>
