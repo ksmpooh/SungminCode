@@ -19,9 +19,6 @@
 
 
 
-
-
-
 ##### 1.1.2 SNPolisher
 * Advanced SNP quality control, genotyping, visualization
 * remove low quality SNP
@@ -105,8 +102,10 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
     * --maf : Minor Allel Frequency 기준으로 제시된 수치 미만의 SNP 제외
     * --geno : SNP의 missing rate(1-call rate)가 제시된 수치를 초과한 SNP은 제외
     * --hwe : Hardy Weinberg Equilibrium을 만족하지 않는  SNP제외
-    * --extract : 해당 SNP 제거
-<pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --extract chr6_14.txt --indep-pairwase 50 5 0.5 --out plink</code></pre>
+    * --exclude : 해당 SNP 제거
+    * --extract : 해당 SNP만 추출
+<pre><code>plink --bfile plink --maf 0.5 --geno 0.05 --hwe 0.001 --exclude chr6_14.txt --indep-pairwase 50 5 0.5 --out plink
+plink --bfile plink --extract plink.prune.in --make-bed --out plink.prurning</code></pre>
 
 * PCA : Principal component analysis
   * Reduce data dimension and minimum information loss
