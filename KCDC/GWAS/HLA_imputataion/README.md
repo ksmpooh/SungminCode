@@ -37,7 +37,10 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
 	- 예) hg19 --> hg17
  - 한국인칩 같은 경우 hg19로 되어 있기에 hg19를 reference panel build와 맞추어 liftover 진행
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
+	- 예) UCSC liftover tool
 ![liftover](liftover.PNG)
+		- Original : 기존 build (한국인칩)
+		- New : 바꾸려고 하는 build
 
 
 ### 2. HLA imputation
