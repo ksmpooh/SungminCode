@@ -36,11 +36,17 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
  - liftover는 genome build를 변화 시키는 것
 	- 예) hg19 --> hg17
  - 한국인칩 같은 경우 hg19로 되어 있기에 hg19를 reference panel build와 맞추어 liftover 진행
+ - 우선 genotype panel에서 SNP 정보가 필요. 
+	- 형식 : chr1:1234-1234
+	- awk 를 이용하여 해당 SNP 정보 list file 만들기
+<pre><code>awk '{print "chr6:"$4"-"$4"}' QCed.HLA_rmAmbiguous.bim >  chr6.position.txt
+</code></pre>
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
 	- 예) UCSC liftover tool
-![liftover](liftover.PNG)
+![liftover](liftover.png)
 		- Original : 기존 build (한국인칩)
 		- New : 바꾸려고 하는 build
-
+	- 'chr6.position.txt' 파일 업로드 후 liftover 진행
+	
 
 ### 2. HLA imputation
