@@ -39,6 +39,7 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
  - 우선 genotype panel에서 SNP 정보가 필요. 
 	- 형식 : chr1:1234-1234
 	- awk 를 이용하여 해당 SNP 정보 list file 만들기
+
 <pre><code>awk '{print "chr6:"$4"-"$4"}' QCed.HLA_rmAmbiguous.bim >  chr6.position.txt
 </code></pre>
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
@@ -47,6 +48,30 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
 		- Original : 기존 build (한국인칩)
 		- New : 바꾸려고 하는 build
 	- 'chr6.position.txt' 파일 업로드 후 liftover 진행
-	
+![liftover.submit](submit.bed.pnd)
+		- '파일선택' 클릭 후 'chr6.position.txt' 업로드
+                - 'submit' 클릭하면 liftover 진행
+	- 결과 파일 다운로드
+![liftover.result](liftover.result.png)
+		- liftover 진행 완료 후 위 그림 같은 Result 창이 생기며, 'View Conversions' 클릭하면 결과 파일이 다운로드
+		- input file 순서와 output 파일 순서는 같으므로, .bim 파일의 position 정보를 수정해주어야 
+		- 주의 : 만약 SNP 정보가 해당 bulid에 없을 경우 없는 snp은 실패 했다고 나옴. 
+ - .bim position 정보 변경
+	- liftover output file preprocessing
+		- 파일 형식이 chr1:1234-1234 으로 되어 있어서, position 정보만 추출하여 변경
+<pre><code> awk '{split($1,a,"-"); print a[2]}' lift.over.outputfile.bed > ref.hg18.txt </code></pre>	
+	- bim 파일 position 정보 수정
+		- 원본 파일을 따로 저장(오류가 날 수도 있으므로...)
+<pre><code>cp QCed.HLA_rmAmbiguous.bim QCed.HLA_rmAmbiguous.bim.hg19</pre></code>
+		- 4번째 column의 position 정보를 ref.hg18.txt로 수정
+<pre><code>R
+df <- read.table("QCed.HLA_rmAmbiguous.bim")
+ref <- read.table("ref.hg18.txt")
+df <- cbind(df,ref)
+write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.names = F, quote = F, sep = "\t")
+</code></pre>
+ - reference file과 공통된 SNP 추출
+
 
 ### 2. HLA imputation
+함
