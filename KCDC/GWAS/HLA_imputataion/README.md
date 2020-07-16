@@ -44,18 +44,19 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
 </code></pre>
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
 	- 예) UCSC liftover tool
-![liftover](liftover.png)
+	![liftover](liftover.png)
 		- Original : 기존 build (한국인칩)
 		- New : 바꾸려고 하는 build
 	- 'chr6.position.txt' 파일 업로드 후 liftover 진행
-![liftover.submit](submit.bed.pnd)
+	![liftover.submit](submit.bed.pnd)
 		- '파일선택' 클릭 후 'chr6.position.txt' 업로드
                 - 'submit' 클릭하면 liftover 진행
 	- 결과 파일 다운로드
-![liftover.result](liftover.result.png)
+	![liftover.result](liftover.result.png)
 		- liftover 진행 완료 후 위 그림 같은 Result 창이 생기며, 'View Conversions' 클릭하면 결과 파일이 다운로드
 		- input file 순서와 output 파일 순서는 같으므로, .bim 파일의 position 정보를 수정해주어야 
 		- 주의 : 만약 SNP 정보가 해당 bulid에 없을 경우 없는 snp은 실패 했다고 나옴. 
+	* 처리 방법..........(수정예정)
  - .bim position 정보 변경
 	- liftover output file preprocessing
 		- 파일 형식이 chr1:1234-1234 으로 되어 있어서, position 정보만 추출하여 변경
@@ -72,6 +73,14 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 </code></pre>
 
  - reference file과 공통된 SNP 추출
+ 	- reference file과 genotype panel 공통된 SNP 추출
+	- perl script(by Young Jin Kim)를 이용하여 .bim 파일 SNP ID 변경
+	<pre><code> perl update_genotype_panel_bim.pl [reference panel.bim 파일]  [genotype panel.bim 파일] </pre></code>
+	- reference file 형식마다 분석 방법이 다름
+		- HAN reference : 직접 다운 받고 CookHLA format에 맞게 직접 가공한 것
+			- SNP ID 가 postion으로 되어 있음
+		- Pan-Kor reference : CookHLA format에 맞게 되어 있음 
+			- SNP ID 가 rs number로 되어 있음
 
 
 ### 2. HLA imputation
