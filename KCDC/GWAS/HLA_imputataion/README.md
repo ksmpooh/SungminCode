@@ -59,10 +59,12 @@ plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
  - .bim position 정보 변경
 	- liftover output file preprocessing
 		- 파일 형식이 chr1:1234-1234 으로 되어 있어서, position 정보만 추출하여 변경
-<pre><code> awk '{split($1,a,"-"); print a[2]}' lift.over.outputfile.bed > ref.hg18.txt </code></pre>	
+<pre><code> awk '{split($1,a,"-"); print a[2]}' lift.over.outputfile.bed > ref.hg18.txt 
+</code></pre>	
 	- bim 파일 position 정보 수정
 		- 원본 파일을 따로 저장(오류가 날 수도 있으므로...)
-<pre><code>cp QCed.HLA_rmAmbiguous.bim QCed.HLA_rmAmbiguous.bim.hg19</pre></code>
+<pre><code>cp QCed.HLA_rmAmbiguous.bim QCed.HLA_rmAmbiguous.bim.hg19
+</pre></code>
 		- 4번째 column의 position 정보를 ref.hg18.txt로 수정
 <pre><code>R
 df <- read.table("QCed.HLA_rmAmbiguous.bim")
