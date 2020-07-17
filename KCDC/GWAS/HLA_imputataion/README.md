@@ -1,4 +1,4 @@
-This is a memo about HLA imputation
+This is a protocol about HLA imputation
 
 # HLA imputation
 
@@ -72,7 +72,7 @@ df <- cbind(df,ref)
 write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.names = F, quote = F, sep = "\t")
 </code></pre>
 
- - reference file과 공통된 SNP 추출
+#### 1.3 reference file과 공통된 SNP 추출
  	- reference file과 genotype panel 공통된 SNP 추출
 	- perl script(by Young Jin Kim)를 이용하여 .bim 파일 SNP ID 변경
 	<pre><code> perl update_genotype_panel_bim.pl [reference panel.bim 파일]  [genotype panel.bim 파일] </pre></code>
@@ -92,4 +92,25 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 - 정도관리가 완료된 genotype panel을 이용하여 추가 분석 진행
 
 ### 2. HLA imputation
-<pre><code></code></pre>
+#### 2.1 make genetic map
+ - 사전 준비 사항 
+ 	- c-shell 설치
+	<pre><code>sudo apt-get install csh</code></pre>
+	- plink 1.9 이하 version  (2.0은 안됨)
+	- mach1 파일 점검
+		- kernel에 따라서 실행이 안되는 경우가 있어서 source code 다운 받고 complie 진행
+		- mach1 source 경로 : http://csg.sph.umich.edu/abecasis/mach/download/
+		- mach1 source 파일 열고 'CFLAGS' 에 -static 옵션 삭제 후 저장한 후 complie (make all)
+	- reference panel
+		- .bgl, bgl.markers (beagle 파일)
+		- .bim, .fam, .bed, .FRQ.frq (plink 파일)
+		* frq 파일이 없을 경우 이름을 꼭 .FRQ.frq로 하여 생성
+		<pre><code>plink --bfile reference --freq --out reference.FRQ</code></pre>
+	- genotype panel
+		- 위에서 작업한 정도관리가 완료된 gentoype panel 준비
+ - make genetic map
+<pre><code>./MakeGeneticMap_MHC.csh QCed.HLA_rmAmbiguous referencepanel my_genmap ./plink </code></pre> 
+	* my_genmap : output file 이름설정
+	* ./plink : 작업폴더에 있거나 command(plink)로 새도 
+ 
+ <pre><code></code></pre>
