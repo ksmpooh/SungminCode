@@ -81,11 +81,11 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 	- reference file 형식마다 분석 방법이 다름
 	![HANvsPan](HANvsPan.png)
 		- Pan-Kor reference : rs ID로  되어 있음
-		<pre><code>perl update_genotype_panel_bim.pl Pan.Korea.ref.panel.bim QCed.HLA_rmAmbiguous
+		<pre><code>  perl update_genotype_panel_bim.pl Pan.Korea.ref.panel.bim QCed.HLA_rmAmbiguous
 		awk '{if($2 ~ /rs/) print $2}' QCed.HLA_rmAmbiguous.bim > rs.snp
 		plink --bfile QCed.HLA_rmAmbiguous --extract rs.snp --make-bed --out QCed.HLA_rmAmbiguous_SNPuse </code></pre>
 		- Han-Chinese : postion이 SNP ID로 되어 있음
-		<pre><code>perl update_genotype_panel_bim.pl HAN.ref.panel.bim QCed.HLA_rmAmbiguous
+		<pre><code>  perl update_genotype_panel_bim.pl HAN.ref.panel.bim QCed.HLA_rmAmbiguous
 		cat HAN.ref.panel.bim QCed.HLA_rmAmbiguous.bim | awk '{print $2}' | sort | uniq -c | awk '{print $2}' > snp.use
 		plink --bfile QCed.HLA_rmAmbiguous --extract snp.use --make-bed --out QCed.HLA_rmAmbiguous_SNPuse</code></pre>
 
