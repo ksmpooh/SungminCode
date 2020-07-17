@@ -76,12 +76,20 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
  	- reference file과 genotype panel 공통된 SNP 추출
 	- perl script(by Young Jin Kim)를 이용하여 .bim 파일 SNP ID 변경
 	<pre><code> perl update_genotype_panel_bim.pl [reference panel.bim 파일]  [genotype panel.bim 파일] </pre></code>
+		* reference panel .bim 파일의 SNP와 공통된 SNP를 찾아 bim파일의 ID를 변경
+		* output file로 .bim.org(기존 bim), .bim(변경된 bim) 생성
 	- reference file 형식마다 분석 방법이 다름
-		- HAN reference : 직접 다운 받고 CookHLA format에 맞게 직접 가공한 것
-			- SNP ID 가 postion으로 되어 있음
-		- Pan-Kor reference : CookHLA format에 맞게 되어 있음 
-			- SNP ID 가 rs number로 되어 있음
+	![HANvsPan](HANvsPan.png)
+		- Pan-Kor reference : rs ID로  되어 있음
+		<pre><code>perl update_genotype_panel_bim.pl Pan.Korea.ref.panel.bim QCed.HLA_rmAmbiguous
+		awk '{if($2 ~ /rs/) print $2}' QCed.HLA_rmAmbiguous.bim > rs.snp
+		plink --bfile QCed.HLA_rmAmbiguous --extract rs.snp --make-bed --out QCed.HLA_rmAmbiguous_SNPuse </code></pre>
+		- Han-Chinese : postion이 SNP ID로 되어 있음
+		<pre><code>perl update_genotype_panel_bim.pl HAN.ref.panel.bim QCed.HLA_rmAmbiguous
+		cat HAN.ref.panel.bim QCed.HLA_rmAmbiguous.bim | awk '{print $2}' | sort | uniq -c | awk '{print $2}' > snp.use
+		plink --bfile QCed.HLA_rmAmbiguous --extract snp.use --make-bed --out QCed.HLA_rmAmbiguous_SNPuse</code></pre>
 
+- 정도관리가 완료된 genotype panel을 이용하여 추가 분석 진행
 
 ### 2. HLA imputation
-함
+<pre><code></code></pre>
