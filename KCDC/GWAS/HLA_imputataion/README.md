@@ -108,8 +108,12 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 	- genotype panel
 		- 위에서 작업한 정도관리가 완료된 gentoype panel 준비
  - make genetic map
+ 	- 기본 코드
+ 	<pre><code>./MakeGeneticMap_MHC.csh genotype.panel referencepanel output ./plink </code></pre> 
+	- 
 	<pre><code>./MakeGeneticMap_MHC.csh QCed.HLA_rmAmbiguous referencepanel my_genmap ./plink </code></pre> 
-	- my_genmap : output file 이름설정
-	- ./plink : 작업폴더에 있거나 command(plink)로 새도 
+	- my_genmap : output file 이름설정 (outpuf file :  my_genmap.genetic.map, my_genmap.aver.erate )
+	- ./plink : 작업폴더에 있거나 command(plink)로 사용
+	
  
  <pre><code></code></pre>
