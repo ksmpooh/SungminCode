@@ -25,12 +25,13 @@ Human Leukocyte Antigen
  - HLA region 추출
 <pre><code>plink QCed --chr 6 --from-bp 29691116 --to-bp 33054976 --maf 0.01 --geno 0.05 --hwe 1e-6 --make-bed --out QCed.HLA
 </code></pre>
+	- (생각해보니.. 여기서 HLA region은 build에 맞추어 뽑거나.. reference panel 크기에 맞게 범위를 설정하면 더 많은 SNP 정보가 들어갈 것 같다는 생각이 듬..)
 #### 1.1 Remove Ambiguous allele 
 <pre><code>awk '{if($5 == "C" && $6 == "G") print $2}' > ambg.snp
 awk '{if($5 == "A" && $6 == "T") print $2}' >> ambg.snp
 awk '{if($5 == "G" && $6 == "C") print $2}' >> ambg.snp
 awk '{if($5 == "T" && $6 == "A") print $2}' >> ambg.snp
-plink --bfile QCed.HLA --exclude --make-bed --out QCed.HLA.rmAmbiguous
+plink --bfile QCed.HLA --exclude ambg.snp --make-bed --out QCed.HLA.rmAmbiguous
 </code></pre>
 #### 1.2 liftover
  - liftover는 genome build를 변화 시키는 것
