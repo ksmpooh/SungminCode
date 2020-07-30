@@ -111,8 +111,8 @@ venn.diagram(
   
   # Output features
   imagetype="png" ,
-  height = 700 , 
-  width = 700 , 
+  height = 300 , 
+  width = 300 , 
   resolution = 300,
   compression = "lzw",
   
@@ -149,8 +149,8 @@ venn.diagram(
   
   # Output features
   imagetype="png" ,
-  height = 700 , 
-  width = 700 , 
+  height = 400 , 
+  width = 400 , 
   resolution = 300,
   compression = "lzw",
   
@@ -169,8 +169,8 @@ venn.diagram(
   cat.cex = 0.4,
   #cat.fontface = "bold",
   cat.default.pos = "outer",
-  cat.pos = 1,
-  #cat.dist = 2,
+  cat.pos = 5,
+  cat.dist = -0.0001,
   cat.fontfamily = "sans",
   #rotation = 1
 )
@@ -186,8 +186,8 @@ venn.diagram(
   
   # Output features
   imagetype="png" ,
-  height = 700 , 
-  width = 700 , 
+  height = 400 , 
+  width = 400 , 
   resolution = 300,
   compression = "lzw",
   
@@ -205,10 +205,9 @@ venn.diagram(
   cat.cex = 0.4,
   #cat.fontface = "bold",
   cat.default.pos = "outer",
-  cat.pos = 1,
+  cat.pos = 0,
   #cat.dist = 2,
-  cat.fontfamily = "sans",
-  #rotation = 1
-  
+  cat.fontfamily = "sans"
+  #rotation = 
   
 )
