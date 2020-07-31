@@ -135,9 +135,15 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 		- output file : HLA.imputation_RAW.raw
 		![HLA.result.raw](HLA.result.raw.png)
 		- .raw 파일 R로 읽은 모습이 위 그림
-	
-#### 2.3 Result processing
- - 
- <pre><code></code></pre>
-
+		- 예)  HLA_A_01_P : (2digit) HLA A locus의 01 allele group 
+		       HLA_A_0101_P : (4digit) HLA A locus의 01 allele group
 ### 3. Data processing
+<pre><code></code></pre>
+
+
+# Reference
+## Paper
+## Software
+## etc
+
+1. 
