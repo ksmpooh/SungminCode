@@ -131,7 +131,8 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 	
 	- RecordA
 	<pre><code> plink --bfile HLA.imputation --recodeA --out HLA.imputation_RAW</code></pre>
-	
+	- output file : HLA.imputation_RAW.raw
+	![HLA.result.raw](HLA.result.raw.png)
 	
 #### 2.3 Result processing
  - 
