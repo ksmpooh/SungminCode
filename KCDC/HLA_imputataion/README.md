@@ -45,15 +45,15 @@ plink --bfile QCed.HLA --exclude ambg.snp --make-bed --out QCed.HLA.rmAmbiguous
 </code></pre>
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
 	- 예) UCSC liftover tool
-	![liftover](liftover.png)
+	![liftover](./README/liftover.png)
 		- Original : 기존 build (한국인칩)
 		- New : 바꾸려고 하는 build
 	- 'chr6.position.txt' 파일 업로드 후 liftover 진행
-	![liftover.submit](submit.bed.pnd)
+	![liftover.submit](./README/submit.bed.pnd)
 		- '파일선택' 클릭 후 'chr6.position.txt' 업로드
                 - 'submit' 클릭하면 liftover 진행
 	- 결과 파일 다운로드
-	![liftover.result](liftover.result.png)
+	![liftover.result](./README/liftover.result.png)
 		- liftover 진행 완료 후 위 그림 같은 Result 창이 생기며, 'View Conversions' 클릭하면 결과 파일이 다운로드
 		- input file 순서와 output 파일 순서는 같으므로, .bim 파일의 position 정보를 수정해주어야 
 		- 주의 : 만약 SNP 정보가 해당 bulid에 없을 경우 없는 snp은 실패 했다고 나옴. 
@@ -80,7 +80,7 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 * reference panel .bim 파일의 SNP와 공통된 SNP를 찾아 bim파일의 ID를 변경
 * output file로 .bim.org(기존 bim), .bim(변경된 bim) 생성
 - reference file 형식마다 분석 방법이 다름
-![HANvsPan](HANvsPan.png)
+![HANvsPan](./README/HANvsPan.png)
 	- Pan-Kor reference : rs ID로  되어 있음
 	<pre><code>  perl update_genotype_panel_bim.pl Pan.Korea.ref.panel.bim QCed.HLA_rmAmbiguous
 	awk '{if($2 ~ /rs/) print $2}' QCed.HLA_rmAmbiguous.bim > rs.snp
@@ -133,7 +133,7 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 		- plink --recodeA 옵션을 사용하여 plink data를 data frqme형식으로 바꾸어 데이터처리 하기 편한 형태로 만듬
 		<pre><code> plink --bfile HLA.imputation --recodeA --out HLA.imputation_RAW</code></pre>
 		- output file : HLA.imputation_RAW.raw
-		![HLA.result.raw](HLA.result.raw.png)
+		![HLA.result.raw](./README/HLA.result.raw.png)
 		- .raw 파일 R로 읽은 모습이 위 그림
 		- 예)  HLA_A_01_P : (2digit) HLA A locus의 01 allele group 
 		       HLA_A_0101_P : (4digit) HLA A locus의 01 allele group
