@@ -129,10 +129,12 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 	<pre><code> awk '{if($2 ~/HLA/)print $2}' HLA_IMPUTED_Result.HLA.imputed.MHC.bim > HLA.allele.txt
 	plink --bfile HLA_IMPUTED_Result.HLA.imputed.MHC --extract HLA.allele.txt --make-bed --out HLA.imputation </code></pre>
 	
-	- RecordA
-	<pre><code> plink --bfile HLA.imputation --recodeA --out HLA.imputation_RAW</code></pre>
-	- output file : HLA.imputation_RAW.raw
-	![HLA.result.raw](HLA.result.raw.png)
+	- RecodeA
+		- plink --recodeA 옵션을 사용하여 plink data를 data frqme형식으로 바꾸어 데이터처리 하기 편한 형태로 만듬
+		<pre><code> plink --bfile HLA.imputation --recodeA --out HLA.imputation_RAW</code></pre>
+		- output file : HLA.imputation_RAW.raw
+		![HLA.result.raw](HLA.result.raw.png)
+		- .raw 파일 R로 읽은 모습이 위 그림
 	
 #### 2.3 Result processing
  - 
