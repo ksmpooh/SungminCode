@@ -14,7 +14,7 @@ Human Leukocyte Antigen
  - ABO 다음으로 중요한 antigen
 ### 2. HLA Nomenclature
 ![HLA.named](./README/HLA.named.png)(http://hla.alleles.org/nomenclature/naming.html)  
-- 예) HLA-B*15:01:01:02N  
+ - 예) HLA-B*15:01:01:02N  
 
 | 표현 | 의미 | 풀이 
 |:------|:------|:-----|  
@@ -22,11 +22,22 @@ HLA-B| HLA-B genetic locus
 HLA-B* | Locus와 allele 명칭 사이에 * 표시  
 HLA-B*15 | HLA-B15 antigen, <br> a group of allele | 염기 유사성이 높음 group - 2digit
 HLA-B*15:01 | a specific HLA allele |exon 부위에 염기서열 차이가 있고, 아미노선 변이도 동반되는 allele - 4digit
-HLA-B*15:01:01 |
-HLA-B*15:01:01:02 |
-HLA-B*15:01:01:02N | 
+HLA-B*15:01:01 | differs by a synonymous mutation | exon 부위에 염기서열 차이가 있지만, a.a 차이는 없는 allele - 6 digit
+HLA-B*15:01:01:02 | contains a mutation outside the coding region | non-coding region의 염기서열 차이가 있는 allele - 8 digit
+HLA-B*15:01:01:02N | a Null allele | protein expression (밑에 추가 설명)  
 
-### 3. HLA imputation tool comparison
+ - 마지막 접미사 
+ | 표현 | Full | 풀이 
+|:------:|:------|:-----|  
+|N|NULL|protein으로 발현되지 않는 allele
+|L|low| cell 표면에서의 발현량이 극히 적은 allele
+|S|soluble| 유전자는 발편되지만 cell 밖으로 분비되는 allele
+|Q|questionable| 세포표면에서의 발현에 중대한 영향을 미치는 변이를 가지고 있지만, 좀더 검증이 필요한  allele
+### 3. Clinical meaning
+ - 2/4 digit의 숫자가 하나라도 다른 allele들은 아미노산 서열이 다른 것
+ - 6/8 digit의 숫자가 다르더라고 2/4 digit 숫자가 동일한 allele은 a.a sequence가 동일
+ - 장기이식에서는 a.a sequence가 중요하므로 2/4 digit 값이 중요함
+### . HLA imputation tool comparison
 ![HLA_imputation_tool](./README/HLA_imputation_tool.PNG)
 
 
