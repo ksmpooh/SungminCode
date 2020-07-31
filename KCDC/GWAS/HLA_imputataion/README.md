@@ -116,13 +116,25 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 	- my_genmap : output file 이름설정 (outpuf file :  my_genmap.genetic.map, my_genmap.aver.erate )
 	- ./plink : 작업폴더에 있거나 command(plink)로 사용
 	
- #### 2.2 cookHLA
+#### 2.2 cookHLA
  - HLA imputation
  	- 기본 코드
 	 <pre><code>./COOKHLA.csh DATA (.bed/.bim/.fam) REFERENCE (.bgl.phased/.markers) OUTPUT plink geneticMap erate {optional: java_max_memory[mb]}</code></pre>
 	- 예시
 	<pre><code>./COOKHLA.csv QCed.HLA_rmAmbiguous referencepanel HLA.imputed ./plink my_genmap.genetic.map my_genmap.aver.erate 5000</code></pre>
+	- output file : HLA_IMPUTED_Result.HLA.imputed.MHC 이름을 가진 plink 파일 생성
+	- bim fam bed ped map
+ - HLA allele extract
+ 	- .bim 파일에 있는 HLA type 정보만 추출
+	<pre><code> awk '{if($2 ~/HLA/)print $2}' HLA_IMPUTED_Result.HLA.imputed.MHC.bim > HLA.allele.txt
+	plink --bfile HLA_IMPUTED_Result.HLA.imputed.MHC --extract HLA.allele.txt --make-bed --out HLA.imputation </code></pre>
 	
+	- RecordA
+	<pre><code> plink --bfile HLA.imputation --recodeA --out HLA.imputation_RAW</code></pre>
+	
+	
+#### 2.3 Result processing
+ - 
  <pre><code></code></pre>
 
 ### 3. Data processing
