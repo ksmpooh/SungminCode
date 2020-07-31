@@ -46,16 +46,16 @@ plink --bfile QCed.HLA --exclude ambg.snp --make-bed --out QCed.HLA.rmAmbiguous
 <pre><code>awk '{print "chr6:"$4"-"$4"}' QCed.HLA_rmAmbiguous.bim >  chr6.position.txt
 </code></pre>
  - ucsc liftover tool를 이용 (https://genome.ucsc.edu/cgi-bin/hgLiftOver)
-	- 예) UCSC liftover tool
-	![liftover](./README/liftover.png)
+	- 예) UCSC liftover tool  
+		![liftover](./README/liftover.png)
 		- Original : 기존 build (한국인칩)
 		- New : 바꾸려고 하는 build
-	- 'chr6.position.txt' 파일 업로드 후 liftover 진행
-	![liftover.submit](./README/submit.bed.pnd)
+	- 'chr6.position.txt' 파일 업로드 후 liftover 진행  
+		![liftover.submit](./README/submit.bed.png)
 		- '파일선택' 클릭 후 'chr6.position.txt' 업로드
                 - 'submit' 클릭하면 liftover 진행
-	- 결과 파일 다운로드
-	![liftover.result](./README/liftover.result.png)
+	- 결과 파일 다운로드  
+		![liftover.result](./README/liftover.result.png)
 		- liftover 진행 완료 후 위 그림 같은 Result 창이 생기며, 'View Conversions' 클릭하면 결과 파일이 다운로드
 		- input file 순서와 output 파일 순서는 같으므로, .bim 파일의 position 정보를 수정해주어야 
 		- 주의 : 만약 SNP 정보가 해당 bulid에 없을 경우 없는 snp은 실패 했다고 나옴. 
