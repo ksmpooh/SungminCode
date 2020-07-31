@@ -1,0 +1,78 @@
+#####HLA imputation 20200324 filter
+PLINK v1.90b6.10 64-bit (17 Jun 2019)
+Options in effect:
+  --bfile JG.2nd.QC_snpolisher_rmunrelated_rmaffy_rmdup_convert_indel_flip
+  --chr 6
+  --from-bp 24898856
+  --geno 0.05
+  --hwe 1e-6
+  --maf 0.01
+  --make-bed
+  --out JG.2nd.QCed
+  --to-bp 34886436
+
+
+
+############genotype panel
+###QC
+
+
+awk '{if($5 == "C" && $6 == "G") print $2}' JG.QCed.HLA.bim > ambg.snp
+awk '{if($5 == "A" && $6 == "T") print $2}' JG.QCed.HLA.bim >> ambg.snp
+awk '{if($5 == "G" && $6 == "C") print $2}' JG.QCed.HLA.bim >> ambg.snp
+awk '{if($5 == "T" && $6 == "A") print $2}' JG.QCed.HLA.bim >> ambg.snp
+
+
+plink --bfile JG.QCed.HLA --exclude ambg.snp --make-bed --out JG.QCed.HLA_rmAmbiguous
+
+  9800 JG.QCed.HLA.bim
+  8826 JG.QCed.HLA_rmAmbiguous.bim
+ 18626 total
+
+
+###lift over (hg 19 --> 17)
+
+awk '{print "chr6:"$4"-"$4}' JG.QCed.HLA_rmAmbiguous.bim > chr6.position.txt
+
+#ucsc liftover 
+
+
+perl update_genotype_panel_bim.pl ../INPUTs/hg17/Merge_panel.bim JG.QCed.HLA_rmAmbiguous.bim
+
+#? Merge_panel.bim.hg17 -> Merge_panel.bim 으로 바꾸고 사용
+
+
+############################ex
+
+awk '{if($2 ~/rs/) print $2}' JG.QCed.HLA_rmAmbiguous.bim >rs.snp
+plink --bfile JG.QCed.HLA_rmAmbiguous --extract rs.snp --make-bed --out JG.QCed.HLA_rmAmbiguous_rs
+
+
+  9800 JG.QCed.HLA.bim
+  8826 JG.QCed.HLA_rmAmbiguous.bim
+  3030 JG.QCed.HLA_rmAmbiguous_rs.bim
+
+
+
+
+###########HLA imputatoin
+plink version 1.07
+Merge_panel.bim.hg17 -> Merge_panel.bim 으로 바꾸고 사용
+### make genetic map
+
+#use genetic hg 17
+
+./MakeGeneticMap_MHC.csh JG.QCed.HLA_rmAmbiguous_rs Merge_panel JG.genetic.map ./plink
+
+### imputation
+./CookHLA.csh JG.QCed.HLA_rmAmbiguous_rs Merge_panel JG.HLA.imputation ./plink JG.genetic.map.genetic.map JG.genetic.map.aver.erate 5000
+
+###result
+awk '{if($2 ~/HLA/)print $2}' HLA_IMPUTED_Result.JG.HLA.imputation.MHC.bim > HLA.allele.txt
+plink --bfile HLA_IMPUTED_Result.JG.HLA.imputation.MHC --extract HLA.allele.txt --make-bed --out JG.HLA.imputation
+plink --bfile JG.HLA.imputation --recodeA --out JG.HLA.imputation_RAW
+
+
+###########Result processing
+
+
