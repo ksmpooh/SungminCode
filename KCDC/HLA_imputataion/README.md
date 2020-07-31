@@ -5,17 +5,28 @@ This is a protocol about HLA imputation
 Human Leukocyte Antigen
 
 ## HLA?
-### Why is it important to research HLA?
+### 1. Why is it important to research HLA?
  HLA 
  - chromosome 6, short arm
  - 5Mb에 걸처 several genes --> glycoprotein
 	 - HG19 : chr6 : 29691116–33054976
  - 인체 내 모든 조직세포의 표면에 표현, 백혈구, 혈소판 등 혈액세포에도 표현됨
  - ABO 다음으로 중요한 antigen
-### HLA Nomenclature
-![HLA.named](./README/HLA.named.png)(http://hla.alleles.org/nomenclature/naming.html)
+### 2. HLA Nomenclature
+![HLA.named](./README/HLA.named.png)(http://hla.alleles.org/nomenclature/naming.html)  
+- 예) HLA-B*15:01:01:02N  
 
-### HLA imputation tool comparison
+| 표현 | 의미 | 풀이 
+|:------|:------|:-----|  
+HLA-B| HLA-B genetic locus  
+HLA-B* | Locus와 allele 명칭 사이에 * 표시  
+HLA-B*15 | HLA-B15 antigen, <br> a group of allele | 염기 유사성이 높음 group - 2digit
+HLA-B*15:01 | a specific HLA allele |exon 부위에 염기서열 차이가 있고, 아미노선 변이도 동반되는 allele - 4digit
+HLA-B*15:01:01 |
+HLA-B*15:01:01:02 |
+HLA-B*15:01:01:02N | 
+
+### 3. HLA imputation tool comparison
 ![HLA_imputation_tool](./README/HLA_imputation_tool.PNG)
 
 
@@ -147,7 +158,7 @@ write.table(df[,c(1,2,3,7,5,6)],"QCed.HLA_rmAmbiguous.bim",col.names = F, row.na
 ## Paper
 ## Software
 ## website
- - http://hla.alleles.org/
- 
+ - HLA : http://hla.alleles.org/
+ - HLA 명명법 한글 설명 : https://labmusiclm.tistory.com/105
 
 1. 
