@@ -27,7 +27,8 @@ HLA-B*15:01:01:02 | contains a mutation outside the coding region | non-coding r
 HLA-B*15:01:01:02N | a Null allele | protein expression (밑에 추가 설명)  
 
  - 마지막 접미사 
- | 표현 | Full | 풀이 
+ 
+ | 표현 | Full | 풀이 |
 |:------:|:------|:-----|  
 |N|NULL|protein으로 발현되지 않는 allele
 |L|low| cell 표면에서의 발현량이 극히 적은 allele
