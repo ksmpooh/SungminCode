@@ -62,3 +62,31 @@ out <- df[grep("R",df$type),]
 dim(out)
 head(out)
 write.table(out,"final_sample_info/donor.info.txt",col.names = T,row.names = F,quote = F)
+
+
+#########################################
+##20200812 Ãß°¡
+setwd("c:/Users/user/Desktop/KCDC/transplantation/final_sample_info/")
+df<-read.table("last.sample.info.txt",header = T)
+head(df)
+table(df$info)
+table(df$state)
+df[which(df$info == 'PCA'),]$state <- '1st.remove'
+df[which(df$info == 'miss-het'),]$state <- '1st.remove'
+
+secondPCA <- read.table("../sampleQC/2nd.rmPCA.txt")
+head(secondPCA)
+head(df)
+rownames(df) <- df$NewID
+df[secondPCA$V1,]$info <- "PCA"
+df[secondPCA$V1,]$state <- "2nd.remove"
+table(df$state)
+king <- read.table("../sampleQC/notRelatedId.byking.txt")
+head(king)
+df[king$V1,]$info <- "king"
+df[king$V1,]$state <- "notRelated(MZ)"
+
+table(df$state)
+table(df$info)
+head(df)
+write.table(df,"last.sample.info.txt",col.names = T,row.names = F,quote = F,sep = "\t")

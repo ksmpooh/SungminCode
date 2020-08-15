@@ -2,8 +2,10 @@
 
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/UsingHan/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Han/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Pan/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Han/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Pan/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/01.pan/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/02.han/")
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 head(df)
