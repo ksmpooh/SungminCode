@@ -20,14 +20,15 @@ Human Leukocyte Antigen
 |:------|:------|:-----|  
 HLA-B| HLA-B genetic locus  
 HLA-B* | Locus와 allele 명칭 사이에 * 표시  
-HLA-B*15 | HLA-B15 antigen, <br> a group of allele | 염기 유사성이 높음 group - 2digit
-HLA-B*15:01 | a specific HLA allele |exon 부위에 염기서열 차이가 있고, 아미노선 변이도 동반되는 allele - 4digit
+HLA-B*15 | HLA-B15 antigen, <br> a group of allele | 염기 유사성이 높은 group - 2digit
+HLA-B*15:01 | a specific HLA allele |exon 부위에 염기서열 차이가 있고, a.a 변이도 동반되는 allele, 즉 protein level- 4digit
 HLA-B*15:01:01 | differs by a synonymous mutation | exon 부위에 염기서열 차이가 있지만, a.a 차이는 없는 allele - 6 digit
 HLA-B*15:01:01:02 | contains a mutation outside the coding region | non-coding region의 염기서열 차이가 있는 allele - 8 digit
 HLA-B*15:01:01:02N | a Null allele | protein expression (밑에 추가 설명)  
 
  - 마지막 접미사 
- | 표현 | Full | 풀이 
+ 
+ | 표현 | Full | 풀이 |
 |:------:|:------|:-----|  
 |N|NULL|protein으로 발현되지 않는 allele
 |L|low| cell 표면에서의 발현량이 극히 적은 allele
