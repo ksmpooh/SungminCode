@@ -90,3 +90,6 @@ table(df$state)
 table(df$info)
 head(df)
 write.table(df,"last.sample.info.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+df <- read.table("c:/Users/user/Desktop/KCDC/transplantation/final_sample_info/last.sample.info.txt",header = T)
+table(df$state)
