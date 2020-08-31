@@ -32,3 +32,15 @@ for i in $(seq 1 22);do
 
 
 
+
+epacts='/epacts/Result/'
+merge='/epacts/Merge/'
+
+
+for i in $(seq 1 22);do
+        echo "chr[$i]...."
+        cp $merge/header.txt $merge/chr$i.kidney.organfailure.epacts.b.firth.result.txt
+        zcat $epacts/*chr$i.*.gz | grep -v ^# >> $merge/chr$i.kidney.organfailure.epacts.b.firth.result.txt
+        gzip -c $merge/chr$i.kidney.organfailure.epacts.b.firth.result.txt > $merge/chr$i.kidney.organfailure.epacts.b.firth.result.txt.gz
+        done
+
