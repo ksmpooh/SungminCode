@@ -6,7 +6,6 @@ real <- as.data.frame(real)
 
 head(real)
 
-table(real$Rela_Pair)
 real_pair <- real[,c(1,8,9,10,11,12,19,20,21,22)]
 
 head(real_pair)
@@ -16,7 +15,7 @@ real_pair <- real_pair[,c(1,4,6,10)]
 #real_pair <- real_pair[,c(1,6)]
 
 real_pair <-na.omit(real_pair)
-
+sum(table(real_pair$Rela_Pair))/2
 
 ###04에서 작업해야함..작업 후 나오는 fianl result
 setwd("C:/Users/user/Desktop/KCDC/FinalKing_JG/")
