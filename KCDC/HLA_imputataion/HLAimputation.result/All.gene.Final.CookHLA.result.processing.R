@@ -162,10 +162,15 @@ out <- read.csv("HLAimputation.all.gene.2digit.Result.csv")
 ngs <- read.csv("../../../transplantation/HLAtyping/20200828/HLAtyping.alle.gene.2digit.csv")
 head(ngs)
 ncol(ngs)
-out <- merge(out,ngs,by.x = "IID",by.y = "KID",all.x = T)
+out <- merge(out,ngs,by.x = "IID",by.y = "KID")
 ncol(out)
 head(out)
 out <-out[,c(1,18,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)]
+
+row.names(out) <- out$IID
+out[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,]
+
+
 write.csv(out,"MERGE.impResult.hlatyping.all.gene.2digit.csv",row.names = F,quote = F)
 
 
