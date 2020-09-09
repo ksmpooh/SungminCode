@@ -68,23 +68,23 @@ hla.find<-function(df,concept){
     for(j in (3:colcount)){
       if(df[i,j] == 2){
         if(n == 0){
-          df[i,paste("IMP_",concept,'.1',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
-          df[i,paste("IMP_",concept,'.2',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
+          df[i,paste("IMP_",concept,'.1',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
+          df[i,paste("IMP_",concept,'.2',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
           n = n + 2  
         }else if(n == 1){
-          df[i,paste("IMP_",concept,'.2',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
-          df[i,paste("IMP_",concept,'.3',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
+          df[i,paste("IMP_",concept,'.2',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
+          df[i,paste("IMP_",concept,'.3',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
           n = n + 2  
         }
       }else if(df[i,j] == 1){
         if(n == 0){
-          df[i,paste("IMP_",concept,'.1',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
+          df[i,paste("IMP_",concept,'.1',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
           n = n + 1
         }else if(n == 1){
-          df[i,paste("IMP_",concept,'.2',sep = "")] <- str_split_fixed(colnames(df)[j],"_",4)[3]
+          df[i,paste("IMP_",concept,'.2',sep = "")] <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
           n = n + 1
         }else{
-          df[i,paste("IMP_",concept,'.3',sep = "")]  <- str_split_fixed(colnames(df)[j],"_",4)[3]
+          df[i,paste("IMP_",concept,'.3',sep = "")]  <- as.integer(str_split_fixed(colnames(df)[j],"_",4)[3])
         }
       }
     }
@@ -103,7 +103,7 @@ DRB1_td <- hla.subset(DRB1,2)
 head(DRB1_td)
 DRB1_td <- hla.find(DRB1_td,"DRB1")
 table(DRB1_td$DRB3)
-
+str(DRB1_td)
 
 DQA1_td <- hla.subset(DQA1,2)
 DQA1_td <- hla.find(DQA1_td,"DQA1")
@@ -120,6 +120,7 @@ DPB1_td <- hla.find(DPB1_td,"DPB1")
 grep("*N_P",colnames(A))
 colnames(A)[6]<-"HLA_A_0122_P"
 colnames(A)[19]<-"HLA_A_0253_P"
+
 A_td <- hla.subset(A,2)
 A_td <- hla.find(A_td,"A")
 
@@ -166,9 +167,12 @@ out <- merge(out,ngs,by.x = "IID",by.y = "KID")
 ncol(out)
 head(out)
 out <-out[,c(1,18,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)]
+head(out)
 
-row.names(out) <- out$IID
-out[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,]
+#row.names(out) <- out$IID
+#out[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,]
+
+
 
 
 write.csv(out,"MERGE.impResult.hlatyping.all.gene.2digit.csv",row.names = F,quote = F)
@@ -176,10 +180,10 @@ write.csv(out,"MERGE.impResult.hlatyping.all.gene.2digit.csv",row.names = F,quot
 
 
 
-cmp.result.2digit <- read.csv("compare.IMPvsNGS.all.gene.2digit.csv")
+#cmp.result.2digit <- read.csv("compare.IMPvsNGS.all.gene.2digit.csv")
 
-rownames(cmp.result.2digit) <- cmp.result.2digit$IID
-nrow(cmp.result.2digit[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,c("DQA1.match","DQA1.wrong","DQA1.empty")])
+#rownames(cmp.result.2digit) <- cmp.result.2digit$IID
+#nrow(cmp.result.2digit[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,c("DQA1.match","DQA1.wrong","DQA1.empty")])
 
 
 
@@ -188,28 +192,16 @@ nrow(cmp.result.2digit[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,c("DQA1.match","
 
 ####################4 digit
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/01.pan/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/02.han/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/02.han/")
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
-df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
-head(df)
-colnames(df)
+#df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
+#head(df)
+#colnames(df)
 #grep("*DRB1*",colnames(df))
 
 
 library(stringr)
 
-A <- df[,c(1,2,grep("HLA_A_*",colnames(df)))]
-B <- df[,c(1,2,grep("HLA_B_*",colnames(df)))]
-C <- df[,c(1,2,grep("HLA_C_*",colnames(df)))]
-DRB1 <- df[,c(1,2,grep("*DRB1*",colnames(df)))]
-#DRB3 <- df[,c(1,2,grep("*DRB3*",colnames(df)))]
-
-DPB1 <- df[,c(1,2,grep("*DPB1*",colnames(df)))]
-DPA1 <- df[,c(1,2,grep("*DPA1*",colnames(df)))]
-
-DQB1 <- df[,c(1,2,grep("*DQB1*",colnames(df)))]
-DQA1 <- df[,c(1,2,grep("*DQA1*",colnames(df)))]
-head(DQA1)
 
 
 
@@ -276,10 +268,12 @@ head(out)
 #####merge NGS
 out <- read.csv("HLAimputation.all.gene.4digit.Result.csv")
 ngs <- read.csv("../../../transplantation/HLAtyping/20200828/HLAtyping.alle.gene.4digit.csv")
+
 head(ngs)
 ncol(ngs)
-out <- merge(out,ngs,by.x = "IID",by.y = "KID",all.x = T)
+out <- merge(out,ngs,by.x = "IID",by.y = "KID")
 ncol(out)
+
 head(out)
 out <-out[,c(1,18,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)]
 write.csv(out,"MERGE.impResult.hlatyping.all.gene.4digit.csv",row.names = F,quote = F)
