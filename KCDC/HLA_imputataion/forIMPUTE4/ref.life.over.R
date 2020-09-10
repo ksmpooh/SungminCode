@@ -1,63 +1,67 @@
 
-setwd("C:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/HAN.ref")
+#setwd("C:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/HAN.ref")
+setwd("C:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/")
 ##### reference panel ref/alt position
 
 library(BiocManager)
 library(BiocVersion)
 
 
+markers <- read.table("Merge_panel.markers")
+colnames(markers)<-c("id","pos","a1","a2")
+head(markers)
+tail(markers)
+
 
 #BiocManager::install("BSgenome")
 #BiocManager::install('BSgenome.Hsapiens.UCSC.hg19')
 
 library(BSgenome.Hsapiens.UCSC.hg19)
-refallele <- getSeq(Hsapiens,"chr6",28477833,33448188)
+refallele <- getSeq(Hsapiens,"chr6",24898856,34886436)
 #refallele <- getSeq(Hsapiens,"chr6",28477833,28477835)
 refallele <- as.character(refallele)
-refallele[1](1)
+#refallele[1](1)
 substr(refallele,start = 1,stop = 1)
 
 
 library(stringr)
-bim <-read.table("HAN.MHC.reference.panel.fixed.bim")
-head(bim)
 
-markers <- read.table("HAN.MHC.reference.panel.fixed.markers")
-head(markers)
 
-ref <- read.table("hglft_genome_151e2_774cc0.bed")
-head(ref)
-
-bim$hg19 <- str_split_fixed(ref$V1,'-',2)[,2]
-head(bim)
-tail(bim)
-
-nsnp <- nrow(bim)
-out <-data.frame(pos = NULL, ref = NULL)
+nsnp <- nrow(markers)
+#out <-data.frame(pos = NULL, ref = NULL)
 out <- matrix(nrow = nsnp,ncol = 2)
 out
 
 k = 0
-for (i in bim$hg19){
+
+for (i in markers$pos){
   k = k + 1
   j <- strtoi(i)
-  r <- j - 28477832
+  r <- j - 24898855
   #print(i)
   #print(j)
   #print(j - 28477832)
   out[k,1] <- j
   out[k,2] <- substr(refallele,start = r,stop = r)
+#  print(out[0:5])
+#  print(substr(refallele,start = r,stop = r))
 }
 out<-as.data.frame(out)
-
+out
 colnames(out) <- c("pos","ref")
 head(out)
-head(bim)
-df <-cbind(bim,out)
+head(markers)
+df <-cbind(markers,out)
 head(df)
+df$chr <- 6
 #df <-merge(bim,out,by.x = "hg19",by.y = "pos",all.y = TRUE)
-colnames(df)[1:6]<-c("chr","ID","0","hg18","a1","a2")
+#colnames(df)[1:6]<-c("chr","ID","0","hg18","a1","a2")
 head(df)
-write.table(df[,c(1,2,4,5,6,7,9)],"ref.allele.txt",col.names = T,row.names = F,quote = F)
+write.table(df[,c(7,1,2,3,4,6)],"ref.allele.txt",col.names = T,row.names = F,quote = F)
 
 
+head(markers)
+#B <- df[,c(1,2,grep("HLA_B_*",colnames(df)))]
+
+a <- markers[grep("AA",markers$id),]
+a
