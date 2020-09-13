@@ -111,3 +111,28 @@ out$type
 out$digit
 
 write.csv(out,"c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare.Result.csv",col.names = T,row.names = F,quote = F)
+
+
+####################
+
+out <- read.csv("c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare.Result.csv",header = T)
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/Result/")
+
+digit = "2"
+
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+df<-df[!df$YSample == 'CDC015',]
+
+a <- accuracy.cal(df,"Pan.impute4.sample6574",digit,check,gene,out.subset)
+
+digit = "4"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+df<-df[!df$YSample == 'CDC015',]
+
+b <- accuracy.cal(df,"Pan.impute4.sample6574",digit,check,gene,out.subset)
+head(a)
+head(out)
+ncol(a)
+ncol(out)
+out <- rbind(out,a)
+out <- rbind(out,b)
