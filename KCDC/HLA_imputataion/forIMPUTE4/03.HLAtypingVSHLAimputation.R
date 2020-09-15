@@ -1,5 +1,6 @@
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/HAN.ref/Result/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/Result/")
+
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Pan/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/01.pan/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/02.han/")

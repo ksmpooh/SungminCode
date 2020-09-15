@@ -1,6 +1,6 @@
 ##################### compare result accuracy check
 
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Result/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/HAN.ref/Result/")
 #digit = "2"
 #digit = "4"
 #df <- read.csv("compare.IMPvsNGS.all.gene.2digit.csv",header = T)
@@ -42,27 +42,34 @@ accuracy.cal <- function(df,type,digit,check,gene,out.subset){
   return(ref)
   #print(ref)
 }
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Result/")
+
+
+ref = "PAN"
+ref = "HAN"
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/Result/")
+setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/",ref,".ref/Result/"))
 
 digit = "2"
 
 df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
 df<-df[!df$YSample == 'CDC015',]
 
-a <- accuracy.cal(df,"Han.impute4.sample6574",digit,check,gene,out.subset)
+a <- accuracy.cal(df,paste0(ref,".impute4.sample6574"),digit,check,gene,out.subset)
 
 digit = "4"
 df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
 df<-df[!df$YSample == 'CDC015',]
 
-b <- accuracy.cal(df,"Han.impute4.sample6574",digit,check,gene,out.subset)
+b <- accuracy.cal(df,paste0(ref,".impute4.sample6574"),digit,check,gene,out.subset)
 
 #a <- accuracy.cal(df,"Han.impute4","2",check,gene,out.subset)
 a
 b
 out <- rbind(a,b)
-head(out)
+out1 <- rbind(a,b)
 
+out <- rbind(out,out1)
+out
 
 ###############Á¤¸®
 
