@@ -44,8 +44,8 @@ accuracy.cal <- function(df,type,digit,check,gene,out.subset){
 }
 
 
-ref = "PAN"
-ref = "HAN"
+ref = "Pan"
+ref = "Han"
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/Result/")
 setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/",ref,".ref/Result/"))
 

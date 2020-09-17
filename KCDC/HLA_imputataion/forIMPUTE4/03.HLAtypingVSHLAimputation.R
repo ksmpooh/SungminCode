@@ -1,11 +1,13 @@
 
-#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Pan/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/01.pan/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/02.han/")
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
-df <- read.table("test.HLA_raw.raw",header = T)
+#df <- read.table("test.HLA_raw.raw",header = T)
+df <- read.table("pan.impute4.hlaIMP_HLA_raw.raw",header = T)
+df <- read.table("han.impute4.hlaIMP_HLA_raw.raw",header = T)
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 head(df)
 colnames(df)
@@ -136,6 +138,7 @@ DPB1_td <- hla.find(DPB1_td,"DPB1")
 grep("*N_P",colnames(A))
 colnames(A)[6]<-"HLA_A_0122_P"
 colnames(A)[19]<-"HLA_A_0253_P"
+
 A_td <- hla.subset(A,2)
 A_td <- hla.find(A_td,"A")
 
