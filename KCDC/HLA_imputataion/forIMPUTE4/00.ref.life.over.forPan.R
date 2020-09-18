@@ -65,3 +65,21 @@ head(markers)
 
 a <- markers[grep("AA",markers$id),]
 a
+########################make hg17 for Pan
+
+ref <- read.table("ref.allele.txt",header = T)
+head(ref)
+pan <- read.table("Merge_panel.markers.hg17")
+head(pan)
+#df <- merge(ref,pan,by.x = "id",by.y="V1")
+
+df <- cbind(ref,pan)
+
+head(df)
+df <- df[,c(1,2,8,4,5,3,6)]
+
+colnames(df)<-c("chr","ID","hg17","a1","a2","hg19","ref")
+
+colnames(ref)
+
+write.table(df[,c("chr","ID","hg19","a1","a2","hg17","ref")],"ref.allele.txt",col.names = T,row.names = F,quote = F)
