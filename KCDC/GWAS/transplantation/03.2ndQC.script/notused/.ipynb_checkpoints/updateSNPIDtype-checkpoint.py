@@ -42,11 +42,12 @@ while True:
 
 # In[154]:
 
+
 while True:
     line = bim.readline().replace("\n","")
     if not line :
-        print("New BIM..")
-        break
+	print("New BIM..")
+	break
     col =  line.split('\t')
     key = col[1]
     A1 = col[4]
