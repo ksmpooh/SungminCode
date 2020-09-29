@@ -93,3 +93,42 @@ write.table(df,"last.sample.info.txt",col.names = T,row.names = F,quote = F,sep 
 
 df <- read.table("c:/Users/user/Desktop/KCDC/transplantation/final_sample_info/last.sample.info.txt",header = T)
 table(df$state)
+
+
+##일반용역 정보 추가
+
+#### HLa 일반용역 sample 정리
+
+setwd("c:/Users/user/Desktop/KCDC/")
+df1 <- read.csv("일반용역/2020년 장기이식 유전체정보 생산 대상자(DNALink 보유 검체 중)_20200623.csv")
+df2 <- read.csv("transplantation/HLAtyping/20200828/HLAtyping.alle.gene.2digit.csv")
+head(df1)
+head(df2)
+
+ref <- read.table("transplantation/final_sample_info/last.sample.info.txt",header = T)
+head(ref)
+rownames(ref)<-ref$NewID
+ref$HLAtyping <- 0
+
+ref[df1$NIHID,]$HLAtyping <- 2020
+ref[df2$KID,]$HLAtyping <- 2019
+
+table(ref$HLAtyping)
+head(ref)
+colnames(ref)[1] <- "KBA_ID"
+write.table(ref,"transplantation/final_sample_info/last.sample.info_20200929.txt",col.names = T,row.names = F,quote = F)
+
+
+out <- merge(df1,ref,by.x = "NIHID",by.y = "NewID",all.x = T)
+out$HLA.ID <- "2020KDCA"
+for (i in 1:265) {
+  if (i < 10) {
+    out[i,'HLA.ID'] <-paste0("2020KDCA00",i)  
+  } else if ( i < 100){
+    out[i,'HLA.ID'] <-paste0("2020KDCA0",i)
+  } else{
+    out[i,'HLA.ID'] <-paste0("2020KDCA",i)
+  }
+}
+head(out)
+write.csv(out,"일반용역/2020.HLAtyping.265sample.original.info.csv",row.names=F,quote=F)
