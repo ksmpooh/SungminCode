@@ -6,9 +6,8 @@ library(BiocManager)
 library(BiocVersion)
 
 
-
-#BiocManager::install("BSgenome")
-#BiocManager::install('BSgenome.Hsapiens.UCSC.hg19')
+BiocManager::install("BSgenome")
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg19')
 
 library(BSgenome.Hsapiens.UCSC.hg19)
 refallele <- getSeq(Hsapiens,"chr6",28477833,33448188)
@@ -55,7 +54,6 @@ head(out)
 head(bim)
 df <-cbind(bim,out)
 head(df)
-#df <-merge(bim,out,by.x = "hg19",by.y = "pos",all.y = TRUE)
 colnames(df)[1:6]<-c("chr","ID","0","hg18","a1","a2")
 head(df)
 write.table(df[,c(1,2,4,5,6,7,9)],"ref.allele.txt",col.names = T,row.names = F,quote = F)

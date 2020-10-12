@@ -132,3 +132,49 @@ for (i in 1:265) {
 }
 head(out)
 write.csv(out,"일반용역/2020.HLAtyping.265sample.original.info.csv",row.names=F,quote=F)
+
+#### 1차년도 아이디와 matching 및 수정
+setwd("c:/Users/user/Desktop/KCDC/")
+df <- read.csv("일반용역/2020년 장기이식 유전체정보 생산 대상자(DNALink 보유 검체 중)_20200623.csv")
+head(df)
+ref <- read.table("transplantation/final_sample_info/last.sample.info_20200929.txt",header = T)
+head(ref)
+df2 <- read.csv("일반용역/2019년도HLAtyping.265.sample.csv",header = T)
+head(df2)
+
+df <- merge(df,ref[,c(1,3)],by.x="NIHID",by.y="KBA_ID")
+head(df)
+
+pairtable <- read.csv("transplantation/final_sample_info/한국인칩_장기이식_pairTable.csv")
+head(pairtable)
+pairtable <- pairtable[,c(2,3,8,9)]
+head(pairtable)
+
+a <- merge(df2,pairtable,by.x="생산아이디",by.y="NewID.1")
+b <- merge(df,pairtable,by.x="NIHID",by.y="NewID")
+head(a)
+head(b)
+b$OriID.x == b$OriID.y
+a$OLD_ID == a$OriID.1
+a <- a[,c(1,2,3,5,6)]
+colnames(a) <- c("KBA_ID1","oriID1","HLAID1","KBA_ID2","oriID2")
+head(a)
+a$HLAID2 <- a$HLAID1
+
+
+library(stringr)
+for (i in 1:265) {
+  a[i,"HLAID2"] <- str_replace(a[i,"HLAID2"],'H','2020KDCA')
+}
+
+ori <- read.csv("일반용역/2020.HLAtyping.265sample.original.info.csv",header=T)
+head(ori)
+head(a)
+head(ref)
+out <- merge(a,ori[,c(1,2,3)],by.x = "KBA_ID2",by.y="NIHID")
+head(out)
+write.csv(out,"일반용역/HLAtyping.265pairtable.csv",row.names=F,quote=F)
+
+out <-merge(ori[,c(1:ncol(ori)-1)],a[,c(4,6)],by.x="NIHID",by.y = "KBA_ID2")
+head(out)
+write.csv(out,"일반용역/2020.HLAtyping.265sample.original.info.csv",row.names=F,quote=F)
