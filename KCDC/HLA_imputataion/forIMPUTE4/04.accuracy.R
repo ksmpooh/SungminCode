@@ -121,3 +121,4 @@ write.csv(out,"c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare
 
 
 ############20201013 sample Ã£±â
+
