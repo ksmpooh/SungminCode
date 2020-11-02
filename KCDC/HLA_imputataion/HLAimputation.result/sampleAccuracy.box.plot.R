@@ -247,3 +247,26 @@ boxplot(out2[2:5],main = "(ori)HLA imputation Sample Accuracy : 4digit"
 boxplot(out3[2:5],main = "(ori)HLA imputation Sample Accuracy : 2digit"
         ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
 )
+
+#df <-df[df$YSample != 'CDC015',]
+out <- out[out$IID != 'NIH19KT0015',]
+out1 <- out1[out1$IID != 'NIH19KT0015',]
+
+
+out <-rbind(out,c("modi.4digit.mean",mean(out$Han.cookHLA),mean(out$Pan.cookHLA),mean(out$Han.impute4),mean(out$Pan.impute4)))
+out1 <-rbind(out1,c("modi.2digit.mean",mean(out1$Han.cookHLA),mean(out1$Pan.cookHLA),mean(out1$Han.impute4),mean(out1$Pan.impute4)))
+out2 <-rbind(out2,c("ori.4digit.mean",mean(out2$Han.cookHLA),mean(out2$Pan.cookHLA),mean(out2$Han.impute4),mean(out2$Pan.impute4)))
+out3 <-rbind(out3,c("ori.2digit.mean",mean(out3$Han.cookHLA),mean(out3$Pan.cookHLA),mean(out3$Han.impute4),mean(out3$Pan.impute4)))
+
+tail(out)
+tail(out1)
+df <- rbind(out[255,],out1[255,])
+df <- rbind(df,out2[255,])
+df <- rbind(df,out3[255,])
+df
+
+df$type <- c("modi.4digit.mean","modi.2digit.mean","ori.4digit.mean","ori.2digit.mean")
+
+head(df)
+
+write.csv(df[,c()])

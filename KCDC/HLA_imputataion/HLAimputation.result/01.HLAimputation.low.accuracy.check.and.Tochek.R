@@ -240,8 +240,9 @@ b
 drb
 
 
-df <- read.csv("HLAimputation/20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv")
-df1 <- read.csv("HLAimputation/HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv")
+df <- read.csv("20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv")
+df1 <- read.csv("HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv")
+
 df <- df[df$IID %in% a$KID,]
 df1 <- df1[df1$IID %in% a$KID,]
 
