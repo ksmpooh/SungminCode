@@ -1,0 +1,25 @@
+#######
+gen to plink
+######
+
+plink --gen JG.HLA.imputation.using.IMPUTE4.usingPan.24913126_34855591.gen.gz --sample ../01.phasing/JG.HLA.phasing.usingPanref.sample --make-bed --out plink/pan.impute4.hlaIMP --allow-extra-chr
+
+grep HLA pan.impute4.hlaIMP.bim |awk '{print $2}' > HLA.allele
+
+plink --bfile pan.impute4.hlaIMP --extract HLA.allele --make-bed --out pan.impute4.hlaIMP_HLA --allow-extra-chr
+
+awk '{print $2" P"}' pan.impute4.hlaIMP_HLA.bim > a1.allele.P.ref
+
+plink --bfile pan.impute4.hlaIMP_HLA --recodeA -a1-allele a1.allele.P.ref --out pan.impute4.hlaIMP_HLA_raw --allow-extra-chr
+
+
+
+
+##han
+  529  plink --gen JG.HLA.imputation.using.IMPUTE4.28477833_33448188.gen.gz --sample ../01.phasing/JG.HLA.phasing.sample --make-bed --out plink/han.impute4.hlaIMP --allow-extra-chr
+  530  cd plink/
+  531  grep HLA han.impute4.hlaIMP.bim |awk '{print $2}' > HLA.allele
+  532  plink --bfile han.impute4.hlaIMP --extract HLA.allele --make-bed --out han.impute4.hlaIMP_HLA --allow-extra-chr
+  533  awk '{print $2" P"}' han.impute4.hlaIMP_HLA.bim > a1.allele.P.ref
+  534  plink --bfile han.impute4.hlaIMP_HLA --recodeA -a1-allele a1.allele.P.ref --out han.impute4.hlaIMP_HLA_raw --allow-extra-chr
+
