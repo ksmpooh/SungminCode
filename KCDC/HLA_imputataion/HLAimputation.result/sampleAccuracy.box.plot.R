@@ -220,53 +220,64 @@ df$type2<-c("Pan.impute4","Han.impute4","Pan.cookHLA","Han.cookHLA","Pan.impute4
 library(stringr)
 
 ##################################################33
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/")
 
+#par(mfrow=c(2,1))
 
-par(mfrow=c(2,2))
-
+out <- read.csv("20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.2digit.csv",header = T)
 out <- read.csv("20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv",header = T)
 colnames(out)
 
+####number of sample
+out[out$Han.cookHLA.4digit <= 0.7 | out$Pan.cookHLA.4digit <= 0.7 | out$Han.impute4.4digit <= 0.7 |out$Pan.impute4.4digit <= 0.7,]
+dim(out[out$Han.cookHLA.2digit <= 0.7 | out$Pan.cookHLA.2digit <= 0.7 | out$Han.impute4.2digit <= 0.7 |out$Pan.impute4.2digit <= 0.7,])
+out[out$Han.cookHLA.2digit <= 0.7,]
+out[out$Pan.cookHLA.2digit <= 0.7,]
+out[out$Han.impute4.2digit <= 0.7,]
+out[out$Pan.impute4.2digit <= 0.7,]
+
+
+out <- read.csv("20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv",header = T)
 colnames(out)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
 out1 <- read.csv("20201026/HLA.accuracy.A.B.DRB1.sampleAccuracy.2digit.csv",header = T)
 colnames(out1)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
-out2 <- read.csv("HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv",header = T)
-colnames(out2)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
-out3 <- read.csv("HLA.accuracy.A.B.DRB1.sampleAccuracy.2digit.csv",header = T)
-colnames(out3)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
+#out2 <- read.csv("HLA.accuracy.A.B.DRB1.sampleAccuracy.4digit.csv",header = T)
+#colnames(out2)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
+#out3 <- read.csv("HLA.accuracy.A.B.DRB1.sampleAccuracy.2digit.csv",header = T)
+#colnames(out3)[2:5]<-c("Han.cookHLA","Pan.cookHLA","Han.impute4","Pan.impute4")
 
-boxplot(out[2:5],main = "(modify)HLA imputation Sample Accuracy : 4digit"
-        ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
-)
-boxplot(out1[2:5],main = "(modify)HLA imputation Sample Accuracy : 2digit"
-        ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
-)
-boxplot(out2[2:5],main = "(ori)HLA imputation Sample Accuracy : 4digit"
-        ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
-)
-boxplot(out3[2:5],main = "(ori)HLA imputation Sample Accuracy : 2digit"
+
+png("20201026/HLA_imputation_Sample_Accuracy(A,B,DRB1).png",height = 400, width = 1000)
+par(mfrow=c(1,2))
+boxplot(out1[2:5],main = "HLA imputation Sample Accuracy(A,B,DRB1) : 2digit"
+        ,ylim = c(0.45,1)
         ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
 )
 
-#df <-df[df$YSample != 'CDC015',]
-out <- out[out$IID != 'NIH19KT0015',]
-out1 <- out1[out1$IID != 'NIH19KT0015',]
+boxplot(out[2:5],main = "HLA imputation Sample Accuracy(A,B,DRB1) : 4digit"
+        ,ylim = c(0.45,1)
+        ,xlab = "Method",ylab = "Accuracy",col = c("gold","darkgreen")
+)
+head(out)
+dev.off()
+
+png("20201026/HLA_imputation_Sample_Accuracy_hist(A,B,DRB1).4digit.png",height = 500, width = 1000)
+par(mfrow=c(2,2))
+hist(out1$Han.cookHLA,main ="Han.cookHLA",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out1$Pan.cookHLA,main ="Pan.cookHLA",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out1$Han.impute4,main ="Han.impute4",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out1$Pan.impute4,main ="Pan.impute4",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+dev.off()
 
 
-out <-rbind(out,c("modi.4digit.mean",mean(out$Han.cookHLA),mean(out$Pan.cookHLA),mean(out$Han.impute4),mean(out$Pan.impute4)))
-out1 <-rbind(out1,c("modi.2digit.mean",mean(out1$Han.cookHLA),mean(out1$Pan.cookHLA),mean(out1$Han.impute4),mean(out1$Pan.impute4)))
-out2 <-rbind(out2,c("ori.4digit.mean",mean(out2$Han.cookHLA),mean(out2$Pan.cookHLA),mean(out2$Han.impute4),mean(out2$Pan.impute4)))
-out3 <-rbind(out3,c("ori.2digit.mean",mean(out3$Han.cookHLA),mean(out3$Pan.cookHLA),mean(out3$Han.impute4),mean(out3$Pan.impute4)))
+png("20201026/HLA_imputation_Sample_Accuracy_hist(A,B,DRB1).2digit.png",height = 500, width = 1000)
+par(mfrow=c(2,2))
+hist(out$Han.cookHLA,main ="Han.cookHLA",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out$Pan.cookHLA,main ="Pan.cookHLA",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out$Han.impute4,main ="Han.impute4",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+hist(out$Pan.impute4,main ="Pan.impute4",xlab = "Accuracy",ylim = c(0,250),xlim = c(0.5,1))
+dev.off()
 
-tail(out)
-tail(out1)
-df <- rbind(out[255,],out1[255,])
-df <- rbind(df,out2[255,])
-df <- rbind(df,out3[255,])
-df
 
-df$type <- c("modi.4digit.mean","modi.2digit.mean","ori.4digit.mean","ori.2digit.mean")
 
-head(df)
-
-write.csv(df[,c()])
+#################################

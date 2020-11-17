@@ -2,12 +2,10 @@
 
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Final/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/")
 
-pan <- read.csv("01.pan/HLA.imputation.4digit.result.compare.ngs.and.sm.csv")
-pan <- pan[1:255,]
-han <- read.csv("02.han/HLA.imputation.4digit.result.compare.ngs.and.sm.csv")
-han <- han[1:255,]
-
+pan <- read.csv("impute4/pan/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
+han <- read.csv("impute4/han/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
 head(pan)
 head(han)
 
@@ -25,19 +23,19 @@ library(coefficientalpha)
 myCol <- brewer.pal(3, "Pastel2")
 venn.diagram(
   x = list(
-    pan[pan$A.wrong > 0 ,]$ID %>% unlist(),
-    pan[pan$B.wrong > 0 ,]$ID %>% unlist(),
-    pan[pan$DRB1.wrong> 0 ,]$ID %>% unlist()
+    pan[pan$A.wrong > 0 ,]$IID %>% unlist(),
+    pan[pan$B.wrong > 0 ,]$IID %>% unlist(),
+    pan[pan$DRB1.wrong> 0 ,]$IID %>% unlist()
   ),
-  category.names = c("HLA.A","HLA.B","HLA.DRB1"),
+  category.names = c("A","B","DRB1"),
   filename = 'pan.wrong.list.png',
   output=TRUE,
   
   # Output features
   imagetype="png" ,
-  height = 700 , 
-  width = 700 , 
-  resolution = 300,
+  height = 400 , 
+  width = 400 , 
+  resolution = 200,
   compression = "lzw",
   
   # Circles
@@ -46,16 +44,18 @@ venn.diagram(
   fill = myCol,
   
   # Numbers
-  cex = .6,
+  cex = .7,
   fontface = "bold",
   fontfamily = "sans",
   
   # Set names
-  cat.cex = 0.6,
+  cat.cex = 0.7,
   cat.fontface = "bold",
   cat.default.pos = "outer",
-  cat.pos = c(-27, 20, 135),
-  cat.dist = c(0.055, 0.055, 0.055),
+  #cat.pos = c(-27, 20, 135),
+  cat.pos = c(0, 10, 0),
+  #cat.dist = c(0.055, 0.055, 0.055),
+  cat.dist = c(-0.005, 0.005, -0.015),
   cat.fontfamily = "sans",
   rotation = 1
   
@@ -63,19 +63,19 @@ venn.diagram(
 
 venn.diagram(
   x = list(
-    han[han$A.wrong > 0 ,]$ID %>% unlist(),
-    han[han$B.wrong > 0 ,]$ID %>% unlist(),
-    han[han$DRB1.wrong> 0 ,]$ID %>% unlist()
+    han[han$A.wrong > 0 ,]$IID %>% unlist(),
+    han[han$B.wrong > 0 ,]$IID %>% unlist(),
+    han[han$DRB1.wrong> 0 ,]$IID %>% unlist()
   ),
-  category.names = c("HLA.A","HLA.B","HLA.DRB1"),
+  category.names = c("A","B","DRB1"),
   filename = 'han.wrong.list.png',
   output=TRUE,
   
   # Output features
   imagetype="png" ,
-  height = 700 , 
-  width = 700 , 
-  resolution = 300,
+  height = 400 , 
+  width = 400 , 
+  resolution = 200,
   compression = "lzw",
   
   # Circles
@@ -84,16 +84,16 @@ venn.diagram(
   fill = myCol,
   
   # Numbers
-  cex = .6,
+  cex = .7,
   fontface = "bold",
   fontfamily = "sans",
   
   # Set names
-  cat.cex = 0.6,
+  cat.cex = 0.7,
   cat.fontface = "bold",
   cat.default.pos = "outer",
-  cat.pos = c(-27, 20, 135),
-  cat.dist = c(0.055, 0.055, 0.055),
+  cat.pos = c(0, 0, 0),
+  cat.dist = c(0.01, 0.01, 0.01),
   cat.fontfamily = "sans",
   rotation = 1
 )
@@ -102,8 +102,8 @@ venn.diagram(
 myCol
 venn.diagram(
   x = list(
-    han[han$A.wrong > 0 ,]$ID %>% unlist(),
-    pan[pan$A.wrong > 0 ,]$ID %>% unlist()
+    han[han$A.wrong > 0 ,]$IID %>% unlist(),
+    pan[pan$A.wrong > 0 ,]$IID %>% unlist()
   ),
   category.names = c("HAN.A","PAN + KOR.A"),
   filename = 'han.pan.A.list.png',
@@ -128,7 +128,7 @@ venn.diagram(
   
   
   # Set names
-  cat.cex = 0.4,
+  cat.cex = 0.6,
   #cat.fontface = "bold",
   cat.default.pos = "outer",
   cat.pos = 1,
@@ -140,8 +140,8 @@ venn.diagram(
 
 venn.diagram(
   x = list(
-    han[han$B.wrong > 0 ,]$ID %>% unlist(),
-    pan[pan$B.wrong > 0 ,]$ID %>% unlist()
+    han[han$B.wrong > 0 ,]$IID %>% unlist(),
+    pan[pan$B.wrong > 0 ,]$IID %>% unlist()
   ),
   category.names = c("HAN.B","PAN + KOR.B"),
   filename = 'han.pan.B.list.png',
@@ -166,7 +166,7 @@ venn.diagram(
   
     
   # Set names
-  cat.cex = 0.4,
+  cat.cex = 0.6,
   #cat.fontface = "bold",
   cat.default.pos = "outer",
   cat.pos = 5,
@@ -177,11 +177,11 @@ venn.diagram(
 
 venn.diagram(
   x = list(
-    han[han$DRB1.wrong> 0 ,]$ID %>% unlist(),
-    pan[pan$DRB1.wrong> 0 ,]$ID %>% unlist()
+    han[han$DRB1.wrong> 0 ,]$IID %>% unlist(),
+    pan[pan$DRB1.wrong> 0 ,]$IID %>% unlist()
   ),
   category.names = c("HAN.DRB1","PAN + KOR.DRB1"),
-  filename = 'han.pan.DRB1,wrong.list.png',
+  filename = 'han.pan.DRB1.wrong.list.png',
   output=TRUE,
   
   # Output features
@@ -202,11 +202,174 @@ venn.diagram(
   fontfamily = "sans",
   
   # Set names
-  cat.cex = 0.4,
+  cat.cex = 0.6,
   #cat.fontface = "bold",
   cat.default.pos = "outer",
-  cat.pos = 0,
-  #cat.dist = 2,
+  cat.pos = -5,
+  cat.dist = c(-0.3,-0.4),
   cat.fontfamily = "sans"
   #rotation = 
 )
+
+
+
+####################################################
+### 2 type 2 tool 2 ref
+
+
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/")
+
+impute4.pan <- read.csv("impute4/pan/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
+impute4.han <- read.csv("impute4/han/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
+cookHLA.pan <- read.csv("cookHLA/pan/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
+cookHLA.han <- read.csv("cookHLA/han/compare.IMPvsNGS.A.B.DRB1.4digit.csv")
+
+
+cookHLA.pan.wrong <- cookHLA.pan[cookHLA.pan$A.wrong > 0 | cookHLA.pan$B.wrong > 0 | cookHLA.pan$DRB1.wrong > 0  ,]
+cookHLA.han.wrong <- cookHLA.han[cookHLA.han$A.wrong > 0 | cookHLA.han$B.wrong > 0 | cookHLA.han$DRB1.wrong > 0  ,]
+impute4.pan.wrong <- impute4.pan[impute4.pan$A.wrong > 0 | impute4.pan$B.wrong > 0 | impute4.pan$DRB1.wrong > 0  ,]
+impute4.han.wrong <- impute4.han[impute4.han$A.wrong > 0 | impute4.han$B.wrong > 0 | impute4.han$DRB1.wrong > 0  ,]
+
+head(cookHLA.han)
+head(cookHLA.pan)
+
+
+library(VennDiagram)
+library(dplyr)
+library(magrittr) # %>%
+library(RColorBrewer)
+library(coefficientalpha)
+
+myCol <- brewer.pal(4, "Pastel2")
+
+
+venn.diagram(
+  x = list(
+    impute4.pan[impute4.pan$A.wrong > 0 ,]$IID %>% unlist(),
+    impute4.han[impute4.han$A.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.pan[cookHLA.pan$A.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.han[cookHLA.han$A.wrong > 0 ,]$IID %>% unlist()
+  ),
+  #category.names = c("A","B","DRB1"),
+  category.names = c("impute4.pan.A","impute4.han.A","cookHLA.pan.A","cookHLA.han.A"),
+  filename = 'tool.A.wrong.list.png',
+  output=TRUE,
+  
+  # Output features
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 200,
+  compression = "lzw",
+  
+  # Circles
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  # Numbers
+  cex = .7,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Set names
+  cat.cex = 0.7,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(0, 0, 0, 0),
+  cat.dist = c(-0.1, -0.1, 0.06, 0.06),
+  cat.fontfamily = "sans",
+  #rotation = 1
+  
+)
+
+
+
+
+myCol <- brewer.pal(4, "Pastel2")
+venn.diagram(
+  x = list(
+    impute4.pan[impute4.pan$B.wrong > 0 ,]$IID %>% unlist(),
+    impute4.han[impute4.han$B.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.pan[cookHLA.pan$B.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.han[cookHLA.han$B.wrong > 0 ,]$IID %>% unlist()
+  ),
+  #category.names = c("A","B","DRB1"),
+  category.names = c("impute4.pan.B","impute4.han.B","cookHLA.pan.B","cookHLA.han.B"),
+  filename = 'tool.B.wrong.list.png',
+  output=TRUE,
+  
+  # Output features
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 200,
+  compression = "lzw",
+  
+  # Circles
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  # Numbers
+  cex = .7,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Set names
+  cat.cex = 0.7,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(0, 0, 0, 0),
+  cat.dist = c(-0.1, -0.1, 0.06, 0.06),
+  cat.fontfamily = "sans",
+  #rotation = 1
+  
+)
+
+
+
+myCol <- brewer.pal(4, "Pastel2")
+venn.diagram(
+  x = list(
+    impute4.pan[impute4.pan$DRB1.wrong > 0 ,]$IID %>% unlist(),
+    impute4.han[impute4.han$DRB1.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.pan[cookHLA.pan$DRB1.wrong > 0 ,]$IID %>% unlist(),
+    cookHLA.han[cookHLA.han$DRB1.wrong > 0 ,]$IID %>% unlist()
+  ),
+  #category.names = c("A","B","DRB1"),
+  category.names = c("impute4.pan.DRB1","impute4.han.DRB1","cookHLA.pan.DRB1","cookHLA.han.DRB1"),
+  filename = 'tool.DRB1.wrong.list.png',
+  output=TRUE,
+  
+  # Output features
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 200,
+  compression = "lzw",
+  
+  # Circles
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  # Numbers
+  cex = .7,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Set names
+  cat.cex = 0.6,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(0, 0, 0, 0),
+  cat.dist = c(-0.1, -0.1, 0.06, 0.06),
+  cat.fontfamily = "sans",
+  #rotation = 1
+  
+)
+
+
+
+

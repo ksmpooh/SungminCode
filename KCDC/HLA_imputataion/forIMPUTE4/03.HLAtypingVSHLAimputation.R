@@ -1,6 +1,8 @@
+####### Fianl allgene result processing using recodeA
+
 
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/")
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref_re_20201010/Result/")
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/Pan/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/01.pan/")
@@ -8,12 +10,11 @@ setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref_re_20201010/Resu
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 #df <- read.table("test.HLA_raw.raw",header = T)
 df <- read.table("pan.impute4.hlaIMP_HLA_raw.raw",header = T)
-#df <- read.table("han.impute4.hlaIMP_HLA_raw.raw",header = T)
+df <- read.table("han.impute4.hlaIMP_HLA_raw.raw",header = T)
 #df <- read.table("JG.HLA.imputation_RAW.raw",header = T)
 head(df)
 colnames(df)
 ncol(df)
-#grep("*DRB1*",colnames(df))
 write.csv(t(colnames(df)),"header.txt",row.names = F)
 #write.csv((colnames(df)),"header2.txt",row.names = F)
 #t(colnames(df))
@@ -29,7 +30,7 @@ colnames(df)
 
 
 library(stringr)
-
+head(A)
 A <- df[,c(1,2,grep("HLA_A_*",colnames(df)))]
 B <- df[,c(1,2,grep("HLA_B_*",colnames(df)))]
 C <- df[,c(1,2,grep("HLA_C_*",colnames(df)))]
