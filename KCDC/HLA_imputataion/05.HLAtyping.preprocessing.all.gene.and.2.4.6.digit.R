@@ -1,11 +1,21 @@
 ###########################20200828
 ###HLA typing 결과 정리
-
+#2019
 setwd("c:/Users/user/Desktop/KCDC/transplantation/HLAtyping/")
-
+ori <- read.csv("HLAtyping.allGene.result.csv",header = T)
+#2020
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/HLAtyping/2020/")
+ori <- read.csv("2020_HLAtyping_tocheck.csv",header = T)
+tail(ori)
+head(ori)
+colnames(ori) <- c("X","A_1","A_2","B_1","B_2","C_1","C_2","DRB1_1","DRB1_2"
+                   ,"DRB3_1","DRB3_2","DRB4_1","DRB4_2","DRB5_1","DRB5_2"
+                   ,"DQA1_1","DQA1_2","DQB1_1","DQB1_2"
+                   ,"DPA1_1","DPA1_2","DPB1_1","DPB1_2")
+####
 library(stringr)
 
-ori <- read.csv("HLAtyping.allGene.result.csv",header = T)
+
 
 
 
@@ -210,12 +220,20 @@ ngs.6d[(is.na(ngs.6d$C.1)) & (!is.na(ngs.6d$C.2)),]$C.1 <- ngs.6d[(is.na(ngs.6d$
 head(ngs.6d)
 #######################################################
 
+#2019
 write.csv(ngs.2d,"20200828/HLAtyping.alle.gene.2digit.csv",row.names = F,quote = F)
 write.csv(ngs.4d,"20200828/HLAtyping.alle.gene.4digit.csv",row.names = F,quote = F)
 write.csv(ngs.6d,"20200828/HLAtyping.alle.gene.6digit.csv",row.names = F,quote = F)
 
-####################add kchip ID
 
+#2020
+write.csv(ngs.2d,"HLAtyping.alle.gene.2digit.csv",row.names = F,quote = F)
+write.csv(ngs.4d,"HLAtyping.alle.gene.4digit.csv",row.names = F,quote = F)
+
+
+
+####################add kchip ID
+##2019
 setwd("c:/Users/user/Desktop/KCDC/transplantation/HLAtyping/")
 ref <- read.csv("HLA_NGS_typing_255samples_results_202002.csv")
 head(ref)
@@ -241,6 +259,24 @@ colnames(df) <- c("YSample","KID","NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2","NGS_C
 write.csv(df,"20200828/HLAtyping.alle.gene.6digit.csv",row.names = F,quote = F)
 
 
+##2020
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/HLAtyping/2020/")
+ref <- read.csv("HLAtyping.265pairtable.csv",header = T)
+head(ref)
+df <- read.csv("HLAtyping.alle.gene.2digit.csv")
+df <- merge(ref[,c("KBA_ID2","HLAID2")],df,by.x = "HLAID2",by.y = "X")
+colnames(df)
+colnames(df) <- c("YSample","KID","NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2","NGS_C.1","NGS_C.2","NGS_DRB1.1","NGS_DRB1.2","NGS_DRB3.1","NGS_DRB3.2","NGS_DQA1.1", 
+                  "NGS_DQA1.2","NGS_DQB1.1","NGS_DQB1.2","NGS_DPA1.1","NGS_DPA1.2","NGS_DPB1.1","NGS_DPB1.2")
+write.csv(df,"HLAtyping.alle.gene.2digit.csv",row.names = F,quote = F)
+
+
+df <- read.csv("HLAtyping.alle.gene.4digit.csv")
+df <- merge(ref[,c("KBA_ID2","HLAID2")],df,by.x = "HLAID2",by.y = "X")
+colnames(df)
+colnames(df) <- c("YSample","KID","NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2","NGS_C.1","NGS_C.2","NGS_DRB1.1","NGS_DRB1.2","NGS_DRB3.1","NGS_DRB3.2","NGS_DQA1.1", 
+                  "NGS_DQA1.2","NGS_DQB1.1","NGS_DQB1.2","NGS_DPA1.1","NGS_DPA1.2","NGS_DPB1.1","NGS_DPB1.2")
+write.csv(df,"HLAtyping.alle.gene.4digit.csv",row.names = F,quote = F)
 
 ######python 작업 후..merge
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Result3/ngs.vs.sm.compare/")
