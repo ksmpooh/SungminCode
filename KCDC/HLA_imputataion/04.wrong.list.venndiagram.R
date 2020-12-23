@@ -1,6 +1,6 @@
 ### HLA imputation result
 
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/255sample/")
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/Final/")
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/")
 
@@ -19,7 +19,6 @@ library(dplyr)
 library(magrittr) # %>%
 library(RColorBrewer)
 library(coefficientalpha)
-
 myCol <- brewer.pal(3, "Pastel2")
 venn.diagram(
   x = list(
@@ -373,3 +372,25 @@ venn.diagram(
 
 
 
+#######################chcek list all 20201214
+a <- intersect(impute4.pan[impute4.pan$A.wrong > 0 ,]$IID,
+          impute4.han[impute4.han$A.wrong > 0 ,]$IID)
+b <- intersect(cookHLA.pan[cookHLA.pan$A.wrong > 0 ,]$IID,
+          cookHLA.han[cookHLA.han$A.wrong > 0 ,]$IID)
+c1 <- intersect(a,b)
+
+a <- intersect(impute4.pan[impute4.pan$B.wrong > 0 ,]$IID,
+               impute4.han[impute4.han$B.wrong > 0 ,]$IID)
+b <- intersect(cookHLA.pan[cookHLA.pan$B.wrong > 0 ,]$IID,
+               cookHLA.han[cookHLA.han$B.wrong > 0 ,]$IID)
+c2 <- intersect(a,b)
+
+a <- intersect(impute4.pan[impute4.pan$DRB1.wrong > 0 ,]$IID,
+               impute4.han[impute4.han$DRB1.wrong > 0 ,]$IID)
+b <- intersect(cookHLA.pan[cookHLA.pan$DRB1.wrong > 0 ,]$IID,
+               cookHLA.han[cookHLA.han$DRB1.wrong > 0 ,]$IID)
+c3 <- intersect(a,b)
+
+intersect(c1,c2)
+intersect(c2,c3)
+intersect(c3,c1)

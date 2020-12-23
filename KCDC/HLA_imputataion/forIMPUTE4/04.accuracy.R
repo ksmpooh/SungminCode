@@ -46,10 +46,12 @@ accuracy.cal <- function(df,type,digit,check,gene,out.subset){
 
 ref = "Pan"
 ref = "Han"
+tool = "cookHLA"
+tool = "impute4"
 #setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/PAN.ref/Result/")
 #setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/",ref,".ref/Result/"))
-setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/IMPUTE4/",ref,"/"))
-
+#setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/IMPUTE4/",ref,"/"))
+setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/processing_Result/",tool,".",ref,"/"))
 digit = "2"
 
 df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
@@ -95,6 +97,7 @@ out$type
 out
 
 ###################
+
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/20200731/")
 ref = 'Han'
 ref = 'Pan'
@@ -208,5 +211,32 @@ out
 
 
 write.csv(out,"c:/Users/user/Desktop/KCDC/HLAimputation/20201026/cookHLAvsIMPUTE4.compare.Result.csv",col.names = T,row.names = F,quote = F)
-``
 
+
+############### 20201215
+#ref = "Pan"
+ref = "Han"
+#tool = "cookHLA"
+tool = "impute4"
+
+setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/processing_Result/",tool,".",ref))
+digit = "2"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+#df<-df[!df$YSample == 'CDC015',]
+head(df)
+a <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+
+digit = "4"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+
+b <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+head(a)
+head(b)
+#out <- read.csv("c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare.Resul t.csv",header = T)
+#out <- rbind(a,b)
+out <- rbind(out,a)
+out <- rbind(out,b)
+out$type
+out$digit
+
+write.csv(out,"c:/Users/user/Desktop/KCDC/HLAimputation/processing_Result/cookHLAvsIMPUTE4.compare.Result.csv",col.names = T,row.names = F,quote = F)

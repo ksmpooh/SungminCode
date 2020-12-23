@@ -23,11 +23,13 @@ hlatab <- hlaSplitAllele(hla, train.prop=0.5)
 names(hlatab)
 head(hlatab)
 summary(hlatab)
+??hlaSplitAllele
 # "training" "validation"
 summary(hlatab$training)
 summary(hlatab$validation)
 # SNP predictors within the flanking region on each side
 summary(HapMap_CEU_Geno)
+HapMap_CEU_Geno$snp.allele
 region <- 500 # kb
 snpid <- hlaFlankingSNP(HapMap_CEU_Geno$snp.id, HapMap_CEU_Geno$snp.position,
                         hla.id, region*1000, assembly="hg19")
@@ -84,6 +86,8 @@ hapmap.ceu <- hlaBED2Geno(bed.fn, fam.fn, bim.fn, assembly="hg19")
 #########################################################################
 # predict
 #
+hapmap.ceu
+HapMap_CEU_Geno
 pred <- predict(model, hapmap.ceu, type="response")
 head(pred$value)
 # sample.id allele1 allele2 prob
