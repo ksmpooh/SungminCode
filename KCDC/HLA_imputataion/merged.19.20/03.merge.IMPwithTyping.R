@@ -1,20 +1,19 @@
-### FINAL cookHLA result processing and compare with NGS 20201214
+### FINAL cookHLA result processing and compare with NGS 20201224
 
 setwd("c:/Users/user/Desktop/KCDC/")
-ref <- read.csv("HLAimputation/HLAtyping/2019/HLA_NGS_typing_255samples_results_202002_modify_alltype.csv")
-ref <- read.csv("HLAimputation/HLAtyping/2019/HLA_NGS_typing_255samples_results_202002_modify_alltype_A.B.DRB1.csv")
+ref <- read.csv("HLAimputation/HLAtyping/all/HLAtyping.alle.gene.2digit_2019.with.2020.csv")
 head(ref)
-ref <- ref[!ref$Sample == "CDC015",]
+ref <- ref[!ref$YSample == "CDC015",]
 
 ####
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/processing_Result/")
-tool = "cookHLA"
-#tool = "impute4"
-#panel = "Han"
-panel = "Pan"
-df <- read.table(paste0(tool,".",panel,"/JG.HLA.imputation_RAW.raw"),header = T)
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/all/")
+#tool = "cookHLA"
+tool = "impute4"
+panel = "Han"
+#panel = "Pan"
+#df <- read.table(paste0(tool,".",panel,"/JG.HLA.imputation_RAW.raw"),header = T)
 #df <- read.table("impute4.Pan/pan.impute4.hlaIMP_HLA_raw.raw",header = T)
-#df <- read.table("impute4.Han/han.impute4.hlaIMP_HLA_raw.raw",header = T)
+df <- read.table("impute4.Han/han.impute4.hlaIMP_HLA_raw.raw",header = T)
 
 
 if (tool == "impute4") {
@@ -180,14 +179,20 @@ head(out)
 #####merge NGS
 out <- read.csv(paste0(tool,".",panel,"/HLAimputation.all.gene.2digit.Result.csv"))
 #out <- read.csv("HLAimputation.all.gene.2digit.Result.csv")
-ngs <- read.csv("../HLAtyping/2019/HLAtyping.alle.gene.2digit.csv")
+ngs <- read.csv("../HLAtyping/all/HLAtyping.alle.gene.2digit_2019.with.2020.csv")
 head(ngs)
 ncol(ngs)
 out <- merge(out,ngs,by.x = "IID",by.y = "KID")
 ncol(out)
 head(out)
-out <-out[,c(1,18,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)]
-head(out)
+out <-out[,c("IID","YSample","IMP_A.1","IMP_A.2","IMP_B.1","IMP_B.2"
+             ,"IMP_C.1","IMP_C.2","IMP_DRB1.1","IMP_DRB1.2"
+             ,"IMP_DQA1.1","IMP_DQA1.2","IMP_DQB1.1","IMP_DQB1.2"
+             ,"IMP_DPA1.1","IMP_DPA1.2","IMP_DPB1.1","IMP_DPB1.2"
+             ,"NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2"
+             ,"NGS_C.1","NGS_C.2","NGS_DRB1.1","NGS_DRB1.2"
+             ,"NGS_DQA1.1","NGS_DQA1.2","NGS_DQB1.1","NGS_DQB1.2"
+             ,"NGS_DPA1.1","NGS_DPA1.2","NGS_DPB1.1","NGS_DPB1.2")]
 
 #row.names(out) <- out$IID
 #out[DQA1_td[!is.na(DQA1_td$IMP_DQA1.3),]$IID,]
@@ -265,7 +270,7 @@ out <- read.csv(paste0(tool,".",panel,"/HLAimputation.all.gene.4digit.Result.csv
 
 head(out)
 
-ngs <- read.csv("../HLAtyping/2019/HLAtyping.alle.gene.4digit.csv")
+ngs <- read.csv("../HLAtyping/all/HLAtyping.alle.gene.4digit_2019.with.2020.csv")
 
 head(ngs)
 ncol(ngs)
@@ -273,7 +278,16 @@ out <- merge(out,ngs,by.x = "IID",by.y = "KID")
 ncol(out)
 
 head(out)
-out <-out[,c(1,18,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)]
+out <-out[,c("IID","YSample","IMP_A.1","IMP_A.2","IMP_B.1","IMP_B.2"
+             ,"IMP_C.1","IMP_C.2","IMP_DRB1.1","IMP_DRB1.2"
+             ,"IMP_DQA1.1","IMP_DQA1.2","IMP_DQB1.1","IMP_DQB1.2"
+             ,"IMP_DPA1.1","IMP_DPA1.2","IMP_DPB1.1","IMP_DPB1.2"
+             ,"NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2"
+             ,"NGS_C.1","NGS_C.2","NGS_DRB1.1","NGS_DRB1.2"
+             ,"NGS_DQA1.1","NGS_DQA1.2","NGS_DQB1.1","NGS_DQB1.2"
+             ,"NGS_DPA1.1","NGS_DPA1.2","NGS_DPB1.1","NGS_DPB1.2")]
+
 write.csv(out,paste0(tool,".",panel,"/MERGE.impResult.hlatyping.all.gene.4digit.csv"),row.names = F,quote = F)
+
 
 
