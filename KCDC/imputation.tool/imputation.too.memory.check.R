@@ -23,8 +23,8 @@ for (i in process_list) {
 #  print(max(df[df$COMMAND == i,]$RSS))
   out = rbind(out,ref)
 }
-
-
+out
+ref
 
 ##########g20201230 all
 setwd("c:/Users/user/Desktop/KCDC/imputation.tool/")
@@ -38,12 +38,17 @@ colnames(out) <-c("chunk","COMMAND","X.CPU","X.MEM","VSZ","RSS")
 for (i in loglist$log) {
   df <- read.table(paste0("memory.check/impute4/",i,".log"),header = T)
   process_list <- data.frame(table(df$COMMAND))$Var1
-  
+  for (j in process_list) {
+    ref = df[df$COMMAND == j,]
+    ref = ref[ref$RSS == max(ref$RSS),c("COMMAND","X.CPU","X.MEM","VSZ","RSS")]
+    ref = ref[1,]
+    ref$chunk = i
+    out = rbind(out,ref)
+  }
 }
-
-
-
-
+head(out)
+row.names(out) <- NULL
+out <- out[2:nrow(out),]
 
 
 
