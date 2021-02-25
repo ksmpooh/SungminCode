@@ -210,3 +210,12 @@ head(fd)
 write.csv(td,"Han.HLAtyping.Result.2digit.csv",col.names = T,row.names = F,quote = F)
 write.csv(fd,"Han.HLAtyping.Result.4digit.csv",col.names = T,row.names = F,quote = F)
 
+
+
+#####
+setwd("c:/Users/user/Desktop/KCDC/HLAimputation/HAN.ref/")
+td <- read.csv("Han.HLAtyping.Result.2digit.csv")
+fd <- read.csv("Han.HLAtyping.Result.4digit.csv")
+head(td)
+table(td$HLAtype_A.1)
+d
