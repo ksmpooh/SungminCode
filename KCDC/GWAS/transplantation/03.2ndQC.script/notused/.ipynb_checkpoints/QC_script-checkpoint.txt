@@ -1,0 +1,101 @@
+cd /DATA/smkim/Gastric/last_qc_2nd/OUTPUTs/CASE
+
+ 2861  plink --bfile KNIH.RAW.Gastric.2nd --exclude ../../INPUTs/CASE/rmSNP_2nd.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP
+ 2862  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP --remove ../../INPUTs/CASE/rmLQSamples.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample
+ 2863  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample --exclude ../../INPUTs/CASE/affy_snp_list.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy
+ 2828  python ../../SCRIPTs/01_select_dupID.py 
+python 
+ 2864  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup
+ 2865  plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup --maf 0.01 --geno 0.05 --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil
+ 2866  python ../../SCRIPTs/indel/ConvertToBim.py KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert
+ 2867  python ../../SCRIPTs/indel/ConvertToBim.py ../../INPUTs/CASE/Axiom_KORV1_1.na35.annot.extract.txt KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert
+ 2868  python ../../SCRIPTs/indel/indelChange.py ../../INPUTs/CASE/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel
+ 2869  king -b KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel.bed --related --prefix king --cpu 10
+ 2870  awk '0.354<=$10{print $1}' king.kin0 | uniq | tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > rmKING.txt
+ 2871  cat rmKING.txt 
+---king : 0
+
+plink --bfile KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel --flip ../../INPUTs/CASE/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_filp
+awk '{print $2}' KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_ >case_markerID.txt
+
+cd /DATA/smkim/Gastric/last_qc_2nd/OUTPUTs/CONTROL
+
+ 2877  plink --bfile V2_MERGED_RAW --exclude ../../INPUTs/CASE/affy_snp_list.txt --make-bed --out V2_MERGED_RAW_rmaffy
+ 2878  plink --bfile V2_MERGED_RAW_rmaffy --  --geno 0.1
+ 2879  plink --bfile V2_MERGED_RAW_rmaffy  --geno 0.1 --maf 0.01 --hwe 0.001 --make-bed --out V2_MERGED_RAW_rmaffy_fil
+ 2880  python ../../SCRIPTs/indel/indelChange.py ../../INPUTs/CASE/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt V2_MERGED_RAW_rmaffy_fil V2_MERGED_RAW_rmaffy_fil_indel
+awk '{print $2}' V2_MERGED_RAW_rmaffy_fil_indel.bim > control_markerID.txt
+
+cd ..
+cat CASE/case_markerID.txt CONTROL/control_markerID.txt |sort|uniq -c | awk '$1 == 2{print $2}' > case_control_intersect_markerID.txt
+
+ 2920  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel --extract case_control_intersect_markerID.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect
+ 2921  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_fil_indel --extract case_control_intersect_markerID.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect
+
+ 2923  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect --freq --a1-allele ../INPUTs/CASE/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE/CASE
+ 2924  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect --freq --a1-allele ../INPUTs/CASE/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL/CONTROL
+
+
+
+
+
+
+case <- read.table("CASE/CASE.frq",header=T)
+control <- read.table("CONTROL/CONTROL.frq",header=T)
+data <- merge(control,case,by="SNP")
+pdf("../PDF/control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+
+ 2927  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect --exclude rm_snp_frq.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq
+ 2928  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect --exclude rm_snp_frq.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq
+ 2930  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq --bmerge CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq --allow-no-sex --make-bed --out MERGE/gastric.merge
+ 2931  history 
+
+king -b MERGE/gastric.merge.bed --related --prefix MERGE/gastric.merge --cpu 10
+awk '0.354<=$10{print $1}' MERGE/gastric.merge.kin0 | uniq | tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > MERGE/rmKING.txt
+
+plink --bfile merge/CASE_CONTROL_MERGE_rmfreq --indep-pairwise 50 5 0.01 --exclude chr6_14_rm.txt --chr 1-22 --out merge/CASE_CONTROL_MERGE_rmfreq
+
+ 2936  plink --bfile MERGE/gastric.merge --extract MERGE/gastric.merge_PCA.prune.in --make-bed --out MERGE/gastric.merge.pruned
+ 2937  flashpca_x86-64 --bfile MERGE/gastric.merge.pruned --outpc MERGE/PCA.txt
+
+
+===============================================
+plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq --remove MERGE/rmKING.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking
+
+ 2950  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking --flip ../INPUTs/CASE/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp
+ 2952  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp --update-name ../INPUTs/updateSNPID.txt --make-bed --out CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp_updateSNPID
+ 2954  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq --flip ../INPUTs/CASE/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip
+ 2955  plink --bfile CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip --update-name ../INPUTs/updateSNPID.txt --make-bed --out CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip_updateSNPID
+ 2957  plink --bfile CASE/KNIH.RAW.Gastric.2nd_rmSNP_rmSample_rmaffy_rmdup_fil_convert_indel_intersect_rmfrq_rmking_filp_updateSNPID --bmerge CONTROL/V2_MERGED_RAW_rmaffy_fil_indel_intersect_rmfrq_flip_updateSNPID --allow-no-sex --make-bed --out MERGE/gastric.merge.after.flip.updateSNPID
+
+
+
+ 2960  python ../SCRIPTs/02.1kgp_fre_nerge.py 
+ 2965  awk '{print $2}' 1KGP/1kgp_merge.bim |head
+ 2966  awk '{print $2}' 1KGP/1kgp_merge.bim >1KGP/1kgp_merge_sampleID.txt
+ 2967  awk '{print $2}' MERGE/gastric.merge.after.flip.updateSNPID.bim | head
+ 2968  awk '{print $2}' MERGE/gastric.merge.after.flip.updateSNPID.bim > MERGE/gastric.merge.after.flip.updateSNPID_sampleID.txt
+ 2969  cat 1KGP/1kgp_merge_sampleID.txt MERGE/gastric.merge.after.flip.updateSNPID_sampleID.txt |sort | uniq -c |awk '$1 == 2{print $2}' > ethnicPCA/intersect_sampleID.txt
+ 2970  plink --bfile 1KGP/1kgp_merge --extract ethnicPCA/intersect_sampleID.txt --make-bed --out ethnicPCA/1kgp_merge_intersect
+ 2971  plink --bfile MERGE/gastric.merge.after.flip.updateSNPID --extract ethnicPCA/intersect_sampleID.txt --make-bed --out ethnicPCA/gastric.merge.after.flip.updateSNPID_intersect
+ 2972  plink --bfile ethnicPCA/gastric.merge.after.flip.updateSNPID_intersect --bmerge ethnicPCA/1kgp_merge_intersect --allow-no-sex --make-bed --out ethnicPCA/merge
+ 2973  python ../SCRIPTs/03.select_snpID_500K_distance.py 
+ 2974  plink --bfile ethnicPCA/merge --extract ethnicPCA/500K_distance_SNP_list.txt --make-bed --out ethnicPCA/merge_pca
+ 2975  flashpca_x86-64 --bfile ethnicPCA/merge_pca --outpc ethnicPCA/pca.txt
+
+
+

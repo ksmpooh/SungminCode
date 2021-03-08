@@ -70,14 +70,3 @@ ref.close()
 print("bye")
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
