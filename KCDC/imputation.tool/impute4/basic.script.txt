@@ -1,0 +1,3 @@
+### basic script for impute4
+
+/BDATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -buffer 1000 -int 182000001 187000000 -h /BDATA/smkim/imputation.tool.check/INPUTs/KGP3KRG/chr1_182000001_187000000.hap.gz -l /BDATA/smkim/imputation.tool.check/INPUTs/KGP3KRG/chr1_182000001_187000000.legend.gz -m /BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_combined_b37.txt -g /BDATA/smkim/imputation.tool.check/OUTPUTs/00.phasing.split/KBA.DS.chr1.phasing.5001_10000.sampleID.haps -o_gz -o /BDATA/smkim/imputation.tool.check/OUTPUTs/chr1_182000001_187000000/Tool.imputation.5001_10000.chr1.182000001_187000000
