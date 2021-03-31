@@ -1,0 +1,24 @@
+
+info score for vcf
+
+
+#vcf.filter.forIMPUTE5.sh
+
+mkdir ID_info
+in=$1
+cp /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/header.txt ./ID_info/$1_ID_info.txt
+zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[3]}' >> ./ID_info/$1_ID_info.txt
+
+#ls *.info | xargs -I{} -P 4 bash -c './sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
+
+#ls *.vcf.gz | xargs -I{} -P 4 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
+
+
+
+## merge info (ID. info)
+cp /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/header.txt ./All.marker.info.txt
+cat *chr1*txt | sort |uniq -c | awk '$1 == 1{print $2"\t"$3}' >> All.marker.info.txt
+
+
+## info with MAF
+

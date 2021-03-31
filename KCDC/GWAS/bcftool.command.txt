@@ -1,0 +1,25 @@
+## bcftools command
+
+
+bcftools query
+
+	bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
+
+    bcftools query -f '
+
+
+
+
+info score for vcf
+
+
+#zfilt.sh
+
+mkdir ID_info
+in=$1
+cp header.txt ./ID_info/$1_ID_info.txt
+zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[2]}' >> ./ID_info/$1_ID_info.txt
+
+#ls *.info | xargs -I{} -P 4 bash -c './sh zfilt.sh {}'
+
+#

@@ -1,9 +1,5 @@
 ####### Fianl allgene result processing using recodeA
 
-# mac
-setwd("~/Desktop/KCDC/HLAimputation/IMPUTE4/hard.call/")
-df <- read.table("JG.maf_align_hardcall_raw.raw",header = T)
-df <- read.table("JG.maf_align_raw.raw",header = T)
 
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/")
 setwd("c:/Users/user/Desktop/KCDC/HLAimputation/IMPUTE4/Pan.ref/Result/")
@@ -23,7 +19,6 @@ ncol(df)
 #write.csv((colnames(df)),"header2.txt",row.names = F)
 #t(colnames(df))
 header <- read.csv("last.header.txt")
-header <- read.csv("~/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/Result/last.header.txt")
 head(header)
 ncol(header)
 colnames(df) <- colnames(header)

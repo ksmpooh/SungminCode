@@ -1,0 +1,41 @@
+### basic script for imputation tool
+
+# impute4
+
+/BDATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -buffer 1000 -int 182000001 187000000 -h /BDATA/smkim/imputation.tool.check/INPUTs/KGP3KRG/chr1_182000001_187000000.hap.gz -l /BDATA/smkim/imputation.tool.check/INPUTs/KGP3KRG/chr1_182000001_187000000.legend.gz -m /BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_combined_b37.txt -g /BDATA/smkim/imputation.tool.check/OUTPUTs/00.phasing.split/KBA.DS.chr1.phasing.5001_10000.sampleID.haps -o_gz -o /BDATA/smkim/imputation.tool.check/OUTPUTs/chr1_182000001_187000000/Tool.imputation.5001_10000.chr1.182000001_187000000
+
+impute4.1.2_r300.2 
+-no_maf_align 
+-buffer 1000 
+-int 123 456 
+-h [input]hap.gz 
+-l [input].legend.gz 
+-m [genetic map] 
+-g [genotype.phased].haps 
+-Oz -o [output]
+
+
+#minimac4 
+minimac4 --chr 1 --start 197000001 --end 202000000 --format DS,GT,GP --referenceEstimates --mapFile /BDATA/ghyoon/comparison.imputation.tool/input/map/genetic_map_chr1_combined_b37_addCHR.txt --refHaps /BDATA/ghyoon/comparison.imputation.tool/input/m3vcf/chr1_197000001_202000000.m3vcf.gz --haps /BDATA/smkim/imputation.tool.check/INPUTs/KBA/Phasing.using.eagle.vcftovcf.KBA.DS.chr1_10Ksample_vcf.vcf.gz --prefix /BDATA/smkim/imputation.tool.check/minimac4/OUTPUTs/Default.window.option_eaglephased/chr1_197000001_202000000/Default.window.option_KBA.DS.chr1_10Ksample.minimac4.chr1_197000001_202000000 --log --cpu 1
+
+minimac4
+--chr 1
+--start 12345
+--end 12345
+--format DS,GT,GP
+--referenceEstimates
+--mapFile [map.input]
+--refHaps [ref.haps]
+--hapas [genotype.phased.vcf.gz]
+--prefix [output]
+--log
+--cpu
+
+#impute5
+/BDATA/smkim/imputation.tool.check/impute5/impute5_v1.1.3_static --h /BDATA/smkim/imputation.tool.check/impute5/INPUTs/ref/chr1_245000001_249240543.vcf.gz --g /BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/00.haptovcf/defualt.thread.DS.phasing.test.chr1_10Ksample.vcf.gz --o /BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_eagle.phased/chr1_247000001_249240543_using.KRG1KGP.haptovcf.ref_eagle4.phased.phased.imputation.vcf.gz --m /BDATA/smkim/imputation.tool.check/impute5/INPUTs/genetic_map_chr1_forIMPUTE5.txt --r 1:247000001-249240543
+./impute5_impute5_v1.1.3_static
+--h [ref.vcf]
+--g [genotype.phased.vcf.gz]
+--o [output]
+--m [map.input]
+--r chr:start-end
