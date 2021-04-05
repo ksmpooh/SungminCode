@@ -1,0 +1,35 @@
+
+
+/BDATA/smkim/imputation.tool.check/INPUTs/ref/KRG1KGP/chr1.merge.vcf.gz
+
+
+java -jar beagle.18May20.d20.jar gt=beagle.phased.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=/BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_for.beagle.txt chrom=1:142535440-147000000 out=beagle.phasing.impute.test
+java -jar beagle.18May20.d20.jar gt=beagle.phased.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=plink.chr1.GRCh37.map chrom=1:142535440-147000000 out=beagle.phasing.impute.test_usingHapMap
+
+
+zcat beagle.phasing.impute.test_usingHapMap.vcf.gz |grep -v "#" |awk '{split($8,a,";");split(a[1],b,"=");print b[2]}' |awk '$1>=0.8{print $0}' 
+ less -NS
+
+
+awk '$1>=0.8{print $0}' 
+
+
+
+/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/bref3/chr1_142535440_147000000.vcf.gz.bref3
+java -jar beagle.18May20.d20.jar gt=beagle.test.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/bref3/chr1_142535440_147000000.vcf.gz.bref3 map=plink.chr1.GRCh37.map chrom=1:142535440-147000000 out=beagle.impute.test_usingbref3
+chr1_142535440_147000000
+
+
+java -jar beagle.18May20.d20.jar gt=beagle.test.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=plink.chr1.GRCh37.map chrom=1:142535440-147000000 out=beagle.impute.test_usingHapMapmap
+
+
+
+
+java -jar beagle.18May20.d20.jar gt=/BDATA/smkim/imputation.tool.check/INPUTs/phasing/shapeit4/shapeit4.phased.DS.10K.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=/BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_for.beagle.txt cluster=1000000 chrom=1:142535440-147000000 out=beagle.test_cluster1M
+
+
+
+java -jar beagle.18May20.d20.jar gt=/BDATA/smkim/imputation.tool.check/INPUTs/phasing/shapeit4/shapeit4.phased.DS.10K.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=/BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_for.beagle.txt imp-step=1 chrom=1:142535440-147000000 out=beagle.test_impstep1
+
+
+java -jar beagle.18May20.d20.jar gt=/BDATA/smkim/imputation.tool.check/INPUTs/phasing/shapeit4/shapeit4.phased.DS.10K.vcf.gz ref=/BDATA/smkim/imputation.tool.check/INPUTs/ref/KGP3KRG/vcf/chr1_142535440_147000000.vcf.gz map=/BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_for.beagle.txt imp-nsteps=10 chrom=1:142535440-147000000 out=beagle.test_imp-nsteps10

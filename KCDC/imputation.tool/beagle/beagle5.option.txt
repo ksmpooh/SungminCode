@@ -1,0 +1,31 @@
+data parameters ...
+  gt=<VCF file: use GT field>                        (optional)
+  ref=<bref3 or VCF file with phased genotypes>      (optional)
+  out=<output file prefix>                           (required)
+  map=<PLINK map file with cM units>                 (optional)
+  chrom=<[chrom] or [chrom]:[start]-[end]>           (optional)
+  excludesamples=<file with 1 sample ID per line>    (optional)
+  excludemarkers=<file with 1 marker ID per line>    (optional)
+
+phasing parameters ...
+  burnin=<number of burnin iterations>               (default=6)
+  iterations=<number of phasing iterations>          (default=12)
+  phase-states=<model states for phasing>            (default=280)
+
+imputation parameters ...
+  impute=<impute ungenotyped markers (true/false)>   (default=true)
+  imp-states=<model states for imputation>           (default=1600)
+  imp-segment=<min haplotype segment length (cM)>    (default=6.0)
+  imp-step=<IBS step length (cM)>                    (default=0.1)
+  imp-nsteps=<number of IBS steps>                   (default=7)
+  cluster=<max cM in a marker cluster>               (default=0.005)
+  ap=<print posterior allele probabilities>          (default=false)
+  gp=<print posterior genotype probabilities>        (default=false)
+
+general parameters ...
+  ne=<effective population size>                     (default=1000000)
+  err=<allele mismatch rate>                         (default: data dependent)
+  window=<window length in cM>                       (default=40.0)
+  overlap=<window overlap in cM>                     (default=4.0)
+  seed=<random seed>                                 (default=-99999)
+  nthreads=<number of threads>                       (default: machine dependent)

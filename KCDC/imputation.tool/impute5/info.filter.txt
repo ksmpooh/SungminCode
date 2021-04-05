@@ -22,3 +22,13 @@ cat *chr1*txt | sort |uniq -c | awk '$1 == 1{print $2"\t"$3}' >> All.marker.info
 
 ## info with MAF
 
+plink --vcf {} --frq --out frq/{}
+
+
+mkdir frq
+ls *gz | xargs -I{} -P 32 bash -c 'plink --vcf {} --freq --out frq/{}'
+
+
+
+#102번 info
+cp /BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_shapeit4.phasing/vcf.filter.sh ./

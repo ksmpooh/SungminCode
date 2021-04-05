@@ -1,0 +1,19 @@
+Usage: imp5COnverter [options]
+
+options:
+
+Input:
+  --h arg                  Haplotype reference panel in VCF/BCF format (must have .vcf[.gz]/.bcf extension) or in IMP5 file format (.imp5 extension). The file must be indexed.
+  --r arg                  Region containing the whole imputation region, typically a whole chromosome. Example --r 20 or --r chr20 (whole chromosome 20) or -r chr20:1000000-5000000 (region within chromosome 20).
+
+Output:
+  --o arg (=out.ref.imp5)  Output file name, must have .imp5 extension (for VCF/BCF -> IMP5 conversion) or .vcf[.gz]/.bcf extension (for IMP5 -> VCF/BCF conversion)
+
+Other parameters:
+  --help                   Produce help message, listing all the accepted arguments
+  --threads arg            Number of threads.
+
+Help option called or no option provided.
+
+
+/BDATA/smkim/TOOLs/imp5Converter_1.1.4_static --h 
