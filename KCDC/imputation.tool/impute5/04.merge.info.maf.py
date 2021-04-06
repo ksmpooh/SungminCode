@@ -8,14 +8,38 @@ mafDir = "frq/"
 #chr1_192000001_197000000_using.KRG1KGP.haptovcf.ref_eagle.phased.vcftovcf.impute5.imputation.vcf.gz.frq
 #chr1_110000001_115000000_using.KRG1KGP.haptovcf.ref_eagle.phased.vcftovcf.impute5.imputation.vcf.gz_ID_info.txt
 
+#freq
  #CHR                                                                                        SNP   A1   A2          MAF  NCHROBS
  #  1                                                                            1:207000057:T:C    C    T            0    20000
  #  1                                                                             chr1-207000060    A    G       0.3386    20000
+
+#iID_info
+#ID	INFO
+#1:247000099_G/C	0.482
+#1:247000128_C/A	0
 outDir = "ID_info_maf/"
 os.system("mkdir "+outDir)
 def main():
     infos = glob.glob(infoDir + "*txt")
     for info in infos:
         frq = info.replace(infoDir,mafDir).replace("_ID_info.txt",".frq")
-        
-        
+        out = open(info.replace(infoDir,outDir).replace("_ID_info.txt","._ID_info.withMAF.txt"),"w")
+        info_in = open(info,'r')
+        frq_in = open(frq,'r')
+        into_header = info_in.readline()
+        frq_header = frq_in.readline()
+        while True:
+            info_line = info_in.readline()
+            frq_line = frq_in.readline()
+#            if not (info_line and frq_line):
+            if not info_line:
+                break
+            chrom,snp,A1,A2,MAF,NCHROBS = frq_line.replace("\n","").split()
+            if float(MAF) > 0.5:
+                MAF = 1 - float(MAF)
+            out.write(info_line.replace("\n","")+"\t"+MAF +"\n")
+        info_in.close()
+        frq_in.close()
+        out.close()
+
+main()

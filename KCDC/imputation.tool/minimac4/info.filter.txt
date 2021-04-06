@@ -23,6 +23,6 @@ in=$1
 #zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[2]}' >> ./ID_info_maf/$1_ID_info.txt
 tail -n+2 $1 | awk '{split($1,b,":"); print b[1]":"b[2]"_"b[3]"/"b[4]"\t"$7"\t"$5}' > ./ID_info_maf/$1_ID_info.txt
 
-#ls *.info | xargs -I{} -P 32 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/minimac4/infofilter/info.with.maf.sh {}'
-#cp /BDATA/smkim/imputation.tool.check/SCRIPTs/minimac4/infofilter/header1.txt ./ID_info_maf/ALL_ID_info.txt
-#cat ./ID_info_maf/*chr1*.txt >> ./ID_info_maf/ALL_ID_info.txt
+ls *.info | xargs -I{} -P 32 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/minimac4/infofilter/info.with.maf.sh {}'
+cp /BDATA/smkim/imputation.tool.check/SCRIPTs/minimac4/infofilter/header1.txt ./ID_info_maf/ALL_ID_info.txt
+cat ./ID_info_maf/*chr1*.txt >> ./ID_info_maf/ALL_ID_info.txt
