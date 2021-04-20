@@ -1,0 +1,14 @@
+Rscript --vanilla /BDATA/smkim/imputation.tool.check/OUTPUTs/info_maf/SCRIPTs/01.INFO.add.refMAF.R /BDATA/smkim/imputation.tool.check/INPUTs/gnomad/chunk/gnomAD_MAF_CHR1.ALL.FINAL.txt /BDATA/smkim/imputation.tool.check/OUTPUTs/info_maf/IMPUTE4.chr1.ID_info_maf.buffer.txt /BDATA/smkim/imputation.tool.check/OUTPUTs/info_maf/withGnomadMAF/IMPUTE4.chr1.ID_info_maf.buffer.withMAF.txt
+
+[ref] [input] [output]
+
+Rscript --vanilla /BDATA/smkim/imputation.tool.check/OUTPUTs/info_maf/SCRIPTs/01.INFO.add.refMAF.R /BDATA/smkim/imputation.tool.check/INPUTs/gnomad/chunk/gnomAD_MAF_CHR1.ALL.FINAL.txt
+
+##common less rare. 
+
+
+#ID	INFO	MAF
+#1:100000012_G/T	1	0.31982
+
+
+awk '$3<0.01{print $0}' | wc -l

@@ -1,0 +1,32 @@
+alternate_ids rsid chromosome position impute_info
+1:207000057:T:C 1:207000057:T:C NA 207000057 0.0497985
+rs908704:207000060:G:A rs908704:207000060:G:A NA 207000060 0.951268
+rs149533970:207000091:C:T rs149533970:207000091:C:T NA 207000091 0.585615
+1:207000113:A:G 1:207000113:A:G NA 207000113 0.196009
+rs80353271:207000122:T:C rs80353271:207000122:T:C NA 207000122 0.0978201
+rs75343928:207000123:C:G rs75343928:207000123:C:G NA 207000123 0.249739
+rs183101536:207000163:T:C rs183101536:207000163:T:C NA 207000163 0.262153
+1:207000279:G:A 1:207000279:G:A NA 207000279 0.0182401
+rs187396605:207000312:G:A rs187396605:207000312:G:A NA 207000312 0.116114
+
+
+
+
+
+cp /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/header.txt ./ID_info/$1_ID_info.txt
+zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[3]}' >> ./ID_info/$1_ID_info.txt
+
+#ls *.info | xargs -I{} -P 4 bash -c './sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
+
+
+
+
+
+# info for .info
+#
+mkdir ID_info
+in=$1
+tail -n+2 $1 | awk '{split($2,a,":"); print "1:"a[2]"_"a[3]"/"a[4]"\t"$5}' > ./ID_info/$1_ID_info.txt
+
+
+#ls *.info | xargs -I{} -P 32 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute4/info/impute4.info.filter.sh {}'

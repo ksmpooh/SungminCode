@@ -6,12 +6,12 @@ info score for vcf
 
 mkdir ID_info
 in=$1
-cp /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/header.txt ./ID_info/$1_ID_info.txt
-zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[3]}' >> ./ID_info/$1_ID_info.txt
+#cp /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/header.txt ./ID_info/$1_ID_info.txt
+zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[3]}' > ./ID_info/$1_ID_info.txt
 
 #ls *.info | xargs -I{} -P 4 bash -c './sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
 
-#ls *.vcf.gz | xargs -I{} -P 4 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
+#ls *.vcf.gz | xargs -I{} -P 32 bash -c 'sh /BDATA/smkim/imputation.tool.check/SCRIPTs/impute5/info.filter/vcf.filter.forIMPUTE5.sh {}'
 
 
 
@@ -30,5 +30,23 @@ ls *gz | xargs -I{} -P 32 bash -c 'plink --vcf {} --freq --out frq/{}'
 
 
 
+
+
+
+
 #102번 info
 cp /BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_shapeit4.phasing/vcf.filter.sh ./
+cp /BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_shapeit4.phasing/header.txt ./
+ls *.vcf.gz | xargs -I{} -P 32 bash -c 'sh vcf.filter.sh {}'
+
+#maf 처리완료
+
+## impute5
+/BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_shapeit4.phasing
+/BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_eagle.vcftovcf.phased
+/BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.KRG1KGP.haptovcf_eagle.phased/2nd -> 결과 안좋은 값
+
+/BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.1kgp.vcf_eagle.phasing -> 2개 청크 안됨
+/BDATA/smkim/imputation.tool.check/impute5/OUTPUTs/Ref.1kgp.vcf_shapeit4.phasing
+
+/BDATA/smkim/imputation.tool.check/info_maf/withheader/

@@ -5,7 +5,21 @@ bcftools query
 
 	bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
 
-    bcftools query -f '
+    bcftools query -f '[\t%INFO=%INFO]\n' [input.vcf.gz]
+
+    bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%INFO=%INFO]\n' [input.vcf.gz]
+    bcftools query -f '%ID\t%INFO/INFO\n' [input.vcf.gz]
+
+bcftools view
+    bcftools view -i 'MAF >= 0.01 & INFO >= 0.8' [input.vcf.gz] | bcftools annotate -x ^FORMAT/DS -Oz > [output.vcf.gz]
+
+
+
+vcf plot
+
+bcftools stats [inputs] > [output1].stats.info
+plot-vcfstats -f [output2] [output1].stats.info
+
 
 
 
@@ -22,4 +36,3 @@ zcat $1 | grep -v "^#" | awk '{split($8,b,"=");print $1":"$2"_"$4"/"$5"\t"b[2]}'
 
 #ls *.info | xargs -I{} -P 4 bash -c './sh zfilt.sh {}'
 
-#

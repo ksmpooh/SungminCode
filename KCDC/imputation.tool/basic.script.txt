@@ -17,7 +17,7 @@ impute4.1.2_r300.2
 
 #minimac4 
 minimac4 --chr 1 --start 197000001 --end 202000000 --format DS,GT,GP --referenceEstimates --mapFile /BDATA/ghyoon/comparison.imputation.tool/input/map/genetic_map_chr1_combined_b37_addCHR.txt --refHaps /BDATA/ghyoon/comparison.imputation.tool/input/m3vcf/chr1_197000001_202000000.m3vcf.gz --haps /BDATA/smkim/imputation.tool.check/INPUTs/KBA/Phasing.using.eagle.vcftovcf.KBA.DS.chr1_10Ksample_vcf.vcf.gz --prefix /BDATA/smkim/imputation.tool.check/minimac4/OUTPUTs/Default.window.option_eaglephased/chr1_197000001_202000000/Default.window.option_KBA.DS.chr1_10Ksample.minimac4.chr1_197000001_202000000 --log --cpu 1
-
+/BDATA/smkim/TOOLs/minimac4 --chr 1 --start 20000001 --end 25000000 --window 1000000 --format DS,GT,GP --referenceEstimates --mapFile /BDATA/smkim/imputation.tool.check/INPUTs/map/genetic_map_chr1_combined_b37_addCHR.txt --refHaps [OUTPUT.vcf.gz] --haps [INPUT.vcf.gz] --prefix [OUTPUT] --log --cpu 1
 minimac4
 --chr 1
 --start 12345

@@ -1,6 +1,6 @@
 ###Rsciprt
 #Three args : [ref] [input] [output]
-
+# Rscript --vanilla
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args) < 3){
@@ -21,9 +21,8 @@ df <- read.table(args[2],header = T)
 
 
 print("Read :Merge")
-#df <- df[df$ID %in% ref%V1,]
-out <- merge(df,ref,by.x="ID",by.y="V1")
-out <- out[!is.na(out$INFO),]
+out <- df[df$ID %in% ref$V1,]
+
 colnames(out) <- c("ID","INFO","MAF")
 
 write.table(out,args[3],col.names = T,row.names=F,quote =F,sep="\t")
