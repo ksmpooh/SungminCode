@@ -1,0 +1,12 @@
+snptest_v2.5.2 -data /BDATA/myhwang/UK/IMP/ukb_imp_chr22_v3.bgen \
+/BDATA/myhwang/KBA_130K/11_UKB/INPUTs/ukb57705_imp_v3_s487283_Liver_20210422.FINAL.sample \
+-range 38974153-38974155 -frequentist 1 -pheno GGT_logz -method expected -o \
+chr22_38974154.txt -snpid rs1013338
+
+
+
+
+
+
+## region 
+awk '{a=$3-1000000; b=$3+1000000; print $1"\t"$2"\t"$3"\t"a"\t"b}' sup_table3.tsv > sup_table3_region1M.txt

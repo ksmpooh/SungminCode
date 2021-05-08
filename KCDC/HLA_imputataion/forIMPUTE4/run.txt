@@ -1,0 +1,3 @@
+/DATA/smkim/JG/TOOLs/qctool -g /DATA/smkim/JG/06.HLAimputation.impute4/OUTPUTs/02.impute4/JG.HLA.imputation.using.IMPUTE4.28477833_33448188.gen.gz -snp-stats -osnp /DATA/smkim/JG/06.HLAimputation.impute4/OUTPUTs/03.info/JG.HLA.info
+
+/DATA/smkim/JG/TOOLs/qctool -g [input] -sno-stats -osnp [output]

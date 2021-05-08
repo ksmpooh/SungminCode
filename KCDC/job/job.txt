@@ -1,0 +1,6 @@
+### 연관성 분석 text
+
+epacts-single --vcf /BDATA/smkim/JG/05.imputation/OUTPUTs/05.vcf.filter/JG.KR.imputation.mergeGen.processing.chr6.101000001_106000000.filter.onlyDS.vcf.gz \
+--min-mac 5 -min-callrate 0.95 -no-plot --missing NA --region 6:101000001-103500000 \
+--ped /BDATA/smkim/JG/08.asso/INPUTs/ESRD_Total_20201208.ped --pheno CASE --cov AGE --cov SEX --cov d1 --cov d2 --test b.firth --field DS \
+--out /BDATA/smkim/JG/08.asso/OUTPUTs/01.b.firth/Total/JG.KR.ESRD.association.Total.b.firth.chr6.101000001_103500000 --run 1
