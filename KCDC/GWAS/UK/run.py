@@ -1,3 +1,23 @@
+# phenotype file split
+import os,glob
+traits = ["HBA1C","FPG","ALT","AST","GGT"]
+phenos = ["HbA1c_inv","GLU_inv","ALT_logz","AST_logz","GGT_logz"]
+
+def main():
+    df = "sup_table3_region1M_rmdup.txt"
+    outDir = "trait/"
+    os.system("mkdir "+outDir)
+    for trait,pheno in zip(traits,phenos):
+        os.system("mkdir %s%s"%(outDir,pheno))
+        os.system("grep %s %s > %s%s/%s.ID.txt"%(trait,df,outDir,pheno,pheno))
+        #os.system("cut -f5 %s%s/%s.ID.txt > %s%s/%s.onlyID.txt"%(outDir,pheno,pheno,outDir,pheno,pheno))
+
+main()
+
+
+
+
+
 import os
 phenoList = ["ALT_logz", "GLU_inv", "HbA1c_inv", "AST_logz", "GGT_logz"]
 def main():
@@ -52,3 +72,19 @@ def main():
         os.system("cut -d\" \" -f3-4 %s | awk '{print $1\":\"$2}' > %s"%(input,output))
 
 main()
+
+
+
+## 실행파일 염색채별로 만들기
+
+import os
+
+def main():
+    for i in range(1,22+1):
+        os.system("mkdir chr%s"%str(i))
+        os.system("mv *chr%s_* chr%s/"%(str(i),str(i)))
+        os.system("cp *py chr%s/"%str(i))
+
+main()
+
+#ls chr*/*py | xargs -I{} -P 22 bash -c 'python2 {}'

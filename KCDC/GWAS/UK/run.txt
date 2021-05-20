@@ -10,3 +10,6 @@ chr22_38974154.txt -snpid rs1013338
 
 ## region 
 awk '{a=$3-1000000; b=$3+1000000; print $1"\t"$2"\t"$3"\t"a"\t"b}' sup_table3.tsv > sup_table3_region1M.txt
+
+
+#
