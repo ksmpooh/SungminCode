@@ -48,9 +48,9 @@ def bgen_filter(inDir,outDir,refDir,shDir,Tool):
 #./qctool -g ukb_imp_chr22_v3.bgen -og qctool.filterUsingrsID.test.bgen -incl-rsids rsID.list -threads 16
 
 def sh():
-    server = "omics"
+    #server = "omics"
     #server = "109"
-    #server = "OAS"
+    server = "OAS"
     if server == "omics":
         bgenDir = ""
         outDir = ""
@@ -58,11 +58,12 @@ def sh():
         shDir = ""
         Tool = ""
     else:
-        bgenDir = ""
-        outDir = ""
-        refDir = ""
+        bgenDir = "/jdata/scratch/myhwang/UK/IMP/"
+        outDir = "/jdata/scratch/myhwang/UK/IMP_filter/"
+        refDir = "/jdata/scratch/myhwang/KBA_130K/11_UKB/INPUTs/"
         shDir = ""
-        Tool = ""
+        Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-CentOS6.8-x86_64/qctool"
+	#Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-Ubuntu16.04-x86_64/qcttol"
     bgen_filter(bgenDir, outDir, refDir, shDir, Tool)
 
 sh()
