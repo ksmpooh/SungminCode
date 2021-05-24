@@ -1,5 +1,11 @@
 # 103 /DATA/smkim/JG/06.HLAimputation.split/OUTPUTs/01.split
 
+# gene pos file
+gene    front   tail
+A   28910309    30913647
+B   30321652    32324956
+C   31546552    33557625
+
 # genotpye panel 나누기 
 ## 공통 marker with Han ref
 plink --bfile ../00.oridata/JG.QCed.HLA --extract intersect.SNPID.txt --make-bed --out JG.QCed.HLA_intersect
@@ -22,3 +28,5 @@ plink --bfile JG.QCed.HLA_intersect_HLA.DRB1 --indep-pairwise 50 5 0.8 --out pru
 plink --bfile JG.QCed.HLA_intersect_HLA.A --extract prunning_A.prune.in --make-bed.pr --out JG.QCed.HLA_intersect_HLA.A_pruning
 plink --bfile JG.QCed.HLA_intersect_HLA.B --extract prunning_B.prune.in --make-bed --out JG.QCed.HLA_intersect_HLA.B_pruning
 plink --bfile JG.QCed.HLA_intersect_HLA.DRB1 --extract prunning_DRB1.prune.in --make-bed --out JG.QCed.HLA_intersect_HLA.DRB1_pruning
+
+
