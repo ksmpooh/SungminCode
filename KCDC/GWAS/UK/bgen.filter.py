@@ -1,12 +1,12 @@
 import os
 
-infoDir = "/BDATA/myhwang/UK/MAFINFO/info0.8/" #Info0.8_ukb_mfi_chr17_v3.txt
-outDir = "/backup/smkim/UK/"
-bgenDir ="/BDATA/myhwang/UK/IMP/" #ukb_imp_chr19_v3.bgen
-shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.filter/"
-os.system("mkdir %s"%shDir)
+#infoDir = "/BDATA/myhwang/UK/MAFINFO/info0.8/" #Info0.8_ukb_mfi_chr17_v3.txt
+#outDir = "/backup/smkim/UK/"
+#bgenDir ="/BDATA/myhwang/UK/IMP/" #ukb_imp_chr19_v3.bgen
+#shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.filter/"
+#os.system("mkdir %s"%shDir)
 
-tool = "/BDATA/myhwang/UK/IMP/test/qctool"
+#tool = "/BDATA/myhwang/UK/IMP/test/qctool"
 #./qctool -g ukb_imp_chr22_v3.bgen -og qctool.filterUsingrsID.test.bgen -incl-rsids rsID.list -threads 16
 
 def info_filter():
@@ -30,8 +30,8 @@ def bgen_filter(inDir,outDir,refDir,shDir,Tool):
             chr,front,tail = j.split("_")
             bgenIn = inDir + "ukb_imp_%s_v3.bgen"%chr
             bgenOut = outDir + "ukb_imp_%s_v3.bgen"%j
-            with open(shDir + "UKB.bgen.filter.%s.sh"%j) as shout:
-                shout.write("%s -g %s -incl_range %s-%s -og %s"%(Tool,bgenIn,front,tail,bgenOut))
+            with open(shDir + "UKB.bgen.filter.%s.sh"%j,'w') as shout:
+                shout.write("%s -g %s -incl-range %s-%s -og %s"%(Tool,bgenIn,front,tail,bgenOut))
                 
 
 
@@ -50,19 +50,26 @@ def bgen_filter(inDir,outDir,refDir,shDir,Tool):
 def sh():
     #server = "omics"
     #server = "109"
-    server = "OAS"
+    server = "102"
+    #server = "OAS"
     if server == "omics":
         bgenDir = ""
         outDir = ""
         refDir = ""
         shDir = ""
         Tool = ""
-    else:
+    elif server == "OAS":
         bgenDir = "/jdata/scratch/myhwang/UK/IMP/"
         outDir = "/jdata/scratch/myhwang/UK/IMP_filter/"
         refDir = "/jdata/scratch/myhwang/KBA_130K/11_UKB/INPUTs/"
         shDir = ""
         Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-CentOS6.8-x86_64/qctool"
+    else:
+        bgenDir = "/BDATA/myhwang/UK/"
+        outDir = "/BDATA/myhwang/UK/IMP_filter/"
+        refDir = "/BDATA/myhwang/KBA_130K/11_UKB/INPUTs/"
+        shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.filter/"
+        Tool = "/BDATA/smkim/JG/TOOLs/qctool"
 	#Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-Ubuntu16.04-x86_64/qcttol"
     bgen_filter(bgenDir, outDir, refDir, shDir, Tool)
 

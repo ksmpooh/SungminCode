@@ -1,11 +1,6 @@
 ### 특허 관련 hla imputation 결과 정리
 setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/")
 ####### Fianl allgene result processing using recodeA
-gene = "A"
-#gene = "B"
-#gene = "DRB1"
-theme = ""
-#theme = "_pruning"
 # mac
 
 gene = "A"
@@ -139,7 +134,7 @@ head(DRB1_td)
 out <- merge(A_td[,c('IID','IMP_A.1','IMP_A.2')],B_td[,c('IID','IMP_B.1','IMP_B.2')],by = 'IID')
 out <- merge(out,DRB1_td[,c('IID','IMP_DRB1.1','IMP_DRB1.2')],by = 'IID')
 
-write.csv(out,"compare/HLA.gene.split.2d.csv",row.names = F,quote = F)
+#write.csv(out,"compare/HLA.gene.split.2d.csv",row.names = F,quote = F)
 
 head(out)
 #####merge NGS
@@ -177,11 +172,11 @@ DRB1_fd <- hla.subset(DRB1,4)
 DRB1_fd <- hla.find(DRB1_fd,"DRB1")
 head(DRB1_fd)
 
-out <- merge(A_fd[,c('IID','IMP_A.1','IMP_A.2')],B_td[,c('IID','IMP_B.1','IMP_B.2')],by = 'IID')
-out <- merge(out,DRB1_td[,c('IID','IMP_DRB1.1','IMP_DRB1.2')],by = 'IID')
+out <- merge(A_fd[,c('IID','IMP_A.1','IMP_A.2')],B_fd[,c('IID','IMP_B.1','IMP_B.2')],by = 'IID')
+out <- merge(out,DRB1_fd[,c('IID','IMP_DRB1.1','IMP_DRB1.2')],by = 'IID')
 
-write.csv(out,"compare/HLA.gene.split.4d.csv",row.names = F,quote = F)
-write.csv(out,"compare/Pruning.HLA.gene.split.4d.csv",row.names = F,quote = F)
+#write.csv(out,"compare/HLA.gene.split.4d.csv",row.names = F,quote = F)
+#write.csv(out,"compare/Pruning.HLA.gene.split.4d.csv",row.names = F,quote = F)
 
 
 head(out)
@@ -200,15 +195,7 @@ out <- out[,c("IID","IMP_A.1","IMP_A.2","NGS_A.1","NGS_A.2","IMP_B.1","IMP_B.2",
 #out[DPA1_td[!is.na(DPA1_td$IMP_DPA1.3),]$IID,]
 head(out)
 nrow(out)
-write.csv(out,"compare/MERGE.impResult.hlatyping.splitimp.A.B.DRB1.gene.4digit.csv",row.names = F,quote = F)
+#write.csv(out,"compare/MERGE.impResult.hlatyping.splitimp.A.B.DRB1.gene.4digit.csv",row.names = F,quote = F)
 write.csv(out,"compare/Pruning.MERGE.impResult.hlatyping.splitimp.A.B.DRB1.gene.4digit.csv",row.names = F,quote = F)
-
-
-
-
-
-
-
-
 
 
