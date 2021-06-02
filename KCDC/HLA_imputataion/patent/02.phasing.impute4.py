@@ -45,10 +45,12 @@ def main():
 def make_sh():
 
     theme = "pruning"
-    theme = "general"
+    #theme = "general"
 
     print("main...:")
-    gene_infos = [["A","28910309","30913647"],["B","30321652","32324956"],["C","31546552","33557625"]]
+    #gene_infos = [["A","28910309","30913647"],["B","30321652","32324956"],["C","31546552","33557625"]]
+    
+    gene_infos = [["A","29410309","30413647"],["B","30821652","31824956"],["C","32046552","33057625"]]
     #genes = ["A","B","DRB1"]
     genotype_panel = outDir + "01.split/"
     phasing_Dir = outDir + "02.phasing/"
@@ -87,7 +89,7 @@ def make_sh():
         grep_allele = plink_out + "_onlyTargetAllele.txt"
         
         with open(phasing_in.replace(genotype_panel, "")+".sh","w") as shout:
-            shout.write("~/Downloads/Eagle_v2.4.1/eagle --bfile %s --geneticMapFile %s --chrom 6 --outPrefix %s --maxMissingPerSnp 0.3 --maxMissingPerIndiv 0.5 --numThreads 8\n"%(phasing_in,phasing_map,phasing_out))
+            shout.write("~/Downloads/Eagle_v2.4.1/eagle --bfile %s --geneticMapFile %s --chrom 6 --outPrefix %s --maxMissingPerSnp 0.3 --maxMissingPerIndiv 0.5 --numThreads 4\n"%(phasing_in,phasing_map,phasing_out))
             shout.write("/DATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -buffer 5000 -int %s %s -h %s -l %s -m %s -g %s -o %s\n"%(front,tail,hap,legend,impute4_map,impute_in,impute_out))
             shout.write("plink --gen %s.gen --sample %s.sample --make-bed --out %s --allow-extra-chr \n"%(impute_out,phasing_out,plink_out))
             shout.write("grep HLA_%s %s.bim | awk '{print $2}' > %s \n"%(gene,plink_out,grep_allele))
