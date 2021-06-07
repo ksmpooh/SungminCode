@@ -1,0 +1,10 @@
+cd /BDATA/smkim/JG/06.HLAimputation/OUTPUTs/02.plink
+
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_Total_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_Total_20201208.ped --covar-name AGE,SEX,d1,d2 --out asso/HLA_asso_ESRD.covar_AGE_SEX_withdummy_total --allow-extra-chr --allow-no-sex
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_Total_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_Total_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.covar_AGE_SEX_total --allow-extra-chr --allow-no-sex
+
+#plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_HT_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_HT_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.HT --allow-extra-chr
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_HT_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_HT_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.HT --allow-extra-chr --allow-no-sex
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_T2D_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_T2D_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.T2D --allow-extra-chr --allow-no-sex
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_HT_T2D_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_HT_T2D_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.HT_T2D --allow-extra-chr --allow-no-sex
+plink --bfile JG.KR.HLAimputation.merge.all.plink_HLA --pheno ped/ESRD_sub_Total_20201208.ped --pheno-name CASE --logistic --ci 0.95 --covar ped/ESRD_sub_Total_20201208.ped --covar-name AGE,SEX --out asso/HLA_asso_ESRD.sub_Total --allow-extra-chr --allow-no-sex

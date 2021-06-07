@@ -1,5 +1,5 @@
 ### 특허 관련 hla imputation 결과 정리
-setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/")
+setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/500K/")
 ####### Fianl allgene result processing using recodeA
 # mac
 
