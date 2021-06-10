@@ -1,5 +1,6 @@
 ### 특허 관련 hla imputation 결과 정리
-setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/500K/")
+#setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/500K/")
+setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/1M/")
 ####### Fianl allgene result processing using recodeA
 # mac
 
@@ -138,7 +139,7 @@ out <- merge(out,DRB1_td[,c('IID','IMP_DRB1.1','IMP_DRB1.2')],by = 'IID')
 
 head(out)
 #####merge NGS
-ngs <- read.csv("../../HLAtyping/all/HLAtyping.alle.gene.2digit_2019.with.2020.csv")
+ngs <- read.csv("../../../HLAtyping/all/HLAtyping.alle.gene.2digit_2019.with.2020.csv")
 head(ngs)
 ncol(ngs)
 out <- merge(out,ngs,by.x = "IID",by.y = "KID")
@@ -181,7 +182,7 @@ out <- merge(out,DRB1_fd[,c('IID','IMP_DRB1.1','IMP_DRB1.2')],by = 'IID')
 
 head(out)
 #####merge NGS
-ngs <- read.csv("../../HLAtyping/all/HLAtyping.alle.gene.4digit_2019.with.2020.csv")
+ngs <- read.csv("../../../HLAtyping/all/HLAtyping.alle.gene.4digit_2019.with.2020.csv")
 head(ngs)
 ncol(ngs)
 out <- merge(out,ngs,by.x = "IID",by.y = "KID")

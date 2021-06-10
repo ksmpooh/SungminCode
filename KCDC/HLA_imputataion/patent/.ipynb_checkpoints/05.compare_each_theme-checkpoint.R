@@ -1,5 +1,4 @@
-setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/1M/")
-setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/500K/")
+setwd("~/Desktop/KCDC/HLAimputation/patent/split_result/")
 
 td <- read.csv("compare/compare.IMPvsNGS.splitimp.A.B.DRB1.2digit.csv",header = T)
 fd <- read.csv("compare/compare.IMPvsNGS.splitimp.A.B.DRB1.4digit.csv",header = T)
@@ -33,6 +32,3 @@ df$B_accuracy <- df$B_match/(df$B_match + df$B_wrong)
 df$DRB1_accuracy <- df$DRB1_match/(df$DRB1_match + df$DRB1_wrong)
 
 df$overall <- (df$A_accuracy + df$B_accuracy +df$DRB1_accuracy)/3
-
-
-write.table(df,"Accuracy.Result.txt",col.names = T,row.names = F,quote = F,sep = '\t')
