@@ -23,6 +23,7 @@ ggplot(main = "association Result : hail.beta vs epacts.beta",d,aes(x=hail.BETA,
   scale_color_manual(guide=FALSE, values=c("red","darkgray"))
 
 
-ggplot(main = "association Result : hail.p-value vs epacts.p-value",d,aes(x=-log10(hail.PVALUE),y=-log10(epacts.PVALUE),color = ifelse(p.check==1,"red","darkgray"))) +
-  geom_point() +
+ggplot(d,aes(x=-log10(hail.PVALUE),y=-log10(epacts.PVALUE),color = ifelse(p.check==1,"red","darkgray"))) +
+  ggtitle( "Association Result Compare : hail.p-value vs epacts.p-value") +
+  geom_point() + theme(plot.title = element_text(hjust = 0.5)) +
   scale_color_manual(guide=FALSE, values=c("red","darkgray"))
