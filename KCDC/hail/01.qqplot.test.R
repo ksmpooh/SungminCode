@@ -63,17 +63,22 @@ ggplot(d,aes(x=hail.BETA,y=epacts.BETA,fill = p.check,color = ifelse(p.check=="1
  
  
 summary(d$p.check)
-plot(d$hail.BETA,d$epacts.BETA,main = "association Result : hail.beta vs epacts.beta"
+plot(d$hail.BETA,d$epacts.BETA,main = "Association Result : hail.beta vs epacts.beta"
      ,xlab = "hail.Beta",ylab = "epact.Beta"
      ,col = ifelse(d$p.check==0,rgb(0.5,0.5,0.5,0.2),rgb(1,0,0,0.5))
      #,col = rgb(0.6,0.6,0.6,0.3)
      ,pch =16)
 legend("bottomright",title = "epacts p.value",legend = c("<0.05",">=0.05"),col = c("red","darkgray"),pch = 16,box.lty = 0)
 
-
-hist(abs(d$epacts.BETA - d$hail.BETA))
-
-plot(-log10(d$hail.PVALUE),-log10(d$epacts.PVALUE),main = "association Result : hail.p value vs epacts.p value"
+par(mfrow=c(1,2))
+hist(abs(d$epacts.BETA - d$hail.BETA),main = "abs(epacts.beta - hail.beta)")
+hist(abs(d$epacts.BETA - d$hail.BETA),ylim = c(0,10),main = "abs(epacts.beta - hail.beta) zoom ")
+dev.off()
+mean(d$epacts.BETA)
+mean(d$hail.BETA)
+sd(d$epacts.BETA)
+sd(d$hail.BETA)
+plot(-log10(d$hail.PVALUE),-log10(d$epacts.PVALUE),main = "Association Result : hail.p value vs epacts.p value"
      ,xlab = "-log10(hail p-value)",ylab = "-log10(epacts p-value)"
      ,col = ifelse(d$p.check==0,rgb(0.5,0.5,0.5,0.5),rgb(1,0,0,0.5)))
 legend("bottomright",title = "epacts p.value",legend = c("<0.05",">=0.05"),col = c("red","darkgray"),pch = 16,box.lty = 0)
