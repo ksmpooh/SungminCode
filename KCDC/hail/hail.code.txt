@@ -1,0 +1,58 @@
+# hail code
+
+## epacts vs hail test 
+### data preparing
+#### data 는 chr22 9개 chunk를 사용하여 분석
+
+#### hail input file format은 bgz 형식으로 압축된 파일만 사용 가능하여 재압축
+gunzip -c [input.vcf.gz] | bgzip > [output.vcf.bgz]
+tabix -p vcf [output.vcf.bgz]
+
+
+### python3
+
+# import python module
+import hail as hl
+import glob
+
+# hail initialization
+hl.init() 
+
+# read bgz file list
+dfs = glob.glob("*bgz")
+
+# 하나의 vcf 파일 불러오기
+mt = hl.import_vcf(dfs.pop())
+
+# 나머지 vcf 파일 merge
+for df in dfs:
+    df = hl.import_vcf(df)
+    mt = mt.union_row(df)
+
+# table은 phenotype file 읽기
+## phenotype file은 epacts와 다르게 header에 #처리가 되어 있으면 안됨
+table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',impute=True).key_by("FAM_ID"))
+
+# main data set에 phenotype file 붙이기
+## mt.describe() / mt.col.describe() 를 사용하여 mt의 변수를 확인
+## 해당 파일에서는 mt에서 s라는 변수가 ID로 되어 있음 -> mt.s 라 표기 (mt.s.describe() 통해 확인 가능)
+## table의 key도 ID로 되어 있기 때문에 해당 key를 맞춰 주어야 함
+mt = mt.annotate_col(pheno=table[mt.s])
+
+## phenotype 보기
+mt.pheno.describe()
+
+# GWAS 연관성 분석
+## test = ["Wald","LRT","Firth","Score"] 중 하나 설정
+## covariates에 seed 값처럼 1.0 을 추가 해주어야 함
+## y = mt.pheno.CASE : mt 에 있는 pheno에 CASE 를 y로 설정
+## x = mt.DS : mt에 있는 DS 값을 x 로 설정
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+
+# 연관성 분석 결과 output
+gwas.describe()
+gwas.export('gaws.output.T2D.tsv')
+
+
+
+

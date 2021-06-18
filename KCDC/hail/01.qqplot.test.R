@@ -74,8 +74,9 @@ plot(d$hail.BETA,d$epacts.BETA,main = "association Result : hail.beta vs epacts.
      ,pch =16)
 points(d[(d$p.check == 1) &(abs(d$hail.BETA -  d$epacts.BETA)>0.01),]$hail.BETA,
        d[(d$p.check == 1) &(abs(d$hail.BETA -  d$epacts.BETA)>0.01),]$epacts.BETA,
-       col = rgb(0,0,1,0.3),cex=1.5)
-legend("bottomright",title = "epacts p.value",legend = c("<0.05",">=0.05"),col = c("red","darkgray"),pch = 16,box.lty = 0)
+       col = rgb(0,0,1,0.8),cex=1.5)
+legend(x = 0.5,y=-1.5,title = "epacts p.value",legend = c("<0.05",">=0.05"),col = c("red","darkgray"),pch = 16,box.lty = 0)
+legend("topleft",legend = c( "abs(hail.Beta - epacts.Beta) > 0.01"),col = rgb(0,0,1,0.9),cex=1.5,pch = 1,box.lty = 0)
 
 
 
