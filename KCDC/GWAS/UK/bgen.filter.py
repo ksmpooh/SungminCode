@@ -1,4 +1,4 @@
-import os
+import os,glob
 
 #infoDir = "/BDATA/myhwang/UK/MAFINFO/info0.8/" #Info0.8_ukb_mfi_chr17_v3.txt
 #outDir = "/backup/smkim/UK/"
@@ -32,7 +32,22 @@ def bgen_filter(inDir,outDir,refDir,shDir,Tool):
             bgenOut = outDir + "ukb_imp_%s_v3.bgen"%j
             with open(shDir + "UKB.bgen.filter.%s.sh"%j,'w') as shout:
                 shout.write("%s -g %s -incl-range %s-%s -og %s"%(Tool,bgenIn,front,tail,bgenOut))
-                
+
+
+def bgen_sh_check(outDir,shDir):
+    print("check bgen script...")
+    os.system("mkdir %send"%shDir)
+    #UKB.bgen.filter.chr7_133852124_134441876.sh
+    #ukb_imp_chr18_76090000_76540022_v3.bgen
+    bgens = glob.glob(outDir + "*bgen")
+    shs = glob.glob(shDir + "*sh")
+    for sh in shs:
+        i = sh.replace(shDir,"").split(".")
+        bgen_out = outDir + "ukb_imp_%s_v3.bgen"%i[3]
+        if bgen_out in bgens:
+            os.system("mv %s %send/"%(sh,shDir))
+
+
 
 
 #ukb_imp_chr1_v3.bgen
@@ -71,7 +86,8 @@ def sh():
         shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.filter/"
         Tool = "/BDATA/smkim/JG/TOOLs/qctool"
 	#Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-Ubuntu16.04-x86_64/qcttol"
-    bgen_filter(bgenDir, outDir, refDir, shDir, Tool)
+    #bgen_filter(bgenDir, outDir, refDir, shDir, Tool)
+    bgen_sh_check(outDir,shDir)
 
 sh()
 
