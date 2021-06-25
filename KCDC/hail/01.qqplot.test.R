@@ -101,3 +101,27 @@ out[abs(out$hail.BETA -out$epacts.BETA)>0.01,]
 points(d[(d$p.check == 1) &&(abs(d$hail.BETA -  d$epacts.BETA)>0.01),]$hail.BETA,
        d[(d$p.check == 1) &&(abs(d$hail.BETA -  d$epacts.BETA)>0.01),]$epacts.BETA,
        col = rgb(0,0,1,0.3),cex=1.5)
+
+
+
+
+setwd("~/Desktop/KCDC/hail/chr22_test/")
+d1 <- read.table("hail/gaws.output.T2D.tsv",header = T)
+head(d1)
+d1 <- d1[,c(1,2,3,4,5)]
+d2 <- read.table("epacts/test.chr22.merge.list.txt",header = T)
+head(d2)
+d2 <- d2[,c(9,10,12)]
+head(d1)
+colnames(d1) <- c("locus","hail.BETA","hail.CHISQ","hail.PVALUE")
+colnames(d1) <- c("locus","alleles","hail.BETA","hail.CHISQ","hail.PVALUE")
+head(d2)
+colnames(d2) <- c("epacts.PVALUE","epacts.BETA","epacts.CHISQ")
+
+
+d <- cbind(d1,d2)
+head(d)
+
+write.table(d,"hail.vs.epacts.firth.association.Result.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+a <- read.table("hail.vs.epacts.firth.association.Result.txt",header = T)
+head(a)
