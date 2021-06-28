@@ -58,7 +58,7 @@ plink --bfile JG.QCed.HLA_intersect_HLA.A --indep-pairwise 50 5 0.8 --out prunni
 plink --bfile JG.QCed.HLA_intersect_HLA.B --indep-pairwise 50 5 0.8 --out prunning_B
 plink --bfile JG.QCed.HLA_intersect_HLA.DRB1 --indep-pairwise 50 5 0.8 --out prunning_DRB1
 
-plink --bfile JG.QCed.HLA_intersect_HLA.A --extract prunning_A.prune.in --make-bed.pr --out JG.QCed.HLA_intersect_HLA.A_pruning
+plink --bfile JG.QCed.HLA_intersect_HLA.A --extract prunning_A.prune.in --make-bed --out JG.QCed.HLA_intersect_HLA.A_pruning
 plink --bfile JG.QCed.HLA_intersect_HLA.B --extract prunning_B.prune.in --make-bed --out JG.QCed.HLA_intersect_HLA.B_pruning
 plink --bfile JG.QCed.HLA_intersect_HLA.DRB1 --extract prunning_DRB1.prune.in --make-bed --out JG.QCed.HLA_intersect_HLA.DRB1_pruning
 

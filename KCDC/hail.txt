@@ -1,0 +1,182 @@
+# hail test
+# 실제데이터로 분석 진행
+
+101번 : /DATA/smkim/hail.test/
+
+## input file 만들기
+### hail 에서 bgz 형식으로만 input으로 들어간다. bgz format으로 변경
+gunzip -c JG.KR.imputation.mergeGen.processing.chr12.132000001_133841815.filter.onlyDS.vcf.gz | bgzip > test.file.vcf.bgz
+
+##python3 실행
+
+### import hail 
+import hail as hl
+from hail.plot import show
+from pprint import pprint
+
+### hail initialization
+hl.init()
+
+### hail 형식으로 데이터 input 하기 위핸 input 데이터 포맷 변경
+hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
+
+### data input
+mt = hl.read_matrix_table("JG.for.hail.mt")
+
+#### data sumamry 보기위한 함수
+mt.describe()
+mt.col.describe()
+mt.row.describe()
+mt.rows().select().show(5)
+####
+### phenotype data input
+table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',impute=True).key_by("FAM_ID"))
+
+### main hail 데이터에 phenotype data 추가
+mt = mt.annotate_cols(pheno = table[mt.s])
+
+### regression
+gwas = hl.linear_regression_rows(y = mt.pheno.CASE,x=mt.DS,covariates = [mt.pheno.SEX,mt.pheno.AGE])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+
+>>> gwas.show(5)
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| locus         | alleles    |      beta | chi_sq_stat |  p_value | fit.n_iterations | fit.converged | fit.exploded |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| locus<GRCh37> | array<str> |   float64 |     float64 |  float64 |            int32 |          bool |         bool |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| 12:132000009  | ["C","T"]  | -6.54e-02 |    1.30e+00 | 2.53e-01 |                4 |          True |        False |
+| 12:132000319  | ["G","A"]  | -1.27e-01 |    2.62e+00 | 1.05e-01 |                4 |          True |        False |
+| 12:132000905  | ["A","G"]  | -7.72e-03 |    4.38e-02 | 8.34e-01 |                3 |          True |        False |
+| 12:132001225  | ["G","A"]  | -8.30e-02 |    1.02e+00 | 3.13e-01 |                4 |          True |        False |
+| 12:132001272  | ["C","T"]  | -9.82e-03 |    1.63e-02 | 8.98e-01 |                3 |          True |        False |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+showing top 5 rows
+
+>>> gwas1 = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[mt.pheno.SEX,mt.pheno.AGE],test="firth")
+2021-06-07 16:22:54 Hail: WARN: logistic_regression_rows: model appears to have no intercept covariate.
+    To include an intercept, add 1.0 to the list of covariates.
+2021-06-07 16:22:55 Hail: WARN: 17114 of 75395 samples have a missing phenotype or covariate.
+2021-06-07 16:22:55 Hail: INFO: logistic_regression_rows: running firth on 58281 samples for response variable y,
+    with input variable x, and 2 additional covariates...
+>>> gwas1.describe()
+----------------------------------------
+Global fields:
+    None
+----------------------------------------
+Row fields:
+    'locus': locus<GRCh37>
+    'alleles': array<str>
+    'beta': float64
+    'chi_sq_stat': float64
+    'p_value': float64
+    'fit': struct {
+        n_iterations: int32,
+        converged: bool,
+        exploded: bool
+    }
+----------------------------------------
+Key: ['locus', 'alleles']
+----------------------------------------
+>>> gwas1.show(5)
++---------------+------------+---------+-------------+---------+------------------+---------------+--------------+
+| locus         | alleles    |    beta | chi_sq_stat | p_value | fit.n_iterations | fit.converged | fit.exploded |
++---------------+------------+---------+-------------+---------+------------------+---------------+--------------+
+| locus<GRCh37> | array<str> | float64 |     float64 | float64 |            int32 |          bool |         bool |
++---------------+------------+---------+-------------+---------+------------------+---------------+--------------+
+| 12:132000009  | ["C","T"]  |      NA |          NA |      NA |                3 |         False |         True |
+| 12:132000319  | ["G","A"]  |      NA |          NA |      NA |                3 |         False |         True |
+| 12:132000905  | ["A","G"]  |      NA |          NA |      NA |                3 |         False |         True |
+| 12:132001225  | ["G","A"]  |      NA |          NA |      NA |                3 |         False |         True |
+| 12:132001272  | ["C","T"]  |      NA |          NA |      NA |                3 |         False |         True |
++---------------+------------+---------+-------------+---------+------------------+---------------+--------------+
+showing top 5 rows
+
+
+#### summary 확인
+>>>mt.describe()
+----------------------------------------
+Global fields:
+    None
+----------------------------------------
+Column fields:
+    's': str
+    'pheno': struct {
+        SEX: int32,
+        AGE: int32,
+        CASE: int32
+    }
+----------------------------------------
+Row fields:
+    'locus': locus<GRCh37>
+    'alleles': array<str>
+    'rsid': str
+    'qual': float64
+    'filters': set<str>
+    'info': struct {
+        INFO: float64
+    }
+----------------------------------------
+Entry fields:
+    'DS': float64
+----------------------------------------
+Column key: ['s']
+Row key: ['locus', 'alleles']
+----------------------------------------
+
+>>> gwas.describe()
+----------------------------------------
+Global fields:
+    None
+----------------------------------------
+Row fields:
+    'locus': locus<GRCh37>
+    'alleles': array<str>
+    'beta': float64
+    'chi_sq_stat': float64
+    'p_value': float64
+    'fit': struct {
+        n_iterations: int32,
+        converged: bool,
+        exploded: bool
+    }
+----------------------------------------
+Key: ['locus', 'alleles']
+----------------------------------------
+
+
+### 결과 추출
+gwas.export('gaws.output.tsv')
+>>> gwas.show(5)
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| locus         | alleles    |      beta | chi_sq_stat |  p_value | fit.n_iterations | fit.converged | fit.exploded |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| locus<GRCh37> | array<str> |   float64 |     float64 |  float64 |            int32 |          bool |         bool |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+| 12:132000009  | ["C","T"]  | -6.54e-02 |    1.30e+00 | 2.53e-01 |                4 |          True |        False |
+| 12:132000319  | ["G","A"]  | -1.27e-01 |    2.62e+00 | 1.05e-01 |                4 |          True |        False |
+| 12:132000905  | ["A","G"]  | -7.72e-03 |    4.38e-02 | 8.34e-01 |                3 |          True |        False |
+| 12:132001225  | ["G","A"]  | -8.30e-02 |    1.02e+00 | 3.13e-01 |                4 |          True |        False |
+| 12:132001272  | ["C","T"]  | -9.82e-03 |    1.63e-02 | 8.98e-01 |                3 |          True |        False |
++---------------+------------+-----------+-------------+----------+------------------+---------------+--------------+
+showing top 5 rows
+
+
+### plot
+p = hl.plot.manhattan(gwas.p_value)
+show(p)
+
+
+### python 종료 후 gwas 데이터 확인
+
+genome@genome101:/DATA/smkim/hail.test/data$ head gaws.output.tsv
+locus	alleles	beta	chi_sq_stat	p_value	fit
+12:132000009	["C","T"]	-6.5357e-02	1.3047e+00	2.5336e-01	{"n_iterations":4,"converged":true,"exploded":false}
+12:132000319	["G","A"]	-1.2724e-01	2.6233e+00	1.0531e-01	{"n_iterations":4,"converged":true,"exploded":false}
+12:132000905	["A","G"]	-7.7216e-03	4.3777e-02	8.3427e-01	{"n_iterations":3,"converged":true,"exploded":false}
+12:132001225	["G","A"]	-8.3017e-02	1.0178e+00	3.1305e-01	{"n_iterations":4,"converged":true,"exploded":false}
+12:132001272	["C","T"]	-9.8177e-03	1.6284e-02	8.9846e-01	{"n_iterations":3,"converged":true,"exploded":false}
+12:132001454	["C","T"]	3.6285e-02	2.7067e-01	6.0288e-01	{"n_iterations":3,"converged":true,"exploded":false}
+12:132001754	["A","C"]	-1.0271e-02	1.7862e-02	8.9368e-01	{"n_iterations":3,"converged":true,"exploded":false}
+12:132001766	["C","G"]	-6.5750e-02	1.3050e+00	2.5331e-01	{"n_iterations":4,"converged":true,"exploded":false}
+12:132001849	["G","T"]	-1.0377e-02	7.9826e-02	7.7753e-01	{"n_iterations":3,"converged":true,"exploded":false}
