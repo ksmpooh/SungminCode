@@ -1,0 +1,75 @@
+cd /DATA/smkim/bgen
+
+import hail as hl
+hl.init()
+
+
+## bgen indexing
+### contig_recoding 이 옵션이 없으면 chr9 일 경우 09로 인식함 (한자리수 chr 일경우)
+hl.index_bgen("ukb_imp_chr9_v3.bgen",contig_recoding = {"09":"9"},reference_genome = 'GRCh37')
+hl.index_bgen("ukb_imp_chr7_18129853_18703612_v3.bgen",contig_recoding = {"07":"7"},reference_genome = 'GRCh37')
+
+#2021-06-28 18:05:19 Hail: INFO: Finished writing index file for file:/DATA/smkim/bgen/ukb_imp_chr7_18129853_18703612_v3.bgen
+#2021-06-28 18:05:19 Hail: INFO: Number of BGEN files indexed: 1
+
+chr20 = hl.import_bgen("ukb_imp_chr20_v3.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+chr9 = hl.import_bgen("ukb_imp_chr9_v3.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+chr7 = hl.import_bgen("ukb_imp_chr7_18129853_18703612_v3.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+
+#2021-06-28 18:05:27 Hail: INFO: Number of BGEN files parsed: 1
+#2021-06-28 18:05:27 Hail: INFO: Number of samples in BGEN files: 487409
+#2021-06-28 18:05:27 Hail: INFO: Number of variants across all BGEN files: 20000
+
+## pheno input
+
+table = hl.import_table('UKB_HT_20210517.txt',impute=True).key_by("ID")
+
+
+chr7 = chr7.annotate_cols(pheno=table[chr7.s]))
+chr7 = chr7.annotate_cols(pheno=table[hl.int(chr7.s)])
+
+gwas = hl.logistic_regression_rows(y=chr7.pheno.HTN,x=chr7.dosage,covariates=[1.0,chr7.pheno.AGE,chr7.pheno.AGE2,chr7.pheno.SMOKING2,chr7.pheno.PC1,chr7.pheno.PC2,chr7.pheno.PC3,chr7.pheno.PC4,chr7.pheno.PC5,chr7.pheno.PC6,chr7.pheno.PC7,chr7.pheno.PC8,chr7.pheno.PC9,chr7.pheno.PC10],test="firth")
+gwas = hl.logistic_regression_rows(y=chr7.pheno.HTN,x=chr7.dosage,covariates=[1.0,chr7.pheno.AGE,chr7.pheno.AGE2,chr7.pheno.SMOKING2],test="firth")
+
+gwas.export('bgen.gwas.test.tsv')
+
+#chr7.pheno.AGE chr7.pheno.AGE2 chr7.pheno.SMOKING2 chr7.pheno.PC1  chr7.pheno.PC2 chr7.pheno.PC3 chr7.pheno.PC4 chr7.pheno.PC5 chr7.pheno.PC6 chr7.pheno.PC7 chr7.pheno.PC8 chr7.pheno.PC9 chr7.pheno.PC10 chr7.pheno.HTN
+
+
+###############
+hl.index_bgen("test.bgen",contig_recoding = {"07":"7"},reference_genome = 'GRCh37')
+test = hl.import_bgen("test.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+test = hl.import_bgen("test.bgen",entry_fields=['dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+## pheno input
+
+table = hl.import_table('UKB_HT_20210517.txt',impute=True).key_by("ID")
+
+
+
+test = test.annotate_cols(pheno=table[hl.int(test.s)])
+
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.dosage,covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2,test.pheno.PC3,test.pheno.PC4,test.pheno.PC5,test.pheno.PC6,test.pheno.PC7,test.pheno.PC8,test.pheno.PC9,test.pheno.PC10],test="firth")
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.dosage,covariates=[1.0,test.pheno.AGE,test.pheno.AGE2],test="firth")
+gwas.export('bgen.gwas.test.tsv')
+
+
+
+######## bgen chr20 bit8
+
+# ukb_imp_chr20_v3_8bits.bgen
+import hail as hl
+hl.init(default_reference='GRCh37',spark_conf={'spark.driver.memory': '250G'})  
+
+test = hl.import_bgen("ukb_imp_chr20_v3_8bits.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+table = hl.import_table('UKB_HT_20210517.txt',impute=True).key_by("ID")
+test = test.annotate_cols(pheno=table[hl.int(test.s)])
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.dosage,covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2,test.pheno.PC3,test.pheno.PC4,test.pheno.PC5,test.pheno.PC6,test.pheno.PC7,test.pheno.PC8,test.pheno.PC9,test.pheno.PC10],test="firth")
+
+#### bgen to vcf 
+import hail as hl
+hl.init()
+hl.import_vcf("ukb_imp_chr20_v3_convert.vcf.bgz").write("UK.chr20.vcf.hail.mt",overwrite=True)
+test = hl.read_matrix_table("UK.chr20.vcf.hail.mt")
+table = hl.import_table('UKB_HT_20210517.txt',impute=True).key_by("ID")
+test = test.annotate_cols(pheno=table[hl.int(test.s)])
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT,covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2,test.pheno.PC3,test.pheno.PC4,test.pheno.PC5,test.pheno.PC6,test.pheno.PC7,test.pheno.PC8,test.pheno.PC9,test.pheno.PC10],test="firth")

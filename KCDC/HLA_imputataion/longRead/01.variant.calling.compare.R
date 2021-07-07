@@ -88,8 +88,8 @@ ggplot(out,aes(x=N,color=type)) +
         geom_bar(fill = 'white')
         #geom_histogram(fill = "white",binwidth = 1,main = "# of duplicated Marker",xlim=c(0,12))
 barplot(table(out$type,out$N), main = "Multi.call vs Varinat.call in Deepvariant",
-        xlab = "# of duplicated SNP",
-        ylab = "Freqeuncy",
+        xlab = "# of duplicated Sample",
+        ylab = "# of Marker",
 #        breaks = 12,
         beside = T,col=c(rgb(0,1,0,1),rgb(0,0,1,1)))
 legend(19,20000,legend = c("Multi calling","Variant calling"),

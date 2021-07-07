@@ -1,0 +1,49 @@
+cd /DATA/smkim/pacbio/OUTPUTs/GATK/combine
+
+     18 ##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+     19 ##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency, for each ALT allele, in the same order as listed">
+     20 ##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+     21 ##INFO=<ID=BaseQRankSum,Number=1,Type=Float,Description="Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities">
+     22 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth; some reads may have been filtered">
+     23 ##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+     24 ##INFO=<ID=ExcessHet,Number=1,Type=Float,Description="Phred-scaled p-value for exact test of excess heterozygosity">
+     25 ##INFO=<ID=FS,Number=1,Type=Float,Description="Phred-scaled p-value using Fisher's exact test to detect strand bias">
+     26 ##INFO=<ID=InbreedingCoeff,Number=1,Type=Float,Description="Inbreeding coefficient as estimated from the genotype likelihoods p
+     27 ##INFO=<ID=MLEAC,Number=A,Type=Integer,Description="Maximum likelihood expectation (MLE) for the allele counts (not necessarily
+     28 ##INFO=<ID=MLEAF,Number=A,Type=Float,Description="Maximum likelihood expectation (MLE) for the allele frequency (not necessaril
+     29 ##INFO=<ID=MQ,Number=1,Type=Float,Description="RMS Mapping Quality">
+     30 ##INFO=<ID=MQRankSum,Number=1,Type=Float,Description="Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities
+     31 ##INFO=<ID=QD,Number=1,Type=Float,Description="Variant Confidence/Quality by Depth">
+     32 ##INFO=<ID=RAW_MQandDP,Number=2,Type=Integfer,Description="Raw data (sum of squared MQ and total depth) for improved RMS Mapping
+     33 ##INFO=<ID=ReadPosRankSum,Number=1,Type=Float,Description="Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bia
+     34 ##INFO=<ID=SOR,Number=1,Type=Float,Description="Symmetric Odds Ratio of 2x2 contingency table to detect strand bias">
+
+     AC
+     AF
+     AN
+     BaseQRankSum : Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities
+     DP : Approximate read depth; some reads may have been filtered
+     ExcessHet : Inbreeding coefficient as estimated from the genotype likelihoods p
+     FS
+     InbreedingCoeff
+     MLEAC
+     MLEAF
+     MQ
+     MQRankSum
+     QD
+     RAW_MQandDP
+     ReadPosRankSum
+     SOR
+
+
+
+bcftools query  -f '6\t%POS\t%REF\t%ALT\t%AQ\n'
+
+cd /DATA/smkim/pacbio/OUTPUTs/02.multisample
+#chr	pos	ref	alt	QUAL
+bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\n' HLA.merge_usingGLnexus.vcf.gz > HLA.merge_usingGLnexus_marker.QUAL.txt
+
+
+cd /DATA/smkim/pacbio/OUTPUTs/GATK/combine
+chr pos ref alt QUAL    DP  MQ  QD
+bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\t%DP\t%MQ\t%QD\n' HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.vcf.gz > HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.marker.info.txt
