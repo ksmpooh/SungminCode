@@ -37,7 +37,7 @@ table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',im
 ## mt.describe() / mt.col.describe() 를 사용하여 mt의 변수를 확인
 ## 해당 파일에서는 mt에서 s라는 변수가 ID로 되어 있음 -> mt.s 라 표기 (mt.s.describe() 통해 확인 가능)
 ## table의 key도 ID로 되어 있기 때문에 해당 key를 맞춰 주어야 함
-mt = mt.annotate_col(pheno=table[mt.s])
+mt = mt.annotate_cols(pheno=table[mt.s])
 
 ## phenotype 보기
 mt.pheno.describe()
