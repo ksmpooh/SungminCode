@@ -115,3 +115,41 @@ Wald
     with input variable x, and 14 additional covariates...
 >>> gwas.export('bgen.split.tovcfconvert.gwas.test.tsv')
 [Stage 3:>                                                          (0 + 2) / 2]
+
+
+
+###### 104
+## chr19
+hl.init(default_reference='GRCh37',spark_conf={'spark.driver.memory': '250G'})  
+test = hl.import_vcf("ukb_imp_chr19_v3.vcf.bgz")
+table = hl.import_table('UKB_HT_20210517_v2.txt',impute=True).key_by("ID")
+test = test.annotate_cols(pheno=table[test.s])
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2,test.pheno.PC3,test.pheno.PC4,test.pheno.PC5,test.pheno.PC6,test.pheno.PC7,test.pheno.PC8,test.pheno.PC9,test.pheno.PC10],test="firth")
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2],test="firth")
+
+gwas.export('bgen.split.tovcfconvert.chr19.gwas.test.tsv')
+
+
+##chunk vcf
+
+import hail as hl
+hl.init(default_reference='GRCh37',spark_conf={'spark.driver.memory': '250G'})  
+test = hl.import_vcf("ukb_imp_chr7_18129853_18703612_v3_convert.vcf.bgz")
+table = hl.import_table('/DATA/smkim/hail/UKB_HT_20210517_v2.txt',impute=True).key_by("ID")
+test = test.annotate_cols(pheno=table[test.s])
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.PC1],test="firth")
+gwas.export('bgen.split.tovcfconvert.chunk.gwas.test.tsv')
+
+
+
+##chunk bgen
+import hail as hl
+hl.init(default_reference='GRCh37',spark_conf={'spark.driver.memory': '250G'})  
+
+hl.index_bgen("test.bgen",contig_recoding = {"07":"7"},reference_genome = 'GRCh37')
+test = hl.import_bgen("test.bgen",entry_fields=['GT','GP','dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+#test = hl.import_bgen("test.bgen",entry_fields=['dosage'],sample_file ="ukb57705_imp_chr11_v3_s487283.sample")
+table = hl.import_table('/DATA/smkim/hail/UKB_HT_20210517.txt',impute=True).key_by("ID")
+test = test.annotate_cols(pheno=table[hl.int(test.s)])
+gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.PC1],test="firth")
+gwas.export('bgen.split.plinkto8bit.chunk.gwas.test.tsv')
