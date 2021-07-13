@@ -59,3 +59,11 @@ sudo docker run \
 OUTPUT_DIR="/DATA/smkim/pacbio/OUTPUTs"
 
 sudo docker run -v "${INPUT_DIR}":"/input" -v "${OUTPUT_DIR}":"/output" google/deepvariant:"1.1.0" /opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /input/HLA.target.fasta --reads /input/2020HLAseq001.movies.Q20.bam --output_vcf /output/2020HLAseq001.movies.Q20.output.vcf.gz --num_shards 20 --intermediate_results_dir OUTPUTs/inter_result
+
+
+
+# GLnexus
+sudo docker run --rm -i -v "/DATA/smkim/pacbio/OUTPUTs/01.variantcalling":"/input" quay.io/mlin/glnexus:v1.3.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/pacbio/OUTPUTs/HLA.merge_usingGLnexus.vcf.gz

@@ -1,7 +1,7 @@
 library(RColorBrewer)
 library(VennDiagram)
 
-
+####header 
 setwd("/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi/ID")
 front <- 28477797
 head(df1)
@@ -25,7 +25,7 @@ df1$ID <- paste0(df1$CHR,":",df1$Real.POS,"_",df1$REF,"/",df1$ALT)
 df2$ID <- paste0(df2$CHR,":",df2$Real.POS,"_",df2$REF,"/",df2$ALT)
 df3$ID <- paste0(df3$CHR,":",df3$Real.POS,"_",df3$REF,"/",df3$ALT)
 gnomad$ID <- paste0(gnomad$CHR,":",gnomad$POS,"_",gnomad$REF,"/",gnomad$ALT)
-
+###
 
 myCol <- brewer.pal(3, "Pastel2")
 venn.diagram(
