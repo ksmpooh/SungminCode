@@ -153,3 +153,36 @@ table = hl.import_table('/DATA/smkim/hail/UKB_HT_20210517.txt',impute=True).key_
 test = test.annotate_cols(pheno=table[hl.int(test.s)])
 gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.PC1],test="firth")
 gwas.export('bgen.split.plinkto8bit.chunk.gwas.test.tsv')
+
+
+
+##### 104번 분석 진행
+import glob,os
+
+vcfDir = "/BDATA/smkim/UK/IMP/vcf/"
+wDir = "/DATA/smkim/UK/"
+inDir = wDir + "INPUTs/"
+outDir = wDir + "OUTPUTs/"
+shDir  = wDir + "SCRIPTs/"
+
+
+def main():
+    vcfs = glob.glob(vcfDir + "*gz")
+    shDir2 = shDir + "01.hail.gwas/"
+    print(shDir)
+    os.system("mkdir " + shDir2)
+    for vcf in vcfs:
+        out = open(vcf.replace(vcfDir,shDir2).replace(".bgz",".hailgwas.py"),"w")
+        out.write("import hail as hl\n")
+        out.write("hl.init(default_reference=\'GRCh37\',spark_conf={\'spark.driver.memory\': \'250G\'})\n")
+        out.write("test = hl.import_vcf(\"%s\")\n"%vcf)
+        out.write("table = hl.import_table(\'/DATA/smkim/hail/UKB_HT_20210517_v2.txt\',impute=True).key_by(\"ID\")\n")
+        out.write("test = test.annotate_cols(pheno=table[test.s])\n")        
+        out.write("gwas = hl.logistic_regression_rows(y=test.pheno.HTN,x=test.GT.n_alt_alleles(),covariates=[1.0,test.pheno.AGE,test.pheno.AGE2,test.pheno.SMOKING2,test.pheno.PC1,test.pheno.PC2,test.pheno.PC3,test.pheno.PC4,test.pheno.PC5,test.pheno.PC6,test.pheno.PC7,test.pheno.PC8,test.pheno.PC9,test.pheno.PC10],test=\"firth\")\n")
+        out.write("gwas.export(\'%s\')\n"%vcf.replace(vcfDir,outDir).replace(".vcf.bgz",".hail.asso.tsv"))
+        out.close()
+
+
+main()
+
+

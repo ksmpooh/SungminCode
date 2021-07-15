@@ -1,0 +1,109 @@
+# 분석 코드 및 순서 정리
+
+## 이전에 한 마커 비교의 문제점 발견!!!
+- vcf merge 할때 multi-allele 반영이 안되었기 때문에 SNP 갯수 비교 다시 해야함
+- variant calling 이랑 multi-sample calling이랑 다시 비교 해야함
+
+## 재분석 진행
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/01.PASS/2020HLAseq.pass_vcfmerge.vcf.gz
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/02.merge/2020HLAseq_bcftoolsMerge_PASS.vcf.gz
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz
+
+1. variant calling -> pass marker -> sort & uniq 
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/each/uniq.list.txt
+90310
+
+2. variant calling -> pass marker -> bcftools merge 
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/01.PASS/2020HLAseq.pass_vcfmerge.vcf.gz
+
+3. variant calling -> bcftools merge -> pass marker
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/02.merge/2020HLAseq_bcftoolsMerge_PASS.vcf.gz
+
+4. variant calling(gvcf) -> multisample calling (GLnexus)
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz
+
+
+### marker 수 확인
+0. bcftools stats
+bcftools stats /Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/01.PASS/2020HLAseq.pass_vcfmerge.vcf.gz  > 01.bcftools_stats/2020HLAseq.pass_vcfmerge_bcfstats.txt
+bcftools stats /Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/02.merge/2020HLAseq_bcftoolsMerge_PASS.vcf.gz > 01.bcftools_stats/2020HLAseq_bcftoolsMerge_PASS_bcfstats.txt
+bcftools stats /Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz > 01.bcftools_stats/HLA.merge_usingGLnexus_bcfstats.txt
+0-1. plot-vcfstats -p outdir file.vchk
+
+plot-vcfstats -p ./ 2020HLAseq.pass_vcfmerge_devidedMultiAllelic_bcfstats.txt
+
+
+1. multi-allelic split
+1-1.bcftools norm -m -any INPUT.vcf.gz | bcftools annotate --set-id “%CHROM:%POS:%REF:%ALT” | bgzip -c >
+
+
+bcftools norm -m -any /Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/01.PASS/2020HLAseq.pass_vcfmerge.vcf.gz -Oz -o /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/divideMultiallele/2020HLAseq.pass_vcfmerge_devidedMultiAllelic.vcf.gz
+total/split/realigned/skipped:	83376/3629/0/0  89369
+bcftools norm -m -any /Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/02.merge/2020HLAseq_bcftoolsMerge_PASS.vcf.gz -Oz -o /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/divideMultiallele/2020HLAseq_bcftoolsMerge_PASS_devidedMultiAllelic.vcf.gz
+total/split/realigned/skipped:	50102/1425/0/0  52340
+bcftools norm -m -any /Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz -Oz -o /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/divideMultiallele/HLA.merge_usingGLnexus_devidedMultiAllelic.vcf.gz
+total/split/realigned/skipped:	67780/2348/0/0 70726
+
+1-2. intersect with gnomAD
+cd /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi
+
+bcftools query -f '6\t%POS\t%REF\t%ALT\n' 2020HLAseq.pass_vcfmerge_devidedMultiAllelic.vcf.gz > ID/01.2020HLAseq.pass_vcfmerge_devidedMultiAllelic_ID.txt
+bcftools query -f '6\t%POS\t%REF\t%ALT\n' 2020HLAseq_bcftoolsMerge_PASS_devidedMultiAllelic.vcf.gz > ID/02.2020HLAseq_bcftoolsMerge_PASS_devidedMultiAllelic_ID.txt
+bcftools query -f '6\t%POS\t%REF\t%ALT\n' HLA.merge_usingGLnexus_devidedMultiAllelic.vcf.gz > ID/03.merge_usingGLnexus_devidedMultiAllelic_ID.txt
+
+# R 로 비교 
+
+v1 선택 후 비교 분석
+
+1-3. ID setting : bcftools annotate --set-id “6:%POS:%REF:%ALT” 
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID
+
+bcftools annotate --set-id 6:%POS:%REF:%ALT /Users/ksmpooh/Desktop/KCDC/long_read/analysis/01.variant.calling/ori/01.PASS/2020HLAseq.pass_vcfmerge.vcf.gz -Oz -o 01.variant.calling.vcf.gz
+bcftools annotate --set-id 6:%POS:%REF:%ALT /Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz -Oz -o 02.multi.caaling.vcf.gz
+
+file name :
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/01.variant.calling.vcf.gz
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/02.multi.caaling.vcf.gz
+
+
+##
+2. SNP 만 추출 : only SNP without multiallelic and indel
+bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
+cd  /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/02.SNP
+
+bcftools view --max-alleles 2 --exclude-types indels /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/01.variant.calling.vcf.gz -Oz -o 01.variant.calling_onlySNP.vcf.gz
+bcftools view --max-alleles 2 --exclude-types indels /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/02.multi.caaling.vcf.gz -Oz -o 02.multi.caaling_onlySNPvcf.gz
+
+2-1. intersect 
+2-2-0. 공통 마커 : bcftools isec -p dir A.vcf.gz B.vcf.gz 
+bcftools isec -p inter 01.variant.calling_onlySNP.vcf.gz 02.multi.caaling_onlySNPvcf.gz
+
+
+cd  /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/02.SNP/inter
+0000.vcf - variant.call 만 있는 것
+0001.vcf - multi.call 만 있는 것 
+0002.vcf - 공통 마커 variant.call
+0003.vcf - 공통 마커 multi.call 만 있는 것
+
+2-1-1. ID / ref 마커 추출
+
+#bcftools query -f "%ID\t%ALT" 0002.vcf > intersect.ID.ALT.txt
+
+2-1-2. freq check
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/02.SNP/inter/freq
+
+bcftools +fill-tags 0002.vcf -- -t AF > 0002_withAF.vcf
+
+bcftools query -f '%ID\t%AF' ../0002_withAF.vcf > type1.AF.txt
+bcftools query -f '%ID\t%AF' ../0003.vcf > type2.AF.txt
+
+2-2. DP : bcftools query -f "%ID\t[%DP\t]\n" 0002.vcf
+DP 값 SUM 값 비교
+bcftools query -f "%ID\t[%DP\t]\n" 0002.vcf >  type1.DP.txt
+bcftools query -f "%ID\t[%DP\t]\n" 0003.vcf >  type2.DP.txt
+
+3. only indel
+
+
+
