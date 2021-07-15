@@ -67,3 +67,20 @@ sudo docker run --rm -i -v "/DATA/smkim/pacbio/OUTPUTs/01.variantcalling":"/inpu
 bash -c 'glnexus_cli \
 --config DeepVariant \
 --list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/pacbio/OUTPUTs/HLA.merge_usingGLnexus.vcf.gz
+
+
+
+##GATK
+# haplotypeCaller
+sudo docker run -v "/DATA/smkim/pacbio/INPUTs/Data":"/input" -v "/DATA/smkim/pacbio/OUTPUTs/GATK":"/output" -it broadinstitute/gatk \
+bash -c 'gatk HaplotypeCaller \
+-I /input/2020HLAseq001.movies.Q20.bam \
+-R /output/HLA.target.fasta \
+-O /output/test1.g.vcf.gz \
+-ERC GVCF'
+
+#combineGVCFs
+sudo docker run -it broadinstitute/gatk -v "/DATA/smkim/pacbio/OUTPUTs/01.variantcalling":"/input" -v "/DATA/smkim/pacbio/OUTPUTs":"/output" bash -c 'gatk CombineGVCFs -V /input/2020HLAseq001.movies.Q20.output.gvcf.gz
+
+#GenotpyeGVCFs
+sudo docker run -v "/DATA/smkim/pacbio/OUTPUTs/GATK":"/input" -it broadinstitute/gatk bash -c 'gatk GenotypeGVCFs
