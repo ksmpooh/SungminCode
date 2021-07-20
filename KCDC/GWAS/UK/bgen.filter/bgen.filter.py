@@ -63,7 +63,7 @@ def mksh_bgen_filter_withCHECK(inDir,outDir,refDir,shDir,Tool):
                 pass
             else:
                 with open(shDir + "UKB.bgen.filter.%s.sh"%j,'w') as shout:
-                    shout.write("%s -g %s -incl-range %s-%s -og %s"%(Tool,bgenIn,front,tail,bgenOut))
+                    shout.write("%s -g %s -incl-range %s-%s -og %s\n"%(Tool,bgenIn,front,tail,bgenOut))
 
 
 

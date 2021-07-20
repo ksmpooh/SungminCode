@@ -103,7 +103,39 @@ DP 값 SUM 값 비교
 bcftools query -f "%ID\t[%DP\t]\n" 0002.vcf >  type1.DP.txt
 bcftools query -f "%ID\t[%DP\t]\n" 0003.vcf >  type2.DP.txt
 
-3. only indel
+3. only indel : only INDEL 만 추출 (멀티allele 제외)
+bcftools view --max-allele 2 --type indels [inputs]
+bcftools view --max-allele 2 --type indels /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/01.variant.calling.vcf.gz -Oz -o 01.only.varinat.call_onlyINDELs.vcf.gz
+bcftools view --max-allele 2 --type indels /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/02.multi.caaling.vcf.gz -Oz -o 02.multi.call_onlyINDELs.vcf.gz
+
+3-1. intersect 
+bcftools isec -p inter 01.only.varinat.call_onlyINDELs.vcf.gz 02.multi.call_onlyINDELs.vcf.gz
+cd /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/03.indel/inter
+
+0000.vcf - variant.call 만 있는 것
+0001.vcf - multi.call 만 있는 것 
+0002.vcf - 공통 마커 variant.call
+0003.vcf - 공통 마커 multi.call 만 있는 것
 
 
+=================
+4 withoutMulti.allele : 멀티 allele만 빼고 마커 차이점 찾기
 
+bcftools view --max-allele 2 /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/01.variant.calling.vcf.gz -Oz -o 01.variant_call_withoutMulti.vcf.gz
+bcftools view --max-allele 2 /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/00.ori.set.ID/02.multi.caaling.vcf.gz -Oz -o 02.multi.call_withoutMulti.vcf.gz
+
+4-1 intersect bcftools isec -p inter 01.variant_call_withoutMulti.vcf.gz 02.multi.call_withoutMulti.vcf.gz
+
+4-2 annotation : java -jar snpEff.jar -v hg19 [input.vcf] > [output.vcf]
+
+서버 102번 : java -jar /DATA/smkim/TOOLs/snpeff/snpEff.jar -v hg19
+
+java -jar /DATA/smkim/TOOLs/snpeff/snpEff.jar -v hg19 /DATA/smkim/Anno/DATA/0000_Change.chr.pos.ID.vcf > 0000_Change.chr.pos.ID_Anno.vcf
+java -jar /DATA/smkim/TOOLs/snpeff/snpEff.jar -v hg19 /DATA/smkim/Anno/DATA/0001_Change.chr.pos.ID.vcf > 0001_Change.chr.pos.ID_Anno.vcf
+java -jar /DATA/smkim/TOOLs/snpeff/snpEff.jar -v hg19 /DATA/smkim/Anno/DATA/0002_Change.chr.pos.ID.vcf > 0002_Change.chr.pos.ID_Anno.vcf
+
+
+4-3 extract variant type from annotation vcf file
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ANN[*]\n' 0000_Change.chr.pos.ID_Anno.vcf |awk '{split($5,a,"|"); print($1,$2,$3,$4,a[2])}' > 0000.variant.type.txt
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ANN[*]\n' 0001_Change.chr.pos.ID_Anno.vcf |awk '{split($5,a,"|"); print($1,$2,$3,$4,a[2])}' > 0001.variant.type.txt
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ANN[*]\n' 0002_Change.chr.pos.ID_Anno.vcf |awk '{split($5,a,"|"); print($1,$2,$3,$4,a[2])}' > 0002.variant.type.txt
