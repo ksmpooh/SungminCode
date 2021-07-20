@@ -49,6 +49,23 @@ def bgen_sh_check(outDir,shDir):
 
 
 
+def mksh_bgen_filter_withCHECK(inDir,outDir,refDir,shDir,Tool):
+    #split.chunk.end.chr3.bgen.txt
+    doneDir = "/BDATA/smkim/UK/SCRIPTs/bgen.split.re/"
+    for i in range(3,6+1):
+        ref = filein(refDir + "UKB_CHR%s_CHUNK.txt"%str(i))
+        doneList = filein(doneDir + "split.chunk.end.chr%s.bgen.txt"%str(i))
+        for j in ref:
+            chr,front,tail = j.split("_")
+            bgenIn = inDir + "ukb_imp_%s_v3.bgen"%chr
+            bgenOut = outDir + "ukb_imp_%s_v3.bgen"%j
+            if bgenOut.replace(outDir,"") in doneList:
+                pass
+            else:
+                with open(shDir + "UKB.bgen.filter.%s.sh"%j,'w') as shout:
+                    shout.write("%s -g %s -incl-range %s-%s -og %s"%(Tool,bgenIn,front,tail,bgenOut))
+
+
 
 #ukb_imp_chr1_v3.bgen
 #head UKB_CHR14_CHUNK.txt
@@ -80,16 +97,17 @@ def sh():
         shDir = ""
         Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-CentOS6.8-x86_64/qctool"
     else:
-        bgenDir = "/BDATA/myhwang/UK/"
-        outDir = "/BDATA/myhwang/UK/IMP_filter/"
+        bgenDir = "/BDATA/myhwang/UK/IMP/"
+        outDir = "/BDATA/myhwang/UK/IMP/IMP_filter/"
         refDir = "/BDATA/myhwang/KBA_130K/11_UKB/INPUTs/"
         shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.filter/"
+        #shDir = "/BDATA/smkim/UK/SCRIPTs/bgen.split.re/"
         Tool = "/BDATA/smkim/JG/TOOLs/qctool"
 	#Tool = "/jdata/scratch/myhwang/TOOLs/qctool_v2.0-rc9-Ubuntu16.04-x86_64/qcttol"
     #bgen_filter(bgenDir, outDir, refDir, shDir, Tool)
-    bgen_sh_check(outDir,shDir)
+    #bgen_sh_check(outDir,shDir)
+    mksh_bgen_filter_withCHECK(bgenDir,outDir,refDir,shDir,Tool)
+
 
 sh()
-
-
 

@@ -141,3 +141,62 @@ venn.diagram(
         cat.fontfamily = "sans",
         rotation = 1
 )
+
+
+
+########Multi alliec 나누고 다시 진행
+
+library(ggplot2)
+library(ggbreak) 
+
+setwd("~/Desktop/KCDC/long_read/analysis/03.check/01.multi/compare_3tpyes/ID/")
+front <- 28477797
+type1 <- read.table("01.2020HLAseq.pass_vcfmerge_devidedMultiAllelic_ID.txt",header =F)
+type2 <- read.table("03.merge_usingGLnexus_devidedMultiAllelic_ID.txt",header = F)
+head(type1)
+colnames(type1) <- c("CHR","POS","REF","ALT")
+colnames(type2) <- c("CHR","POS","REF","ALT")
+
+type1$Real.POS <- front + type1$POS
+type2$Real.POS <- front + type2$POS
+
+type1$ID <- paste0(type1$CHR,":",type1$Real.POS,"_",type1$REF,"/",type1$ALT)
+type2$ID <- paste0(type2$CHR,":",type2$Real.POS,"_",type2$REF,"/",type2$ALT)
+
+
+ref <- read.table("~/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/ref.allele.with.ALT.NoHLA.txt",header = T)
+head(ref)
+ref$ID <- paste0(ref$chr,":",ref$hg19,"_",ref$ref,"/",ref$alt)
+
+library(RColorBrewer)
+myCol <- brewer.pal(3, "Pastel2")
+library(VennDiagram)
+venn.diagram(
+        x=list(type1$ID,type2$ID,ref$ID),
+        category.names = c("Variant calling","Multi-sample calling","Han ref"),
+        filename = "Marker_compare.png",
+        output = TRUE,
+        
+        imagetype="png" ,
+        height = 600 , 
+        width = 600 , 
+        resolution = 300,
+        compression = "lzw",
+        
+        lwd = 2,
+        lty = 'blank',
+        fill = myCol,
+        
+        cex = .4,
+        fontface = "bold",
+        fontfamily = "sans",
+        
+        cat.cex = 0.4,
+        cat.fontface = "bold",
+        cat.default.pos = "outer",
+        cat.pos = c(-27, 20, 120),
+        cat.dist = c(0.055, 0.05, 0.05),
+        cat.fontfamily = "sans",
+        rotation = 1
+)
+
