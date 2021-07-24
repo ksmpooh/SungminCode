@@ -44,7 +44,9 @@ total/split/realigned/skipped:	50102/1425/0/0  52340
 bcftools norm -m -any /Users/ksmpooh/Desktop/KCDC/long_read/analysis/02.multi.calling/HLA.merge_usingGLnexus.vcf.gz -Oz -o /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/00.compare_vcf/divideMultiallele/HLA.merge_usingGLnexus_devidedMultiAllelic.vcf.gz
 total/split/realigned/skipped:	67780/2348/0/0 70726
 
-1-2. intersect with gnomAD
+1-2. intersect with gnomAD (서버 : /LaCie2/GNOMAD/)
+(HLA target region : 28477797 ~ 33448354)
+(gnomAD region : 28477812 ~ 33448351)
 cd /Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi
 
 bcftools query -f '6\t%POS\t%REF\t%ALT\n' 2020HLAseq.pass_vcfmerge_devidedMultiAllelic.vcf.gz > ID/01.2020HLAseq.pass_vcfmerge_devidedMultiAllelic_ID.txt

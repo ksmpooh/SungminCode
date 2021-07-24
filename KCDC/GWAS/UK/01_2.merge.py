@@ -22,9 +22,14 @@ main()
 #ukb57705_imp_v3_s487283_HT_20210517.sample
 1                 3           4                                                               9                                                                                                 19
 #alternate_ids rsid chromosome position alleleA alleleB index average_maximum_posterior_call info cohort_1_AA cohort_1_AB cohort_1_BB cohort_1_NULL all_AA all_AB all_BB all_NULL all_total all_maf missing_data_proportion frequentist_add_pvalue frequentist_add_info frequentist_add_beta_1 frequentist_add_se_1 comment
+import os,glob
+phenoList = ["GLU_inv", "HbA1c_inv", "DBP.nRES", "SBP.nRES","PP.nRES","MAP.nRES"]
 def forMan():
-    outDir = "forManhattanPlot/"
+    outDir = "./forManhattanPlot/"
     for pheno in phenoList:
         input =  "UKB_%s_ALL_MERGE.txt"%pheno
-        output = oudtDir + "UKB_%s_ALL_MERGE_for.manhattan.txt"%pheno
-        os.system("grep -v \"rsid\" %s | awk \'$9 >= 0.8 & $19 >= 0.01{print $1,$3,$4,$21}\' > %s"%(input,output))
+        output = outDir + "UKB_%s_ALL_MERGE_for.manhattan.txt"%pheno
+        os.system("grep -v \"rsid\" %s | awk \'$9 >= 0.8 && $19 >= 0.01{print $1,$3,$4,$21}\' > %s"%(input,output))
+
+
+forMan()

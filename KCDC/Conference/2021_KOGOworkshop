@@ -1,0 +1,134 @@
+scp -rP 723 'edu10@59.26.46.101:~/sglee/SAIGE/*.png' .
+
+# step1
+
+nohup step1_fitNULLGLMM.R \
+--plinkFile=saige_example \
+--phenoFile=saige_pheno.txt \
+--phenoCol=y_binary \
+--covarColList=x1,x2 \
+--sampleIDColinphenoFile=IID \
+--traitType=binary \
+--outputPrefix=./step1_result --nThreads=4 \
+--LOCO=FALSE \   # GRM을 남길 때, 사용한 target SNP이 두번 check되는 것을 방지하려면 loco = TRUE / binary는 거의 영향이 없고, Continuose 일 경우 차이가 잇을 수 있다
+--IsOverwriteVarianceRatioFile=TRUE &
+
+
+## output : 
+-rw-rw-r--. 1 edu10 edu10 121K  7월 23 11:35 step1_result.rda  # step2 에 사용
+-rw-rw-r--. 1 edu10 edu10 3.5K  7월 23 11:36 step1_result_30markers.SAIGE.results.txt
+-rw-rw-r--. 1 edu10 edu10   17  7월 23 11:36 step1_result.varianceRatio.txt  # step2 에 사용
+
+
+# step2
+
+nohup step2_SPAtests.R \
+--vcfFile=saige_example.vcf.gz \
+--vcfFileIndex=saige_example.vcf.gz.tbi \
+--vcfField=GT \
+--chrom=1 \
+--minMAF=0.0001 \  
+--minMAC=1 \
+--sampleFile=sampleIDindosage.txt \
+--GMMATmodelFile=step1_result.rda \
+--varianceRatioFile=step1_result.varianceRatio.txt \
+--SAIGEOutputFile=finalresult.txt \
+--numLinesOutput=2 \
+--IsOutputAFinCaseCtrl=TRUE \ /case control 따로 allele frequency을 얻을 것인가 확인
+--LOCO=FALSE &
+
+
+
+###오후
+
+File.Bed<-'./Example1.bed'
+File.Bim<-'./Example1.bim'
+File.Fam<-'./Example1.fam'
+File.SetID<-'./Example1.SetID'
+
+#Calling covariate file (Order of the sample ID must be same with the fam file)
+#When there is no covariate file, use FAM<-Read_Plink_FAM(File.Fam,Is.binary = F) 
+#and object obj<-SKAT_Null_Model(y~X1+X2, out_type = 'C')
+File.Cov<-'./Example1.Cov'
+FAM_Cov<-Read_Plink_FAM_Cov(File.Fam,File.Cov,Is.binary = F)
+
+#Object file for Null model
+
+obj<-SKAT_Null_Model(Phenotype~X1+X2, data=FAM_Cov, out_type = 'C')
+
+# If the phenotype is binary one, out_type='D'
+#When there is no covariate file, use FAM<-Read_Plink_FAM(File.Fam,Is.binary = F) 
+#and object obj<-SKAT_Null_Model(y~1, out_type = 'C')
+
+#Please set file location and name for SSD file and SSD.info file 
+File.SSD<-'./Example1.SSD'
+File.Info<-'./Example1.SSD.info'
+
+#Generate and open SSD file for analysis
+Generate_SSD_SetID(File.Bed,File.Bim,File.Fam,File.SetID,File.SSD,File.Info )
+SSD.INFO<-Open_SSD(File.SSD,File.Info)
+SSD.INFO$nSample
+SSD.INFO$nSets
+
+#Analysis
+out<-SKAT.SSD.All(SSD.INFO,obj,method='SKATO')
+#close SSD file 
+Close_SSD()
+
+
+#SAIGE GENE (updated 2021-07-09)
+
+##Step 0 : Creating Sparse GRM (Genomic Relationship Matrix)
+
+
+nohup createSparseGRM.R --plinkFile=saige_gene_example \
+--nThreads=4 \
+--outputPrefix=step0_result \
+--numRandomMarkerforSparseKin=2000 \
+--relatednessCutoff=0.125 &
+
+##Step 1 : Fitting Null model
+
+
+nohup step1_fitNULLGLMM.R --plinkFile=saige_gene_example \
+--phenoFile=saige_gene_pheno.txt \
+--phenoCol=y_quantitative \
+--covarColList=x1,x2 \
+--sampleIDColinphenoFile=IID \
+--traitType=quantitative \
+--invNormalize=TRUE \
+--outputPrefix=step1_result \
+--outputPrefix_varRatio=step1_result_ratio \
+--sparseGRMFile=step0_result_relatednessCutoff_0.125_2000_randomMarkersUsed.sparseGRM.mtx \
+--sparseGRMSampleIDFile=step0_result_relatednessCutoff_0.125_2000_randomMarkersUsed.sparseGRM.mtx.sampleIDs.txt \
+--nThreads=4 \
+--LOCO=FALSE \
+--skipModelFitting=FALSE \
+--IsSparseKin=TRUE \
+--isCateVarianceRatio=TRUE &
+
+##Step 2 : Gene based test
+
+
+nohup step2_SPAtests.R --vcfFile=genotype_10markers.vcf.gz  \
+--vcfFileIndex=genotype_10markers.vcf.gz.csi \
+--chrom=1 \
+--vcfField=GT \
+--minMAF=0 \
+--minMAC=0.5 \
+--maxMAFforGroupTest=0.01 \
+--sampleFile=samplelist.txt \
+--GMMATmodelFile=step1_result.rda \
+--varianceRatioFile=step1_result_ratio.varianceRatio.txt \
+--SAIGEOutputFile=step2_result_gene.txt \
+--numLinesOutput=1 \
+--groupFile=groupFile_geneBasedtest_simulation.txt \
+--sparseSigmaFile=step1_result_ratio.varianceRatio.txt_relatednessCutoff_0.125_2000_randomMarkersUsed.sparseSigma.mtx \
+--IsSingleVarinGroupTest=TRUE \
+--method_to_CollapseUltraRare=absence_or_presence \
+--MACCutoff_to_CollapseUltraRare=10  \
+--LOCO=FALSE &
+
+
+
+
