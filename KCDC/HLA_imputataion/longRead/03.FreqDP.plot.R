@@ -46,5 +46,5 @@ out <- merge(df1[,c("V1","sum")],df2[,c("V1","sum")],by = 'V1')
 head(out)
 
 
-plot(x = out$sum.x,y = out$sum.y,main="DP compare",ylab = "Multi-sample Calling AF",xlab = "Variant Calling AF")
+plot(x = out$sum.x,y = out$sum.y,main="DP compare",ylab = "Multi-sample Calling sum(DP)",xlab = "Variant Calling sum(DP)")
 
