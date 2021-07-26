@@ -13,3 +13,38 @@
 ~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.out.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
 
 ~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/Ps.performance.txt --summary-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.summary.txt --call-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.calls.txt --posterior-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.snp-posteriors.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
+
+
+
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.snp-posteriors.txt --call-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.calls.txt --metrics-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.out.txt
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.out.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/Ps.performance.txt --summary-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.summary.txt --call-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.calls.txt --posterior-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.snp-posteriors.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
+
+
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file ./AxiomGT1.snp-posteriors.txt --call-file ./AxiomGT1.calls.txt --metrics-file ./AxiomGT1.out.txt 
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file ./AxiomGT1.out.txt --output-dir ./
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file ./Ps.performance.txt --summary-file ./AxiomGT1.summary.txt --call-file ./AxiomGT1.calls.txt --posterior-file ./AxiomGT1.snp-posteriors.txt --output-dir ./
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

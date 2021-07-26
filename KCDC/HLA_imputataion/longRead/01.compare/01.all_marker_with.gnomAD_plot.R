@@ -3,6 +3,7 @@ library(VennDiagram)
 
 ####header 
 setwd("/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi/ID")
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi/compare_3tpyes/ID/")
 front <- 28477797
 head(df1)
 head(df2)
@@ -26,6 +27,9 @@ df2$ID <- paste0(df2$CHR,":",df2$Real.POS,"_",df2$REF,"/",df2$ALT)
 df3$ID <- paste0(df3$CHR,":",df3$Real.POS,"_",df3$REF,"/",df3$ALT)
 gnomad$ID <- paste0(gnomad$CHR,":",gnomad$POS,"_",gnomad$REF,"/",gnomad$ALT)
 ###
+
+
+
 
 myCol <- brewer.pal(3, "Pastel2")
 venn.diagram(
@@ -120,3 +124,104 @@ venn.diagram(
   cat.fontfamily = "sans"
   #rotation = 1
 )
+
+
+
+
+##### gnomAD with Han
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/01.multi/compare_3tpyes/ID/")
+front <- 28477797
+head(df1)
+head(df2)
+head(gnomad)
+df1 <- read.table("01.2020HLAseq.pass_vcfmerge_devidedMultiAllelic_ID.txt")
+df2 <- read.table("03.merge_usingGLnexus_devidedMultiAllelic_ID.txt")
+gnomad <- read.table("~/Desktop/KCDC/long_read/analysis/03.check/gnomad/gnomad.ATL.allele.frequency.txt",header = T)
+
+colnames(df1) <- c("CHROM","POS","REF","ALT")
+colnames(df2) <- c("CHROM","POS","REF","ALT")
+
+df1$Real.POS <- front + df1$POS
+df2$Real.POS <- front + df2$POS
+
+df1$ID <- paste0(df1$CHR,":",df1$Real.POS,"_",df1$REF,"/",df1$ALT)
+df2$ID <- paste0(df2$CHR,":",df2$Real.POS,"_",df2$REF,"/",df2$ALT)
+gnomad$ID <- paste0(gnomad$CHR,":",gnomad$POS,"_",gnomad$REF,"/",gnomad$ALT)
+
+
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/gnomad/")
+gnomad <- read.table("~/Desktop/KCDC/long_read/analysis/03.check/gnomad/gnomad.ATL.allele.frequency.txt",header = T)
+ref <- read.table("~/Desktop/KCDC/HLAimputation/IMPUTE4/Han.ref/ref.allele.with.ALT.NoHLA.txt",header = T)
+
+
+head(gnomad)
+head(ref)
+
+gnomad$ID <- paste0(gnomad$CHR,":",gnomad$POS,"_",gnomad$REF,"/",gnomad$ALT)
+ref$ID <- paste0(ref$chr,":",ref$hg19,"_",ref$ref,"/",ref$alt)
+
+
+table(gnomad$ID %in% ref$ID)
+#myCol <- brewer.pal(2, "Pastel2")
+venn.diagram(
+  x=list(gnomad$ID,ref$ID),
+  category.names = c("gnomAD","Han ref"),
+  filename = "gnomAD_Han.ref.png",
+  output = TRUE,
+  
+  imagetype="png" ,
+  height = 600 , 
+  width = 600, 
+  resolution = 300,
+  compression = "lzw",
+  
+  lwd = 2,
+  lty = 'blank',
+#  fill = myCol,
+  fill = c("Red","Blue"),
+  
+  cex = .4,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  cat.cex = 0.4,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(0, 0),
+  cat.dist = c(0.1,0.1),
+  cat.fontfamily = "sans"
+  #rotation = 1
+)
+
+
+## with han 
+myCol <- brewer.pal(4, "Pastel2")
+venn.diagram(
+  x=list(df1$ID,df2$ID,gnomad$ID,ref$ID),
+  category.names = c("Variant.Calling","Multi-sample.Calling","gnomAD","Han ref"),
+  filename = "2types_compare_allmarker_withGnomad_and_Han.png",
+  output = TRUE,
+  
+  imagetype="png" ,
+  height = 600 , 
+  width = 600, 
+  resolution = 300,
+  compression = "lzw",
+  
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  cex = .4,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  cat.cex = 0.4,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(0, 3, 0,0),
+  cat.dist = c(-0.3, -0.3, 0.1,0.1),
+  cat.fontfamily = "sans"
+  #rotation = 1
+)
+
