@@ -45,6 +45,7 @@ df2$sum <- rowSums(df2[,2:13])
 out <- merge(df1[,c("V1","sum")],df2[,c("V1","sum")],by = 'V1')
 head(out)
 
-
+mean(out$sum.x)
+mean(out$sum.y)
 plot(x = out$sum.x,y = out$sum.y,main="DP compare",ylab = "Multi-sample Calling sum(DP)",xlab = "Variant Calling sum(DP)")
 
