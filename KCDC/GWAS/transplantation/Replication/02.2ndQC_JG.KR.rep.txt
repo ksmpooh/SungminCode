@@ -1,0 +1,58 @@
+python2 DataPrep.2nd.py 0 50000 /BDATA/smkim/JG_2020/01.genocall/INPUTs/Sample.Info.txt /BDATA/smkim/JG_2020/01.genocall/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt /BDATA/smkim/JG_2020/01.genocall/OUTPUTs/KR.2nd/
+
+
+
+cd /BDATA/smkim/JG_2020/03.2ndQC/CASE
+plink --bfile JG.KR.rep.2nd --extract /BDATA/smkim/JG_2020/01.genocall/OUTPUTs/KR.1st/Recommended.ps --make-bed --out JG.KR.rep.2nd_snpolisher
+
+plink --bfile JG.KR.rep.2nd_snpolisher --missing --out MISS
+plink --bfile JG.KR.rep.2nd_snpolisher --het --out HET
+
+
+
+
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("../PDF/JG.KR_rep.2nd.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,23), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=16.3, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 16.3 | 17.8 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 16.3 | 17.8 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSam연ple$F_MISS | lowSample$HET < 16.3 | 17.8 < lowSample$HET,]
+
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+
+plink --bfile JG.KR.rep.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --out JG.KR.rep.2nd_snpolisher_pruning
+plink --bfile JG.KR.rep.2nd_snpolisher --extract JG.KR.rep.2nd_snpolisher_pruning.prune.in --make-bed --out JG.KR.rep.2nd_snpolisher_pruned
+flashpca_x86-64 --bfile JG.KR.rep.2nd_snpolisher_pruned --outpc PCA.txt
+
+
+
+/BDATA/smkim/TOOLs/king -b JG.KR.rep.2nd_snpolisher.bed --prefix JG.KR.rep.king --related --degree 2
+
+plink --bfile JG.KR.rep.2nd_snpolisher --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py JG.KR.rep.2nd_snpolisher_rmaffy
+plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy_rmdup
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt JG.KR.rep.2nd_snpolisher_rmaffy_rmdup JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel
+plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip

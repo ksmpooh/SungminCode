@@ -2,7 +2,8 @@ setwd("~/Desktop/KCDC/KKY/00.sampleInfo/")
 
 library(stringr)
 cel <- read.table("cel_files.txt",header = T)
-pca <- read.table("PCA.txt",header = T)
+#pca <- read.table("PCA.txt",header = T)
+pca <- read.table("PCA.2nd.txt",header = T)
 # 043140 : DANlink
 # 5507... : Teragen
 
@@ -115,6 +116,8 @@ points(df[df$PC1 < -0.05 | df$PC1 > 0.06| df$PC2 < -0.05| df$PC2 > 0.06,]$PC1,
        col = rgb(1,0,0,1), cex = 1 , pch = 20)
 
 dev.off()
-
+head(df)
 rmlist <- df[0.06<df$PC1 | -0.05 > df$PC1 | df$PC2 < -0.05  | 0.06 < df$PC2,]
 table(rmlist$type)
+
+head(rmlist)

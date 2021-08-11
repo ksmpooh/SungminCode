@@ -11,9 +11,9 @@ for i in `cat /BDATA/myhwang/KBA_130K/11_UKB/RESULTs/assoRUN_new/HT.complet.list
 
 
 cd /BDATA/myhwang/KBA_130K/11_UKB/RESULTs/assoRUN_new/HT
-grep -E "Completed" *txt |cut -d":" -f1 > ../HT.complet.list.txt
+grep -E "Completed" *txt |cut -d":" -f1 > ../HT.complete.list.txt
 
-vi ../HT.complet.list.txt
+vi ../HT.complete.list.txt
 .txt -> .sh
 
 cd /BDATA/myhwang/KBA_130K/11_UKB/SCRIPTs/assoRUN_new/HT
@@ -30,3 +30,11 @@ for i in `cat /BDATA/myhwang/KBA_130K/11_UKB/RESULTs/assoRUN_new/HT.complet.list
 104 : UKB_HT_chr6_79480126_80069136.sh : 192614424
 
 /BDATA/smkim/JG/TOOLs/qctool -g /BDATA/myhwang/UK/IMP/ukb_imp_chr13_v3.bgen -incl-range 30639108-31229107 -og /BDATA/myhwang/UK/IMP/IMP_filter/ukb_imp_chr13_30639108_31229107_v3.bgen
+
+
+
+grep -E "Completed" *txt |cut -d":" -f1 > ../complete.list.txt
+wc -l ../complete.list.txt
+
+
+DBP.nRES  GLU_inv  HbA1c_inv  HT  MAP.nRES  PP.nRES  SBP.nRES

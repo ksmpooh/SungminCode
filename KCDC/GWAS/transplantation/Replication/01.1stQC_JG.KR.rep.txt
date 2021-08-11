@@ -142,7 +142,8 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 
 
-#### 3개 샘플 제거
+#### 4개 샘플 제거
 NIH19KT7447	NIH19KT7447
 NIH20KT1475	NIH20KT1475
 NIH20KT1980	NIH20KT1980
+NIH20KT1693
