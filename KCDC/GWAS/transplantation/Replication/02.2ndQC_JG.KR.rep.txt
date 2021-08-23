@@ -56,3 +56,116 @@ plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy --exclude case_duplicateSNPID.txt 
 python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt JG.KR.rep.2nd_snpolisher_rmaffy_rmdup JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert
 python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel
 plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip
+plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+
+
+
+# control : NC V2 4K : hwe, snpolisher, sampleQC
+##V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_intersect.bim
+##  --geno 0.05 --hwe 0.001 --maf 0.01
+
+
+cd /BDATA/smkim/JG_2020/03.2ndQC/CONTROL
+plink --bfile NC_V2_B1 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out NC_V2_B1_rmaffy
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt NC_V2_B1_rmaffy NC_V2_B1_rmaffy_indel
+plink --bfile NC_V2_B1_rmaffy_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out NC_V2_B1_rmaffy_indel_flip
+plink --bfile NC_V2_B1_rmaffy_indel_flip --geno 0.05 --hwe 0.001 --maf 0.01 --make-bed --out NC_V2_B1_rmaffy_indel_flip_fil
+
+#case - control for merge
+cd /BDATA/smkim/JG_2020/03.2ndQC/MERGE
+cat /BDATA/smkim/JG_2020/03.2ndQC/CASE/JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.bim /BDATA/smkim/JG_2020/03.2ndQC/CONTROL/NC_V2_B1_rmaffy_indel_flip_fil.bim | awk '{print $2}' | sort | uniq -c | awk '$1 == 2 {print $2}' > intersect_snplist.txt
+plink --bfile ../CASE/JG.KR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil --extract intersect_snplist.txt --make-bed --out CASE_intersect
+plink --bfile ../CONTROL/NC_V2_B1_rmaffy_indel_flip_fil --extract intersect_snplist.txt --make-bed --out CONTROL_intersect
+plink --bfile CASE_intersect --bmerge CONTROL_intersect --make-bed --out merge
+
+# king
+/BDATA/smkim/TOOLs/king -b merge.bed --related --degree 2 --rplot --prefix JG.KR.merge > result.txt &
+
+Relationship summary (total relatives: 0 by pedigree, 5 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	0	0	0	4
+
+모두 control-control 샘플이라서 4개의 샘플 제거함
+
+grep 2nd JG.KR.merge.kin0 | awk '{print $1"\t"$2}'  > rmking.list.txt
+plink --bfile merge --remove rmking.list.txt --make-bed --out merge_rmking
+
+plink --bfile CASE_intersect --freq --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CASE_intersect_freq
+plink --bfile CONTROL_intersect --freq --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out CONTROL_intersect_freq
+
+
+#R
+
+case <- read.table("CASE_intersect_freq.frq",header=T)
+control <- read.table("CONTROL_intersect_freq.frq",header=T)
+data <- merge(control,case,by="SNP")
+png("control&case_frequency.png",height = 700,width=700)
+
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+
+plink --bfile merge_rmking --exclude rm_snp_frq.txt --make-bed --out merge_rmking_rmfrq
+
+
+plink --bfile merge_rmking_rmfrq --maf 0.1 --geno 0.01 --hwe 0.001 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --indep-pairwise 50 5 0.02 --out merge_rmking_rmfrq_pruning
+plink --bfile merge_rmking_rmfrq --extract merge_rmking_rmfrq_pruning.prune.in --make-bed --out merge_rmking_rmfrq_pruned
+flashpca_x86-64 --bfile merge_rmking_rmfrq_pruned --outpc PCA.txt
+
+#R
+
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/03.merge/")
+
+pca <- read.table("PCA.txt", header=T)
+
+head(pca)
+
+pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+     xlim=c(-0.5, 0.5), ylim=c(-0.5,0.5),
+     xlab="PC1", ylab="PC2", main="KR replication (case_control) PCA", cex=1.5, pch=16)
+abline(v=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.13 | 0.13 < pca$PC1 | pca$PC2 < -0.13 | 0.13 < pca$PC2,]
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+
+## test missing
+
+####################pheno
+FID MID CASE
+a a 1
+b b 1
+....
+###############
+
+awk '{print $1,$1,1}' CASE_intersect.fam > CASE_pheno.txt
+awk '{print $1,$1,2}' CONTROL_intersect.fam > CONTROL_pheno.txt
+cat CASE_pheno.txt CONTROL_pheno.txt  > JG.KR.rep.merge.pheno.txt
