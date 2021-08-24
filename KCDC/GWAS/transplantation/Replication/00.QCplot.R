@@ -1,5 +1,5 @@
 #### plot
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/1st/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/1st/")
 setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/2nd/")
 
 miss <-read.table("MISS.imiss",header = T)
@@ -13,7 +13,7 @@ lowSample <- merge(miss, het, by="FID")
 
 pdf("../PDF/JG.KR_rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
 plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,23), ylim=c(0,0.1), xlab="heterozygosity rate",
-     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+     ylab="missing rate", main="KR rep 1st QC : Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
 abline(v=16.3, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(v=17.8, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
@@ -30,7 +30,7 @@ rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16.3 | 17.8 < lowS
 
 ## pca plot
 
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/1st/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/")
 
 pca <- read.table("PCA.txt", header=T)
 
@@ -40,7 +40,7 @@ pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
      #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
      xlim=c(-0.5, 0.5), ylim=c(-0.5,0.5),
-     xlab="PC1", ylab="PC2", main="2nd.QC_PCA", cex=1.5, pch=16)
+     xlab="PC1", ylab="PC2", main="KR rep 1st QC : PCA", cex=1.5, pch=16)
 abline(v=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(v=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(h=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
@@ -65,7 +65,7 @@ q()
 
 ### ethnic
 
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/1st/ethnic/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/ethnic/")
 
 #pca <- read.table("PCA.txt",header = T)
 pca <- read.table("JG.1st.ethnic.PCA.txt",header = T)
@@ -107,7 +107,7 @@ points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0
 points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 1 , pch = 16)
 
 color <- c(
-        rgb(0,0,0,1),
+#        rgb(0,0,0,1),
         rgb(1,0,0,1),
         rgb(0,1,0,1),
         rgb(0,0,1,1),
@@ -115,7 +115,8 @@ color <- c(
         rgb(0,1,1,1),
         rgb(1,0,1,1))
 list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
-legend(x = 0.4 ,y = 0.5,list,col = color,cex = 1,pch = 16)
+list <- c("KR.rep","SAS","AFR","AMR","EAS","EUR")
+legend(x = 0.45 ,y = 0.4,list,col = color,cex = 1,pch = 16)
 dev.off()
 
 
@@ -189,23 +190,23 @@ pca <- read.table("PCA.txt",header = T)
 #gnomad <- read.table("../INPUTs/1000genome_ID.txt",header = F)
 samplegnomad<- read.table("../../01.1stQC/ethnic/1000GP_Phase3.sample",header = T)
 #case<-read.table("CASE_ID.txt",header = F)
-case <- read.table("JG.intersect.fam",header = F)
+#case <- read.table("JG.intersect.fam",header = F)
 case <- read.table("case.txt")
 head(case)
 #case <- as.data.frame(case$V1)
 #control <-read.table("CONTROL_ID.txt",header = F)
-control <- as.data.frame(samplegnomad$ID)
-
+#control <- as.data.frame(samplegnomad$ID)
+control <-read.table("control.txt",header = F)
 colnames(case) <- "FID"
-#colnames(control) <- "FID"
+colnames(control) <- "FID"
 
 case$FID <- as.factor(case$FID)
-#control$FID <- as.factor(control$FID)
+control$FID <- as.factor(control$FID)
 
 gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
 colnames(gnomad) <- c("FID","GROUP")
 case$GROUP <- "CASE"
-#control$GROUP <- "CONTROL"
+control$GROUP <- "CONTROL"
 
 df <- rbind(gnomad,case)
 df <- rbind(df,control)
@@ -226,16 +227,17 @@ points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0
 points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.3), cex = 1 , pch = 16)
 
 color <- c(
-#        rgb(0,0,0,1),
+        rgb(0,0,0,1),
         rgb(1,0,0,1),
         rgb(0,1,0,1),
         rgb(0,0,1,1),
         rgb(1,1,0,1),
         rgb(0,1,1,1),
         rgb(1,0,1,1))
-list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
-list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
-legend(x = 0.4 ,y = 0.5,list,col = color,cex = 1,pch = 16)
+list <- c("Control","Case","SAS","AFR","AMR","EAS","EUR")
+#list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
+#list <- c("JG.merge","SAS","AFR","AMR","EAS","EUR")
+legend(x = 0.6 ,y = 0.5,list,col = color,cex = 1,pch = 16)
 dev.off()
 
 

@@ -169,3 +169,84 @@ b b 1
 awk '{print $1,$1,1}' CASE_intersect.fam > CASE_pheno.txt
 awk '{print $1,$1,2}' CONTROL_intersect.fam > CONTROL_pheno.txt
 cat CASE_pheno.txt CONTROL_pheno.txt  > JG.KR.rep.merge.pheno.txt
+
+
+mkdir missing
+cd missing
+plink --bfile ../merge_rmking_rmfrq --test-missing --pheno ../JG.KR.rep.merge.pheno.txt --pheno-name CASE --out JG.KR.rep.merge.missing-test
+awk '$5 < 1e-5 {print $0}' JG.KR.rep.merge.missing-test.missing | awk '$3 > 0.01|| $4 > 0.01{print $0}' > JG.KR.rep.merge.missing-test.removeSNPlist.txt
+
+cd ..
+
+plink --bfile merge_rmking_rmfrq --exclude missing/JG.KR.rep.merge.missing-test.removeSNPlist.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest
+
+## ethnic
+mkdir ethnic
+cd ethnic/
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/02.updateSNPIDtype.py ../merge_rmking_rmfrq_rmMissingtest.bim /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+plink --bfile ../merge_rmking_rmfrq_rmMissingtest.updateSNPID --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil
+
+cat merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil.bim /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+plink --bfile merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil --extract intersectSNP.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil_intersect
+plink --bfile /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge --extract intersectSNP.txt --make-bed --out 1kgp_intersect
+plink --bfile merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil_intersect --bmerge 1kgp_intersect --make-bed --out MERGE --allow-no-sex
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA.txt
+
+
+
+# ethnic PCA
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/03.merge/ethnic/")
+pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("../../01.1stQC/ethnic/1000GP_Phase3.sample",header = T)
+case <- read.table("case.txt")
+head(case)
+control <-read.table("control.txt",header = F)
+colnames(case) <- "FID"
+colnames(control) <- "FID"
+
+case$FID <- as.factor(case$FID)
+control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+control$GROUP <- "CONTROL"
+
+df <- rbind(gnomad,case)
+df <- rbind(df,control)
+
+df <- merge(pca,df,by = "FID")
+plot(df$PC1,df$PC2,col = rgb(0,0,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic PCA",
+     cex.main = 3,cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.3), cex = 1 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,0.5), cex = 1 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.3), cex = 1 , pch = 16)
+
+color <- c(
+        rgb(0,0,0,1),
+        rgb(1,0,0,1),
+        rgb(0,1,0,1),
+        rgb(0,0,1,1),
+        rgb(1,1,0,1),
+        rgb(0,1,1,1),
+        rgb(1,0,1,1))
+list <- c("Control","Case","SAS","AFR","AMR","EAS","EUR")
+#list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
+#list <- c("JG.merge","SAS","AFR","AMR","EAS","EUR")
+legend(x = 0.6 ,y = 0.5,list,col = color,cex = 1,pch = 16)
+dev.off()
+
+
+
+# FInal
+cd /BDATA/smkim/JG_2020/03.2ndQC/MERGE/
+plink --bfile merge_rmking_rmfrq_rmMissingtest --remove ethnic/rm_ethnic.sample.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest_rmEthnic

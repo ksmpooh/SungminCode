@@ -52,6 +52,17 @@
 
 
 
+## 2nd ALL (rm only low quality samples)
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis --arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml --dual-channel-normalization true --cel-files /DATA/smkim/KKY/01.GenotypeCalling/INPUTs/cel_files_2nd_rmALLmisingHET.txt --summaries --write-models --out-dir /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.snp-posteriors.txt --call-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.calls.txt --metrics-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.out.txt 
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.out.txt --output-dir /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/Ps.performance.txt --summary-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.summary.txt --call-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.calls.txt --posterior-file /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/AxiomGT1.snp-posteriors.txt --output-dir /DATA/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/
+
+
+
+
 
 
 

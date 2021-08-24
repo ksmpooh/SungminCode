@@ -153,6 +153,7 @@ plink --bfile ../KKY.7th.DANlink_snpolisher --exclude /BDATA/smkim/JG/03.QC_2nd/
 plink --bfile ../KKY.7th.DANlink_snpolisher --extract pruning.prune.in --make-bed --out KKY.7th.DANlink_snpolisher_pruned
 flashpca_x86-64 --bfile KKY.7th.DANlink_snpolisher_pruned --outpc PCA.txt
 
+#1kgp
 
 
 

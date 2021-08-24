@@ -1,0 +1,18 @@
+##### phasing
+
+data : /BDATA/smkim/JG_2020/03.2ndQC/MERGE/merge_rmking_rmfrq_rmMissingtest_rmEthnic_chr1to22
+
+
+
+cd 
+
+out : /BDATA/smkim/JG_2020/04.phasing/OUTPUTs/01.split/
+
+#!/bin/bash
+
+for chr in $(seq 1 22);do
+	plink --bfile /BDATA/smkim/JG_2020/03.2ndQC/MERGE/merge_rmking_rmfrq_rmMissingtest_rmEthnic_chr1to22 --chr $chr --reference-allele /ADATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG_2020/04.phasing/OUTPUTs/01.split/JG.KR.rep.merge.chr$chr
+    done
+
+
+
