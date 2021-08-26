@@ -1,6 +1,6 @@
 #### plot
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/1st/")
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/2nd/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/02.2ndQC/")
 
 miss <-read.table("MISS.imiss",header = T)
 het <- read.table("HET.het", header = T)

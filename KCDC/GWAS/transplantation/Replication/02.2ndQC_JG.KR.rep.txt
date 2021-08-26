@@ -3,7 +3,7 @@ python2 DataPrep.2nd.py 0 50000 /BDATA/smkim/JG_2020/01.genocall/INPUTs/Sample.I
 
 
 cd /BDATA/smkim/JG_2020/03.2ndQC/CASE
-plink --bfile JG.KR.rep.2nd --extract /BDATA/smkim/JG_2020/01.genocall/OUTPUTs/KR.1st/Recommended.ps --make-bed --out JG.KR.rep.2nd_snpolisher
+plink --bfile JG.KR.rep.2nd --extract /BDATA/smkim/JG_2020/01.genocall/OUTPUTs/KR.2nd/Recommended.ps --make-bed --out JG.KR.rep.2nd_snpolisher
 
 plink --bfile JG.KR.rep.2nd_snpolisher --missing --out MISS
 plink --bfile JG.KR.rep.2nd_snpolisher --het --out HET
@@ -20,7 +20,7 @@ het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
 
 lowSample <- merge(miss, het, by="FID")
 
-pdf("../PDF/JG.KR_rep.2nd.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+#pdf("../PDF/JG.KR_rep.2nd.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
 plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,23), ylim=c(0,0.1), xlab="heterozygosity rate",
      ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
 abline(v=16.3, col=rgb(1,0,0,1), lty=3, lwd=2)
@@ -31,7 +31,7 @@ points(lowSample[lowSample$HET < 16.3 | 17.8 < lowSample$HET | 0.03 < lowSample$
        col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
 
-rmList <- lowSample[0.03 < lowSam연ple$F_MISS | lowSample$HET < 16.3 | 17.8 < lowSample$HET,]
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16.3 | 17.8 < lowSample$HET,]
 
 
 write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
@@ -42,7 +42,7 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 
 
 
-plink --bfile JG.KR.rep.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --out JG.KR.rep.2nd_snpolisher_pruning
+plink --bfile JG.KR.rep.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out JG.KR.rep.2nd_snpolisher_pruning
 plink --bfile JG.KR.rep.2nd_snpolisher --extract JG.KR.rep.2nd_snpolisher_pruning.prune.in --make-bed --out JG.KR.rep.2nd_snpolisher_pruned
 flashpca_x86-64 --bfile JG.KR.rep.2nd_snpolisher_pruned --outpc PCA.txt
 
@@ -85,9 +85,10 @@ plink --bfile CASE_intersect --bmerge CONTROL_intersect --make-bed --out merge
 Relationship summary (total relatives: 0 by pedigree, 5 by inference)
         	MZ	PO	FS	2nd
   =====================================================
-  Inference	0	0	0	4
+  Inference	0	0	0	5
 
-모두 control-control 샘플이라서 4개의 샘플 제거함
+
+모두 control-control 샘플이라서 control 5개의 샘플 제거함
 
 grep 2nd JG.KR.merge.kin0 | awk '{print $1"\t"$2}'  > rmking.list.txt
 plink --bfile merge --remove rmking.list.txt --make-bed --out merge_rmking
@@ -121,7 +122,7 @@ q()
 plink --bfile merge_rmking --exclude rm_snp_frq.txt --make-bed --out merge_rmking_rmfrq
 
 
-plink --bfile merge_rmking_rmfrq --maf 0.1 --geno 0.01 --hwe 0.001 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --indep-pairwise 50 5 0.02 --out merge_rmking_rmfrq_pruning
+plink --bfile merge_rmking_rmfrq --maf 0.1 --geno 0.01 --hwe 0.001 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --indep-pairwise 50 5 0.02 --chr 1-22 --out merge_rmking_rmfrq_pruning
 plink --bfile merge_rmking_rmfrq --extract merge_rmking_rmfrq_pruning.prune.in --make-bed --out merge_rmking_rmfrq_pruned
 flashpca_x86-64 --bfile merge_rmking_rmfrq_pruned --outpc PCA.txt
 
@@ -160,7 +161,7 @@ q()
 ## test missing
 
 ####################pheno
-FID MID CASE
+FID IID CASE
 a a 1
 b b 1
 ....

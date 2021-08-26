@@ -12,7 +12,7 @@
 import os,glob
 
 row_index = ["HLA_A_01","HLA_A_0101","HLA_A_0103","HLA_A_0122","HLA_A_02","HLA_A_0201","HLA_A_0202","HLA_A_0203","HLA_A_0205","HLA_A_0206","HLA_A_0207","HLA_A_0209","HLA_A_0210","HLA_A_0211","HLA_A_0217","HLA_A_0248","HLA_A_0253","HLA_A_03","HLA_A_0301","HLA_A_0302","HLA_A_11","HLA_A_1101","HLA_A_1102","HLA_A_1103","HLA_A_11110","HLA_A_1112","HLA_A_1177","HLA_A_23","HLA_A_2301","HLA_A_24","HLA_A_2402","HLA_A_2403","HLA_A_2404","HLA_A_2407","HLA_A_2408","HLA_A_2410","HLA_A_2420","HLA_A_25","HLA_A_2501","HLA_A_26","HLA_A_2601","HLA_A_2602","HLA_A_2603","HLA_A_29","HLA_A_2901","HLA_A_2902","HLA_A_30","HLA_A_3001","HLA_A_3002","HLA_A_3004","HLA_A_3011","HLA_A_31","HLA_A_3101","HLA_A_3102","HLA_A_32","HLA_A_3201","HLA_A_33","HLA_A_3301","HLA_A_3303","HLA_A_34","HLA_A_3401","HLA_A_66","HLA_A_6601","HLA_A_68","HLA_A_6801","HLA_A_6802","HLA_A_6871","HLA_A_69","HLA_A_6901","HLA_A_74","HLA_A_7401","HLA_A_7402","HLA_C_01","HLA_C_0102","HLA_C_0103","HLA_C_0106","HLA_C_0108","HLA_C_0114","HLA_C_0130","HLA_C_0173","HLA_C_02","HLA_C_0202","HLA_C_03","HLA_C_0302","HLA_C_0303","HLA_C_0304","HLA_C_03100","HLA_C_0340","HLA_C_04","HLA_C_0401","HLA_C_0403","HLA_C_0406","HLA_C_0482","HLA_C_05","HLA_C_0501","HLA_C_0525","HLA_C_06","HLA_C_0602","HLA_C_0606","HLA_C_07","HLA_C_0701","HLA_C_0702","HLA_C_0704","HLA_C_0706","HLA_C_0718","HLA_C_0766","HLA_C_0767","HLA_C_08","HLA_C_0801","HLA_C_0802","HLA_C_0803","HLA_C_0822","HLA_C_0841","HLA_C_12","HLA_C_1202","HLA_C_1203","HLA_C_14","HLA_C_1402","HLA_C_1403","HLA_C_15","HLA_C_1502","HLA_C_1504","HLA_C_1505","HLA_C_1513","HLA_C_1543","HLA_C_16","HLA_C_1602","HLA_C_1604","HLA_C_17","HLA_C_1701","HLA_B_07","HLA_B_0702","HLA_B_0705","HLA_B_0706","HLA_B_08","HLA_B_0801","HLA_B_13","HLA_B_1301","HLA_B_1302","HLA_B_14","HLA_B_1401","HLA_B_1402","HLA_B_15","HLA_B_1501","HLA_B_1502","HLA_B_1503","HLA_B_1505","HLA_B_1507","HLA_B_1508","HLA_B_1511","HLA_B_1512","HLA_B_1513","HLA_B_1515","HLA_B_1517","HLA_B_1518","HLA_B_1519","HLA_B_1520","HLA_B_15220","HLA_B_1525","HLA_B_1527","HLA_B_1532","HLA_B_1546","HLA_B_1550","HLA_B_1558","HLA_B_18","HLA_B_1801","HLA_B_1802","HLA_B_27","HLA_B_2702","HLA_B_2704","HLA_B_2705","HLA_B_2706","HLA_B_2707","HLA_B_2711","HLA_B_2724","HLA_B_35","HLA_B_3501","HLA_B_3502","HLA_B_3503","HLA_B_3505","HLA_B_3508","HLA_B_3511","HLA_B_3514","HLA_B_3515","HLA_B_3520","HLA_B_3531","HLA_B_3543","HLA_B_37","HLA_B_3701","HLA_B_38","HLA_B_3801","HLA_B_3802","HLA_B_39","HLA_B_3901","HLA_B_3903","HLA_B_3905","HLA_B_3909","HLA_B_40","HLA_B_4001","HLA_B_4002","HLA_B_4003","HLA_B_4005","HLA_B_4006","HLA_B_4040","HLA_B_41","HLA_B_4101","HLA_B_4102","HLA_B_42","HLA_B_44","HLA_B_4402","HLA_B_4403","HLA_B_4409","HLA_B_4446","HLA_B_45","HLA_B_4501","HLA_B_46","HLA_B_4601","HLA_B_4603","HLA_B_47","HLA_B_4701","HLA_B_48","HLA_B_4801","HLA_B_4802","HLA_B_4803","HLA_B_49","HLA_B_4901","HLA_B_50","HLA_B_5001","HLA_B_51","HLA_B_5101","HLA_B_5102","HLA_B_5104","HLA_B_5107","HLA_B_5108","HLA_B_5142","HLA_B_52","HLA_B_5201","HLA_B_53","HLA_B_5301","HLA_B_54","HLA_B_5401","HLA_B_55","HLA_B_5501","HLA_B_5502","HLA_B_5504","HLA_B_5512","HLA_B_5524","HLA_B_56","HLA_B_5601","HLA_B_5603","HLA_B_5604","HLA_B_57","HLA_B_5701","HLA_B_58","HLA_B_5801","HLA_B_59","HLA_B_5901","HLA_B_67","HLA_B_6701","HLA_B_78","HLA_B_7802","HLA_B_81","HLA_B_8101","HLA_DRB1_01","HLA_DRB1_0101","HLA_DRB1_0102","HLA_DRB1_03","HLA_DRB1_0301","HLA_DRB1_0307","HLA_DRB1_0317","HLA_DRB1_0324","HLA_DRB1_04","HLA_DRB1_0401","HLA_DRB1_0402","HLA_DRB1_0403","HLA_DRB1_0404","HLA_DRB1_0405","HLA_DRB1_0406","HLA_DRB1_0407","HLA_DRB1_0408","HLA_DRB1_0410","HLA_DRB1_07","HLA_DRB1_0701","HLA_DRB1_08","HLA_DRB1_0801","HLA_DRB1_0802","HLA_DRB1_0803","HLA_DRB1_0809","HLA_DRB1_09","HLA_DRB1_0901","HLA_DRB1_10","HLA_DRB1_1001","HLA_DRB1_11","HLA_DRB1_1101","HLA_DRB1_1103","HLA_DRB1_1104","HLA_DRB1_1106","HLA_DRB1_1111","HLA_DRB1_12","HLA_DRB1_1201","HLA_DRB1_1202","HLA_DRB1_1210","HLA_DRB1_1217","HLA_DRB1_13","HLA_DRB1_1301","HLA_DRB1_1302","HLA_DRB1_1312","HLA_DRB1_1327","HLA_DRB1_1367","HLA_DRB1_14","HLA_DRB1_1402","HLA_DRB1_1403","HLA_DRB1_1404","HLA_DRB1_1405","HLA_DRB1_1407","HLA_DRB1_14141","HLA_DRB1_1454","HLA_DRB1_15","HLA_DRB1_1501","HLA_DRB1_1502","HLA_DRB1_1504","HLA_DRB1_16","HLA_DRB1_1601","HLA_DRB1_1602","HLA_DQA1_01","HLA_DQA1_0101","HLA_DQA1_0102","HLA_DQA1_0103","HLA_DQA1_0104","HLA_DQA1_0105","HLA_DQA1_02","HLA_DQA1_0201","HLA_DQA1_03","HLA_DQA1_0301","HLA_DQA1_0302","HLA_DQA1_0303","HLA_DQA1_04","HLA_DQA1_0401","HLA_DQA1_05","HLA_DQA1_0501","HLA_DQA1_0503","HLA_DQA1_0505","HLA_DQA1_0506","HLA_DQA1_0508","HLA_DQA1_0509","HLA_DQA1_06","HLA_DQA1_0601","HLA_DQB1_02","HLA_DQB1_0201","HLA_DQB1_0202","HLA_DQB1_03","HLA_DQB1_0301","HLA_DQB1_0302","HLA_DQB1_0303","HLA_DQB1_0305","HLA_DQB1_03100","HLA_DQB1_0319","HLA_DQB1_0329","HLA_DQB1_04","HLA_DQB1_0401","HLA_DQB1_0402","HLA_DQB1_05","HLA_DQB1_0501","HLA_DQB1_0502","HLA_DQB1_0503","HLA_DQB1_06","HLA_DQB1_0601","HLA_DQB1_0602","HLA_DQB1_0603","HLA_DQB1_0604","HLA_DQB1_0609","HLA_DQB1_0610","HLA_DPA1_01","HLA_DPA1_0103","HLA_DPA1_02","HLA_DPA1_0201","HLA_DPA1_0202","HLA_DPA1_03","HLA_DPA1_0301","HLA_DPA1_04","HLA_DPA1_0401","HLA_DPB1_01","HLA_DPB1_0101","HLA_DPB1_02","HLA_DPB1_0201","HLA_DPB1_0202","HLA_DPB1_03","HLA_DPB1_0301","HLA_DPB1_04","HLA_DPB1_0401","HLA_DPB1_0402","HLA_DPB1_05","HLA_DPB1_0501","HLA_DPB1_06","HLA_DPB1_0601","HLA_DPB1_09","HLA_DPB1_0901","HLA_DPB1_10","HLA_DPB1_1001","HLA_DPB1_10401","HLA_DPB1_10501","HLA_DPB1_10601","HLA_DPB1_10701","HLA_DPB1_11","HLA_DPB1_1101","HLA_DPB1_13","HLA_DPB1_1301","HLA_DPB1_13501","HLA_DPB1_13801","HLA_DPB1_14","HLA_DPB1_1401","HLA_DPB1_15","HLA_DPB1_1501","HLA_DPB1_16","HLA_DPB1_1601","HLA_DPB1_17","HLA_DPB1_1701","HLA_DPB1_19","HLA_DPB1_1901","HLA_DPB1_21","HLA_DPB1_2101","HLA_DPB1_23","HLA_DPB1_2301","HLA_DPB1_26","HLA_DPB1_2601","HLA_DPB1_27","HLA_DPB1_2701","HLA_DPB1_28","HLA_DPB1_2801","HLA_DPB1_45","HLA_DPB1_4501"]
-gene = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
+genes = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
 
 wdir = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/IMPUTE4/gen.calling.test/"
 
@@ -35,9 +35,69 @@ def split_digit(datain_path,dataoutDir):
     two_digit.close()
     four_digit.close()
 
+#6:HLA_A_01:A:P 6:HLA_A_01:A:P 29911991 A P 1.00000 0.00000 0.00000 1.00000
+def select_max_and_other_make_zero(df):
+    tmp = df.split()
+    window = 3
+    out = []
+    for i in range(1,5+1):
+        out.append(tmp.pop(0))
+    while 1:
+        if not tmp:
+            break
+        check = [tmp.pop(0),tmp.pop(0),tmp.pop(0)]
+        if check.count(max(check)) == 2:
+            check = [0,0,0]
+        else:
+            idx = check.index(max(check))
+            check = ["0","0","0"]
+            check[idx] = "1"
+        for j in check:
+            out.append(j)
+    return out
 
 
-split_digit(wdir + "test.pro.gen", wdir + "RESULTs/")
+def test(datain):
+    df = open(datain,'r')
+    out = []
+    window = 3
+    for gene in genes:
+        df = open(datain,'r')
+        gene_df = []
+        while 1:
+            tmp = df.readline().replace("\n", "")
+            if not tmp:
+                break
+            tmp2 = tmp.split()
+            chrom,ID,A,P = tmp2[0].split(':')
+            HLA,ref_gene,typing = ID.split("_")
+            if ref_gene != gene:
+                continue
+            gene_df.append(tmp)
+        
+        out.append()
 
+def test2(datain,dataout):
+    df = open(datain,'r')
+    out = open(dataout,'w')
+    window = 3
+    while 1:
+        tmp = df.readline().replace("\n", "")
+        if not tmp:
+            break
+        tmp2 = tmp.split()
+        #chrom,ID,A,P = tmp2[0].split(':')
+        #HLA,ref_gene,typing = ID.split("_")
+        out.write(' '.join(str(e) for e in select_max_and_other_make_zero(tmp)) + "\n")
+    out.close()
+    df.close()
+
+
+
+
+
+#split_digit(wdir + "test.pro.gen", wdir + "RESULTs/")
+test2(wdir + "RESULTs/2digit.gen", wdir + "RESULTs/2digit.hardcall.gen")
+test2(wdir + "RESULTs/4digit.gen", wdir + "RESULTs/4digit.hardcall.gen")
 
 
