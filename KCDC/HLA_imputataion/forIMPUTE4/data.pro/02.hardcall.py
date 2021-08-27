@@ -12,7 +12,7 @@
 import os,glob
 
 row_index = ["HLA_A_01","HLA_A_0101","HLA_A_0103","HLA_A_0122","HLA_A_02","HLA_A_0201","HLA_A_0202","HLA_A_0203","HLA_A_0205","HLA_A_0206","HLA_A_0207","HLA_A_0209","HLA_A_0210","HLA_A_0211","HLA_A_0217","HLA_A_0248","HLA_A_0253","HLA_A_03","HLA_A_0301","HLA_A_0302","HLA_A_11","HLA_A_1101","HLA_A_1102","HLA_A_1103","HLA_A_11110","HLA_A_1112","HLA_A_1177","HLA_A_23","HLA_A_2301","HLA_A_24","HLA_A_2402","HLA_A_2403","HLA_A_2404","HLA_A_2407","HLA_A_2408","HLA_A_2410","HLA_A_2420","HLA_A_25","HLA_A_2501","HLA_A_26","HLA_A_2601","HLA_A_2602","HLA_A_2603","HLA_A_29","HLA_A_2901","HLA_A_2902","HLA_A_30","HLA_A_3001","HLA_A_3002","HLA_A_3004","HLA_A_3011","HLA_A_31","HLA_A_3101","HLA_A_3102","HLA_A_32","HLA_A_3201","HLA_A_33","HLA_A_3301","HLA_A_3303","HLA_A_34","HLA_A_3401","HLA_A_66","HLA_A_6601","HLA_A_68","HLA_A_6801","HLA_A_6802","HLA_A_6871","HLA_A_69","HLA_A_6901","HLA_A_74","HLA_A_7401","HLA_A_7402","HLA_C_01","HLA_C_0102","HLA_C_0103","HLA_C_0106","HLA_C_0108","HLA_C_0114","HLA_C_0130","HLA_C_0173","HLA_C_02","HLA_C_0202","HLA_C_03","HLA_C_0302","HLA_C_0303","HLA_C_0304","HLA_C_03100","HLA_C_0340","HLA_C_04","HLA_C_0401","HLA_C_0403","HLA_C_0406","HLA_C_0482","HLA_C_05","HLA_C_0501","HLA_C_0525","HLA_C_06","HLA_C_0602","HLA_C_0606","HLA_C_07","HLA_C_0701","HLA_C_0702","HLA_C_0704","HLA_C_0706","HLA_C_0718","HLA_C_0766","HLA_C_0767","HLA_C_08","HLA_C_0801","HLA_C_0802","HLA_C_0803","HLA_C_0822","HLA_C_0841","HLA_C_12","HLA_C_1202","HLA_C_1203","HLA_C_14","HLA_C_1402","HLA_C_1403","HLA_C_15","HLA_C_1502","HLA_C_1504","HLA_C_1505","HLA_C_1513","HLA_C_1543","HLA_C_16","HLA_C_1602","HLA_C_1604","HLA_C_17","HLA_C_1701","HLA_B_07","HLA_B_0702","HLA_B_0705","HLA_B_0706","HLA_B_08","HLA_B_0801","HLA_B_13","HLA_B_1301","HLA_B_1302","HLA_B_14","HLA_B_1401","HLA_B_1402","HLA_B_15","HLA_B_1501","HLA_B_1502","HLA_B_1503","HLA_B_1505","HLA_B_1507","HLA_B_1508","HLA_B_1511","HLA_B_1512","HLA_B_1513","HLA_B_1515","HLA_B_1517","HLA_B_1518","HLA_B_1519","HLA_B_1520","HLA_B_15220","HLA_B_1525","HLA_B_1527","HLA_B_1532","HLA_B_1546","HLA_B_1550","HLA_B_1558","HLA_B_18","HLA_B_1801","HLA_B_1802","HLA_B_27","HLA_B_2702","HLA_B_2704","HLA_B_2705","HLA_B_2706","HLA_B_2707","HLA_B_2711","HLA_B_2724","HLA_B_35","HLA_B_3501","HLA_B_3502","HLA_B_3503","HLA_B_3505","HLA_B_3508","HLA_B_3511","HLA_B_3514","HLA_B_3515","HLA_B_3520","HLA_B_3531","HLA_B_3543","HLA_B_37","HLA_B_3701","HLA_B_38","HLA_B_3801","HLA_B_3802","HLA_B_39","HLA_B_3901","HLA_B_3903","HLA_B_3905","HLA_B_3909","HLA_B_40","HLA_B_4001","HLA_B_4002","HLA_B_4003","HLA_B_4005","HLA_B_4006","HLA_B_4040","HLA_B_41","HLA_B_4101","HLA_B_4102","HLA_B_42","HLA_B_44","HLA_B_4402","HLA_B_4403","HLA_B_4409","HLA_B_4446","HLA_B_45","HLA_B_4501","HLA_B_46","HLA_B_4601","HLA_B_4603","HLA_B_47","HLA_B_4701","HLA_B_48","HLA_B_4801","HLA_B_4802","HLA_B_4803","HLA_B_49","HLA_B_4901","HLA_B_50","HLA_B_5001","HLA_B_51","HLA_B_5101","HLA_B_5102","HLA_B_5104","HLA_B_5107","HLA_B_5108","HLA_B_5142","HLA_B_52","HLA_B_5201","HLA_B_53","HLA_B_5301","HLA_B_54","HLA_B_5401","HLA_B_55","HLA_B_5501","HLA_B_5502","HLA_B_5504","HLA_B_5512","HLA_B_5524","HLA_B_56","HLA_B_5601","HLA_B_5603","HLA_B_5604","HLA_B_57","HLA_B_5701","HLA_B_58","HLA_B_5801","HLA_B_59","HLA_B_5901","HLA_B_67","HLA_B_6701","HLA_B_78","HLA_B_7802","HLA_B_81","HLA_B_8101","HLA_DRB1_01","HLA_DRB1_0101","HLA_DRB1_0102","HLA_DRB1_03","HLA_DRB1_0301","HLA_DRB1_0307","HLA_DRB1_0317","HLA_DRB1_0324","HLA_DRB1_04","HLA_DRB1_0401","HLA_DRB1_0402","HLA_DRB1_0403","HLA_DRB1_0404","HLA_DRB1_0405","HLA_DRB1_0406","HLA_DRB1_0407","HLA_DRB1_0408","HLA_DRB1_0410","HLA_DRB1_07","HLA_DRB1_0701","HLA_DRB1_08","HLA_DRB1_0801","HLA_DRB1_0802","HLA_DRB1_0803","HLA_DRB1_0809","HLA_DRB1_09","HLA_DRB1_0901","HLA_DRB1_10","HLA_DRB1_1001","HLA_DRB1_11","HLA_DRB1_1101","HLA_DRB1_1103","HLA_DRB1_1104","HLA_DRB1_1106","HLA_DRB1_1111","HLA_DRB1_12","HLA_DRB1_1201","HLA_DRB1_1202","HLA_DRB1_1210","HLA_DRB1_1217","HLA_DRB1_13","HLA_DRB1_1301","HLA_DRB1_1302","HLA_DRB1_1312","HLA_DRB1_1327","HLA_DRB1_1367","HLA_DRB1_14","HLA_DRB1_1402","HLA_DRB1_1403","HLA_DRB1_1404","HLA_DRB1_1405","HLA_DRB1_1407","HLA_DRB1_14141","HLA_DRB1_1454","HLA_DRB1_15","HLA_DRB1_1501","HLA_DRB1_1502","HLA_DRB1_1504","HLA_DRB1_16","HLA_DRB1_1601","HLA_DRB1_1602","HLA_DQA1_01","HLA_DQA1_0101","HLA_DQA1_0102","HLA_DQA1_0103","HLA_DQA1_0104","HLA_DQA1_0105","HLA_DQA1_02","HLA_DQA1_0201","HLA_DQA1_03","HLA_DQA1_0301","HLA_DQA1_0302","HLA_DQA1_0303","HLA_DQA1_04","HLA_DQA1_0401","HLA_DQA1_05","HLA_DQA1_0501","HLA_DQA1_0503","HLA_DQA1_0505","HLA_DQA1_0506","HLA_DQA1_0508","HLA_DQA1_0509","HLA_DQA1_06","HLA_DQA1_0601","HLA_DQB1_02","HLA_DQB1_0201","HLA_DQB1_0202","HLA_DQB1_03","HLA_DQB1_0301","HLA_DQB1_0302","HLA_DQB1_0303","HLA_DQB1_0305","HLA_DQB1_03100","HLA_DQB1_0319","HLA_DQB1_0329","HLA_DQB1_04","HLA_DQB1_0401","HLA_DQB1_0402","HLA_DQB1_05","HLA_DQB1_0501","HLA_DQB1_0502","HLA_DQB1_0503","HLA_DQB1_06","HLA_DQB1_0601","HLA_DQB1_0602","HLA_DQB1_0603","HLA_DQB1_0604","HLA_DQB1_0609","HLA_DQB1_0610","HLA_DPA1_01","HLA_DPA1_0103","HLA_DPA1_02","HLA_DPA1_0201","HLA_DPA1_0202","HLA_DPA1_03","HLA_DPA1_0301","HLA_DPA1_04","HLA_DPA1_0401","HLA_DPB1_01","HLA_DPB1_0101","HLA_DPB1_02","HLA_DPB1_0201","HLA_DPB1_0202","HLA_DPB1_03","HLA_DPB1_0301","HLA_DPB1_04","HLA_DPB1_0401","HLA_DPB1_0402","HLA_DPB1_05","HLA_DPB1_0501","HLA_DPB1_06","HLA_DPB1_0601","HLA_DPB1_09","HLA_DPB1_0901","HLA_DPB1_10","HLA_DPB1_1001","HLA_DPB1_10401","HLA_DPB1_10501","HLA_DPB1_10601","HLA_DPB1_10701","HLA_DPB1_11","HLA_DPB1_1101","HLA_DPB1_13","HLA_DPB1_1301","HLA_DPB1_13501","HLA_DPB1_13801","HLA_DPB1_14","HLA_DPB1_1401","HLA_DPB1_15","HLA_DPB1_1501","HLA_DPB1_16","HLA_DPB1_1601","HLA_DPB1_17","HLA_DPB1_1701","HLA_DPB1_19","HLA_DPB1_1901","HLA_DPB1_21","HLA_DPB1_2101","HLA_DPB1_23","HLA_DPB1_2301","HLA_DPB1_26","HLA_DPB1_2601","HLA_DPB1_27","HLA_DPB1_2701","HLA_DPB1_28","HLA_DPB1_2801","HLA_DPB1_45","HLA_DPB1_4501"]
-genes = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
+#genes = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
 
 wdir = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/IMPUTE4/gen.calling.test/"
 
@@ -47,21 +47,213 @@ def select_max_and_other_make_zero(df):
             break
         check = [tmp.pop(0),tmp.pop(0),tmp.pop(0)]
         if check.count(max(check)) == 2:
-            check = [0,0,0]
+            idx = check.index(max(check))
+            max_value = max(check)
+            check = ["1","0","0"]
+            #check[idx] = max_value
         else:
             idx = check.index(max(check))
+            max_value = max(check)
             check = ["0","0","0"]
-            check[idx] = "1"
+            check[idx] = max_value
         for j in check:
             out.append(j)
     return out
 
+#def check_dosage(value,index):
+def change_dosage(df,first_allele_index,second_allele_index,dosage,count):
+    for i in range(0,len(df)):
+        df[i][count*3+5] = "1"
+        df[i][count*3+5+1] = "0"
+        df[i][count*3+5+2] = "0"
+    #first_allele_index = int(first_allele_index)
+    #second_allele_index = int(second_allele_index)
+    if first_allele_index == "NA":
+        return df
+    elif second_allele_index == "NA":
+        df[first_allele_index][count*3+5+1] = "1"
+        df[first_allele_index][count*3+5] = "0"
+        return df
 
-def test(datain):
+    if dosage == 'BB':
+        df[first_allele_index][count*3+5+2] = "1"
+        df[first_allele_index][count*3+5] = "0"
+    else:
+        df[first_allele_index][count*3+5+1] = "1"
+        df[first_allele_index][count*3+5] = "0"
+        df[second_allele_index][count*3+5+1] = "1"
+        df[second_allele_index][count*3+5] = "0"
+    return df
+    
+
+## gene 으로 나누어진 값을 받고 시작
+def  select_max_dosage_value_by_Gene(df,number_of_sample):
+    out = []
+    length = number_of_sample
+    count = -1
+    while 1:
+        count = count + 1
+        if count == length:
+            break
+        AB = []
+        BB = []
+        for i in range(0,len(df)):
+            #tmp.append(df[i][count*3+5+1]) # 홀수 AB
+            #tmp.append(df[i][count*3+5+2]) # 짝수 BB
+            AB.append(df[i][count*3+5+1])
+            BB.append(df[i][count*3+5+2])
+        if max(AB) == max(BB):
+            #방법 1 : allele 나눠서 하나씩
+            #방법 2 : 그냥 BB로
+            #first_allele_index = BB.index(max(BB))
+            #second_allele_index = BB.index(max(BB))
+            
+            #방법 3 : 걍다 NA
+            #방법 4 : AB로
+            first_allele_index = AB.index(max(AB))
+            AB[AB.index(max(AB))] = "-1"
+            second_allele_index = AB.index(max(AB))
+            #처리
+            df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+        elif max(AB) > max(BB):
+            if AB.count(max(AB))  > 2:
+                df = change_dosage(df,"NA","NA","AB",count)
+                
+            elif AB.count(max(AB)) == 2:
+                first_allele_index = AB.index(max(AB))
+                AB[AB.index(max(AB))] = "-1"
+                second_allele_index = AB.index(max(AB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+                
+            else:
+                first_allele_index = AB.index(max(AB))
+                AB[AB.index(max(AB))] = "-1"
+                if max(AB) < max(BB):
+                    second_allele_index = BB.index(max(BB))
+                else:
+                    if max(AB) == 0:
+                        second_allele_index = "NA"
+                    else:    
+                        second_allele_index = AB.index(max(AB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+        else:
+            if BB.count(max(BB)) > 2:
+                df = change_dosage(df,"NA","NA","BB",count)
+                
+            elif BB.count(max(BB)) == 2:
+                #선택1 : 나눠서 allele 하나씩
+                first_allele_index = BB.index(max(BB))
+                BB[BB.index(max(BB))] = "-1"
+                second_allele_index = BB.index(max(BB))
+                #선택2 : 걍 NA 값으로 설정
+                # 처리
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+            else:
+                first_allele_index = BB.index(max(BB))
+                second_allele_index = BB.index(max(BB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"BB",count)
+
+            #print("...")    
+    return df    
+
+def select_max_dosage_value_by_Gene1(df,number_of_sample):
+    out = []
+    length = number_of_sample
+    count = -1
+    while 1:
+        count = count + 1
+        if count == length:
+            break
+        AB = []
+        BB = []
+        for i in range(0,len(df)):
+            #tmp.append(df[i][count*3+5+1]) # 홀수 AB
+            #tmp.append(df[i][count*3+5+2]) # 짝수 BB
+            AB.append(df[i][count*3+5+1])
+            BB.append(df[i][count*3+5+2])
+        
+        if max(AB) == max(BB):
+            if (AB.count(max(AB)) == BB.count(max(BB))) and BB.count(max(BB)) == 1:
+                first_allele_index = AB.index(max(AB))    
+                second_allele_index = BB.index(max(BB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+            else:
+                df = change_dosage(df,"NA","NA","AB",count)
+
+        elif max(AB) > max(BB):
+            if AB.count(max(AB))  > 2:
+                df = change_dosage(df,"NA","NA","AB",count)
+                
+            elif AB.count(max(AB)) == 2:
+                first_allele_index = AB.index(max(AB))
+                AB[AB.index(max(AB))] = "-1"
+                second_allele_index = AB.index(max(AB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+                
+            else:
+                first_allele_index = AB.index(max(AB))
+                AB[AB.index(max(AB))] = "-1"
+                if max(AB) < max(BB):
+                    second_allele_index = BB.index(max(BB))
+                else:
+                    second_allele_index = AB.index(max(AB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+        else:
+            if BB.count(max(BB)) > 2:
+                df = change_dosage(df,"NA","NA","BB",count)
+                
+            elif BB.count(max(BB)) == 2:
+                #선택1 : 나눠서 allele 하나씩
+                first_allele_index = BB.index(max(BB))
+                BB[BB.index(max(BB))] = "-1"
+                second_allele_index = BB.index(max(BB))
+                #선택2 : 걍 NA 값으로 설정
+                # 처리
+                df = change_dosage(df,first_allele_index,second_allele_index,"AB",count)
+            else:
+                first_allele_index = BB.index(max(BB))
+                second_allele_index = BB.index(max(BB))
+                df = change_dosage(df,first_allele_index,second_allele_index,"BB",count)
+
+            #print("...")    
+    return df    
+
+
+
+
+def allele_check(df):
+    check = []
+    length = 511
+    for tmp in df:
+        tmp1 = []
+        for j in range(1,5+1):
+            tmp.pop(0)
+        while 1:
+            if not tmp:
+                break
+            tmp1.append(float(tmp.pop(0))*0 + float(tmp.pop(0))*1 + float(tmp.pop(0))*2)
+        #length = len(tmp1)
+        check.append(tmp1)
+    out = []
+    for i in range(0,length):
+        tmp =[]
+        for j in range(0,len(check)):
+            tmp.append(check[j][i])
+        out.append(sum(tmp))
+    #print(check)
+    #print(out)
+    #print("max : " + str(max(out)))
+    #print("count : "+str(len([i for i in out if i >1.5])))
+
+def test(datain,genes):
     df = open(datain,'r')
+    first_line = df.readline().replace("\n", "").split(" ")
+    number_of_sample = (len(first_line) - 5)/3
     out = []
     window = 3
+    #for gene in genes[4,4+1]:
     for gene in genes:
+        print("gene : " + gene)
         df = open(datain,'r')
         gene_df = []
         while 1:
@@ -73,11 +265,19 @@ def test(datain):
             HLA,ref_gene,typing = ID.split("_")
             if ref_gene != gene:
                 continue
-            gene_df.append(tmp)
+            gene_df.append(select_max_and_other_make_zero(tmp))
+        #gene_df = select_max_dosage_value_by_Gene(gene_df, number_of_sample)
+        gene_df = select_max_dosage_value_by_Gene1(gene_df, number_of_sample)
+        for line in gene_df:
+            out.append(line)
         
-        out.append()
+    #print("gene : " + gene)
+    #return gene_df
+    return out
 
-def test2(datain,dataout):
+
+# 연관성 분석시 imputation dosage 값만 가지고 분석 할때 유용할 것이라고 생각됨, gen association
+def for_dosage(datain,dataout):
     df = open(datain,'r')
     out = open(dataout,'w')
     window = 3
@@ -97,7 +297,37 @@ def test2(datain,dataout):
 
 
 #split_digit(wdir + "test.pro.gen", wdir + "RESULTs/")
-test2(wdir + "RESULTs/2digit.gen", wdir + "RESULTs/2digit.hardcall.gen")
-test2(wdir + "RESULTs/4digit.gen", wdir + "RESULTs/4digit.hardcall.gen")
+#test2(wdir + "RESULTs/2digit.gen", wdir + "RESULTs/2digit.hardcall.gen")
+#test2(wdir + "RESULTs/4digit.gen", wdir + "RESULTs/4digit.hardcall.gen")
 
 
+genes = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
+#out = open(wdir + "RESULTs/test.test.gen",'w')
+#for gene in genes:
+#for gene in ["A"]:
+    #df = test(wdir + "RESULTs/4digit.gen",[gene])
+#    df = test(wdir + "RESULTs/2digit.gen",[gene])
+    #allele_check(df)        
+#    for i in df:
+#        out.write(' '.join(i) + "\n")
+#digit = "4"
+digit = "2"
+df = test(wdir + "RESULTs/%sdigit.gen"%digit,genes)
+#allele_check(df)
+out = open(wdir + "RESULTs/test/%sdigit.own.call.gen"%digit,'w')
+
+for i in df:
+    out.write(' '.join(i) + "\n")
+out.close()
+
+
+#plink --gen ../test.test.gen --sample ../../test.sample --make-bed --out test --allow-extra-chr
+#plink --bfile test --a1-allele ../../p.allele.txt --recodeA --allow-extra-chr --out test_raw
+
+#plink --gen 2digit.own.call.gen --sample ../../test.sample --make-bed --out 2digit.own.call.gen --allow-extra-chr
+#plink --bfile 2digit.own.call.gen --a1-allele ../../p.allele.txt --recodeA --allow-extra-chr --out 2digit.own.call.gen_raw
+
+#plink --gen 4digit.own.call.gen --sample ../../test.sample --make-bed --out 4digit.own.call.gen --allow-extra-chr
+#plink --bfile 4digit.own.call.gen --a1-allele ../../p.allele.txt --recodeA --allow-extra-chr --out 4digit.own.call.gen_raw
+
+#plink --bfile 2digit.own.call.gen --bmerge 4digit.own.call.gen --a1-allele ../../p.allele.txt --allow-extra-chr --recodeA --out merge_raw
