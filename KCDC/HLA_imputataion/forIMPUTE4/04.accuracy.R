@@ -53,6 +53,7 @@ tool = "impute4"
 #setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/20201026/IMPUTE4/",ref,"/"))
 setwd(paste0("c:/Users/user/Desktop/KCDC/HLAimputation/processing_Result/",tool,".",ref,"/"))
 
+
 digit = "2"
 
 df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
@@ -273,3 +274,64 @@ out
 
 write.table(out,"impute4.result.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
+
+### ori data 20210831
+#setwd("~/Desktop/KCDC/HLAimputation/all/cookHLA.Han/")
+setwd(paste0("~/Desktop/KCDC/HLAimputation/all/",tool,".",ref,"/"))
+ref = "Han"
+tool = "cookHLA"
+tool = "impute4"
+setwd(paste0("~/Desktop/KCDC/HLAimputation/all/",tool,".",ref,"/"))
+
+digit = "2"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+#df<-df[!df$YSample == 'CDC015',]
+head(df)
+a <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+
+digit = "4"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+
+b <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+head(a)
+head(b)
+#out <- read.csv("c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare.Resul t.csv",header = T)
+out <- rbind(a,b)
+out <- rbind(out,a)
+out <- rbind(out,b)
+out$type
+out$digit
+out
+
+write.table(out,"../impute4.result.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+##20210901
+### ori data 20210831
+#setwd("~/Desktop/KCDC/HLAimputation/all/cookHLA.Han/")
+setwd(paste0("~/Desktop/KCDC/HLAimputation/all/",tool,".",ref,"/"))
+setwd("~/Desktop/KCDC/HLAimputation/IMPUTE4/test/threshold0.9/")
+ref = "Han"
+tool = "impute4"
+#setwd(paste0("~/Desktop/KCDC/HLAimputation/all/",tool,".",ref,"/"))
+
+digit = "2"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+#df<-df[!df$YSample == 'CDC015',]
+head(df)
+a <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+
+digit = "4"
+df <- read.csv(paste0("compare.IMPvsNGS.all.gene.",digit,"digit.csv"),header = T)
+
+b <- accuracy.cal(df,paste0(tool,".",ref),digit,check,gene,out.subset)
+head(a)
+head(b)
+#out <- read.csv("c:/Users/user/Desktop/KCDC/HLAimputation/cookHLAvsIMPUTE4.compare.Resul t.csv",header = T)
+out <- rbind(a,b)
+out <- rbind(out,a)
+out <- rbind(out,b)
+out$type
+out$digit
+out
+
+write.table(out,"impute4.result.txt",col.names = T,row.names = F,quote = F,sep = "\t")
