@@ -47,5 +47,5 @@ head(out)
 
 mean(out$sum.x)
 mean(out$sum.y)
-plot(x = out$sum.x,y = out$sum.y,main="DP compare",ylab = "Multi-sample Calling sum(DP)",xlab = "Variant Calling sum(DP)")
+plot(x = out$sum.x,y = out$sum.y,main="Comparing DP value in Merged VCF",ylab = "Sum(DP) of Multi-sample Calling Using GLnexus",xlab = "Sum(DP) of bcftools merge")
 

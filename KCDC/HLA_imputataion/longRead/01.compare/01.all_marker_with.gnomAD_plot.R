@@ -166,7 +166,7 @@ head(ref)
 myCol <- brewer.pal(3, "Pastel2")
 venn.diagram(
   x=list(ref$ID,gnomad$ID,gnomad_eas$ID),
-  category.names = c("Han ref.","gnomAD","gnomAD_EAS"),
+  category.names = c("HanREF","gnomAD_ALL","gnomAD_EAS"),
   filename = "Han_gnomAD_gnomAD-EAS.png",
   output = TRUE,
   
@@ -257,7 +257,7 @@ venn.diagram(
 myCol <- brewer.pal(4, "Pastel2")
 venn.diagram(
   x=list(df1$ID,df2$ID,gnomad$ID,gnomad_eas$ID),
-  category.names = c("Variant.Calling","Multi-sample.Calling","gnomAD","gnomAD_EAS"),
+  category.names = c("① Variant Calling","② Multi-Sample Calling","gnomAD","gnomAD_EAS"),
   filename = "2types.calling_2type.gnomAD.png",
   output = TRUE,
   
@@ -286,7 +286,7 @@ venn.diagram(
 
 venn.diagram(
   x=list(df1$ID,df2$ID,gnomad$ID,ref$ID),
-  category.names = c("Variant.Calling","Multi-sample.Calling","gnomAD","Han ref"),
+  category.names = c("1.Variant Calling","2.Multi-Sample Calling","4.gnomAD_ALL","3.HanREF"),
   filename = "2types.calling_gnomAD-ALL_Han.png",
   output = TRUE,
   
@@ -315,7 +315,8 @@ venn.diagram(
 
 venn.diagram(
   x=list(df1$ID,df2$ID,gnomad_eas$ID,ref$ID),
-  category.names = c("Variant.Calling","Multi-sample.Calling","gnomAD_EAS","Han ref"),
+  #category.names = c("Variant.Calling","Multi-sample.Calling","gnomAD_EAS","Han ref"),
+  category.names = c("1.Variant Calling","2.Multi-Sample Calling","4.gnomAD_EAS","3.HanREF"),
   filename = "types.calling_gnomAD-EAS_Han.png",
   output = TRUE,
   
@@ -340,4 +341,65 @@ venn.diagram(
   cat.dist = c(-0.3, -0.3, 0.1,0.1),
   cat.fontfamily = "sans"
   #rotation = 1
+)
+
+
+## 3개
+
+venn.diagram(
+  x=list(df2$ID,ref$ID,gnomad_eas$ID),
+  category.names = c("1.HLAsequencing","2.HanREF","3.gnomAD_EAS"),
+  filename = "gnomAD-EAS_1types_calling.png",
+  output = TRUE,
+  
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 400,
+  compression = "lzw",
+  
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  cex = .4,
+  #fontface = "bold",
+  fontfamily = "sans",
+  
+  cat.cex = 0.4,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 18, 140),
+  cat.dist = c(0.055, 0.055, 0.05),
+  cat.fontfamily = "sans",
+  rotation = 1
+)
+
+venn.diagram(
+  x=list(df2$ID,ref$ID,gnomad$ID),
+  category.names = c("1.HLAsequencing","2.HanREF","3.gnomAD"),
+  filename = "gnomAD_1types_calling.png",
+  output = TRUE,
+  
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 400,
+  compression = "lzw",
+  
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  cex = .4,
+  #fontface = "bold",
+  fontfamily = "sans",
+  
+  cat.cex = 0.4,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 18, 140),
+  cat.dist = c(0.055, 0.055, 0.05),
+  cat.fontfamily = "sans",
+  rotation = 1
 )
