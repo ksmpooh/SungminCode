@@ -23,7 +23,7 @@ plink --bfile JG.KD.1stQC_snpolisher --het --out HET
 
 
 
-
+setwd("~/Desktop/KCDC/transplantation/QCKD_2019/01.1stQC/")
 miss <-read.table("MISS.imiss",header = T)
 het <- read.table("HET.het", header = T)
 
@@ -33,120 +33,56 @@ het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
 
 lowSample <- merge(miss, het, by="FID")
 
-pdf("../PDF/JG.KR_rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+#pdf("../PDF/JG.KR_rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
 plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,23), ylim=c(0,0.1), xlab="heterozygosity rate",
      ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
-abline(v=16.3, col=rgb(1,0,0,1), lty=3, lwd=2)
-abline(v=17.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=16, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.5, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
-points(lowSample[lowSample$HET < 16.3 | 17.8 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
-       lowSample[lowSample$HET < 16.3 | 17.8 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+points(lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
        col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
-
-rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16.3 | 17.8 < lowSample$HET,]
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16 | 17.5 < lowSample$HET,]
 
 
 write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 
-plink --bfile JG.KR.rep_snpolisher --remove rmLQSamples.txt --make-bed --out JG.KR.rep_snpolisher_rmMissing-het
+plink --bfile JG.KD.1stQC_snpolisher --remove rmLQSamples.txt --make-bed --out JG.KD.1stQC_snpolisher_rmMissing-het
 
 
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --out JG.KR.rep_snpolisher_rmMissing-het_pruning
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het --extract JG.KR.rep_snpolisher_rmMissing-het_pruning.prune.in --make-bed --out JG.KR.rep_snpolisher_rmMissing-het_pruned
+plink --bfile JG.KD.1stQC_snpolisher_rmMissing-het --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --out JG.KD.1stQC_snpolisher_rmMissing-het_pruning --chr 1-22
+plink --bfile JG.KD.1stQC_snpolisher_rmMissing-het --extract JG.KD.1stQC_snpolisher_rmMissing-het_pruning.prune.in --make-bed --out JG.KD.1stQC_snpolisher_rmMissing-het_pruned
+flashPCA --bfile JG.KD.1stQC_snpolisher_rmMissing-het_pruned --outpc PCA.txt
 
 
-##1kgp check
 
+# PCA
+setwd("~/Desktop/KCDC/transplantation/QCKD_2019/01.1stQC/")
 
-cd /BDATA/smkim/JG_2020/02.1stQC/OUTPUTs/1kgp
-plink --bfile ../JG.KR.rep_snpolisher_rmMissing-het --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out JG.KR.rep_snpolisher_rmMissing-het_rmaffy
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py JG.KR.rep_snpolisher_rmMissing-het_rmaffy
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip
+pca <- read.table("PCA.txt", header=T)
 
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/02.updateSNPIDtype.py JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip.bim /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+head(pca)
 
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip.updateSNPID --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip.updateSNPID_fil
+pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="Kidney Donor 1stQC PCA", cex=1.5, pch=16)
+abline(v=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 
-cat JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip.updateSNPID_fil.bim /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
-
-plink --bfile JG.KR.rep_snpolisher_rmMissing-het_rmaffy_rmdup_convert_flip.updateSNPID_fil --extract intersectSNP.txt --make-bed --out JG.intersect
-plink --bfile /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge --extract intersectSNP.txt --make-bed --out 1kgp_merge_intersect
-plink --bfile JG.intersect --bmerge 1kgp_merge_intersect --make-bed --out merge
-
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/03.select_snpID_500K_distance.py merge.bim
-plink --bfile merge --extract 500K_distance_SNP_list.txt --make-bed --out merge_500K
-
-
-R
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/1st/ethnic/")
-
-#pca <- read.table("PCA.txt",header = T)
-pca <- read.table("JG.1st.ethnic.PCA.txt",header = T)
-#gnomad <- read.table("../INPUTs/1000genome_ID.txt",header = F)
-samplegnomad<- read.table("1000GP_Phase3.sample",header = T)
-#case<-read.table("CASE_ID.txt",header = F)
-case <- read.table("JG.intersect.fam",header = F)
-case <- as.data.frame(case$V1)
-#control <-read.table("CONTROL_ID.txt",header = F)
-control <- as.data.frame(samplegnomad$ID)
-
-colnames(case) <- "FID"
-#colnames(control) <- "FID"
-
-case$FID <- as.factor(case$FID)
-#control$FID <- as.factor(control$FID)
-
-gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
-colnames(gnomad) <- c("FID","GROUP")
-case$GROUP <- "CASE"
-#control$GROUP <- "CONTROL"
-
-df <- rbind(gnomad,case)
-df <- rbind(df,control)
-
-df <- merge(pca,df,by = "FID")
-pdf("../PDF/JG.2nd.KR.case.control.1kgp.ethnic.PCA.pdf",height = 10,width = 10)
-
-plot(df$PC1,df$PC2,col = rgb(0,0,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic PCA",
-     cex.main = 3,cex = 1,pch = 16
-)
-points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.3), cex = 1 , pch = 16)
-points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.3), cex = 1 , pch = 16)
-points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.3), cex = 1 , pch = 16)
-
-points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.3), cex = 1 , pch = 16)
-points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.3), cex = 1 , pch = 16)
-points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,0.5), cex = 1 , pch = 16)
-points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 1 , pch = 16)
-
-color <- c(
-        rgb(0,0,0,1),
-        rgb(1,0,0,1),
-        rgb(0,1,0,1),
-        rgb(0,0,1,1),
-        rgb(1,1,0,1),
-        rgb(0,1,1,1),
-        rgb(1,0,1,1))
-list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
-legend(x = 0.4 ,y = 0.5,list,col = color,cex = 1,pch = 16)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
 
-
-
-
-rmList <- df[df$PC1 < -0.1 | 0.1 < df$PC1 | df$PC2 < -0.1 | 0.1 < df$PC2,]
-#dim(rmList)
+rmList <- pca[pca$PC1 < -0.13 | 0.13 < pca$PC1 | pca$PC2 < -0.13 | 0.13 < pca$PC2,]
+dim(rmList)
 
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
-
-
-#### 4개 샘플 제거
-NIH19KT7447	NIH19KT7447
-NIH20KT1475	NIH20KT1475
-NIH20KT1980	NIH20KT1980
-NIH20KT1693
+q()

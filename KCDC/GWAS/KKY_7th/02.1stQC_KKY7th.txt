@@ -190,3 +190,23 @@ cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/tera/check
 plink --bfile ../KKY.7th.tera_snpolisher --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --indep-pairwise 50 5 0.02 --maf 0.1 --geno 0.01 --hwe 0.001 --out pruning
 plink --bfile ../KKY.7th.tera_snpolisher --extract pruning.prune.in --make-bed --out KKY.7th.tera_snpolisher_pruned
 flashpca_x86-64 --bfile KKY.7th.tera_snpolisher_pruned --outpc PCA.txt
+
+
+
+
+# PCA association
+# plink --bfile PLINK --pheno PCA_RESULT.txt --pheno-name PC1 --linear --out Linear_PC1
+
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs
+
+plink --bfile all/KKY.7th.1st_snpolisher_rmmissing-het_pruned --pheno all/PCA.txt --pheno-name PC1 --linear --out all/PCA_asso/KKY.7th.1st_pruned_Linear.PC1
+plink --bfile all/KKY.7th.1st_snpolisher_rmmissing-het_pruned --pheno all/PCA.txt --pheno-name PC2 --linear --out all/PCA_asso/KKY.7th.1st_pruned_Linear.PC2
+plink --bfile all/KKY.7th.1st_snpolisher_rmmissing-het_pruned --freq --a1-allele A1.allele.ref.txt --out all/PCA_asso/KKY.7th.1st_pruned_freq
+
+plink --bfile DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het_pruned --pheno DNAlink/DNAlink.PCA.txt --pheno-name PC1 --linear --out DNAlink/PCA_asso/KKY.7th.DNAlink.1st_pruned_Linear.PC1
+plink --bfile DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het_pruned --pheno DNAlink/DNAlink.PCA.txt --pheno-name PC2 --linear --out DNAlink/PCA_asso/KKY.7th.DNAlink.1st_pruned_Linear.PC2
+plink --bfile DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het_pruned --freq --a1-allele A1.allele.ref.txt --out DNAlink/PCA_asso/KKY.7th.1st.DNAlink_pruned_freq
+
+plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --pheno tera/tera.PCA.txt --pheno-name PC1 --linear --out tera/PCA_asso/KKY.7th.tera.1st_pruned_Linear.PC1
+plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --pheno tera/tera.PCA.txt --pheno-name PC2 --linear --out tera/PCA_asso/KKY.7th.tera.1st_pruned_Linear.PC2
+plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --freq --a1-allele A1.allele.ref.txt --out tera/PCA_asso/KKY.7th.1st.tera_pruned_freq

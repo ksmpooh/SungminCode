@@ -1,0 +1,46 @@
+## 2nd QC
+
+# genotype GenotypeCalling : /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/PLINK
+
+all genotype calling 에서 missing-het 만 제거하고 분석 진행
+
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/All
+
+plink --bfile KKY.all.2nd --extract /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.all/Recommended.ps --make-bed --out KKY.all.2nd_snpolisher
+
+plink --bfile KKY.all.2nd_snpolisher --missing --out missing
+plink --bfile KKY.all.2nd_snpolisher --het --out het
+
+
+setwd("~/Desktop/KCDC/KKY/02.2ndQC/ALL/")
+miss <-read.table("missing.imiss",header = T)
+het <- read.table("het.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,22), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17 < lowSample$HET,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+# 제거할 샘플없음
+
+plink --bfile KKY.all.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PCA/pruning
+plink --bfile KKY.all.2nd_snpolisher --extract PCA/pruning.prune.in --make-bed --out PCA/KKY.all.2nd_snpolisher_pruned
+flashpca_x86-64 --bfile PCA/KKY.all.2nd_snpolisher_pruned --outpc PCA/PCA.txt
