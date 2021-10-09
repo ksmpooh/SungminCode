@@ -1,0 +1,59 @@
+# 20210929 KD HLA IMPUTATION
+
+
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/00.oridata
+
+plink --bfile /BDATA/smkim/JG.KD/03.2ndQC/OUTPUTs/JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --chr 6 --from-bp 28477833 --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out JG.KD.QCed_HLA --to-bp 33448188
+#plink --bfile /BDATA/smkim/JG.KD/03.2ndQC/OUTPUTs/JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --chr 6 --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out JG.KD.QCed_chr6 
+
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/01.phasing
+
+~/Downloads/Eagle_v2.4.1/eagle --bfile /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/00.oridata/JG.KD.QCed_HLA --geneticMapFile /BDATA/smkim/JG/04.phasing/INPUTs/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --outPrefix ./JG.KD.phasing --maxMissingPerSnp 0.3 --maxMissingPerIndiv 0.5 --numThreads 32
+
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/02.hlaimputation
+
+/BDATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -int 28477833 33448188 -h /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.hap -l /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.legend -m /BDATA/smkim/JG/05.imputation/INPUTs/map/genetic_map_chr6_combined_b37.txt -g ../01.phasing/JG.KD.phasing.haps.gz -o_gz -o JG.KD.HLA.imputation
+
+
+
+
+#HLAimputation
+zcat JG.KD.HLA.imputation.gen.gz |grep HLA > JG.KD.HLA.imputation_onlyHLA.gen
+
+mkdir Hardcall
+python3 01.split.py JG.KD.HLA.imputation_onlyHLA.gen ./Hardcall/
+
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/02.hlaimputation/Hardcall
+
+python3 02.hardcall_fianl.py 2 2digit.gen
+python3 02.hardcall_fianl.py 4 4digit.gen
+
+mkdir plink
+
+plink --gen 2digit_processing.dosage_2digit.gen --sample ../../01.phasing/JG.KD.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD.2digit_afterHardcall
+plink --gen 4digit_processing.dosage_4digit.gen --sample ../../01.phasing/JG.KD.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD.4digit_afterHardcall
+
+plink --bfile JG.KD.2digit_afterHardcall --bmerge JG.KD.4digit_afterHardcall --allow-extra-chr --make-bed --out all_digit/JG.KD_afterHardcall
+
+
+cd /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/02.hlaimputation/Hardcall/plink/all_digit
+awk '{print $1" P"}' JG.KD_afterHardcall.bim > P.allele
+plink --bfile JG.KD_afterHardcall --a1-allele P.allele --recodeA --allow-extra-chr --out JG.KD_afterHardcall_raw
+
+
+
+
+
+
+
+
+
+
+
+  529  plink --gen JG.HLA.imputation.using.IMPUTE4.28477833_33448188.gen.gz --sample ../01.phasing/JG.HLA.phasing.sample --make-bed --out plink/han.impute4.hlaIMP --allow-extra-chr
+  530  cd plink/
+  531  grep HLA han.impute4.hlaIMP.bim |awk '{print $2}' > HLA.allele
+  532  plink --bfile han.impute4.hlaIMP --extract HLA.allele --make-bed --out han.impute4.hlaIMP_HLA --allow-extra-chr
+  533  awk '{print $2" P"}' han.impute4.hlaIMP_HLA.bim > a1.allele.P.ref
+  534  plink --bfile han.impute4.hlaIMP_HLA --recodeA -a1-allele a1.allele.P.ref --out han.impute4.hlaIMP_HLA_raw --allow-extra-chr

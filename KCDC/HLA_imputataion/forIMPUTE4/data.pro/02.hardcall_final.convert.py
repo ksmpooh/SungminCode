@@ -247,7 +247,7 @@ genes = ["A","B","C","DRB1","DPA1","DPB1","DQA1","DQB1"]
 def main():
     digit = sys.argv[1]    
     input_gen = sys.argv[2]
-    df = test(input_gen)
+    df = test(input_gen,genes)
     out = open(input_gen.replace(".gen","_processing.dosage_%sdigit.gen"%digit),"w")
     for i in df:
         out.write(' '.join(i) + "\n")

@@ -1,0 +1,31 @@
+# HLA imputation processing for NA 
+# I called this, 'SM calling'
+# data : After HLA imputation using IMPUTE4 and Han reference ref_panel
+
+#pre data : [HLAimputation_complete.gen.gz] [phased.sample]
+
+# 1st step : extract only HLA allele info from imputed gen first_line
+
+
+zcat [input.gen.gz] | grep HLA > [output_onlyHLA.gen]
+
+# 2nd step : divided each 2 digit
+python3 01.split.py [output_onlyHLA.gen] [outputDir]
+
+# 3rd step : hard call processing
+
+less [inptut.data.gen]
+
+#6:HLA_A_02:P:A 6:HLA_A_02:P:A 29911991 P A -> hardcall.convert
+#6:HLA_A_02:A:P 6:HLA_A_02:A:P 29911991 A P -> hardcall
+
+#python3 02.hardcall_final.py [digit] [input gen]
+
+python3 02.hardcall_fianl.py 2 2digit.gen
+python3 02.hardcall_fianl.py 4 2digit.gen
+
+# 4th step : make plink
+plink --gen 2digit_processing.dosage_2digit.gen --sample ../../01.phasing/JG.KD.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD.2digit_afterHardcall
+plink --gen 4digit_processing.dosage_4digit.gen --sample ../../01.phasing/JG.KD.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD.4digit_afterHardcall
+
+awk '{print $1" P"}' [input.bim] > p.allele
