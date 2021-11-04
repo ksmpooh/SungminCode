@@ -1,0 +1,168 @@
+# by 재현
+
+Ubuntu 18.04 LTS 기준
+
+### 0. 계정 생성
+
+1) Group, Username 모두 일치시켜 줌, Hadoop 관련 폴더 권한부여
+
+2) 모든 서버 `/etc/hosts`에 cluster로 사용하려는 서버의 모든 hostname과 ip를 추가해주어야 함. 서버의 hostname이 겹치면 곤란함
+
+
+### 1. Hadoop, Spark 버전에 맞춰 설치
+
+Hail  0.2.71 기준 Spark Version: 3.1.2
+
+Spark Download: https://spark.apache.org/downloads.html
+Hadoop Download: https://hadoop.apache.org/releases.html
+
+### 2. Hadoop, Spark 설정
+
+1) `.bashrc` 또는 `.zshrc` 파일에 다음 코드를 추가
+
+```bash
+export SPARK_HOME="$HOME/spark-3.1.2-bin-hadoop3.2"
+export JAVA_HOME='/usr/lib/jvm/java-8-openjdk-amd64'
+export HADOOP_HOME="$HOME/hadoop-3.3.0"
+export PATH=$SPARK_HOME/bin:$PATH
+export PATH=$HADOOP_HOME/bin:$PATH
+export PDSH_RCMD_TYPE=ssh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native
+```
+>spark 설정: `spark-env.sh`, `spark-defaults.conf`, `workers`
+>hadoop 설정: `hdfs-site.xml`, `core-site.xml`, `workers`
+
+2) `spark-env.sh`
+
+```bash
+export SPARK_MASTER_HOST=10.1.1.3
+export SPARK_MASTER_PORT=7077
+export SPARK_WORKER_PORT=7078
+export SPARK_MASTER_WEBUI_PORT=8080
+export SPARK_WORKER_WEBUI_PORT=8090
+export PYSPARK_PYTHON='/home/a7420174/miniconda3/envs/hail/bin/python'
+export PYSPARK_DRIVER_PYTHON='/home/a7420174/miniconda3/envs/hail/bin/python'
+export HADOOP_HOME=/home/a7420174/hadoop-3.3.0
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native
+```
+
+master, worker 설정이 섞여 있는데 master worker 둘다 넣어도 괜찮음
+
+
+3) `core-site.xml`에는 속성에 `fs.defaultFS`에다가 `hdfs://{namenode_server_ip}:9000`  추가
+
+4) datanode와 namenode의 폴더를 생성하고 `hdfs-site.xml`에 경로를 추가해야함
+
+5) `workers` 파일에는 cluster의 workers의 ip 또는 hostname 추가
+
+```
+10.1.1.1
+10.1.1.2
+10.1.1.3
+10.1.1.4
+```
+
+6) 다른 이더넷(e.g. 10Gb)의 ip를 써야 할 경우 `spark-env.sh`의 `SPARK_LOCAL_IP`를 설정해주어야 함
+web UI port 설정
+```
+sudo iptables -A OUTPUT -t nat -p tcp -d localhost --dport 8080 -j DNAT --to 10.1.1.1:8080
+```
+
+### 3. 방화벽 설정
+
+클러스터에 사용할 모든 서버에 대해서 서로의 모든 포트 접근을 허용해줘야 함.
+
+```bash
+sudo ufw allow from {server_ip}
+sudo ufw status verbose #설정되었는지 확인
+```
+
+### 4. ssh 설정
+
+서버끼리 ssh로 데이터를 공유하기 때문에 비번을 입력하지 않아도 서로 접속이 가능하도록 해준다.
+
+```
+ssh-copy-id -i ~/.ssh/id_rsa.pub {server_ip}
+```
+
+
+
+
+
+
+
+# by sm
+
+export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
+
+# hadoop
+# cluster setting
+https://hoyy.github.io/posts/spark-start-install-standalone
+
+/etc/hosts
+
+# start cluster mode
+cd /DATA/smkim/hail.spark
+
+# master
+
+sudo ~/spark-3.1.2/sbin/start-master.sh
+sudo ~/hadoop-3.3.0/sbin/start-dfs.sh
+
+sudo ~/hadoop-3.3.0/sbin/stop-dfs.sh
+sudo ~/spark-3.1.2/sbin/stop-master.sh
+# worker
+
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7078
+sudo ~/spark-3.1.2/sbin/stop-worker.sh
+# ./start-slave.sh spark://your_host_name:7077 -m 512M -c 1
+# run
+
+#/home/genome/spark-3.1.2/bin/spark-submit   --jars $HAIL_HOME/hail-all-spark.jar   --conf spark.driver.extraClassPath=$HAIL_HOME/hail-all-spark.jar   --conf spark.executor.extraClassPath=./hail-all-spark.jar   --conf spark.serializer=org.apache.spark.serializer.KryoSerializer   --conf spark.kryo.registrator=is.hail.kryo.HailKryoRegistrator --master 10.20.30.101[20] hail.spark.py 
+
+
+
+import hail as hl 
+hl.init(master='spark://genome101:7078')
+
+#hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
+#hl.import_vcf("file:///DATA/smkim/hail/test.file.vcf.bgz").write("file:///DATA/smkim/hail/JG.for.hail.mt",overwrite=True)
+#hl.import_vcf("test.file.vcf.bgz").write("test.JG.mt", overwrite=True)
+mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
+#table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',impute=True).key_by("FAM_ID"))
+#table = (hl.import_table("new.pheno.sub_Total.ped",impute=True).key_by("FAM_ID"))
+mt = hl.read_matrix_table("test.JG.mt")
+table = (hl.import_table("new.pheno.sub_Total.ped",impute=True).key_by("FAM_ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+
+mt.col.describe()
+
+gwas = hl.linear_regression_rows(y = mt.pheno.CASE,x=mt.DS,covariates = [mt.pheno.SEX,mt.pheno.AGE])
+
+
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+#gwas.export('file:///DATA/smkim/hail/gaws.output.tsv')
+gwas.export('gaws.output.tsv')
+
+p = hl.plot.manhattan(gwas.p_value)
+show(p)
+\
+
+
+
+import hail as hl
+hl.init(master='spark://genome101:7078')
+
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+
+
+
+gwas.export('gaws.output.tsv')

@@ -1,0 +1,31 @@
+### hail run
+
+import time
+import hail as hl
+#hl.init(master='spark://10.20.30.101:7077')
+hl.init(master='spark://genome101:7078')
+start = time.time()
+
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+gwas.order_by(gwas.p_value).show(25)
+end = time.time()
+print("time : %s"%(str(end-start)))
+
+
+
+import time
+import hail as hl
+hl.import_plink(bed='data/1kgp_chr22.bed',bim='data/1kgp_chr22.bim',fam='data/1kgp_chr22.fam',reference_genome='GRCh37').write('data/1kg.mt', overwrite=True)
+mt = hl.read_matrix_table('data/1kg.mt')
+table = (hl.import_table('data/1000GP_Phase3_saptab.sample',impute=False).key_by("ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+mt = hl.sample_qc(mt)
+mt = mt.filter_cols((mt.sample_qc.dp_stats.mean >= 4) & (mt.sample_qc.call_rate >= 0.97))
+
