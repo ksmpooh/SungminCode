@@ -87,11 +87,14 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub {server_ip}
 ```
 
 
+## hadoop 데이터 input local to hdfs -> put 반대는 get
+hdfs dfs -put <local_path> <hdfs_path>
 
+## master 에서 hdfs 키기
+hdfs --daemon start datanode
+hdfs dfsadmin -refreshNodes
 
-
-
-
+hdfs --daemon stop datanode
 # by sm
 
 export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
@@ -164,5 +167,55 @@ gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
                                  covariates=[1.0])
 
 
+gwas.show(32)
+gwas.export("file:///DATA/smkim/test/gaws.output.tsv")
+gwas.export('hdfs:///DATA/smkim/hail/gaws.output.tsv')
 
-gwas.export('gaws.output.tsv')
+
+
+
+
+
+import hail as hl
+hl.init(master='spark://genome101:7078')
+#hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
+#hl.import_vcf("file:///DATA/smkim/hail/test.file.vcf.bgz").write("file:///DATA/smkim/hail/JG.for.hail.mt",overwrite=True)
+
+mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
+#table = (hl.import_table('/DATA/smkim/hail.test/data/ESRD_sub_Total_20201208.ped',impute=True).key_by("FAM_ID"))
+#table = (hl.import_table("file:///DATA/smkim/hail/ESRD_sub_Total_20201208.ped",impute=True).key_by("FAM_ID"))
+
+#table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',impute=True).key_by("FAM_ID"))
+#table = (hl.import_table("file:///DATA/smkim/hail/new.pheno.sub_Total.ped",impute=True).key_by("FAM_ID"))
+table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+
+mt.col.describe()
+
+#gwas = hl.linear_regression_rows(y = mt.pheno.CASE,x=mt.DS,covariates = [mt.pheno.SEX,mt.pheno.AGE])
+
+
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.show(25)
+gwas.describe
+gwas.export('file:///DATA/smkim/hail/gaws.output.tsv')
+gwas.export('hdfs:///DATA/smkim/hail/gaws.output.tsv')
+
+p = hl.plot.manhattan(gwas.p_value)
+show(p)
+
+
+
+## 예시
+import hail as hl
+hl.init()
+#hl.init(master='spark://genome101:7078')
+mt = hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz")
+#mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
+#mt = hl.read_matrix_table("/DATA/smkim/hail/JG.for.hail.mt")
+mt.show(5)
+#table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+mt.show(5)
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")

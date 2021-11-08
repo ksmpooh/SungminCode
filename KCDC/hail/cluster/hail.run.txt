@@ -29,3 +29,86 @@ mt = mt.annotate_cols(pheno = table[mt.s])
 mt = hl.sample_qc(mt)
 mt = mt.filter_cols((mt.sample_qc.dp_stats.mean >= 4) & (mt.sample_qc.call_rate >= 0.97))
 
+
+
+
+cd /DATA/smkim/test
+## no convert
+import time
+import hail as hl
+hl.init()
+#hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.local.mt",overwrite=True)
+
+#hl.init(master='spark://genome101:7078')
+mt = hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz")
+mt1 = hl.read_matrix_table("JG.for.local.mt")
+#table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.T2D.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+start = time.time()
+mt = mt.annotate_cols(pheno = table[mt.s])
+#gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="score")
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0],test="score")
+gwas.show(5)
+end = time.time()
+
+start1 = time.time()
+mt1 = mt1.annotate_cols(pheno = table[mt1.s])
+#gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0,mt1.pheno.SEX,mt1.pheno.AGE],test="score")
+gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0],test="score")
+
+#gwas.summarize()
+gwas.show(5)
+end1 = time.time()
+
+
+start2 = time.time()
+mt1 = hl.read_matrix_table("JG.for.local.mt",n_partitions=40)
+mt1 = mt1.annotate_cols(pheno = table[mt1.s])
+gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0],test="score")
+gwas.show(5)
+end2 = time.time()
+
+
+print("vcf time : %s"%(str(end-start)))
+print("mt time : %s"%(str(end1-start1)))
+print("mt_partition time : %s"%(str(end2-start2)))
+
+
+
+
+
+
+## cluster : /DATA/smkim/test.cluster
+
+import time
+import hail as hl
+#hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.local.mt",overwrite=True)
+hl.init(master='spark://genome101:7078')
+#hl.import_vcf("file:///DATA/smkim/test.cluster/test.file.vcf.bgz").write("file:///DATA/smkim/test.cluster/JG.for.spark.mt",overwrite=True)
+#mt = hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz")
+mt = hl.read_matrix_table("file:///DATA/smkim/test.cluster/JG.for.local.mt",_n_partitions = 40)
+table = (hl.import_table("file:///DATA/smkim/test.cluster/new.pheno.T2D.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+start = time.time()
+mt = mt.annotate_cols(pheno = table[mt.s])
+#gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="score")
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0],test="score")
+gwas.show(5)
+end = time.time()
+print("spark time : %s"%(str(end-start)))
+
+
+# local
+import time
+import hail as hl
+hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.local.mt",overwrite=True)
+mt = hl.read_matrix_table("JG.for.local.mt")
+table = (hl.import_table("/DATA/smkim/test.cluster/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+start = time.time()
+mt = mt.annotate_cols(pheno = table[mt.s])
+#gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="score")
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0],test="score")
+gwas.show(5)
+end = time.time()
+print("spark time : %s"%(str(end-start)))
+
+
