@@ -210,3 +210,42 @@ plink --bfile DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het_pruned --freq --a
 plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --pheno tera/tera.PCA.txt --pheno-name PC1 --linear --out tera/PCA_asso/KKY.7th.tera.1st_pruned_Linear.PC1
 plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --pheno tera/tera.PCA.txt --pheno-name PC2 --linear --out tera/PCA_asso/KKY.7th.tera.1st_pruned_Linear.PC2
 plink --bfile tera/KKY.7th.tera_snpolisher_rmmissing-het_pruned --freq --a1-allele A1.allele.ref.txt --out tera/PCA_asso/KKY.7th.1st.tera_pruned_freq
+
+
+
+########## PCA plot 109번
+
+ori :   --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --maf 0.1 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt
+p1 : --geno 0.1 --hwe 0.001 --maf 0.1 --indep-pairwise 50 5 0.01 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt
+p2 : --geno 0.1 --hwe 0.001 --maf 0.2 --indep-pairwise 50 5 0.01 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt
+p3 : --geno 0.1 --hwe 0.001 --maf 0.4 --indep-pairwise 50 5 0.01 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt
+
+input1 : /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/KKY.7th.1st_snpolisher_rmmissing-het
+
+
+python3 /DATA/smkim/KKY/02.1stQC/OUTPUTs/PCA_compare.py input
+
+
+
+
+## merge tera + dna
+
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/merge
+
+
+cat ../tera/KKY.7th.tera_snpolisher_rmmissing-het.bim ../DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het.bim | awk '{print $2}' | sort | uniq -c | awk '$1==2{print $2}' > intersect_snp.txt
+
+plink --bfile ../tera/KKY.7th.tera_snpolisher_rmmissing-het --extract intersect_snp.txt --make-bed --out KKY.7th.tera_snpolisher_rmmissing-het_intersect
+plink --bfile ../DNAlink/KKY.7th.DANlink_snpolisher_rmmissing-het --extract intersect_snp.txt --make-bed --out KKY.7th.DNAlink_snpolisher_rmmissing-het_intersect
+plink --bfile KKY.7th.tera_snpolisher_rmmissing-het_intersect --bmerge KKY.7th.DNAlink_snpolisher_rmmissing-het_intersect --allow-no-sex --make-bed --out KKY.7th.merge
+
+python3 /DATA/smkim/KKY/02.1stQC/OUTPUTs/PCA_compare.py KKY.7th.merge
+plink --bfile KKY.7th.merge --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out KKY.7th.merge_pruning
+plink --bfile KKY.7th.merge --extract KKY.7th.merge_pruning.prune.in --make-bed --out KKY.7th.merge_pruned
+flashpca_x86-64 --bfile KKY.7th.merge_pruned --outpc mergePCA.txt
+
+
+## PCA
+nohup python3 ../PCA_compare.py KKY.7th.1st_snpolisher_rmmissing-het &
+
+##plot
