@@ -249,3 +249,11 @@ flashpca_x86-64 --bfile KKY.7th.merge_pruned --outpc mergePCA.txt
 nohup python3 ../PCA_compare.py KKY.7th.1st_snpolisher_rmmissing-het &
 
 ##plot
+
+
+
+##### Tera / DNA 따로 calling 후 정도관리 후 2차정도관리 진행!
+
+pca <- read.table("t3_PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)

@@ -44,3 +44,42 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 plink --bfile KKY.all.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PCA/pruning
 plink --bfile KKY.all.2nd_snpolisher --extract PCA/pruning.prune.in --make-bed --out PCA/KKY.all.2nd_snpolisher_pruned
 flashpca_x86-64 --bfile PCA/KKY.all.2nd_snpolisher_pruned --outpc PCA/PCA.txt
+
+
+
+### Tera DNA 따로 calling 1차 qc 후 따로 2차 calling
+cd /DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/DNAlink
+R
+df <- read.table("/DATA/smkim/KKY/01.GenotypeCalling/INPUTs/all_cel_files_withNIHID.txt", header=T)
+ref <- read.table("/DATA/smkim/KKY/01.GenotypeCalling/INPUTs/DNAlink.cel.txt",header=T)
+rm <- read.table("1st.DNAlink.rmlink.txt")
+out <- df[df$cel_files %in% ref$cel_files,] #4525
+out <- out[!(out$NIHID %in% rm$V1),]   #4480
+out1 <- as.data.frame(out$cel_files)
+colnames(out1)<-'cel_files'
+write.table(out1,"DNAlink.2nd.celfiles.txt",col.names=T, row.names=F, quote=F)
+
+#/DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/DNAlink/DNAlink.2nd.celfiles.txt
+
+cd /DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/Tera
+
+R
+df <- read.table("/DATA/smkim/KKY/01.GenotypeCalling/INPUTs/all_cel_files_withNIHID.txt", header=T)
+ref <- read.table("/DATA/smkim/KKY/01.GenotypeCalling/INPUTs/tera.cel.txt",header=T)
+rm <- read.table("1st.tera.rmlist.txt") # 56
+out <- df[df$cel_files %in% ref$cel_files,] 
+out <- out[!(out$NIHID %in% rm$V1),]   #3116
+out1 <- as.data.frame(out$cel_files)
+colnames(out1)<-'cel_files'
+write.table(out1,"tera.2nd.celfiles.txt",col.names=T, row.names=F, quote=F)
+
+#/DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/Tera/tera.2nd.celfiles.txt
+
+
+
+
+
+output :
+/backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/
+/backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/
+

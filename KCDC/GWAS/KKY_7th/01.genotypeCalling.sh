@@ -62,6 +62,23 @@
 
 
 
+## 2nd DNAlink (rm low quality samples and PCA
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis --arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml --dual-channel-normalization true --cel-files /DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/DNAlink/DNAlink.2nd.celfiles.txt --summaries --write-models --out-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.snp-posteriors.txt --call-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.calls.txt --metrics-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.out.txt 
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.out.txt --output-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/Ps.performance.txt --summary-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.summary.txt --call-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.calls.txt --posterior-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/AxiomGT1.snp-posteriors.txt --output-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/
+
+## 2nd Tera (rm low quality samples and PCA)
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/apt-genotype-axiom --analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis --arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml --dual-channel-normalization true --cel-files /DATA/smkim/KKY/03.2ndQC/INPUTs/1stQCout/Tera/tera.2nd.celfiles.txt --summaries --write-models --out-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.calls.txt --metrics-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.out.txt 
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.out.txt --output-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/Ps.performance.txt --summary-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.summary.txt --call-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.calls.txt --posterior-file /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/AxiomGT1.snp-posteriors.txt --output-dir /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/
+
+
 
 
 
