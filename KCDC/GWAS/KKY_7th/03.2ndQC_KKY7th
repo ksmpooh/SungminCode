@@ -83,3 +83,75 @@ output :
 /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.Tera/
 /backup/smkim/KKY/01.GenotypeCalling/OUTPUTs/2nd.DNAlink/
 
+
+### 코드 작성한거 날라감.. 저장 못해서 날라감.......
+
+##DNAlink
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/DNAlink
+##Tera
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/Tera
+## merge
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/MERGE
+
+
+##ALL
+
+# 1차에서 배치별로 정도관리 각각도 시행하고 합쳐서도 진행함
+
+# call to plink
+cd /BDATA/smkim/KKY/SCRIPTs
+
+python2 DataPrep.py 0 20000 /DATA/smkim/KKY/01.GenotypeCalling/INPUTs/Sample.Info.txt /BDATA/smkim/JG/01.1stgenocall/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt /BDATA/smkim/KKY/2nd.ALL_witheach1stQC/
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_after1stQCeacbatch
+
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd --extract /BDATA/smkim/KKY/2nd.ALL_witheach1stQC/Recommended.ps --make-bed --out KKY.ALL.aftereachBatch1stQC.2nd_snpolisher
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher --missing --out MISS
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher --het --out HET
+
+
+
+R
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,22), ylim=c(0,0.1), xlab="heterozygosity rate",
+#     ylab="missing rate", main="ALL 2nd QC Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+#abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+#abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+#abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+#points(lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher --remove rmLQSamples.txt --make-bed --out KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het
+
+
+
+mkdir PCA
+
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het 
+type0 : --geno 0.01 --hwe 0.001  --maf 0.1 —indep-pairwise 50 5 0.02 
+type3 : --geno 0.1 --hwe 0.001 --maf 0.4 --indep-pairwise 50 5 0.01
+type4 : --geno 0.1 --hwe 0.001 --maf 0.4 --indep-pairwise 50 5 0.1
+
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het --geno 0.01 --hwe 0.001  --maf 0.1 —indep-pairwise 50 5 0.02 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t0_pruning
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het --geno 0.1 --hwe 0.001 --maf 0.4 --indep-pairwise 50 5 0.01 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t3_pruning
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het --geno 0.1 --hwe 0.001 --maf 0.4 --indep-pairwise 50 5 0.1 --chr 1-22 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt  --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t4_pruning
+
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het  --extract PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t0_pruning.prune.in --make-bed --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t0_pruned
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het  --extract PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t3_pruning.prune.in --make-bed --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t3_pruned
+plink --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het  --extract PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t4_pruning.prune.in --make-bed --out PCA/KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t4_pruned
+
+cd PCA
+flashpca_x86-64 --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t0_pruned --outpc PCA_t0.txt
+flashpca_x86-64 --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t3_pruned --outpc PCA_t3.txt
+flashpca_x86-64 --bfile KKY.ALL.aftereachBatch1stQC.2nd_snpolisher_missing-het_t4_pruned --outpc PCA_t4.txt
+

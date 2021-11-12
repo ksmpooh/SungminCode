@@ -1,0 +1,32 @@
+
+## hadoop 데이터 input local to hdfs -> put 반대는 get
+hdfs dfs -put <local_path> <hdfs_path>
+
+## master 에서 hdfs 키기
+hdfs --daemon start datanode
+hdfs dfsadmin -refreshNodes
+
+hdfs --daemon stop datanode
+# by sm
+
+export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
+
+# hadoop
+# cluster setting
+https://hoyy.github.io/posts/spark-start-install-standalone
+
+
+
+
+# master
+
+sudo ~/spark-3.1.2/sbin/start-master.sh
+sudo ~/hadoop-3.3.0/sbin/start-dfs.sh
+
+sudo ~/hadoop-3.3.0/sbin/stop-dfs.sh
+sudo ~/spark-3.1.2/sbin/stop-master.sh
+# worker
+
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7078
+sudo ~/spark-3.1.2/sbin/stop-worker.sh
+# ./start-slave.sh spark://your_host_name:7077 -m 512M -c 1
