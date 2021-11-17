@@ -108,7 +108,11 @@ plink --bfile ../KKY.7th.1st_snpolisher  --geno 0.01 --hwe 0.001 --maf 0.25 --in
 plink --bfile ../KKY.7th.1st_snpolisher --extract 2nd.pruning.prune.in --make-bed --out KKY.7th.1st_snpolisher_2nd.pruned
 flashpca_x86-64 --bfile KKY.7th.1st_snpolisher_2nd.pruned --outpc PCA.2nd.txt
 
+#### chr6_14 완전 제거 20211116
 
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/rmchr6_14
+plink --bfile ../KKY.7th.1st_snpolisher_rmmissing-het_pruned --not-chr 6 14 --make-bed --out KKY.7th.1st_snpolisher_rmmissing-het_pruned_notchr6-14
+flashpca_x86-64 --bfile KKY.7th.1st_snpolisher_rmmissing-het_pruned_notchr6-14 --outpc PCA.txt
 
 
 ### 따로 분석 
