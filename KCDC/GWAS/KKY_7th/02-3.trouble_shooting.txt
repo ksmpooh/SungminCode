@@ -1,0 +1,215 @@
+###20211118
+
+전반적인 원인을 파악해보니까, @황미영 @김성민
+2개 회사의 intensity가 좀 다르네요
+원인은 여러가지인데... 샘플 수집 기수가 다를 수 있고, 칩 생산 전처리가 다를 수 있고
+그래서 문제가 발생한 것들이
+양사의 missing proportion이 다른 SNP들이 꽤 됩니다. (--test-missing 에서 나타는 SNP 분포도 확인, 첨부)
+위의 PCA에 날라가는 샘플들 표기를 해보면 알겠지만 해당 샘플들이 cluster plot에서 꼬리나 경계쪽에 분포되었을 가능성이 높습니다 (낮은 call rate? 등).
+체크 해봐야할 것들
+Clusterplot에 (2개 회사 표기 버전) PCA에서 날라가는 샘플들 별로 컬러로 표기
+PCA를 1KG P3를 포함해서 해볼것 (인종적 차이일 가능성도 있음)
+(국건영 기수나 수집 시기 등 확인이 필요함 ... 이건 차후에 그냥 궁금)
+위의 처리를 한 다음에 결정 예정 (큰 방향성임. 위의 결과 보고)
+all sample calling
+양사에서 missing proportion이 다른거 제거 (--test-missing, P < 1e-5 이하 SNP 삭제)
+1차 QC 그대로함
+PCA 문제 있는거 삭제
+2차 QC 진행
+
+
+# cluster plot 회사별 체크 및 pca out 체크
+# NIH20G : DNAlink
+# NIH20C : Tera
+
+setwd("~/Desktop/KCDC/KKY/01.1stQC.PCA/")
+
+pca <- read.table("ALL/notchr6_14/PCA.txt", header=T)
+
+head(pca)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY.1stQC_PCA", cex=1, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.5), cex=1, pch=16)
+legend("topright",title="Outliner : 159 samples",
+       legend = c("(DNAlink: 119, Teragen:40)","      -0.07 < PC1 < 0.07","      -0.07 < PC2 < 0.06"))
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "ALL/notchr6_14/rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+q()
+
+
+
+# rmLQSamples (missing-het) : 44
+# rmPCA : 159 (DNAlink: 119, Teragen:40))
+
+
+# test-missing
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/missing-test
+
+grep NIH20G ../KKY.7th.1st.fam | awk '{print $1,$1,1}' > DNAlink.fam.txt
+grep NIH20C ../KKY.7th.1st.fam | awk '{print $1,$1,2}' > Tera.fam.txt
+cat DNAlink.fam.txt Tera.fam.txt > KKY.for.missing.test.pheno.txt
+
+# add header FID IID CASE
+
+plink --bfile ../KKY.7th.1st_snpolisher_rmmissing-het --test-missing --pheno KKY.for.missing.test.pheno.txt --pheno-name CASE --out KKY.7th.1st_snpolisher_rmmissing-het_missing-test
+
+#F_MISS_A    Missing rate in cases
+#F_MISS_U    Missing rate in controls
+#awk '$5 < 1e-5 {print $0}' JG.KR.rep.merge.missing-test.missing | awk '$3 > 0.01|| $4 > 0.01{print $0}' > JG.KR.rep.merge.missing-test.removeSNPlist.txt
+
+
+# PC1_asso P vs missing-test P plot -> 이건 이상함
+# Teragen vs DNAlink missing rate plot
+
+setwd("~/Desktop/KCDC/KKY/01.1stQC_trouble/PCA-missing/")
+PC1 <- read.table("KKY.7th.1st_pruned_Linear.PC1.assoc.linear",header = T)
+test_mssing <- read.table("KKY.7th.1st_snpolisher_rmmissing-het_missing-test.missing",header = T)
+head(PC1)
+head(test_mssing)
+test_mssing1 <- test_mssing[test_mssing$SNP %in% PC1$SNP,]
+PC1 <- PC1[PC1$SNP %in% test_mssing1$SNP,]
+
+head(PC1)
+head(test_mssing1)
+df <- merge(test_mssing1,PC1,by="SNP")
+plot(x = df$P.x,y=df$P.y)
+
+png("KKY.1st.test.missing.png", height = 800, width = 800)
+plot(test_mssing$F_MISS_A,test_mssing$F_MISS_U,
+     xlim=c(0, 0.4), ylim=c(0,0.4),
+     col=rgb(0,0,1,0.5),cex=1, pch=16,
+     xlab = "missing rate of DNAlink",ylab = "missing rate of Teragen",
+     main = "Test_missing")
+abline(a = 0,b=1, col=rgb(1,0,0,1), lty=3, lwd=2)
+legend("bottomright",legend = c("After Snplisher","y=x"),
+       lty=c(NA,3),col=c(NA,"red"),
+       bg='white')
+       #legend = c("(DNAlink: 119, Teragen:40)","      -0.07 < PC1 < 0.07","      -0.07 < PC2 < 0.06")
+dev.off()
+
+
+
+
+### ethnic PCA
+
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/Ethnic
+
+plink --bfile ../KKY.7th.1st_snpolisher --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY.7th.1st_snpolisher_rmaffy
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY.7th.1st_snpolisher_rmaffy
+plink --bfile KKY.7th.1st_snpolisher_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out KKY.7th.1st_snpolisher_rmaffy_rmdup
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt KKY.7th.1st_snpolisher_rmaffy_rmdup KKY.7th.1st_snpolisher_rmaffy_rmdup_convert
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY.7th.1st_snpolisher_rmaffy_rmdup_convert KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel
+plink --bfile KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip
+plink --bfile KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+
+
+
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/02.updateSNPIDtype.py KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.bim /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+#plink --bfile ../merge_rmking_rmfrq_rmMissingtest.updateSNPID --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil
+
+cat KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.updateSNPID.bim /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+link --bfile KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.updateSNPID --extract intersectSNP.txt --make-bed --out KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.updateSNPID_intersect
+
+
+plink --bfile merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil --extract intersectSNP.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest.updateSNPID_fil_intersect
+plink --bfile /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge --extract intersectSNP.txt --make-bed --out 1kgp_intersect
+plink --bfile KKY.7th.1st_snpolisher_rmaffy_rmdup_convert_indel_flip_fil.updateSNPID_intersect --bmerge 1kgp_intersect --make-bed --out MERGE --allow-no-sex
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA.txt
+
+
+
+
+# Ethnic PCA plot
+setwd("~/Desktop/KCDC/KKY/01.1stQC_trouble/Ethnic/")
+#setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/03.merge/ethnic/")
+pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/QCrepliation_2020/01.1stQC/ethnic/1000GP_Phase3.sample",header = T)
+
+DNAlink <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/DANlink.2020.cel.list.txt")
+tera <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/2020.7th.tera.cel.list.txt")
+#DNAlink$company <- "DNAlink"
+#tera$company <- "Teragen"
+DNAlink$FID <- str_replace_all(str_split_fixed(DNAlink$V1,"_",6)[,6],".CEL","")
+tera$FID <- str_replace_all(str_split_fixed(tera$V1,"_",6)[,6],".CEL","")
+head(DNAlink)
+
+case <- DNAlink %>% select("FID")
+control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+control$GROUP <- "CONTROL"
+
+df <- rbind(gnomad,case)
+df <- rbind(df,control)
+
+df <- merge(pca,df,by = "FID")
+png("KKY.7th.ethnic.PCA.png",height = 800,width = 800)
+png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic PCA",
+     xlim = c(-0.15,0.2),ylim = c(-0.15,0.15),
+     cex.main = 3,cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.5), cex = 0.7 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,1), cex = 0.7 , pch = 16)
+
+color <- c(
+  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+  rgb(0,1,0,1),
+  rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  rgb(1,0,1,1))
+
+color <- c(
+  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+ # rgb(0,1,0,1),
+  #rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  #rgb(1,0,1,1))
+
+#list <- c("Teragen","DNAlink","SAS","AFR","AMR","EAS","EUR")
+list <- c("Teragen","DNAlink","AMR","EAS")
+#list <- c("control","JG.1st","SAS","AFR","AMR","EAS","EUR")
+#list <- c("JG.merge","SAS","AFR","AMR","EAS","EUR")
+#legend("topleft",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+#legend("bottomright",c("# of Markers : 5093"),box.lwd = 0,box.col = "white",bg = "white")
+dev.off()
+
+
+
+
+
+
+
+
+

@@ -15,66 +15,7 @@ colnames(df2) <- df$probeset_id
 head(df2[2:nrow(df2),1:2])
 df2 <- df2[2:nrow(df2),]
 head(df2)
-#df2[,1:ncol(df2)] <- sapply(df2[,1:ncol(df2)], as.double())
-#df2$CEL <- rownames(df2)
-#df2<-df2[,c(ncol(df2),1:ncol(df2)-1)]
-#write.table(df2,"summary_for.cluster_transposon.txt",col.names = T,row.names = F,quote = F)
-
 df2 <- read.table("summary_for.cluster_transposon.txt",header = T)
-df2[1,1:3] %>% str()
-out <- data.frame(row.names = rownames(df2))
-out
-colnames(df2)[1:5]
-#for (i in 1:(ncol(df2)/2)) {
-paste0(str_sub(colnames(df2[i*2]),1,-3),"_","contrast")
-for (i in 1:4) {
-  Contrast = paste0(str_sub(colnames(df2[i*2]),1,-3),"_","contrast")
-  Size = paste0(str_sub(colnames(df2[i*2]),1,-3),"_","size")
-  out <- out %>% mutate(!!Contrast := log2(df2[i*2]/df2[i*2+1]))
-  out <- out %>% mutate(!!Size := log2(df2[i*2])+log2(df2[i*2+1]))
-  #out <- out %>% mutate(!!size := 0)
-#  out[[size]] <- log2(df2[i+1])+log2(df2[i+1+1])
-}
-out  %>% head()
-out[1,1:5]
-#x축: Contrast = log2(SNP-A / SNP-B)
-#y축: Size = (log2(SNP-A) + log2(SNP-B))/2
-out <- data.frame(row.names = rownames(df2))
-contrast = paste0(str_sub(colnames(df2[i*2]),1,-3),"_","contrast")
-size = paste0(str_sub(colnames(df2[i*2]),1,-3),"_","size")
-#out <- out %>% mutate(!!contrast := log2(df2[i*2]/df2[i*2+1]))
-out <- out%>% sapply()
-#out <- out %>% mutate(!!size := log2(df2[i*2])+log2(df2[i*2+1]))
-out[[contrast]] <- log2(df2[i]/df2[i+1])
-head(out)
-str(i)
-
-
-for (i in 1:(6/2)) {
-  contrast = paste0(str_sub(colnames(df2[i]),1,-3),"_","contrast")
-  size = paste0(str_sub(colnames(df2[i]),1,-3),"_","size")
-  #out <- out %>% mutate(!!contrast := log2(df2[i]/df2[i+1]))
-  df2 <- df2 %>% mutate(!!contrast :=0)
-  df2[,i] <- log2(df2[i*2-1]/df2[i*2])
-  #df2[[contrast]] <- log2(df2[i]/df2[i+1])
-  #out <- out %>% mutate(!!size := log2(df2[i])+log2(df2[i+1]))
-  #df2 <- df2 %>% mutate(!!size := 0)
-  #df2[[size]] <- log2(df2[i])+log2(df2[i+1])
-}
-out  %>% head()
-
-
-log2(df2[,i*2-1]/df2[,i*2])
-double(df2[,2] %>%head())
-str(df2)
-toy <- df2[1:10,1:10]
-toy
-str(toy)
-toy[,1:ncol(toy)] <- sapply(toy[,1:ncol(toy)], as.double())
-options(8)
-
-str(toy)
-
 #### cluster plot
 
 df <- read.table("clusterplot.data.x.y.txt",header = T)
@@ -87,12 +28,8 @@ df$ID <- str_sub(str_split_fixed(df$CEL,"_",6)[,6],1,-5)
 #df <- df[df$ID %in% ref$FID,]
 row.names(df)<-df$ID
 
-head(ref)[1:10]
-plot(df$AX.106718326.contrast,df$AX.106718326.size, cex=0.5, pch=16,col=rgb(1,0,0,0.5))
-plot(df[,2],df[,3], cex=0.5, pch=16,col=rgb(1,0,0,0.5),
-     xlab = "Contrast = log2(SNP-A / SNP-B)",ylab = "Size = (log2(SNP-A) + log2(SNP-B))/2")
-plot(df[,'AX.106718326.contrast'],df[,'AX.106718326.size'], cex=0.5, pch=16,col=rgb(1,1,1,0.5),
-     xlab = "Contrast = log2(SNP-A / SNP-B)",ylab = "Size = (log2(SNP-A) + log2(SNP-B))/2")
+
+
 
 png("plot/test.png",height = 600,width = 600)
 plot(df[,'AX.106718326.contrast'],df[,'AX.106718326.size'], cex=0.5, pch=0,col=rgb(1,1,1,0.5),
@@ -174,29 +111,41 @@ DNAlink <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/DANlink.2020.cel.list.tx
 tera <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/2020.7th.tera.cel.list.txt")
 DNAlink$company <- "DNAlink"
 tera$company <- "Teragen"
-ref2 <- rbind(DNAlink,tera)
+rmPCA <- read.table("~/Desktop/KCDC/KKY/01.1stQC.PCA/ALL/notchr6_14/rmPCA.txt")
+rmMH <- read.table("~/Desktop/KCDC/KKY/01.1stQC.PCA/ALL/notchr6_14/rmLQSamples.txt")
+head(rmPCA)
+head(rmMH)
+
+#ref2 <- rbind(DNAlink,tera)
 head(df[1:5])
 head(ref2)
-i <- 'AX.106718326'
+target <- 'AX.106718326'
 plot(df[,'AX.106718326.contrast'],df[,'AX.106718326.size'], cex=0.5, pch=0,col=rgb(1,1,1,0.5),
      xlab = "Contrast = log2(SNP-A / SNP-B)",ylab = "Size = (log2(SNP-A) + log2(SNP-B))/2",
 )
-points(df[df$CEL %in% DNAlink$V1,paste0(i,'.contrast')],
-       df[df$CEL %in% DNAlink$V1,paste0(i,'.size')],
+points(df[df$CEL %in% DNAlink$V1,paste0(target,'.contrast')],
+       df[df$CEL %in% DNAlink$V1,paste0(target,'.size')],
        cex=0.5, pch=16,col=rgb(0,0,1,0.5))
-points(df[df$CEL %in% tera$V1,paste0(i,'.contrast')],
-       df[df$CEL %in% tera$V1,paste0(i,'.size')],
+points(df[df$CEL %in% tera$V1,paste0(target,'.contrast')],
+       df[df$CEL %in% tera$V1,paste0(target,'.size')],
        cex=0.5, pch=16,col=rgb(1,0,0,0.5))
+points(df[df$ID %in% rmPCA$V1,paste0(target,'.contrast')],
+       df[df$ID %in% rmPCA$V1,paste0(target,'.size')],
+       cex=0.5, pch=16,col=rgb(0,1,0,1))
+points(df[df$ID %in% rmMH$V1,paste0(target,'.contrast')],
+       df[df$ID %in% rmMH$V1,paste0(target,'.size')],
+       cex=0.5, pch=16,col=rgb(0,0,0,1))
 
-legend('bottomright',legend=c("Teragen","DNAlink"),
-       col = c("red","blue"),
+
+legend('bottomright',legend=c("Teragen","DNAlink","missing-het(44)","PCA(159)"),
+       col = c("red","blue","black","green"),
        #lty = c(16,16,16,NA),
-       pch = c(16,16),cex = 1,
+       pch = c(16,16,16,16),cex = 1,
        #title = "Allele(# of sample)"
 )
 
 for (i in 7:ncol(ref)) {
-  #for (i in 7:10) {
+#for (i in 7:10) {
   target = colnames(ref)[i]
   png(paste0("plot/",target,".png"),height = 600,width = 600)
   plot(df[,paste0(target,".contrast")],df[,paste0(target,'.size')], cex=0.5, pch=0,col=rgb(1,1,1,0.5),
@@ -210,14 +159,20 @@ for (i in 7:ncol(ref)) {
   points(df[df$CEL %in% tera$V1,paste0(target,'.contrast')],
          df[df$CEL %in% tera$V1,paste0(target,'.size')],
          cex=1, pch=16,col=rgb(1,0,0,0.5))
+  points(df[df$ID %in% rmPCA$V1,paste0(target,'.contrast')],
+         df[df$ID %in% rmPCA$V1,paste0(target,'.size')],
+         cex=0.7, pch=16,col=rgb(0,1,0,1))
+  points(df[df$ID %in% rmMH$V1,paste0(target,'.contrast')],
+         df[df$ID %in% rmMH$V1,paste0(target,'.size')],
+         cex=0.7, pch=16,col=rgb(0,0,0,1))
   
-  legend('bottomright',legend=c("Teragen","DNAlink"),
-         col = c("red","blue"),
+  
+  legend('bottomright',legend=c("Teragen","DNAlink","missing-het(44)","PCA(159)"),
+         col = c("red","blue","black","green"),
          #lty = c(16,16,16,NA),
-         pch = c(16,16),cex = 1,
+         pch = c(16,16,16,16),cex = 1,
          #title = "Allele(# of sample)"
   )
-  
   dev.off()
   
 }
