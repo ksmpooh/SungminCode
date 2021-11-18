@@ -16,11 +16,12 @@
 
 ###Rsciprt
 #Three args : [ref] [input] [output]
-# Rscript --vanilla
+#Three args : [missing.imiss] [het.het] [PDF.output]
+# Rscript --vanilla input.R [missing.imiss] [het.het] [PDF.output]
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args) < 3){
-	stop("At least three arguments : [ref] [input] [output] ")
+	stop("At least three arguments : [missing.imiss] [het.het] [PDF.output] ")
 }
 
 

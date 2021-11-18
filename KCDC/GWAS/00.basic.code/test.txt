@@ -1,0 +1,5 @@
+### 정도관리를 위한 기본 script 정리
+
+01.genotype_calling.sh
+01-1.indel
+02.missing-het.plot
