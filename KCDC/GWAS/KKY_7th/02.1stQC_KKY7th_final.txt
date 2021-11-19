@@ -1,0 +1,115 @@
+########## 20211119
+##########
+## all sample calling -> snpolisher
+#all sample calling
+#Snpolisher 마커 제거
+#2개 회사를 pheno로 해서 (case, control), --test-missing 해서 1e-5 미만의 P를 가진 마커 삭제
+#PCA 분석 (인종별 PC (타인종 제거), 전체 샘플 중 outlier 제외)
+#missing het 분석
+#2차 QC 진행해보고 결과 체크 (다음주 수요일 이전)
+
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/missing-test
+
+awk '$5<1e-5{print $2}' KKY.7th.1st_snpolisher_missing-test.missing > KKY.7th.1st_snpolisher_missing-test_1e-5removelist.txt
+
+cd /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/FINAL
+
+plink --bfile /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/KKY.7th.1st_snpolisher --exclude /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/missing-test/KKY.7th.1st_snpolisher_missing-test_1e-5removelist.txt --make-bed --out KKY.7th.1st_snpolisher_rmtest-missing
+
+
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing --remove rmEthnicPCAlist.txt --make-bed --out KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA
+
+
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA --maf 0.1 --geno 0.01 --hwe 1e-3 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_pruning
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA --extract KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_pruning.prune.in --make-bed --out KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_pruned
+flashpca_x86-64 --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_pruned --outpc PCA.txt
+
+
+
+
+setwd("~/Desktop/KCDC/KKY/01.1stQC_Final/")
+pca <- read.table("PCA.txt", header=T)
+
+png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY.1stQC ALL PCA", cex=1, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.5), cex=1, pch=16)
+legend("topright",title="Marker : 17357",box.lwd = 0,box.col = "white",bg = "white",
+       legend = c("     Outliner : 162 samples","(DNAlink: 121, Teragen:41)","      -0.07 < PC1 < 0.07","      -0.07 < PC2 < 0.06"))
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+pca <- read.table("PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.06 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA --remove rmPCA.txt --make-bed --out KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_rmPCA
+
+
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_rmPCA --missing --out MISS
+plink --bfile KKY.7th.1st_snpolisher_rmtest-missing_rmethnicPCA_rmPCA --het --out HET
+
+
+
+#R
+setwd("~/Desktop/KCDC/KKY/01.1stQC_Final/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     #xlim=c(13,22), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY.1stQC ALL missing-het", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+
+
+## for server
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+lowSample <- merge(miss, het, by="FID")
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+cat rmPCA.txt rmEthnicPCAlist.txt rmLQsamples.txt > Final.1st.QC.rm.list.txt
+
+/DATA/smkim/KKY/02.1stQC/OUTPUTs/all/FINAL/Final.1st.QC.rm.list.txt

@@ -1,0 +1,6 @@
+# genotype calling : /BDATA/smkim/KKY/2nd.ALL_FINAL
+# /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/FINAL/Final.1st.QC.rm.list.txt
+# cel files : /DATA/smkim/KKY/01.GenotypeCalling/INPUTs/cel_files_2nd_After.Final_20211119.txt
+# outDir : /BDATA/smkim/KKY/2nd.ALL_FINAL
+
+
