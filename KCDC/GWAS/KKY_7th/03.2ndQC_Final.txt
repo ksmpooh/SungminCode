@@ -4,3 +4,171 @@
 # outDir : /BDATA/smkim/KKY/2nd.ALL_FINAL
 
 
+sh geno.sh /DATA/smkim/KKY/01.GenotypeCalling/INPUTs/cel_files_2nd_After.Final_20211119.txt /BDATA/smkim/KKY/2nd.ALL_FINAL
+cd /BDATA/smkim/KKY/SCRIPTs/runSH
+python2 DataPrep.py 0 50000 /DATA/smkim/KKY/01.GenotypeCalling/INPUTs/Sample.Info.txt /BDATA/smkim/JG/01.1stgenocall/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt /BDATA/smkim/KKY/2nd.ALL_FINAL/
+
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final
+
+plink --file /BDATA/smkim/KKY/2nd.ALL_FINAL/PLINK/KNIH.RAW.0_50000 --merge-list /BDATA/smkim/KKY/2nd.ALL_FINAL/INPUTs/mergeList.txt --make-bed -out KKY.2nd.Final --allow-no-sex
+
+plink --bfile KKY.2nd.Final --extract /BDATA/smkim/KKY/2nd.ALL_FINAL/Recommended.ps --make-bed --out KKY.2nd.Final_snpolisher
+
+
+##
+setwd("~/Desktop/KCDC/KKY/02.2ndQC_Final/")
+
+
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+png("KKY.2ndQC.missing-het.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(13,22), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY.2ndQC ALL missing-het", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+##
+# outliner 1샘플
+
+plink --bfile KKY.2nd.Final_snpolisher --remove rmLQsamples.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het
+
+
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/king
+nohup king -b ../KKY.2nd.Final_snpolisher_rmmissing-het.bed --related --degree 2 --prefix KKY.2nd > RESULT.txt &
+  Stages 1&2 (with 32768 SNPs): 1580 pairs of relatives are detected (with kinship > 0.0625)
+                               Screening ends at Mon Nov 22 15:15:40 2021
+  Final Stage (with 783549 SNPs): 1571 pairs of relatives (up to 2nd-degree) are confirmed
+                               Inference ends at Mon Nov 22 15:15:41 2021
+
+Relationship summary (total relatives: 0 by pedigree, 1572 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	14	1286	221	50
+
+
+
+#############
+missing-het
+/DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/missing-test
+plink --bfile ../KKY.2nd.Final_snpolisher_rmmissing-het --test-missing --pheno /DATA/smkim/KKY/02.1stQC/OUTPUTs/all/missing-test/KKY.for.missing.test.pheno.txt --pheno-name CASE --out KKY.2nd.Final_snpolisher_rmmissing-het_test-missing
+awk '$5<1e-5{print $2}' KKY.2nd.Final_snpolisher_rmmissing-het_test-missing.missing > KKY.2nd.Final_snpolisher_rmmissing-het_test-missing_1e-5removelist.txt
+
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final
+
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het --exclude missing-test/KKY.2nd.Final_snpolisher_rmmissing-het_test-missing_1e-5removelist.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing
+## after test missing pca
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/1st_PCA_aftertestmissing
+
+plink --bfile ../KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing --maf 0.1 --geno 0.01 --hwe 1e-3 --chr 1-5,7-13,15-22 --indep-pairwise 50 5 0.02 --out KKY.2nd.Final_snpolisher__rmmissing-het_rmtest-missing_pruning
+plink --bfile ../KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing --extract KKY.2nd.Final_snpolisher__rmmissing-het_rmtest-missing_pruning.prune.in --make-bed --out KKY.2nd.Final_snpolisher__rmmissing-het_rmtest-missing_pruned
+flashpca_x86-64 --bfile KKY.2nd.Final_snpolisher__rmmissing-het_rmtest-missing_pruned --outpc PCA_2ndQC_aftertestmissing.txt
+
+
+##
+## basic PCA
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/1st_PCA
+plink --bfile ../KKY.2nd.Final_snpolisher --maf 0.1 --geno 0.01 --hwe 1e-3 \
+--chr 1-5,7-13,15-22 --indep-pairwise 50 5 0.02 \
+--out KKY.2nd.Final_snpolisher_pruning
+
+plink --bfile ../KKY.2nd.Final_snpolisher --extract KKY.2nd.Final_snpolisher_pruning.prune.in --make-bed --out KKY.2nd.Final_snpolisher_pruned
+
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/1st_PCA_t1
+plink --bfile ../KKY.2nd.Final_snpolisher --maf 0.25 --geno 0.01 --hwe 1e-3 \
+--chr 1-5,7-13,15-22 --indep-pairwise 50 5 0.02 \
+--out KKY.2nd.Final_snpolisher_pruning
+flashpca_x86-64 --bfile KKY.2nd.Final_snpolisher_pruned --outpc PCA_2ndQC_t1.txt
+
+### PCA plot
+
+setwd("~/Desktop/KCDC/KKY/02.2ndQC_Final/")
+pca <- read.table("PCA_2ndQC.txt", header=T)
+pca <- read.table("PCA_2ndQC_t1.txt", header=T)
+pca <- read.table("PCA_2ndQC_aftertestmissing.txt", header=T)
+pca <- read.table("PCA_2nd.txt", header=T)
+
+
+library(stringr)
+DNAlink <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/DANlink.2020.cel.list.txt")
+tera <- read.table("~/Desktop/KCDC/KKY/00.sampleInfo/2020.7th.tera.cel.list.txt")
+DNAlink$FID <- str_replace_all(str_split_fixed(DNAlink$V1,"_",6)[,6],".CEL","")
+tera$FID <- str_replace_all(str_split_fixed(tera$V1,"_",6)[,6],".CEL","")
+
+
+png("KKY.2ndQC.PCA_V2.png", height = 800, width = 800)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     xlim=c(-0.4, 0.4), ylim=c(-0.4,0.4),
+     xlab="PC1", ylab="PC2", main="KKY.2ndQC ALL PCA", cex=1, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.5), cex=1, pch=16)
+
+legend("topleft",title="Marker : 17405",box.lwd = 0,box.col = "white",bg = "white",cex = 1,
+       legend = c("rm chr(6,14), missing-test(7770)","MAF 0.1, geno 0.01, HWE 1e-3","indep-pairwise 50 5 0.02","      -0.1 < PC1 < 0.1","      -0.1 < PC2 < 0.1"))
+       #legend = c("     Outliner : 162 samples","(DNAlink: 121, Teragen:41)","      -0.07 < PC1 < 0.07","      -0.07 < PC2 < 0.06"))
+dev.off()
+
+
+points(pca[pca$FID %in% DNAlink$FID,]$PC1,
+       pca[pca$FID %in% DNAlink$FID,]$PC2,
+       col = rgb(0,0,1,0.7), cex = 1 , pch = 16)
+points(pca[pca$FID %in% tera$FID,]$PC1,
+       pca[pca$FID %in% tera$FID,]$PC2,
+       col = rgb(1,0,0,0.7), cex = 1 , pch = 16)
+color <- c(
+        rgb(1,0,0,1),
+        rgb(0,0,1,1))
+list <- c("Teragen","DNAlink")
+#legend(x = -0.25 ,y = 0.15,list,col = color,cex = 0.7,pch = 16)
+legend("bottomleft",list,col = color,cex = 2,pch = 16)
+
+
+
+dev.off()
+pca <- read.table("PCA_2ndQC_aftertestmissing.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+## marker QC
+cd /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing --remove 1st_PCA_aftertestmissing/rmPCA.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip
+
+plink --bfile KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --hwe 1e-6 --make-bed --out KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip_fil
