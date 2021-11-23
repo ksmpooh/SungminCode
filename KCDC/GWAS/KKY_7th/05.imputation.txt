@@ -1,0 +1,7 @@
+## NODAT 처럼 샘플 나누지 않고 진행
+
+cd /DATA/smkim/KKY/05.imputation/SCRIPTs
+
+# 수정후 진행
+
+python2 01.mkImputationScript.py
