@@ -26,3 +26,10 @@ wc -l * | awk '$1>1{print $2}' > rmdup.file.list.txt
 
 
 python2 02_1.remove.duple.with.remove.na.py
+
+
+sh filt.sh
+
+python2 02_2.info.select.forgen2vcf.py
+
+python2 04.gen2vcf.py
