@@ -5,3 +5,24 @@ cd /DATA/smkim/KKY/05.imputation/SCRIPTs
 # 수정후 진행
 
 python2 01.mkImputationScript.py
+
+
+
+
+# infoscore
+
+cd /DATA/smkim/KKY/05.imputation/OUTPUTs/01.imputation
+
+python2 03.infoscore.py
+
+
+ls *.info | xargs -I{} -P 32 bash -c './dupfilt.sh {}'
+
+ls *.info | xargs -I{} -P 32 bash -c './lastfile.sh {}'
+
+
+cd /DATA/smkim/KKY/05.imputation/OUTPUTs/03.info/dupID/filt
+wc -l * | awk '$1>1{print $2}' > rmdup.file.list.txt
+
+
+python2 02_1.remove.duple.with.remove.na.py
