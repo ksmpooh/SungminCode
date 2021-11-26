@@ -33,3 +33,7 @@ sh filt.sh
 python2 02_2.info.select.forgen2vcf.py
 
 python2 04.gen2vcf.py
+
+python2 05.vcf.filter.python2
+
+
