@@ -7,8 +7,8 @@ shDir = wdir + "SCRIPTs/"
 shDir = shDir + "05.vcf.merge/"
 os.system("mkdir "+shDir)
 outDir = wdir + "OUTPUTs/"
-vcfDir = outDir + "05.vcf.filter/"
-vcfMergeDir = outDir + "05.vcf.merge/"
+vcfDir = outDir + "05.vcf.filter_MAF0.01INFO0.08/"
+vcfMergeDir = outDir + "05.vcf.merge_MAF0.01INFO0.08/"
 os.system("mkdir " +vcfMergeDir)
 tool = "bcftools"
 out_prefix = "KKY.7th.20211125."
