@@ -86,3 +86,6 @@ dim(rmList)
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 q()
+
+
+
