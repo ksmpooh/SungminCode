@@ -48,12 +48,12 @@ write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALS
 
 
 plink --bfile JG.KD.rep.1st_snpolisher --remove rmLQSamples.txt --make-bed --out JG.KD.rep.1st_snpolisher_rmLQsamples
-plink --bfile JG.KD.rep.1st_snpolisher_rmLQsamples --maf 0.01 --geno 0.05 --hwe 1e-6 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --indep-pairwise 50 5 0.02 --out JG.KD.rep.1st_snpolisher_rmLQsamples_pruning
+plink --bfile JG.KD.rep.1st_snpolisher_rmLQsamples --maf 0.1 --geno 0.01 --hwe 0.001 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --chr 1-22 --indep-pairwise 50 5 0.02 --out JG.KD.rep.1st_snpolisher_rmLQsamples_pruning
 plink --bfile JG.KD.rep.1st_snpolisher_rmLQsamples --extract JG.KD.rep.1st_snpolisher_rmLQsamples_pruning.prune.in --make-bed --out JG.KD.rep.1st_snpolisher_rmLQsamples_pruned
 
 flashpca_x86-64 --bfile JG.KD.rep.1st_snpolisher_rmLQsamples_pruned --outpc PCA.txt
 
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/KD.reo/1st/")
+setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/KD.rep/1st/")
 
 pca <- read.table("PCA.txt", header=T)
 
@@ -62,7 +62,7 @@ head(pca)
 pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
      #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
-#     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlim=c(-0.8, 0.8), ylim=c(-0.6,0.6),
      xlab="PC1", ylab="PC2", main="Kidney Donor 1stQC PCA", cex=1.5, pch=16)
 abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
@@ -74,13 +74,15 @@ points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1
        col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
 
-rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+rmList <- pca[pca$PC1 < -0.3 | 0.3 < pca$PC1 | pca$PC2 < -0.3 | 0.3 < pca$PC2,]
 dim(rmList)
 
-
-
-
-
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+
+
 
 cat rmLQSamples.txt rmPCA.txt > 1stQC.rmlist.txt
