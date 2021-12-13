@@ -1,0 +1,49 @@
+# 20211210 KD rep HLA IMPUTATION  with KD
+
+
+cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/00.oridata
+cat KD.rep/JG.KD.rep.QCed_HLA.bim /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/00.oridata/JG.KD.QCed_HLA.bim | awk '{print $2}' | sort | uniq -c|awk '$1==2{print $2}' > intersect.ID.txt
+
+plink --bfile ./KD.rep/JG.KD.rep.QCed_HLA --extract intersect.ID.txt  --make-bed --out ./KD.rep/JG.KD.rep.QCed_HLA_intersect
+plink --bfile /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/00.oridata/JG.KD.QCed_HLA --extract intersect.ID.txt --make-bed --out ./KD/JG.KD.QCed_HLA_intersect
+
+plink --bfile ./KD/JG.KD.QCed_HLA_intersect --bmerge ./KD.rep/JG.KD.rep.QCed_HLA_intersect --make-bed --out JG.KD.with_rep.QCed.HLA
+
+
+cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/01.phasing
+
+~/Downloads/Eagle_v2.4.1/eagle --bfile /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/00.oridata/JG.KD.with_rep.QCed.HLA --geneticMapFile /BDATA/smkim/JG/04.phasing/INPUTs/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --outPrefix ./JG.KD.with_rep.phasing --maxMissingPerSnp 0.3 --maxMissingPerIndiv 0.5 --numThreads 32
+
+cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/02.hlaimputation
+
+/BDATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -int 28477833 33448188 -h /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.hap -l /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.legend -m /BDATA/smkim/JG/05.imputation/INPUTs/map/genetic_map_chr6_combined_b37.txt -g ../01.phasing/JG.KD.with_rep.phasing.haps.gz -o_gz -o JG.KD_withrep.HLA.imputation
+
+
+
+
+#HLAimputation
+zcat JG.KD.HLA.imputation.gen.gz |grep HLA > JG.KD.HLA.imputation_onlyHLA.gen
+
+mkdir Hardcall
+python3 01.split.py JG.KD_withrep.HLA.imputation_onlyHLA.gen ./Hardcall/
+
+cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/02.hlaimputation/Hardcall
+
+
+python3 02.hardcall_fianl.py 2 2digit.gen
+python3 02.hardcall_fianl.py 4 4digit.gen
+
+mkdir plink
+
+plink --gen 2digit_processing.dosage_2digit.gen --sample ../../01.phasing/JG.KD.with_rep.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD_with_rep.2digit_afterHardcall
+plink --gen 4digit_processing.dosage_4digit.gen --sample ../../01.phasing/JG.KD.with_rep.phasing.sample --allow-extra-chr --make-bed --out plink/JG.KD_with_rep.4digit_afterHardcall
+
+mkdir all_digit
+plink --bfile JG.KD_with_rep.2digit_afterHardcall --bmerge JG.KD_with_rep.4digit_afterHardcall --allow-extra-chr --make-bed --out ./all_digit/JG.KD_with_rep.afterHardcall
+
+cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/02.hlaimputation/Hardcall/plink/all_digit
+
+awk '{print $1" P"}' JG.KD_with_rep.afterHardcall.bim > P.allele
+plink --bfile JG.KD_with_rep.afterHardcall --a1-allele P.allele --recodeA --allow-extra-chr --out JG.KD_with_rep.afterHardcall_raw
+
+

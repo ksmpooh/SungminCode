@@ -1,0 +1,26 @@
+
+
+
+cd /BDATA/smkim/JG.KD/05.imputation/OUTPUTs/05.vcf.merge
+
+ls *gz | cut -d"." -f1-6 | xargs -I{} -P32 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}"
+
+
+
+
+JG.KD.imputation.MAF0.01_INFO0.8chr10.bed
+
+import os,glob
+chr1=  glob.glob("*chr1.*log")
+print(chr1)
+#chr1 = pop()
+def main():
+    out = open("merge-list.txt","w")
+    for i in range(2,22+1):
+        out.write("%s\n"%chr1[0].replace("chr1.","chr%s."%str(i)).replace(".log",""))
+    out.close()
+    os.system("plink --bfile %s --merge-list merge-list.txt --make-bed --out %s"%(chr1[0].replace(".log",""),chr1[0].replace("chr1.log","_ALLchr")))
+
+main()        
+    
+
