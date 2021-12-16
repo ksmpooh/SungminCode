@@ -15,9 +15,9 @@ ref$HLAID.2019 <- str_replace_all(ref$HLAID.2019,"H","CDC")
 ref <- ref %>% filter(HLAID.2019 != "CDC015")
 
 
-df <- read_excel("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/HLA.typing.Final.result.20211126.xlsx",sheet = 1)
+df <- read_excel("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/HLA.typing.Final.result_modify_20211216.xlsx",sheet = 1)
 head(df)
-df1 <- read_excel("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/HLA.typing.Final.result.20211126.xlsx",sheet = 2)
+df1 <- read_excel("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/HLA.typing.Final.result_modify_20211216.xlsx",sheet = 2)
 head(df1)
 
 df <- rbind(df,df1)

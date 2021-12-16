@@ -1,10 +1,10 @@
 #setwd("~/Desktop/KCDC/HLAimputation/IMPUTE4/gen.calling.test/RESULTs/test/")
 # recipient donor
 #df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/JG.ESRD.KR_2019/KR/JG.ESRD.KR.2019.HLAimputation_2digit_raw.raw",header = T)
-df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/JG.ESRD.KR_2019/KR/JG.ESRD.KR.2019.HLAimputation_4digit_raw.raw",header = T)
+#df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/JG.ESRD.KR_2019/KR/JG.ESRD.KR.2019.HLAimputation_4digit_raw.raw",header = T)
 
-#df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/KD_2019_2020/plink/JG.KD_with_rep.2digit_afterHardcall_raw.raw",header = T)
-df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/KD_2019_2020/plink/JG.KD_with_rep.4digit_afterHardcall_raw.raw",header = T)
+df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/KD_2019_2020/plink/JG.KD_with_rep.2digit_afterHardcall_raw.raw",header = T)
+#df <- read.table("~/Desktop/KCDC/HLAimputation/00.KOTRY_HLAimp/KD_2019_2020/plink/JG.KD_with_rep.4digit_afterHardcall_raw.raw",header = T)
 
 head(df)
 colnames(df)
@@ -199,7 +199,7 @@ colnames(out)
 #write.csv(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_4digit.csv",row.names = F,quote = F)
 
 
-#write.table(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_2digit.txt",row.names = F,quote = F,sep = "\t")
+write.table(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_2digit.txt",row.names = F,quote = F,sep = "\t")
 write.table(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_4digit.txt",row.names = F,quote = F,sep = "\t")
 
 
