@@ -43,10 +43,10 @@ head(out)
 
 head(df)
 df <- df %>% filter(!(df$KR_KBA_ID %in% out$KR_KBA_ID)) %>% rbind(out)
+df %>% filter(!(df$KR_KBA_ID %in% out$KR_KBA_ID)) %>% rbind(out)
 
-
-write.table(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_2digit_changeNGStyping.txt",row.names = F,quote = F,sep = "\t")
-write.table(out,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_4digit_changeNGStyping.txt",row.names = F,quote = F,sep = "\t")
+write.table(df,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_2digit_changeNGStyping.txt",row.names = F,quote = F,sep = "\t")
+write.table(df,"~/Desktop/KCDC/HLAimputation/03.HLA_matching/2019_Kidney_HLAmathing_table_4digit_changeNGStyping.txt",row.names = F,quote = F,sep = "\t")
 
 
 

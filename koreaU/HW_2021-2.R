@@ -407,6 +407,7 @@ p3 <- cowplot::get_legend(p3)
 p4 <- cowplot::get_legend(p4)
 
 g1 <- plot_grid(p,p1,p2,p3,p4,ncol = 1,rel_heights = c(1,0.1,0.1,0.1,0.1))
+plot_grid(p,p1,p2,p3,p4,ncol = 1,rel_heights = c(1,0.1,0.1,0.1,0.1))
 g1
 
 plot_grid(g1,ncol = 1)
@@ -463,44 +464,60 @@ ggplot(a,aes(x=key))+
   theme(legend.position = "bottom")
 
 
-rename_ge
 
-#geom_bar(aes(fill2=value),position="fill") %>% rename_geom +
 
-ggplot(diamonds, aes(color)) +
-  geom_bar(aes(fill = cut)) + 
-  scale_fill_manual(aesthetics = "fill", values = cut.values,
-                    breaks = cut.levs[1:2], name = "First Grouop:") +
-  new_scale_fill() +
-  geom_bar(aes(fill2 = cut)) %>% rename_geom_aes(new_aes = c(fill = "fill2")) +
-  scale_fill_manual(aesthetics = "fill2", values = cut.values,
-                    breaks = cut.levs[-(1:2)], name = "Second Group:") +
-  guides(fill=guide_legend(ncol = 2)) +
-  theme(legend.position="bottom")
-  
-
-  
-  scale_fill_manual(aesthetics = "fill",values = c("darkred","deepskyblue3","darkseagreen4","black","darkred","deepskyblue3","darkred","deepskyblue3","darkseagreen4","darkred","deepskyblue3","darkseagreen4","darkslateblue"),
-                    breaks = level1[1:4],name="1st") +  
-  scale_fill_manual(aesthetics = "fill",values = c("darkred","deepskyblue3","darkseagreen4","black","darkred","deepskyblue3","darkred","deepskyblue3","darkseagreen4","darkred","deepskyblue3","darkseagreen4","darkslateblue"),
-                  breaks = level1[5:6],name="2nd")  
+#### FINAL 20211216
 
 
 
-  scale_fill_manual(aesthetics = "fill", values = cut.values,
-                    breaks = cut.levs[1:2], name = "First Grouop:") +
-  scale_fill_manual(aesthetics = "fill2", values = cut.values,
-                    breaks = cut.levs[-(1:2)], name = "Second Group:")
+library(tidyverse)
+library(readxl)
+library(cowplot)
 
-  
+df <- read_excel("1-s2.0-S0092867421008576-mmc1.xlsx",sheet = 2)
+colnames(df)
+a <- df %>% filter(Type == "Tumor") %>% # stage 간 NAT는 NA
+  select(Ethnicity_mod,Gender,Smoking.History_modified,Stage_mod) %>%
+  rename("Smoking\nHistory" = Smoking.History_modified,
+         "Ethnicity" = Ethnicity_mod,"Stage" = Stage_mod) %>%
+  mutate(Ethnicity = str_to_title(Ethnicity),Gender = str_to_title(Gender)) %>%
+  gather() %>%
+  filter((value != "Na") , (value != "NA")) %>%
+  as.data.frame()
 
-geom_bar(aes(x = key,fill=factor(value,levels = level1))) + 
-  geom_bar(position = 'fill')
-
-             
-             ggplot(a,aes(x=key,fill=factor(value,levels = c('Caucasian','Asian','Slavic','Black','Female','Male','Non-Smoker','Reformed Smoker','Smoker',"IV","III","II","I")))) + 
+fil_value <- c('Caucasian','Asian','Slavic','Black','Female','Male','Non-Smoker','Reformed Smoker','Smoker',"IV","III","II","I")
+color_value <- c("darkred","deepskyblue3","darkseagreen4","black","darkslateblue")
+p <- ggplot(a,aes(x=key,fill=factor(value,levels = fil_value))) + 
   geom_bar(position = 'fill')+
   theme(legend.position ="none") + 
-  #theme(legend.position ="bottom") + 
-  scale_fill_manual(values = c("darkred","deepskyblue3","darkseagreen4","black","darkred","deepskyblue3","darkred","deepskyblue3","darkseagreen4","darkred","deepskyblue3","darkseagreen4","darkslateblue")) +
+  scale_fill_manual(values = c(c(color_value[1:4],color_value[1:2],color_value[1:3],color_value[1:3],color_value[5]))) +
   labs(y = "Frequency",x="")
+p
+p1 <- ggplot(a %>% filter(key == "Ethnicity"), aes(x = key,fill=factor(value,levels = c('Caucasian','Asian','Slavic','Black')))) + 
+  geom_bar() +
+  scale_fill_manual(values = color_value[1:4]) +
+  theme(legend.position ="bottom",legend.justification = "left") +
+  guides(fill=guide_legend(title="Ethnicity  "))
+p2 <- ggplot(a %>% filter(key == "Gender"), aes(x = key,fill=factor(value,levels = c("Female","Male")))) + 
+  geom_bar() +
+  scale_fill_manual(values = color_value[1:2]) +
+  theme(legend.position ="bottom",legend.justification = "left") +
+  guides(fill=guide_legend(title="Gender   "))
+p3 <- ggplot(a %>% filter(key == "Smoking\nHistory"), aes(x = key,fill=factor(value,levels = c('Non-Smoker','Reformed Smoker','Smoker')))) + 
+  geom_bar() +
+  scale_fill_manual(values = color_value[1:3]) +
+  theme(legend.position ="bottom",legend.justification = "left") +
+  guides(fill=guide_legend(title="Smoking \nHistory"))
+p4 <- ggplot(a %>% filter(key == "Stage"), aes(x = key,fill=factor(value,levels = c("I","II","III","IV")))) + 
+  geom_bar() +
+  scale_fill_manual(values = c(color_value[5],rev(color_value[1:3]))) +
+  theme(legend.position ="bottom",legend.justification = "left") +
+  guides(fill=guide_legend(title="Stage      "))
+
+p1 <- cowplot::get_legend(p1)
+p2 <- cowplot::get_legend(p2)
+p3 <- cowplot::get_legend(p3)
+p4 <- cowplot::get_legend(p4)
+
+g1 <- plot_grid(p,p1,p2,p3,p4,ncol = 1,rel_heights = c(1,0.1,0.1,0.1,0.1))
+plot_grid(p,p1,p2,p3,p4,ncol = 1,rel_heights = c(1,0.1,0.1,0.1,0.1))
