@@ -19,7 +19,7 @@ def main():
     for i in range(2,22+1):
         out.write("%s\n"%chr1[0].replace("chr1.","chr%s."%str(i)).replace(".log",""))
     out.close()
-    os.system("plink --bfile %s --merge-list merge-list.txt --make-bed --out %s"%(chr1[0].replace(".log",""),chr1[0].replace("chr1.log","_ALLchr")))
+    os.system("plink --bfile %s --merge-list merge-list.txt --make-bed --out %s"%(chr1[0].replace(".log",""),chr1[0].replace(".chr1.log","_ALLchr")))
 
 main()        
     
