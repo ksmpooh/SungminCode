@@ -1,6 +1,7 @@
 # CookHLA 
 
-Citation : S. Cook, W. Choi, H. Lim, Y. Luo, K. Kim, X. Jia, S. Raychaudhuri and B. Han, CookHLA: Accurate Imputation of Human Leukocyte Antigens. \n
+Citation : S. Cook, W. Choi, H. Lim, Y. Luo, K. Kim, X. Jia, S. Raychaudhuri and B. Han, CookHLA: Accurate Imputation of Human Leukocyte Antigens.
+
 Website :  https://github.com/WansonChoi/CookHLA
 
 
