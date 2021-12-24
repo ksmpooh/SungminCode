@@ -57,7 +57,9 @@ head(ref)
 table(ref$QC)
 
 #write_xlsx(ref,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20211223.xlsx")
-
+ref <- read_xlsx("QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20211223.xlsx",sheet = 1)
+head(ref)
+ref$ref <- paste0(substr(ref$type,1,1),ref$ref)
 rec <- ref %>% filter(type == 'LR' | type == 'KR')
 don <- ref %>% filter(type == 'LD' | type == 'KD')
 
@@ -66,7 +68,7 @@ head(out)
 
 
 
-write_xlsx(out,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo_pairtable.20211223.xlsx")
+write_xlsx(out,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo_pairtable.20211223_new.xlsx")
 
 table(ref$QC)
 sum(table(ref$QC))
