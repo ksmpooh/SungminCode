@@ -3,7 +3,7 @@
 
 cd /BDATA/smkim/JG.KD/05.imputation/OUTPUTs/05.vcf.merge
 mkdir plink
-ls *gz | cut -d"." -f1-7 | xargs -I{} -P32 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}"
+ls *gz | cut -d"." -f1-5 | xargs -I{} -P32 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}"
 
 
 

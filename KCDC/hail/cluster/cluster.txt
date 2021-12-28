@@ -219,3 +219,65 @@ table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",ty
 mt = mt.annotate_cols(pheno = table[mt.s])
 mt.show(5)
 gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+
+
+
+
+
+
+####check
+https://www.fatalerrors.org/a/0Nt01z4.html
+http://www.incodom.kr/하둡프로그래밍
+
+~/hadoop-3.3.0/bin/hdfs namenode -format -force
+
+
+sudo ~/spark-3.1.2/sbin/start-master.sh
+~/hadoop-3.3.0/sbin/start-dfs.sh
+
+~/hadoop-3.3.0/sbin/start-yarn.sh
+
+sudo ~/spark-3.1.2/sbin/stop-master.sh
+
+~/hadoop-3.3.0/sbin/stop-yarn.sh
+~/hadoop-3.3.0/sbin/stop-dfs.sh
+
+
+sudo ~/spark-3.1.2/sbin/start-master.sh
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+
+
+sudo ~/spark-3.1.2/sbin/stop-worker.sh
+sudo ~/spark-3.1.2/sbin/stop-master.sh
+
+sudo ~/hadoop-3.3.0/sbin/start-dfs.sh
+~/hadoop-3.3.0/sbin/start-dfs.sh
+~/hadoop-3.3.0/sbin/stop-dfs.sh
+
+
+
+import hail as hl
+hl.init(master='spark://genome101:7077')
+
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+
+
+
+
+
+gwas.show(32)
+gwas.export("file:///DATA/smkim/gaws.output.tsv")
+
+gwas.export("file:///DATA/smkim/test/gaws.output.tsv")
+gwas.export("hdfs:///DATA/smkim/hail/gaws.output.tsv")
+
+gwas.export('hdfs:///user/genome/output/test.tsv')
+
+gwas.export('hdfs://genome101:9000/user/genome/test.tsv')
