@@ -127,7 +127,7 @@ sudo ~/spark-3.1.2/sbin/stop-worker.sh
 
 
 import hail as hl 
-hl.init(master='spark://genome101:7078')
+hl.init(master='spark://genome101:7077')
 
 #hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
 #hl.import_vcf("file:///DATA/smkim/hail/test.file.vcf.bgz").write("file:///DATA/smkim/hail/JG.for.hail.mt",overwrite=True)
@@ -155,7 +155,7 @@ show(p)
 
 
 import hail as hl
-hl.init(master='spark://genome101:7078')
+hl.init(master='spark://genome101:7077')
 
 mt = hl.balding_nichols_model(n_populations=3,
                               n_samples=500,
@@ -281,3 +281,11 @@ gwas.export("hdfs:///DATA/smkim/hail/gaws.output.tsv")
 gwas.export('hdfs:///user/genome/output/test.tsv')
 
 gwas.export('hdfs://genome101:9000/user/genome/test.tsv')
+
+gwas.export('hdfs://genome101:9000/user/test/test.tsv')
+
+
+mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
+mt = hl.read_matrix_table("hdfs://genome101:9000/user/test/JG.for.local.mt")
+table = (hl.import_table("hdfs://genome101:9000/user/test/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+

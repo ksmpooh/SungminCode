@@ -1,0 +1,270 @@
+----- Linux setting
+
+## ~/.bashrc
+
+
+export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
+export PATH=$PATH:$JAVA_HOME/bin
+
+export SPARK_HOME=$HOME/spark-3.1.2
+export HADOOP_HOME=$HOME/hadoop-3.3.0
+export PATH=$SPARK_HOME/bin:$PATH
+export PATH=$HADOOP_HOME/bin:$PATH
+export PATH=$HADOOP_HOME/sbin:$PATH
+
+export PDSH_RCMD_TYPE=ssh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export HADOOP_YARN_HOME=$HADOOP_HOME
+
+#  cat /etc/hosts
+10.20.30.101	genome101
+10.20.30.103	genome103
+
+# 방화벽 설정
+
+sudo ufw allow from {server_ip}
+sudo ufw status verbose #설정되었는지 확인
+
+# ssh 설정
+
+서버끼리 ssh로 데이터를 공유하기 때문에 비번을 입력하지 않아도 서로 접속이 가능하도록 해준다.
+ssh-copy-id -i ~/.ssh/id_rsa.pub {server_ip}
+
+###
+
+
+
+----- spark setting
+spark
+cd ~/spark-3.1.2/conf
+
+# spark-env.sh
+
+export SPARK_MASTER_IP=10.20.30.101
+export SPARK_MASTER_HOST=genome101
+
+export SPARK_MASTER_PORT=7077
+export SPARK_WORKER_PORT=7078
+export SPARK_MASTER_WEBUI_PORT=8080
+export SPARK_WORKER_WEBUI_PORT=8090
+export PYSPARK_PYTHON='python3'
+export PYSPARK_DRIVER_PYTHON='python3'
+export HADOOP_HOME='~/hadoop-3.3.0'
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native
+export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
+
+
+#worker
+10.20.30.101
+10.20.30.103
+
+#spark-defaults.conf
+
+spark.master    spark://genome101:7077
+spark.serializer        org.apache.spark.serializer.KryoSerializer
+spark.eventLog.enabled  true
+spark.eventLog.dir  file:///home/genome/spark-3.1.2/log
+spark.history.fs.logDirectory   file:///home/genome/spark-3.1.2/log
+
+
+----- haddop setting
+
+cd ~/hadoop-3.3.0/etc/hadoop
+
+# hadoop-env.sh
+export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
+export HADOOP_HOME=/home/genome/hadoop-3.3.0
+
+
+# core-site.xml
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+       <value>hdfs://genome101:9000</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/home/genome/data/tmp</value>
+    </property>
+</configuration>
+
+
+# hdfs-site.xml : master
+<configuration>
+<property>
+	<name>dfs.replication</name>
+	<value>3</value>
+</property>
+<property>
+	<name>dfs.permissions</name>
+	<value>false</value>
+</property>
+
+  <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/DATA/smkim/hdfs/namenode</value>
+    </property>
+    <property>
+        <name>dfs.namenode.checkpoint.dir</name>
+        <value>/DATA/smkim/hdfs/namesecondary</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/DATA/smkim/hdfs/datanode</value>
+    </property>
+    <property>
+        <name>dfs.http.address</name>
+        <value>genome101:50070</value>
+    </property>
+</configuration>
+
+
+# hdfs-site.xml : worker
+
+<configuration>
+<property>
+	<name>dfs.replication</name>
+	<value>3</value>
+</property>
+<property>
+	<name>dfs.permissions</name>
+	<value>false</value>
+</property>
+
+<property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/DATA/smkim/hdfs/datanode</value>
+</property>
+</configuration>
+
+# mapred-site.xml
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+         <value>yarn</value>
+    </property>
+</configuration>
+
+# workers
+genome101
+genome103
+
+# yarn-site.xml
+<property>
+<name>yarn.resourcemanager.resource-tracker.address</name>
+<value>10.20.30.101:8025</value>
+</property>
+
+<property>
+<name>yarn.resourcemanager.scheduler.address</name>
+<value>10.20.30.101:8030</value>
+</property>
+
+<property>
+<name>yarn.resourcemanager.address</name>
+<value>10.20.30.101:8050</value>
+</property>
+
+
+</configuration>
+
+
+----- 실행
+
+hdfs namenode -format
+hdfs dfs -ls /
+hdfs dfs -mkdir /user
+hdfs dfs -put 
+hdfs dfs -get
+
+
+# command master
+
+~/hadoop-3.3.0/sbin/start-dfs.sh
+
+Starting namenodes on [genome101]
+Starting datanodes
+Starting secondary namenodes [genome103]
+
+~/hadoop-3.3.0/sbin/start-yarn.sh
+
+Starting resourcemanager
+Starting nodemanagers
+
+
+genome@genome101:~/hadoop-3.3.0/etc/hadoop$ jps
+78721 Jps
+77264 NameNode
+77456 DataNode
+77771 SecondaryNameNode
+78301 NodeManager
+78111 ResourceManager
+
+genome@genome103:~/hadoop-3.3.0/etc/hadoop$ jps
+103571 NodeManager
+103746 Jps
+103365 DataNode
+
+
+
+
+~/hadoop-3.3.0/sbin/stop-dfs.sh
+~/hadoop-3.3.0/sbin/stop-yarn.sh
+
+
+
+
+
+
+## master만 test
+
+#master 
+~/hadoop-3.3.0/sbin/start-dfs.sh
+
+jps
+92803 SecondaryNameNode
+92293 NameNode
+96950 Jps
+92486 DataNode
+
+
+sudo ~/spark-3.1.2/sbin/start-master.sh
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+
+sudo ~/spark-3.1.2/sbin/stop-master.sh
+sudo ~/spark-3.1.2/sbin/stop-worker.sh
+
+
+sudo python
+=========================================================================== python3
+import hail as hl
+hl.init(master='spark://genome101:7077')
+
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+gwas.export('hdfs://genome101:9000/user/test/test.tsv')
+2021-12-29 13:40:35 Hail: INFO: merging 32 files totalling 42.8M...26 + 6) / 32]
+2021-12-29 13:40:36 Hail: INFO: while writing:
+    hdfs://genome101:9000/user/test/test.tsv
+  merge time: 604.267ms
+==========================================================================================
+
+genome@genome101:/DATA/smkim$ hdfs dfs -ls /user/test/
+Found 4 items
+drwxr-xr-x   - genome supergroup          0 2021-12-29 13:30 /user/test/JG.for.local.mt
+-rw-r--r--   3 genome supergroup          6 2021-12-29 12:58 /user/test/hello.txt
+-rw-r--r--   3 genome supergroup    1220804 2021-12-29 13:30 /user/test/new.pheno.sub_Total.ped
+-rw-r--r--   3 root   supergroup   44889340 2021-12-29 13:40 /user/test/test.tsv
+
