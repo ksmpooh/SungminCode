@@ -1,0 +1,55 @@
+##
+
+import hail as hl
+hl.init(master='spark://genome101:7077')
+hl.init(master='spark://genome101:7077',tmp_dir = "/user/tmp/")
+
+
+mt = hl.read_matrix_table("hdfs://genome101:9000/user/input/JG.for.local.mt").write("hdfs://genome101:9000/user/input/JG.for.local.mt",overwrite=True,_partitions=240)
+mt = hl.
+
+hl.import_vcf('data/1kg.vcf.bgz').write('data/1kg.mt', overwrite=True)
+
+hl.import_vcf("hdfs://genome101:9000/user/input/test.file.vcf.bgz").write("hdfs://genome101:9000/user/input/JG.for.hdfs.mt",overwrite=True,_partitions=240
+
+
+mt = hl.read_matrix_table("hdfs://genome101:9000/user/input/JG.for.local.mt")
+mt = hl.read_matrix_table("/DATA/smkim/hail.test/data/JG.ESRD.chr22.hail.mt",_n_partitions=120)
+
+
+
+
+
+  GNU nano 4.8                                                                                    hail.test.py
+import time
+import hail as hl
+hl.init()
+#hl.init(master='spark://genome101:7078')
+table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+start = time.time()
+mt = hl.read_matrix_table("/DATA/smkim/hail.test/data/JG.ESRD.chr22.hail.mt")
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.output("local_hailmt.nopartition.tsv")
+end = time.time()
+
+start1 = time.time()
+mt = hl.read_matrix_table("/DATA/smkim/hail.test/data/JG.ESRD.chr22.hail.mt",_n_partitions=80)
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.output("local_hailmt.80partition.tsv")
+end1 = time.time()
+
+
+start2 = time.time()
+mt1 = hl.import_vcf("/DATA/smkim/hail.test/data/vcf/JG.ESRD.chr22.merge.vcf.bgz")
+mt1 = mt1.annotate_cols(pheno = table[mt1.s])
+gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0,mt1.pheno.SEX,mt1.pheno.AGE],test="firth")
+gwas.output("local_vcf.nopartition.tsv")
+end2 = time.time()
+
+
+print("mt time : %s"%(str(end-start)))
+print("mt_partition time : %s"%(str(end1-start1)))
+print("vcf time : %s"%(str(end2-start2)))
+hl.stop()

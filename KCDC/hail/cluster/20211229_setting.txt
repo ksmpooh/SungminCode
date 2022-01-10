@@ -268,3 +268,8 @@ drwxr-xr-x   - genome supergroup          0 2021-12-29 13:30 /user/test/JG.for.l
 -rw-r--r--   3 genome supergroup    1220804 2021-12-29 13:30 /user/test/new.pheno.sub_Total.ped
 -rw-r--r--   3 root   supergroup   44889340 2021-12-29 13:40 /user/test/test.tsv
 
+
+
+
+gwas.export("file:///home/genome/test/test1.output.tsv")
+gwas.export("file:///DATA/smkim/test.cluster/noinput-output.tsv")

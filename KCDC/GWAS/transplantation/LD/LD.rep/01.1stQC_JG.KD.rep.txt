@@ -1,0 +1,88 @@
+#python DataPrep.py 0 50000 Sample.Info.txt Axiom_KORV1_1.na35.annot.extract.txt  outDir
+
+# 109번
+cd /DATA/smkim/JG.LD.rep/02.1stQC/OUTPUTs
+# genotype call
+
+# call to plink
+
+
+# 1st QC
+cd /DATA/smkim/JG.LD.rep/02.1stQC/OUTPUTs
+
+#plink --file /DATA/smkim/JG.LD.rep/01.genotype/1st/PLINK/KNIH.RAW.0_50000 --merge-list /DATA/smkim/JG.LD.rep/01.1stgenocall/1st/INPUTs/mergeList.txt --make-bed --out JG.LD.rep.1stQC
+
+plink --bfile JG.LD.rep.1st --extract /DATA/smkim/JG.LD.rep/01.genocall/1st/Recommended.ps --make-bed --out JG.LD.rep.1stQC_snpolisher
+
+plink --bfile JG.LD.rep.1stQC_snpolisher --missing --out MISS
+plink --bfile JG.LD.rep.1stQC_snpolisher --het --out HET
+
+
+
+setwd("~/Desktop/KCDC/transplantation/QCLD.rep_2019/01.1stQC/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("JG.LD.rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,23), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=16, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16 | 17.5 < lowSample$HET,]
+
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+plink --bfile JG.LD.rep.1stQC_snpolisher --remove rmLQSamples.txt --make-bed --out JG.LD.rep.1stQC_snpolisher_rmMissing-het
+
+
+plink --bfile JG.LD.rep.1stQC_snpolisher_rmMissing-het --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --out JG.LD.rep.1stQC_snpolisher_rmMissing-het_pruning --chr 1-22
+plink --bfile JG.LD.rep.1stQC_snpolisher_rmMissing-het --extract JG.LD.rep.1stQC_snpolisher_rmMissing-het_pruning.prune.in --make-bed --out JG.LD.rep.1stQC_snpolisher_rmMissing-het_pruned
+flashpca_x86-64 --bfile JG.LD.rep.1stQC_snpolisher_rmMissing-het_pruned --outpc PCA.txt
+
+
+
+# PCA
+setwd("~/Desktop/KCDC/transplantation/QCLD.rep_2019/01.1stQC/")
+
+pca <- read.table("PCA.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
+pdf("JG.LD.rep.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+     #xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="Kidney Donor 1stQC PCA", cex=1.5, pch=16)
+abline(v=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.13, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.13 | 0.13 < pca$PC1 | pca$PC2 < -0.13 | 0.13 < pca$PC2,]
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+

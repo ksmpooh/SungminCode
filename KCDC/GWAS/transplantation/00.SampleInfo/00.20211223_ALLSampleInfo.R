@@ -33,31 +33,42 @@ head(rep)
 
 bcode <- rbind(dis,rep)
 head(bcode)
-
+dim(bcode)
+#table(bcode$)
 ref <- merge(ref,bcode)
 ref$QC <- "QCout"
 
 KR_2019 <- read.table("QCed.list/KR.2019.QCed.list.txt")
 KR_2020 <- read.table("QCed.list/KR.rep.2020.QCed.list.txt")
-KD_2019 <- read.table("QCed.list/KD.2019.QCed.list.txt")
-KD_2020 <- read.table("QCed.list/2020.KD.QCed.ID.txt")
-LR_2019 <- read.table("QCed.list/LR.2019.QCed.list.txt")
+KD_2019 <- read.table("QCed.list/KD.2019.QCed.list.txt") 
+KD_2020 <- read.table("QCed.list/KD.rep.2020.QCed.list.txt") %>% select(V1)
+LR_2019 <- read.table("QCed.list/LR.2019.QCed.list.txt") %>% select(V1)
+LR_2020 <- read.table("QCed.list/LR.rep.2020.QCed.list.txt") %>% select(V1)
+LD_2019 <- read.table("QCed.list/LD.2019.QCed.list.txt") %>% select(V1)
+LD_2020 <- read.table("QCed.list/LD.rep.2020.QCed.list.txt") %>% select(V1)
 head(LR_2019)
 head(KR_2019)
 head(KR_2020)
 head(KD_2019)
 head(KD_2020)
+head(LR_2019)
+head(LR_2020)
+head(LD_2019)
+head(LD_2020)
 
-QCed <- rbind(KR_2019,KR_2020,KD_2019,KD_2020,LR_2019)
+QCed <- rbind(KR_2019,KR_2020,KD_2019,KD_2020,LR_2019,LR_2020,LD_2019,LD_2020)
 
 ref[ref$KBA_ID %in% QCed$V1,]$QC <- "QCin"
-ref[ref$type == "LD",]$QC <- "nonQC"
-ref[ref$type == "LR" & ref$Prod == "2020",]$QC <- "nonQC"
+#ref[ref$type == "LD",]$QC <- "nonQC"
+#ref[ref$type == "LR" & ref$Prod == "2020",]$QC <- "nonQC"
 head(ref)
 table(ref$QC)
+ref %>% filter(Prod == 2019) %>% filter(QC == "QCout")%>% count(type)
+ref %>% filter(Prod == 2020) %>% filter(QC == "QCout")%>% count(type)
+write_xlsx(ref,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20220104.xlsx")
 
-#write_xlsx(ref,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20211223.xlsx")
-ref <- read_xlsx("QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20211223.xlsx",sheet = 1)
+#ref <- read_xlsx("QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20211223.xlsx",sheet = 1)
+ref <- read_xlsx("QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo.20220104.xlsx",sheet = 1)
 head(ref)
 ref$ref <- paste0(substr(ref$type,1,1),ref$ref)
 rec <- ref %>% filter(type == 'LR' | type == 'KR')
@@ -69,7 +80,7 @@ head(out)
 
 
 write_xlsx(out,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo_pairtable.20211223_new.xlsx")
-
+write_xlsx(out,"QClist/KOTRY_KCHIPprod_ALLsample.SampleInfo_pairtable.20220104.xlsx")
 table(ref$QC)
 sum(table(ref$QC))
 

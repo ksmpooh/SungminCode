@@ -117,7 +117,7 @@ sudo ~/hadoop-3.3.0/sbin/stop-dfs.sh
 sudo ~/spark-3.1.2/sbin/stop-master.sh
 # worker
 
-sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7078
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
 sudo ~/spark-3.1.2/sbin/stop-worker.sh
 # ./start-slave.sh spark://your_host_name:7077 -m 512M -c 1
 # run
@@ -208,13 +208,15 @@ show(p)
 
 ## 예시
 import hail as hl
-hl.init()
-#hl.init(master='spark://genome101:7078')
+#hl.init()
+hl.init(master='spark://genome101:7078')
 mt = hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz")
+mt = hl.import_vcf("file:///DATA/smkim/hail.test/data/test.file.vcf.bgz")
+
 #mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
 #mt = hl.read_matrix_table("/DATA/smkim/hail/JG.for.hail.mt")
 mt.show(5)
-#table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
 table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
 mt = mt.annotate_cols(pheno = table[mt.s])
 mt.show(5)
@@ -289,3 +291,26 @@ mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
 mt = hl.read_matrix_table("hdfs://genome101:9000/user/test/JG.for.local.mt")
 table = (hl.import_table("hdfs://genome101:9000/user/test/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
 
+
+
+
+
+
+
+import hail as hl
+#hl.init()
+hl.init(master='spark://genome101:7078')
+#mt = hl.import_vcf("/DATA/smkim/hail.test/data/test.file.vcf.bgz")
+#mt = hl.import_vcf("file:///DATA/smkim/hail.test/data/test.file.vcf.bgz")
+mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt")
+mt = hl.read_matrix_table("file:///DATA/smkim/hail/JG.for.hail.mt",_n_partitions = 40)
+
+#mt = hl.read_matrix_table("/DATA/smkim/hail/JG.for.hail.mt")
+mt.show(5)
+table = (hl.import_table("file:///DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+table = (hl.import_table("/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+mt.show(5)
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.export("file:///DATA/smkim/test.cluster/test.tsv")
+gwas.export("file:///DATA/smkim/test.cluster/noinput-output.tsv")

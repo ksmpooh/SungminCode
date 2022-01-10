@@ -4,12 +4,13 @@ cd /BDATA/smkim/JG.KD.rep
 2nd : 302 sample
 
 # genocall
-#python2 DataPrep.py 0 50000 /BDATA/smkim/JG/00.rawData/sample_info/Summay.info.final.txt /BDATA/smkim/JG_2020/01.genocall/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt /BDATA/smkim/JG.KD.rep/01.1stgenocall/2nd/
+python2 DataPrep.py 0 50000 /LaCie2/KOTRY/00.summary/2020/Sample.Info.txt /BDATA/smkim/JG_2020/01.genocall/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt /BDATA/smkim/JG.KD.rep/01.genotypecalling/2nd_re/
 
 cd /BDATA/smkim/JG.KD.rep/03.2ndQC
 
 plink --file /BDATA/smkim/JG.KD.rep/01.genotypecalling/2nd/PLINK/KNIH.RAW.0_100000 --merge-list ../01.genotypecalling/2nd/INPUTs/mergeList.txt --make-bed --out JG.KD.rep.2nd
-plink --bfile JG.KD.rep.2nd --extract /BDATA/smkim/JG.KD.rep/01.genotypecalling/2nd/Recommended.ps --make-bed --out JG.KD.rep.2nd_snpolisher
+
+plink --bfile JG.KD.rep.2nd --extract /BDATA/smkim/JG.KD.rep/01.genotypecalling/2nd_re/Recommended.ps --make-bed --out JG.KD.rep.2nd_snpolisher
 
 plink --bfile JG.KD.rep.2nd_snpolisher --missing --out MISS
 plink --bfile JG.KD.rep.2nd_snpolisher --het --out HET
@@ -27,7 +28,7 @@ het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
 
 lowSample <- merge(miss, het, by="FID")
 
-pdf("../PDF/JG.KR_rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+pdf("PDF.JG.KD.rep.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
 plot(lowSample$HET, lowSample$F_MISS, 
      xlim=c(13,23), ylim=c(0,0.1), 
      xlab="heterozygosity rate",ylab="missing rate", main="KD.rep 2nd Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
@@ -38,6 +39,8 @@ points(lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_
        lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
        col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16 | 17.5 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 
 
@@ -56,7 +59,7 @@ pca <- read.table("PCA.txt", header=T)
 
 head(pca)
 
-pdf("../PDF/JG.1st.QC_PCA.pdf", height = 10, width = 10)
+pdf("PDF.JG.KD.rep.QC_PCA.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
      #xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
           xlim=c(-1, 1), ylim=c(-1,1),
@@ -71,7 +74,7 @@ points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1
        col=rgb(1,0,0,0.3), cex=1.5, pch=16)
 dev.off()
 
-rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+rmList <- pca[pca$PC1 < -0.2 | 0.2 < pca$PC1 | pca$PC2 < -0.2 | 0.2 < pca$PC2,]
 dim(rmList)
 
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
