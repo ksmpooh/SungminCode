@@ -118,6 +118,7 @@ sudo ~/spark-3.1.2/sbin/stop-master.sh
 # worker
 
 sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077 -c 40
 sudo ~/spark-3.1.2/sbin/stop-worker.sh
 # ./start-slave.sh spark://your_host_name:7077 -m 512M -c 1
 # run
