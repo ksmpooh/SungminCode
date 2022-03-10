@@ -1,7 +1,11 @@
-# 20211210 KD rep HLA IMPUTATION  with KD
+# 20211210 KD rep HLA IMPUTATION  with KD -> 06.imputation_old
+# 20220125 다시 수행 KD rep HLA IMPUTATION  with KD
 
 
 cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/00.oridata
+
+plink --bfile /BDATA/smkim/JG.KD/03.2ndQC/OUTPUTs/JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --chr 6 --from-bp 28477833 --to-bp 33448188 --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out JG.KD.rep.QCed_HLA
+
 cat KD.rep/JG.KD.rep.QCed_HLA.bim /BDATA/smkim/JG.KD/06.HLAimputation/OUTPUTs/00.oridata/JG.KD.QCed_HLA.bim | awk '{print $2}' | sort | uniq -c|awk '$1==2{print $2}' > intersect.ID.txt
 
 plink --bfile ./KD.rep/JG.KD.rep.QCed_HLA --extract intersect.ID.txt  --make-bed --out ./KD.rep/JG.KD.rep.QCed_HLA_intersect
@@ -19,7 +23,7 @@ cd /BDATA/smkim/JG.KD.rep/06.HLAimputation/OUTPUTs/02.hlaimputation
 /BDATA/smkim/JG/TOOLs/impute4.1.2_r300.2 -no_maf_align -int 28477833 33448188 -h /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.hap -l /LaCie2/smkim/HLAimputation/ref_panel/IMPUTE4/Han/Han.legend -m /BDATA/smkim/JG/05.imputation/INPUTs/map/genetic_map_chr6_combined_b37.txt -g ../01.phasing/JG.KD.with_rep.phasing.haps.gz -o_gz -o JG.KD_withrep.HLA.imputation
 
 
-
+2022
 
 #HLAimputation
 zcat JG.KD.HLA.imputation.gen.gz |grep HLA > JG.KD.HLA.imputation_onlyHLA.gen

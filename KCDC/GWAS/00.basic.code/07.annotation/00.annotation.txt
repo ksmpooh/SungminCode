@@ -1,0 +1,26 @@
+경로: 108:/BDATA/jeonginhae/KBA_Upgrade/05.KBAv1
+파일: Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt
+
+1. VCF 만들기
+2. VEP
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i INPUT_FILE -o OUTPUT_FILE --offline
+3. snpEff
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 INPUT_FILE > OUTPUT_FILE
+
+
+
+cd /BDATA/smkim/JG/00.check
+
+Probe_Set_ID	Chromosome	Physical_Position	Ref_Allele	Alt_Allele
+
+##fileformat=VCFv4.1
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+
+
+$1"_"$2"_"$4"_"$5
+awk '{print $2"\t"$3"\t"$2"_"$3"_"$4"_"$5"\t"$4"\t"$5"\t.\t.\t."}'
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_sorted.vcf -o KCHIPV1.1_sorted_VEP.vcf --offline
+
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 KCHIPV1.1_sorted.vcf |bgzip -c > KCHIPV1.1_sorted_Snpeff.vcf.gz
