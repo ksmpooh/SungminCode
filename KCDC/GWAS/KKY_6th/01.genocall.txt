@@ -1,0 +1,60 @@
+apt-genotype-axiom \
+      --analysis-files-path /library/file/path \
+      --arg-file Axiom_PMRA_96orMore_Step2.r3.apt-genotype-axiom.AxiomGT1.apt2.xml \
+      --do-rare-het-adjustment true \
+      --out-dir out \
+      --cel-files cel_file_list.txt \
+      --log-file ./apt-genotype-axiom.log
+
+Ps-metrics
+ps-metrics --posterior-file ./input/AxiomGT1.snp-posteriors.txt \
+      --call-file ./input/AxiomGT1.calls.txt --metrics-file metrics.txt
+
+SNPolisher
+ps-classification --species-type human \
+      --metrics-file ./input/metrics.txt --output-dir ./classification
+
+Convert VCF
+apt-format-result --calls-file <call file> \
+      --annotation-file <db file> \
+      --export-vcf-file <output file>
+
+Convert Plink
+apt-format-result --calls-file <file> \
+      --annotation-file <file> \
+      --export-plink-file <output file>
+
+
+####20220311
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-genotype-axiom \
+--analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis \
+--arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml \
+--do-rare-het-adjustment true \
+--out-dir /BDATA/smkim/KKY_6th/01.genocall/1st/ \
+--cel-files /BDATA/smkim/KKY_6th/00.rawData/CEL/KKY.6th.all.celfiles.txt \
+--log-file /BDATA/smkim/KKY_6th/01.genocall/1st/20220311_KKY.6th.all.apt-genotype-axiom.log
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-metrics \
+--posterior-file /BDATA/smkim/KKY_6th/01.genocall/1st/AxiomGT1.snp-posteriors.txt \
+--call-file /BDATA/smkim/KKY_6th/01.genocall/1st/AxiomGT1.calls.txt \
+--metrics-file /BDATA/smkim/KKY_6th/01.genocall/1st/metrics.txt
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification --species-type human \
+--metrics-file /BDATA/smkim/KKY_6th/01.genocall/1st/metrics.txt --output-dir /BDATA/smkim/KKY_6th/01.genocall/1st/classification
+
+
+
+##GenotypeCalling
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/apt-genotype-axiom 
+--analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis 
+-arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml 
+--dual-channel-normalization true --cel-files /BDATA/smkim/JG/00.rawData/sample_info/KR_2nd_cel_file_list2.txt 
+--summaries --write-models --out-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
+
+##SNPolisher
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-metrics --posterior-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.snp-posteriors.txt --call-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.calls.txt --metrics-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.out.txt
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification --species-type human --metrics-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.out.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
+
+~/Downloads/apt-1.19.0-x86_64-intel-linux/bin/ps-classification-supplemental --performance-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/Ps.performance.txt --summary-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.summary.txt --call-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.calls.txt --posterior-file /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/AxiomGT1.snp-posteriors.txt --output-dir /BDATA/smkim/JG/01.1stgenocall/OUTPUTs/KR.2nd/
