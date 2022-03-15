@@ -1,0 +1,92 @@
+경로: 108:/BDATA/jeonginhae/KBA_Upgrade/05.KBAv1
+파일: Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt
+
+1. VCF 만들기
+2. VEP
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i INPUT_FILE -o OUTPUT_FILE --offline
+3. snpEff
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 INPUT_FILE > OUTPUT_FILE
+
+
+cd /BDATA/smkim/JG/00.check
+
+Probe_Set_ID	Chromosome	Physical_Position	Ref_Allele	Alt_Allele
+
+##fileformat=VCFv4.1
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+
+
+$1"_"$2"_"$4"_"$5
+awk '{print $2"\t"$3"\t"$2"_"$3"_"$4"_"$5"\t"$4"\t"$5"\t.\t.\t."}'
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_sorted.vcf -o KCHIPV1.1_sorted_VEP.vcf --offline --fork 10 --stats_text --force_overwrite
+
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -stats KCHIPV1.1_sorted_Snpeff.html -csvStats KCHIPV1.1_sorted_Snpeff.csv -v hg19 KCHIPV1.1_sorted.vcf |bgzip -c > KCHIPV1.1_sorted_Snpeff.vcf.gz
+
+
+
+#test
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i JG.KR.imputation.mergeGen.processing.chr18.78000001_78017156.vcf.gz -o test_vep.vcf --offline --fork 10 --stats_text
+#/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i JG.KR.imputation.mergeGen.processing.chr18.78000001_78017156.vcf.gz --offline | bgzip -c > test_vep.vcf.gz
+
+--fork 4
+
+
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 JG.KR.imputation.mergeGen.processing.chr18.78000001_78017156.vcf.gz -stats ./snpEff/ALL.Kchip.marker_snpEff.html -csvStats ./snpEff/ALL.Kchip.marker_snpEff.csv |bgzip -c > ./snpEff/test_Snpeff.vcf.gz
+-t 4
+
+
+####
+
+#JG.KR.imputation.mergeGen.processing.chr1.187000001_192000000forANNO.vcf
+
+sort -k1n
+1
+
+cp /DATA/smkim/JG/anno/header.txt JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf
+
+
+#!/bin/bash
+
+for chr in $(seq 1 22);do
+	    cp /DATA/smkim/JG/anno/header.txt ./merge/JG.KR.imputation.mergeGen.processing.chr$chr.chunkMerge.vcf
+        cat *chr$chr.*vcf | grep -v "#" | sort -k2n >> ./merge/JG.KR.imputation.mergeGen.processing.chr$chr.chunkMerge.vcf
+        done
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf -o ./VEP/JG.KR.imputation.mergeGen.processing.chr1.chunkMerge_VEP.vcf --offline
+
+
+ls *vcf |cut -d"." -f1-7 | xargs -I{} -P 5 bash -c "/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./{}.vcf -o ./VEP/{}_VEP.vcf --offline --stats_text"
+
+
+ls *vcf |cut -d"." -f1-7 | xargs -I{} -P 5 bash -c "java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 ./{}.vcf -stats ./snpEff/{}_snpEff.html -csvStats ./snpEff/{}_snpEff.csv | bgzip -c >  ./snpEff/{}_snpEff.vcf.gz"
+
+
+
+
+ALL
+cat ../*vcf | grep -v "#" | sort -k2n >> JG.KR.imputation.mergeGen.processing.ALLchr.vcf
+
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 JG.KR.imputation.mergeGen.processing.ALLchr.vcf -stats ./snpEff/ALLchr.imputation.marker_snpEff.html -csvStats ./snpEff/ALLchr.imputation.marker_snpEff.csv |bgzip -c > ./snpEff/ALLchr.imputation.marker_Snpeff.vcf.gz
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i JG.KR.imputation.mergeGen.processing.ALLchr.vcf -o ./VEP/ALLchr.imputation.marker_VEP.vcf --offline --fork 32 --stats_text
+
+
+#imputed marker
+awk '{split($2,a,"_");split(a[2],b,"/"); print $1"\t"$4"\t"$2"\t"b[1]"\t"b[2]"\t.\t.\t."}' merge_rmking_rmfrq_rmMissingtest.updateSNPID.bim > imputed.Kchip.marker.txt
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./imputed.Kchip.marker.vcf -o ./VEP/imputed.Kchip.marker_VEP.vcf --offline --stats_text
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 ./imputed.Kchip.marker.vcf -stats ./snpEff/imputed.Kchip.marker_snpEff.html -csvStats ./snpEff/imputed.Kchip.marker_snpEff.csv | bgzip -c >  ./snpEff/imputed.Kchip.marker_snpEff.vcf.gz
+
+
+
+-csvStats test.csv
+#test
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 JG.KR.imputation.mergeGen.processing.chr18.78000001_78017156.vcf.gz
+
+java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -stats test.html -v hg19 JG.KR.imputation.mergeGen.processing.chr22.chunkMerge.vcf
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf -o test_vcf.vcf.gz --offline --stats_text

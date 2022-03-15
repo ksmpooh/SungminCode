@@ -24,3 +24,7 @@ awk '{print $2"\t"$3"\t"$2"_"$3"_"$4"_"$5"\t"$4"\t"$5"\t.\t.\t."}'
 /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_sorted.vcf -o KCHIPV1.1_sorted_VEP.vcf --offline
 
 java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 KCHIPV1.1_sorted.vcf |bgzip -c > KCHIPV1.1_sorted_Snpeff.vcf.gz
+
+
+
+##################
