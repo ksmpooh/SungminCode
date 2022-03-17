@@ -59,7 +59,7 @@ for chr in $(seq 1 22);do
 /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf -o ./VEP/JG.KR.imputation.mergeGen.processing.chr1.chunkMerge_VEP.vcf --offline
 
 
-ls *vcf |cut -d"." -f1-7 | xargs -I{} -P 5 bash -c "/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./{}.vcf -o ./VEP/{}_VEP.vcf --offline --stats_text"
+ls *vcf |cut -d"." -f1-7 | xargs -I{} -P 11 bash -c "/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 4 -i ./{}.vcf -o ./VEP/{}_VEP.vcf --offline --stats_text"
 
 
 ls *vcf |cut -d"." -f1-7 | xargs -I{} -P 5 bash -c "java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -v hg19 ./{}.vcf -stats ./snpEff/{}_snpEff.html -csvStats ./snpEff/{}_snpEff.csv | bgzip -c >  ./snpEff/{}_snpEff.vcf.gz"
@@ -90,3 +90,4 @@ java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -stats test.html 
 
 
 /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf -o test_vcf.vcf.gz --offline --stats_text
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr22.chunkMerge_checkREFallele.vcf -o ./VEP/JG.KR.imputation.mergeGen.processing.chr22.chunkMerge_checkREFallele_VEP.vcf_summary.txt --offline --stats_text

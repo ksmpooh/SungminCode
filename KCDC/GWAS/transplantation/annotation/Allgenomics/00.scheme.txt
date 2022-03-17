@@ -1,0 +1,278 @@
+# 다시 QC 109
+/BDATA/smkim/JG/09.allogenomics/
+
+
+00. DATA
+00-0
+plink data: KR(NODAT QCed), KD(KD QCed)
+imputation data : KR, KD (MAF>=0.01, INFO >= 0.8 데이터 사용) 
+
+
+
+00-1. KR, KD QCed 데이터 중에서 Pair 살아남은 것만 추출
+총 1,147 pair
+
+
+
+00-2 pair 남은것 추출 및 MAF 0.01 데이터 추출
+/BDATA/smkim/KR_allogenomics/00.oridata/KD
+
+plink --bfile JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil --maf 0.01 --chr 1-22 --make-bed --out JG.KD.QCed_maf0.01
+
+cd /BDATA/smkim/KR_allogenomics/00.oridata/KR
+
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil_screenFailure --keep ../KR.ID.txt --maf 0.01 --make-bed --out JG.KR.QCed_selectPair.maf0.01 --chr 1-22
+
+
+
+00-3 전에 a1, a2 마커가 달라서.. ref 기준으로 plink/vcf 마커를 추출해야함
+ls *gz | cut -d"." -f1-5 | xargs -I{} -P24 bash -c "bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\n' {}.vcf.gz > ./Marker_info/{}.marker.info.txt"
+ls *gz | cut -d"." -f1-7 | xargs -I{} -P24 bash -c "bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\n' {}.vcf.gz > ./Marker_info/{}.marker.info.txt"
+
+cd /BDATA/smkim/KR_allogenomics/01.imputationData
+awk 'length($5)==1{print $0}' KDimp.with.AXID.check.list.txt |awk 'length($6)==1{print $2}' > KDimp.ID.check.AXID.check.list_v2.txt
+awk 'length($5)==1{print $0}' KRimp.with.AXID.check.list.txt |awk 'length($6)==1{print $2}' > KRimp.ID.check.AXID.check.list_v2.txt
+
+
+
+00-3 imputation 변이 추출
+
+
+#bcftools view --include ID==@/BDATA/smkim/KR_allogenomics/00.oridata_plink/KR/KR.markerID_vcf.txt /BDATA/smkim/NODAT/05.imputation/OUTPUTs/05.vcf.merge/JG.KR.NODAT.imputation_filter.chr21.vcf.gz -Oz >./Marker_extract/JG.KR.NODAT.imputation_filter.chr21_Matching.vcf.gz
+cd /BDATA/smkim/NODAT/05.imputation/OUTPUTs/05.vcf.merge
+ls *gz | cut -d"." -f1-5 | xargs -I{} -P24 bash -c "bcftools view --include ID==@/BDATA/smkim/KR_allogenomics/01.imputationData/KRimp.ID.check.AXID.check.list_v2.txt {}.vcf.gz -Oz > ./Marker_extract/{}_Matching.vcf.gz"
+ls *gz | xargs -I{}  -P 24 bash -c "tabix -p vcf {}"
+
+cd /BDATA/smkim/JG.KD/05.imputation/OUTPUTs/05.vcf.merge
+
+ls *gz | cut -d"." -f1-7 | xargs -I{} -P24 bash -c "bcftools view --include ID==@/BDATA/smkim/KR_allogenomics/01.imputationData/KDimp.ID.check.AXID.check.list_v2.txt {}.vcf.gz -Oz > ./Marker_extract/{}_Matching.vcf.gz"
+ls *gz | xargs -I{}  -P 24 bash -c "tabix -p vcf {}"
+
+
+00-4 vcf merge
+
+bcftools concat *gz -Oz > JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR.vcf.gz
+bcftools concat *gz -Oz > JG.KR.NODAT.imputation_filter.ALLCHR.vcf.gz
+
+
+** 2nd check
+
+
+bcftools view --include ID==@/BDATA/smkim/KR_allogenomics/check.ID.txt ./01.ori/JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR.vcf.gz -Oz  > ./02.2ndCheck_ori/JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck.vcf.gz
+bcftools view --include ID==@/BDATA/smkim/KR_allogenomics/check.ID.txt ./01.ori/JG.KR.NODAT.imputation_filter.ALLCHR.vcf.gz -Oz  > ./02.2ndCheck_ori/JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck.vcf.gz
+
+01. 공통마커 추출
+
+cd /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori
+
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t%CHROM:%POS\n' JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck.vcf.gz > KD.markerlist.txt
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t%CHROM:%POS\n' JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck.vcf.gz > KR.markerlist.txt
+ls *vcf.gz | xargs -I{} -P4 bash -c "tabix -p vcf {}"
+
+
+
+
+R
+df <- read.table("KD.markerlist.txt")
+ref <- read.table("../../KDimp.with.AXID.check.list_v2.txt")
+out <- merge(df,ref[,c(2,7)],by.x="V1",by.y="V2")
+write.table(out,"KD.markerlist_withAXID.txt",col.names=F,row.names=F,quote=F,sep="\t")
+
+
+df <- read.table("KR.markerlist.txt")
+ref <- read.table("../../KRimp.with.AXID.check.list_v2.txt")
+out <- merge(df,ref[,c(2,7)],by.x="V1",by.y="V2")
+write.table(out,"KR.markerlist_withAXID.txt",col.names=F,row.names=F,quote=F,sep="\t")
+
+
+
+RRRRR
+
+df <- read.table('./KD.markerlist_withAXID.txt')
+ref <-read.table("/BDATA/smkim/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt",header=T)
+out <- merge(df,ref,by.x="V7",by.y="Probe_Set_ID")
+write.table(out,"KD.markerlist_withAXID_withREF.txt",col.names=T,row.names=F,quote=F,sep="\t")
+awk '{print $2,$10}' KD.markerlist_withAXID_withREF.txt > KD.markerlist_withAXID_withREF_test.txt
+
+df <- read.table('./KR.markerlist_withAXID.txt')
+ref <-read.table("/BDATA/smkim/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt",header=T)
+out <- merge(df,ref,by.x="V7",by.y="Probe_Set_ID")
+write.table(out,"KR.markerlist_withAXID_withREF.txt",col.names=T,row.names=F,quote=F,sep="\t")
+awk '{print $2,$10}' KR.markerlist_withAXID_withREF.txt > KR.markerlist_withAXID_withREF_test.txt
+
+
+#update ID/ref allele check
+
+awk '{print $2,$1}' KD.markerlist_withAXID_withREF.txt > KD.updateSNPID.txt
+awk '{print $2,$1}' KR.markerlist_withAXID_withREF.txt > KR.updateSNPID.txt
+
+
+plink --vcf JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck.vcf.gz -a2-allele ./KD.markerlist_withAXID_withREF_test.txt --update-name KD.updateSNPID.txt --recode vcf --out JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update
+plink --vcf JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck.vcf.gz -a2-allele ./KR.markerlist_withAXID_withREF_test.txt --update-name KR.updateSNPID.txt --recode vcf --out JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update
+
+## 이걸로 한번에 진행함 -ref-allele option 설정
+plink --vcf JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck.vcf.gz --extract ./uniq-ID.txt -a2-allele ./KD.markerlist_withAXID_withREF_test.txt --update-name KD.updateSNPID.txt --recode vcf --out ./test/JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update --real-ref-alleles
+plink --vcf JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck.vcf.gz --extract ./uniq-ID.txt -a2-allele ./KR.markerlist_withAXID_withREF_test.txt --update-name KR.updateSNPID.txt --recode vcf --out ./test/JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update --real-ref-alleles
+
+
+grep -v "#" JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update.vcf |wc -l
+grep -v "#" JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update.vcf|wc -l
+
+
+KD : 570208
+KR : 567763
+547828 uniq-ID.txt
+cat KD.markerlist_withAXID.txt KR.markerlist_withAXID.txt |awk '{print $7}' |sort |uniq -c| awk '$1==2{print $2}' > uniq-ID.txt
+
+
+bcftools view --include ID==@./uniq-ID.txt ./JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update.vcf -Oz  > ./JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update_common.vcf.gz
+bcftools view --include ID==@./uniq-ID.txt ./JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update.vcf -Oz  > ./JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update_common.vcf.gz
+
+zcat JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update_common.vcf.gz | grep -v "#" | wc -l
+
+bgzip -c JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update.vcf > JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update.vcf.gz
+bgzip -c JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update.vcf > JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update.vcf.gz
+AX-11130695
+
+bcftools merge JG.KD.imputation.MAF0.01_INFO0.8.ALLCHR_2ndCheck_REFalleleCheck_update.vcf.gz JG.KR.NODAT.imputation_filter.ALLCHR_2ndCheck_REFalleleCheck_update.vcf.gz -Oz > KR.KD.merge.common.vcf.gz
+
+
+bcftools view --samples-file pairedSample_V2.txt KR.KD.merge.common.vcf.gz -Oz > KR.KD.merge.common_pairOnly.vcf.gz --force-samples
+vcf-stats KR.KD.merge.common_pairOnly.vcf.gz > KR.KD.merge.common_pairOnly_summary.txt
+
+
+
+
+
+## minor allele 이 2개면 2로 recodeA
+
+
+plink --vcf KR.KD.merge.common_pairOnly.vcf.gz --make-bed --out plink/KR.KD.merge.common_pairOnly_convertplink
+
+#v1
+plink --bfile KR.KD.merge.common_pairOnly_convertplink --freq --out KR.KD.merge.common_pairOnly_convertplink_freq
+awk '{print $2,$3}' KR.KD.merge.common_pairOnly_convertplink_freq.frq > minor.allele.txt
+plink --bfile KR.KD.merge.common_pairOnly_convertplink --a1-allele minor.allele.txt  --recode A --out KR.KD.merge.common_pairOnly_convertplink_recode
+
+#v2
+awk '{print $1"\t"$2":"$3"_"$4"/"$5}' /BDATA/smkim/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt > KCHIPID_chrposrefaltID.txt
+plink --bfile KR.KD.merge.common_pairOnly_convertplink --a1-allele minor.allele.txt --update-name KCHIPID_chrposrefaltID.txt --recode A --out KR.KD.merge.common_pairOnly_convertplink_recode_v2
+
+
+
+
+## 108 : /BDATA/smkim/JG/00.check/KD.KR.pair.anno  annotation
+
+
+awk '{print $2"\t"$3"\t"$1"\t"$4"\t"$5"\t.\t.\t."}' ../KCHIP_anno/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt > KCHIPV1.1_rough.vcf
+awk '{print $2"\t"$3"\t"$1"\t"$4"\t"$5"\t.\t.\t."}' ../KCHIP_anno/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt > KCHIPV1.1_rough.vcf
+
+R
+df <-read.table("KCHIPV1.1_rough.vcf",header=T)
+ref <-read.table("KR.KD.merge.common_pairOnly_convertplink.bim")
+out <- df[df$Probe_Set_ID %in% ref$V2,]
+write.table(out,"KCHIPV1.1_rough_forKRKD.vcf",col.names=T,row.names=F,quote=F,sep="\t")
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_rough_forKRKD_sorted.vcf -o KCHIPV1.1_rough_forKRKD_sorted_VEP.vcf --offline --fork 10 --stats_text --force_overwrite
+
+
+awk '{print $2"\t"$3"\t"$2"_"$3"_"$4"_"$5"}' ../KCHIP_anno/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt
+
+grep -v "#" KCHIPV1.1_rough_forKRKD_sorted_VEP.vcf | awk '{split($14,a,";");print $1,$2,$3,a[1]}' |sort |uniq -c | awk '{print $2,$3,$4,$5}' > Impact/KCHIPV1.1_rough_forKRKD_sorted_VEP_onlyImpact.txt
+
+cd /BDATA/smkim/JG/00.check/KD.KR.pair.anno/Impact
+
+
+grep HIGH KCHIPV1.1_rough_forKRKD_sorted_VEP_onlyImpact.txt > KCHIPV1.1_rough_forKRKD_sorted_VEP_onlyImpact_HIGH.txt
+grep MODERATE KCHIPV1.1_rough_forKRKD_sorted_VEP_onlyImpact.txt > KCHIPV1.1_rough_forKRKD_sorted_VEP_onlyImpact_MODERATE.txt
+
+
+V2
+/BDATA/smkim/JG/00.check/KD.KR.pair.anno/KCHIP_aLL
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_rough_forKRKD_V2_sorted.vcf -o KCHIPV1.1_rough_forKRKD_V2_sorted_VEP.vcf --offline --fork 32 --stats_text --force_overwrite
+grep -v "#" KCHIPV1.1_rough_forKRKD_V2_sorted_VEP.vcf | awk '{split($14,a,";");print $1,$2,$3,a[1]}' |sort |uniq -c | awk '{print $2,$3,$4,$5}' > Impact/KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact.txt
+
+cd /BDATA/smkim/JG/00.check/KD.KR.pair.anno/KCHIP_aLL/Impact
+grep HIGH KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact.txt > KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact_HIGH.txt
+grep MODERATE KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact.txt > KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact_MODERATE.txt
+
+
+## 109 /BDATA/smkim/KR_allogenomics/02.annootation_Check/KCHIP_aLL
+
+
+cd /BDATA/smkim/KR_allogenomics/02.annootation_Check/PLINK
+
+awk '{print $1}' ../KCHIP_aLL/Impact/KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact_HIGH.txt > HIGH.KCHIPSNPID.txt
+awk '{print $1}' ../KCHIP_aLL/Impact/KCHIPV1.1_rough_forKRKD_V2_sorted_VEP_onlyImpact_MODERATE.txt > MODERATE.KCHIPSNPID.txt
+
+
+awk '{print $1"\t"$2"_"$3"_"$4"_"$5}' /BDATA/smkim/Axiom_KORV1_1.na35.annot.extract.addINDEL.FLIP.REF.txt > KCHIPID_chrposrefaltID.txt
+
+plink --bfile  /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/KR.KD.merge.common_pairOnly_convertplink --a2-allele /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/minor.allele.txt  --recode A --out KR.KD.merge.common_pairOnly_convertplink_HIGHrecode --extract HIGH.KCHIPSNPID.txt --update-name KCHIPID_chrposrefaltID.txt
+plink --bfile  /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/KR.KD.merge.common_pairOnly_convertplink --a2-allele /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/minor.allele.txt  --recode A --out KR.KD.merge.common_pairOnly_convertplink_MODERATErecode --extract MODERATE.KCHIPSNPID.txt --update-name KCHIPID_chrposrefaltID.txt
+plink --bfile  /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/KR.KD.merge.common_pairOnly_convertplink --a2-allele /BDATA/smkim/KR_allogenomics/01.imputationData/extract_vcf/02.2ndCheck_ori/test/plink/minor.allele.txt  --recode A --out KR.KD.merge.common_pairOnly_convertplink_ALLrecode --extract ALL.KCHIPSNPID.txt --update-name KCHIPID_chrposrefaltID.txt
+
+
+
+
+
+
+### score data frame
+
+     KBA_ID.x OriID.x    KBA_ID.y OriID.y
+1 NIH19KT5591 KR00033 NIH19KT5659 KD00033
+2 NIH19KT5595 KR00052 NIH19KT5660 KD00052
+3 NIH19KT5598 KR00056 NIH19KT5661 KD00056
+4 NIH19KT5602 KR00058 NIH19KT5664 KD00058
+
+
+df <- read.table("KR.KD.merge.common_pairOnly_convertplink_ALLrecode.raw",header=T)
+df <- df[,c(1,7:ncol(df))]
+df[1:5,1:10]
+ref <-read.table("../Allogenomics_KR.KD.QCin.pairTable_ref.txt",header=T)
+ref <- ref[,c(1,3)]
+
+out <- merge(ref,df[df$FID %in% ref$KBA_ID.x,],by.x="KBA_ID.x",by.y="FID")
+out <- merge(out,df[df$FID %in% ref$KBA_ID.y,],by.x="KBA_ID.y",by.y="FID")
+write.table(out,"./PairTable/KR.KD.ALL.recode.txt",col.names=T,row.names=F,quote=F,sep="\t")
+
+df <- read.table("KR.KD.merge.common_pairOnly_convertplink_HIGHrecode.raw",header=T)
+df <- df[,c(1,7:ncol(df))]
+df[1:5,1:10]
+ref <-read.table("../Allogenomics_KR.KD.QCin.pairTable_ref.txt",header=T)
+ref <- ref[,c(1,3)]
+
+out <- merge(ref,df[df$FID %in% ref$KBA_ID.x,],by.x="KBA_ID.x",by.y="FID")
+out <- merge(out,df[df$FID %in% ref$KBA_ID.y,],by.x="KBA_ID.y",by.y="FID")
+write.table(out,"./PairTable/KR.KD.HIGH.recode.txt",col.names=T,row.names=F,quote=F,sep="\t")
+
+
+df <- read.table("KR.KD.merge.common_pairOnly_convertplink_MODERATErecode.raw",header=T)
+df <- df[,c(1,7:ncol(df))]
+df[1:5,1:10]
+ref <-read.table("../Allogenomics_KR.KD.QCin.pairTable_ref.txt",header=T)
+ref <- ref[,c(1,3)]
+
+out <- merge(ref,df[df$FID %in% ref$KBA_ID.x,],by.x="KBA_ID.x",by.y="FID")
+out <- merge(out,df[df$FID %in% ref$KBA_ID.y,],by.x="KBA_ID.y",by.y="FID")
+write.table(out,"./PairTable/KR.KD.MODERATE.recode.txt",col.names=T,row.names=F,quote=F,sep="\t")
+
+
+=============================
+
+
+
+
+==================
+##VCF sort
+## 먼저 input vcf에서 header를 grep 하여 out.vcf에 저장합니다 
+grep "^#" in.vcf > out.vcf 
+## 그 다음 header를 제외한 vcf 부분에서 필드 구분자 -k에서 첫 번째 필드 
+## -k1에서 1번째 필드를 Version sort 하고, 
+## -k2에서 -n numeric sort 해줍니다. 
+grep -v "^#" in.vcf | sort -k1,1V -k2n >> out.vcf 
+## V 옵션을 넣지 않으면, ## chr10 다음 chr2가 오게 됩니다. 
+## n 옵션을 넣지 않으면, ## 숫자가 아닌 문자열로 정렬되어 
+## 122134 다음에 12345가 오게 됩니다
+
