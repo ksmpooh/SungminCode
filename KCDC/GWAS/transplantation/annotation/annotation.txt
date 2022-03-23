@@ -91,3 +91,27 @@ java -jar /BDATA/jeonginhae/KBA_Upgrade/Tool/snpeff/snpEff.jar -stats test.html 
 
 /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr1.chunkMerge.vcf -o test_vcf.vcf.gz --offline --stats_text
 /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ --fork 10 -i ./JG.KR.imputation.mergeGen.processing.chr22.chunkMerge_checkREFallele.vcf -o ./VEP/JG.KR.imputation.mergeGen.processing.chr22.chunkMerge_checkREFallele_VEP.vcf_summary.txt --offline --stats_text
+
+
+
+
+
+/BDATA/smkim/JG/00.check/imputed_marker/VEP
+awk '{print $1,$6,$7}' imputed.Kchip.marker_VEP.vcf | grep -v "#"  | sort | uniq -c | awk '{print $2,$3,$4}' > imputed.Kchip.marker_VEP_uniq.txt
+
+
+/BDATA/smkim/JG/00.check/KCHIP_anno
+awk '{print $1,$6,$7}' KCHIPV1.1_sorted_VEP.vcf | grep -v "#" | sort | uniq -c | awk '{print $2,$3,$4}' > KCHIPV1.1_sorted_VEP_uniq.txt
+
+
+/BDATA/smkim/JG/anno/OUTPUTs/merge/afterCheckRefAllele/VEP
+ls *vcf | cut -d"." -f 1-7 | xargs -I{}.vcf -P 32 bash -c "grep "#" awk '{print $1,$6,$7}' {}.vcf | sort | uniq -c | awk '{print $2,$3,$4}' > ./uniq/{}_uniq.txt"
+cat *vcf | grep -v "#" | awk '{print $1,$6,$7}' | sort | uniq -c | awk '{print $2,$3,$4}' > ./uniq/imputation.marker_VEP_uniq.txt
+
+
+
+####20220318 annotation 결과 다시 정리
+
+grep -v "#" KCHIPV1.1_sorted_VEP.vcf | awk '{split($14,a,";");split(a[1],b,"="); print $1,$6,$7,b[2]}' | sort |uniq -c > KCHIPV1.1_sorted_VEP_uniq_test.vcf
+
+grep -v "#" KCHIPV1.1_sorted_VEP.vcf | awk '{split($14,a,";");split(a[1],b,"="); print $1,$6,$7,b[2]}' | sort |uniq -c | grep -e HIGH -e MODERATE > KCHIPV1.1_sorted_VEP_uniq_test.vcf

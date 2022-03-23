@@ -53,8 +53,8 @@ plink --bfile JG.LD.2nd_snpolisher --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/ch
 plink --bfile JG.LD.2nd_snpolisher --extract JG.LD.2nd_snpolisher_pruning.prune.in --make-bed --out JG.LD.2nd_snpolisher_pruned
 flashpca_x86-64 --bfile JG.LD.2nd_snpolisher_pruned --outpc PCA.txt
 
-
-setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/LD/2nd/")
+##PCA 지울것 없음
+setwd("~/Desktop/KCDC/transplantation/Final_QC.data/2019/LD/2nd/")
 
 pca <- read.table("PCA.txt", header=T)
 
@@ -180,7 +180,8 @@ dev.off()
   
 
 
-plink --bfile JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --hwe 1e-6 --chr 1-22 --make-bed --out JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+plink --bfile JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+plink --bfile JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --geno 0.05 --chr 1-22 --make-bed --out JG.LD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_forOPEN
   
   
   

@@ -89,9 +89,36 @@ apt-format-result --calls-file <file> \
 --log-file /BDATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/ConvertPLINK480_rareHET/apt-format-result-A-vcf.log
 
 
+
+
+
+
 /BDATA/myhwang/TOOLs/apt_2.11.3_linux_64_bit_x86_binaries/bin/ps-classification 
 --species-type human 
 --metrics-file /BDATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/GenotypeCall480_rareHET/Axiom_KBAv2_B/metrics.txt 
 --multi-metrics-file /BDATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/GenotypeCall480_rareHET/Axiom_KBAv2_B/multi-metrics.txt 
 --log-file /BDATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/GenotypeCall480_rareHET/Axiom_KBAv2_B/ps-classification.log 
 --output-dir /BDATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/GenotypeCall480_rareHET/Axiom_KBAv2_B/
+
+
+
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-metrics \
+--summary-file /BDATA/smkim/KKY_6th/01.genocall/2nd/AxiomGT1.summary.txt \
+--posterior-file /BDATA/smkim/KKY_6th/01.genocall/2nd/AxiomGT1.snp-posteriors.txt \
+--call-file /BDATA/smkim/KKY_6th/01.genocall/2nd/AxiomGT1.calls.txt \
+--metrics-file /BDATA/smkim/KKY_6th/01.genocall/2nd/metrics.txt
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification --species-type human \
+--metrics-file /BDATA/smkim/KKY_6th/01.genocall/2nd/metrics.txt --output-dir /BDATA/smkim/KKY_6th/01.genocall/2nd/classification/ \
+--log-file /BDATA/smkim/KKY_6th/01.genocall/2nd/classification/
+
+
+
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-format-result \
+--calls-file /BDATA/smkim/KKY_6th/01.genocall/2nd/AxiomGT1.calls.txt \
+--annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+--export-plink-file ./plink/Axiom_KBAv1.1 \
+--plink-sort-by-chrpos True \
+--log-file ./plink/Axiom_KBAv1.1_convert.log

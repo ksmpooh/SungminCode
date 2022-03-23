@@ -1,0 +1,262 @@
+plink --bfile JG.KR.2nd --extract Recommended.ps --make-bed --out JG.KR.2nd_snpolisher
+plink --bfile JG.KR.2nd_snpolisher --missing --het --out JG.KR.2nd_snpolisher_miss-het
+
+plink --bfile JG.2nd.QC_snpolisher --missing --het --out JG.2nd.QC_snpolisher_miss-het
+
+##R############
+miss <-read.table("JG.KR.2nd_snpolisher_miss-het.imiss",header = T)
+het <- read.table("JG.KR.2nd_snpolisher_miss-het.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("PDF/JG.KR.2nd.QC_SNPolisher_miss-het.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(13,22), ylim=c(0,0.1), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.3, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.8 | 17.3 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.8 | 17.3 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.8 | 17.3 < lowSample$HET,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+####
+
+plink --bfile JG.KR.2nd_snpolisher --exclude ../../../INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.1 --out JG.KR.2nd_snpolisher_pruning
+plink --bfile JG.KR.2nd_snpolisher --extract JG.KR.2nd_snpolisher_pruning.prune.in --make-bed --out JG.KR.2nd_snpolisher_pruned
+flashpca_x86-64 --bfile JG.KR.2nd_snpolisher_pruned --outpc PCA.txt
+
+
+##R
+pca <- read.table("PCA.txt", header=T)
+
+head(pca)
+
+pdf("../PDF/JG.KR.2nd.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+	#xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+        xlab="PC1", ylab="PC2", main="2nd.QC_PCA", cex=1.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+###################
+
+
+
+plink --bfile JG.KR.2nd_snpolisher --remove rmPCA.txt --make-bed --out JG.KR.2nd_snpolisher_rmPCA
+plink --bfile JG.KR.2nd_snpolisher_rmPCA --exclude ../../../INPUTs/affy_snp_list.txt --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy
+
+python 01_select_dupID.py JG.KR.2nd_snpolisher_rmPCA_rmaffy
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup
+
+python indel/ConvertToBim.py ../INPUTs/Axiom_KORV1_1.na35.annot.extract.txt ../OUTPUTs/KR/CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup ../OUTPUTs/KR/CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert
+python indel/indelChange.py ../INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt ../OUTPUTs/KR/CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert ../OUTPUTs/KR/CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel --flip ../../../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --maf 0.01 --geno 0.05 --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil
+
+
+
+
+##merge
+cat CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil.bim ../control/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC.bim | awk '{print $2}' | sort | uniq -c | awk '$1 == 2 {print $2}' > MERGE/case-control.intersect.txt
+plink --bfile ../../control/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC --extract case-control.intersect.txt --make-bed --out control_intersect
+plink --bfile ../CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil --extract case-control.intersect.txt --make-bed --out case_intersect
+
+plink --bfile case_intersect --bmerge control_intersect --allow-no-sex --make-bed --out merge
+
+###merge king
+
+nohup king -b ../merge.bed --related --degree 2 --rplot --prefix JG.KR.merge > result.txt &
+plink --bfile merge --remove king/rmking.txt --make-bed --out merge_rmking
+
+###freq chcek
+plink --bfile case_intersect --freq --a1-allele ../../../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out case_intersect_freq
+plink --bfile control_intersect --freq --a1-allele ../../../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out control_intersect_freq
+#####R
+
+case <- read.table("case_intersect_freq.frq",header=T)
+control <- read.table("control_intersect_freq.frq",header=T)
+data <- merge(control,case,by="SNP")
+png("../PDF/control&case_frequency.png",height = 700,width=700)
+#pdf("../PDF/control&case_frequency.pdf",height = 10,width=10)
+plot(data$MAF.x,data$MAF.y,xlab = "Control",ylab = "Case",main = "Control & Case Frequency")
+abline(a = 0.05,b = 1, col = 'red',lty = 2)
+abline(a = -0.05,b = 1, col = 'red',lty = 2)
+points(data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.x,
+        data[data$MAF.x-data$MAF.y >= 0.05 | data$MAF.x - data$MAF.y <= -0.05,]$MAF.y,
+        col = 'blue', cex = 1, pch = 1)
+
+dev.off()
+rm <- data[data$MAF.x-data$MAF.y >= 0.05 |data$MAF.x - data$MAF.y <=-0.05,]
+nrow(rm)
+[1] 23
+write.table(rm,"rm_snp_frq.txt",col.names=F,row.names = F, quote = F,sep = '\t')
+q()
+
+plink --bfile merge_rmking --exclude rm_snp_frq.txt --make-bed --out merge_rmking_rmfrq
+
+
+
+### pca
+plink --bfile merge_rmking_rmfrq --maf 0.1 --geno 0.01 --hwe 0.001 --exclude ../../../INPUTs/chr6_14_rm.txt --indep-pairwise 50 5 0.1 --out merge_rmking_rmfrq_pruning
+plink --bfile merge_rmking_rmfrq --extract merge_rmking_rmfrq_pruning.prune.in --make-bed --out merge_rmking_rmfrq_pruned
+
+flashpca_x86-64 --bfile merge_rmking_rmfrq_pruned --outpc PCA.txt
+
+####R
+pca <- read.table("PCA.txt", header=T)
+
+head(pca)
+
+pdf("../PDF/JG.KR.2nd.QC_merge_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+        xlim=c(-0.2, 0.2), ylim=c(-0.2,0.2),
+        xlab="PC1", ylab="PC2", main="JG.KR.with.control_PCA", cex=1.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+###test-missing
+
+#### phenotype - file
+
+cass = 1, control = 2
+
+
+####################pheno
+FID MID CASE
+a a 1
+b b 1
+....
+###############
+awk '{print $1,$1,1}' case_intersect.fam > case_pheno.txt
+awk '{print $1,$1,2}' control_intersect.fam > control_pheno.txt
+cat case_pheno.txt control_pheno.txt  > JG.pheno.txt
+
+##JG.pheno modify using vi
+mkdir missing
+cd missing
+plink --bfile ../merge_rmking_rmfrq --missing-test --pheno ../JG.pheno.txt --pheno-name CASE --out JG.KR.missing-test
+awk '$5 < 1e-5 {print $0}' JG.KR.missing-test.missing | awk '$3 > 0.01|| $4 > 0.01{print $0}' > JG.KR.missing.removeSNPlist.txt
+
+cd ..
+
+plink --bfile merge_rmking_rmfrq --exclude missing/JG.KR.missing.removeSNPlist.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest
+
+## ethnic PCA
+python 02.updateSNPIDtype.py ../MERGE/merge_rmking_rmfrq_rmMissingtest.bim ../../../INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+plink --bfile ../MERGE/merge_rmking_rmfrq_rmMissingtest.updateSNPID --exclude ../../../INPUTs/chr6_14_rm.txt --chr 1-22 --make-bed --out JG.merge.fil
+cat JG.merge.fil.bim ../../1kgp/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile JG.merge.fil --extract intersectSNP.txt --make-bed --out JG.merge.fil_intersect
+plink --bfile ../../1kgp/1kgp_merge --extract intersectSNP.txt --make-bed --out 1kgp_merge_intersect
+plink --bfile JG.merge.fil_intersect --bmerge 1kgp_merge_intersect --allow-no-sex --make-bed --out ethnic.merge
+
+
+awk '{print $1}' ../CASE/JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil.fam > CASE_ID.txt
+awk '{print $1}' ../MERGE/control_intersect.fam > CONTROL_ID.txt
+
+python ../../../SCRIPTs/03.select_snpID_500K_distance.py ethnic.merge.bim
+plink --bfile ethnic.merge --extract 500K_distance_SNP_list.txt --make-bed --out ethnic.merge_500K
+flashpca_x86-64 --bfile ethnic.merge_500K --outpc PCA.txt
+
+
+####R plot
+pca <- read.table("PCA.txt",header = T)
+#gnomad <- read.table("../INPUTs/1000genome_ID.txt",header = F)
+samplegnomad<- read.table("../../../INPUTs/1000GP_Phase3.sample",header = T)
+case<-read.table("CASE_ID.txt",header = F)
+control <-read.table("CONTROL_ID.txt",header = F)
+
+colnames(case) <- "FID"
+colnames(control) <- "FID"
+
+case$FID <- as.factor(case$FID)
+control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+control$GROUP <- "CONTROL"
+
+df <- rbind(gnomad,case)
+df <- rbind(df,control)
+
+df <- merge(pca,df,by = "FID")
+pdf("../PDF/JG.2nd.KR.case.control.1kgp.ethnic.PCA.pdf",height = 10,width = 10)
+
+plot(df$PC1,df$PC2,col = rgb(0,0,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic PCA",
+     cex.main = 3,cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.3), cex = 1 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.3), cex = 1 , pch = 16)
+points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,0.5), cex = 1 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 1 , pch = 16)
+
+color <- c(
+  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+  rgb(0,1,0,1),
+  rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  rgb(1,0,1,1))
+list <- c("control","case","SAS","AFR","AMR","EAS","EUR")
+legend(x = -0.1 ,y = 0.5,list,col = color,cex = 1,pch = 16)
+dev.off()
+
+
+
+
+rmList <- df[df$PC1 < -0.1 | 0.1 < df$PC1 | df$PC2 < -0.1 | 0.1 < df$PC2,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+####
+cd /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/KR/MERGE
+
+plink --bfile merge_rmking_rmfrq_rmMissingtest --remove ../Ethnic/rmlist.txt --make-bed --out merge_rmking_rmfrq_rmMissingtest_rmethnic

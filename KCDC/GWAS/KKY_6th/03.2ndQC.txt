@@ -1,0 +1,560 @@
+genome@genome109:/BDATA/smkim/KKY_6th/01.genocall/2nd/plink$ 
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/KKY_6th/03.QC_2nd/KKY6th.All.2nd
+
+
+/BDATA/smkim/KKY_6th/03.QC_2nd
+plink --bfile KKY6th.All.2nd --extract /BDATA/smkim/KKY_6th/01.genocall/2nd/classification/Recommended.ps --make-bed --out KKY6th.All.2nd_snpolisher
+
+plink --bfile KKY6th.All.2nd_snpolisher --missing --out MISS
+plink --bfile KKY6th.All.2nd_snpolisher --het --out HET
+
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+dim(het)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(13,22), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY.6th.2ndQC ALL missing-het", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.5 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+legend("topright",title="15.5< HET<17.5",box.lwd = 0,box.col = "white",bg = "white",cex = 1,
+        legend = c("MISS < 0.03\n outliner : 1 "))
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17.5 < lowSample$HET,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+plink --bfile KKY6th.All.2nd_snpolisher --remove rmLQsamples.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample
+
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned
+
+cd KING
+king -b ../KKY6th.All.2nd_snpolisher_rmLQsample_pruned.bed --prefix KKY6th.2nd_pruning --degree 2 --related
+
+
+Relationship summary (total relatives: 0 by pedigree, 1778 by inference)
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	3	1447	247	80
+
+
+
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.01 --geno 0.05 --make-bed --out ./KKY6th.All.2nd_snpolisher_rmLQsample_forking
+
+
+Relationship summary (total relatives: 0 by pedigree, 1778 by inference)
+
+        	MZ	PO	FS	2nd
+  =====================================================
+  Inference	3	1447	247	80
+
+
+
+
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned --outpc PCA.txt
+
+
+
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+	#xlim=c(-0.3, 0.3), ylim=c(-0.3,0.3),
+        xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=1.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+legend("topright",title="-0.1< PCA1 <0.1",box.lwd = 0,box.col = "white",bg = "white",cex = 1,
+        legend = c("-0.1< PCA2 <0.1\n outliner : 1 "))
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+
+## v2 chr6,chf14 다 제거
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v2
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v2.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v2
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v2 --outpc PCA.v2.txt
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.txt", header=T)
+pca <- read.table("PCA.v2.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.1,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 12084\nMAF:0.25, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.01\nrm chr6-14"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+## v3
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --chr 1-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v3
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v3.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v3
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v3 --outpc PCA.v3.txt
+
+## v4
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v4
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v4.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v4
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v4 --outpc PCA.v4.txt
+
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.txt", header=T)
+pca <- read.table("PCA.v2.txt", header=T)
+pca <- read.table("PCA.v3.txt", header=T)
+dev.off()
+head(pca)
+par(mfrow=c(1, 2))
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.07,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 17363\nMAF:0.1, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.02\n rm chr6-14 snplist"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+pca <- read.table("PCA.v4.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.07,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 17321\nMAF:0.1, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.02\n rm chr6-14"))
+
+dev.off()
+
+
+## v5
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.1 --exclude /BDATA/smkim/JG/02.QC_1st/INPUTs/chr6_14_rm.txt --chr 1-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v5
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v5.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v5
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v5 --outpc PCA.v5.txt
+
+## v6
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.1 --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v6
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v6.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v6
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v6 --outpc PCA.v6.txt
+
+## v7
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --remove badplate.V1.txt --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v7
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v7.prune.in --remove badplate.V1.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v7
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v7 --outpc PCA.v7.txt
+
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.2 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --remove badplate.V1.txt --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v8
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v8.prune.in --remove badplate.V1.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v8
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v8 --outpc PCA.v8.txt
+
+
+
+#######
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.v5.txt", header=T)
+dev.off()
+head(pca)
+par(mfrow=c(1, 2))
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.07,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 40960\nMAF:0.1, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.1\n rm chr6-14 snplist"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+pca <- read.table("PCA.v6.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.07,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 40885\nMAF:0.1, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.1\n rm ALL chr6-14"))
+
+dev.off()
+
+
+
+######
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.txt", header=T)
+pca <- read.table("PCA.v2.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.1,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 12084\nMAF:0.25, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.01\nrm chr6-14"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+## v2 chr6,chf14 다 제거
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v2
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --extract KKY6th.All.2nd_snpolisher_rmLQsample_pruning_v2.prune.in --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v2
+flashpca_x86-64 --bfile KKY6th.All.2nd_snpolisher_rmLQsample_pruned_v2 --outpc PCA.v2.txt
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+
+pca <- read.table("PCA.txt", header=T)
+pca <- read.table("PCA.v2.txt", header=T)
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.6, 0.6), ylim=c(-0.6,0.6),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.1,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 12084\nMAF:0.25, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.01\nrm chr6-14"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+####type check
+pca <- read.table("PCA.v6.txt", header=T)
+
+head(pca)
+ref <- read.table("./KING/KKY6th.All.2nd_snpolisher_rmLQsample_forking_KING.kin0",header = T)
+head(ref)
+ID1 <- ref %>% filter(InfType == "PO") %>% select(ID1)
+ID2 <- ref %>% filter(InfType == "PO") %>% select(ID2)
+colnames(ID1) <- "IID"
+colnames(ID2) <- "IID"
+PO<-rbind(ID1,ID2)
+PO$related <- "PO"
+head(ID1)
+
+ID1 <- ref %>% filter(InfType == "FS") %>% select(ID1)
+ID2 <- ref %>% filter(InfType == "FS") %>% select(ID2)
+colnames(ID1) <- "IID"
+colnames(ID2) <- "IID"
+FS<-rbind(ID1,ID2)
+FS$related <- "FS"
+
+ref <- rbind(PO,FS)
+
+head(ref)
+pca$related <- "Control"
+pca <- merge(pca,ref,by="IID",all.x = T)
+#pca <- cbind(pca,ref)
+head(pca)
+table(pca$related.y)
+table(pca$related.x)
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3),
+     xlim=c(-0.3, 0.2), ylim=c(-0.6,0.2),
+     xlab="PC1", ylab="PC2", main="KKY.2nd.QC_PCA", cex=0.6, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=1, pch=16)
+
+points(pca[pca$related.y == "PO",]$PC1,
+       pca[pca$related.y == "PO",]$PC2,
+       col = rgb(1,0,0,0.3), cex = 0.6 , pch = 16)
+
+points(pca[pca$related.y != "PO",]$PC1,
+       pca[pca$related.y != "PO",]$PC2,
+       col = rgb(0,0,1,0.3), cex = 0.6 , pch = 16)
+
+
+points(pca[pca$related.y == "FS",]$PC1,
+       pca[pca$related.y == "FS",]$PC2,
+       col = rgb(0,1,0,0.3), cex = 0.6 , pch = 16)
+
+points(pca[is.na(pca$related.y),]$PC1,
+       pca[is.na(pca$related.y),]$PC2,
+       col = rgb(0,0,1,0.3), cex = 0.6 , pch = 16)
+
+
+
+#### ethnic marker
+
+
+#plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --maf 0.01 --geno 0.05 --hwe 0.001 --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup
+
+#python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_convert
+#python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_convert KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_convert_indel
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip
+
+
+### pca
+
+
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/02.updateSNPIDtype.py KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip.bim /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+
+cat KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip.updateSNPID.bim /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip.updateSNPID --extract intersectSNP.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip.updateSNPID_intersect
+plink --bfile /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/1kgp/1kgp_merge --extract intersectSNP.txt  --make-bed --out 1kpg_merge_intersect
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmaffy_rmdup_indel_flip.updateSNPID_intersect --bmerge 1kpg_merge_intersect --make-bed --out MERGE
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA.txt
+
+
+
+library(tidyverse)
+setwd("/Volumes/DATA/KKY/6th/2nd/Ethnic/")
+setwd("~/")
+
+#setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/LD/2nd/")
+#pca <- read.table("PCA_ethnic.txt",header = T)
+pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/ethical/1000GP_Phase3.sample",header = T)
+head(samplegnomad)
+case <- pca %>% select("FID") %>% filter(grepl("NIH",FID))
+#case <- pca %>% select("FID")
+
+#control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+#control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+#control$GROUP <- "CONTROL"
+table(df$GROUP)
+df <- rbind(gnomad,case)
+#df <- rbind(df,control)
+head(df)
+df <- merge(pca,df,by = "FID")
+png("JG.LD.ethnic.PCA.png",height = 800,width = 800)
+#png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="Ethnic PCA",
+          xlim = c(-0.2,0.2),ylim = c(-0.2,0.2),
+     cex.main = 3,cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.5), cex = 0.7 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.5), cex = 0.7 , pch = 16)
+#points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 0.7 , pch = 16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+color <- c(
+        #  rgb(0,0,0,1),
+        rgb(1,0,0,1),
+        rgb(0,1,0,1),
+        rgb(0,0,1,1),
+        rgb(1,1,0,1),
+        rgb(0,1,1,1),
+        rgb(1,0,1,1))
+
+list <- c("KKY","SAS","AFR","AMR","EAS","EUR")
+
+legend("topright",list,col = color,cex = 1,pch = 16)
+legend("bottomright",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+legend("bottom",c("# of Markers : 5087"),box.lwd = 0,box.col = "white",bg = "white")
+dev.off()
+
+
+rmList <- df[df$PC1 > -0.07 & df$GROUP == "CASE",]
+
+dim(rmList)
+rmList
+rmList$plate <- str_split_fixed(rmList$IID,"_",6)
+table(str_split_fixed(rmList$IID,"_",6)[,4])
+
+
+
+############ rm sample check
+
+
+setwd("/Volumes/DATA/KKY/6th/2nd/")
+setwd("~/")
+pca <- read.table("PCA.v6.txt", header=T)
+rmList <- pca[pca$PC1 < -0.08 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+bad_plate <- rmList[grep("034006",rmList$FID),]
+head(bad_plate)
+
+pca <- read.table("PCA.v8.txt", header=T)
+rmList2 <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+pca <- read.table("Ethnic/PCA.txt",header = T)
+rmList <- pca[pca$PC1 > -0.07,]
+
+df <- rbind(bad_plate,rmList2)
+
+table(df$FID %in% rmList$FID)
+

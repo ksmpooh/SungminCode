@@ -175,8 +175,10 @@ dev.off()
   
 
 
-plink --bfile JG.LR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --hwe 1e-6 --chr 1-22 --make-bed --out JG.LR.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_rmdup_convert_indel_flip --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_rmdup_convert_indel_flip_fil
+plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_rmdup_convert_indel_flip --geno 0.05 --chr 1-22 --make-bed --out JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_rmdup_convert_indel_flip_forOPEN
   
+
   
   
   
