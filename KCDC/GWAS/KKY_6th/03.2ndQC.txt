@@ -541,20 +541,27 @@ table(str_split_fixed(rmList$IID,"_",6)[,4])
 ############ rm sample check
 
 
+library(tidyverse)
+library(stringr)
+
 setwd("/Volumes/DATA/KKY/6th/2nd/")
 setwd("~/")
 pca <- read.table("PCA.v6.txt", header=T)
 rmList <- pca[pca$PC1 < -0.08 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 bad_plate <- rmList[grep("034006",rmList$FID),]
 head(bad_plate)
+dim(bad_plate)
 
 pca <- read.table("PCA.v8.txt", header=T)
 rmList2 <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 
 pca <- read.table("Ethnic/PCA.txt",header = T)
-rmList <- pca[pca$PC1 > -0.07,]
+head(pca)
+rmList1 <- pca %>% filter(PC1 > -0.07)
+rmList1 <-rmList1[grep("*CEL*",rmList1$FID),]
 
 df <- rbind(bad_plate,rmList2)
 
 table(df$FID %in% rmList$FID)
-
+table(rmList$FID %in% rmList1$FID)
+table(rmList2$FID %in% rmList1$FID)

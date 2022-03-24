@@ -1,0 +1,38 @@
+/LaCie2/smkim/GWAS/03.imputation/SCRIPTs/03.infofilter
+rsync -avhP /LaCie2/smkim/GWAS/03.imputation/SCRIPTs/03.infofilter/*sh ./
+
+# infoscore
+
+cd /DATA/smkim/KKY/05.imputation/OUTPUTs/01.imputation
+
+python2 03.infoscore.py
+
+
+rsync -avhP /LaCie2/smkim/GWAS/03.imputation/SCRIPTs/03.infofilter/*sh ./
+ls *.info | xargs -I{} -P 32 bash -c './dupfilt.sh {}'
+
+
+cd dupID
+rsync -avhP /LaCie2/smkim/GWAS/03.imputation/SCRIPTs/03.infofilter/lastfile.sh ./
+ls *.info | xargs -I{} -P 32 bash -c './lastfile.sh {}'
+
+cd filt
+
+wc -l * | awk '$1>1{print $2}' > rmdup.file.list.txt
+
+
+
+
+python2 02_1.remove.duple.with.remove.na.py
+
+rsync -avhP /LaCie2/smkim/GWAS/03.imputation/SCRIPTs/03.infofilter/filt.sh ./
+mkdir filtered
+sh filt.sh
+
+python2 02_2.info.select.forgen2vcf.py
+
+python2 04.gen2vcf.py
+
+python2 05.vcf.filter.py
+
+

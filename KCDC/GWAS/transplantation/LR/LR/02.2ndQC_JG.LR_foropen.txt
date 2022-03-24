@@ -1,0 +1,18 @@
+#### 2nd
+
+103
+cd /BDATA/smkim/JG.LR/03.2ndQC
+#JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp
+
+
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_fil
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --geno 0.05 --chr 1-22 --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_forOPEN
+  
+
+  
+  
+  
+  
+  
+  
+  
