@@ -1,12 +1,12 @@
 cd /DATA/smkim/KKY/04.phasing/OUTPUTs/01.split
 
 for chr in $(seq 1 22);do
-	plink --bfile /BDATA/smkim/JG.KD.rep/03.2ndQC/JG.KD.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil --chr $chr --reference-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG.KD.rep/04.phasing/OUTPUTs/01.split/JG.KD.rep.QCed.chr$chr
+	plink --bfile /BDATA/smkim/JG.KD.rep/03.2ndQC/JG.KD.rep.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil --chr $chr --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG.KD.rep/04.phasing/OUTPUTs/01.split/JG.KD.rep.QCed.chr$chr
     done
 ##plink --bfile /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip_fil --chr $chr --reference-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG_2020/04.phasing/OUTPUTs/01.split/JG.KR.rep.merge.chr$chr
 
 
-mKD.repir /BDATA/smkim/JG.KD.rep/04.phasing/OUTPUTs/02.chr_phasing/
+cd /BDATA/smkim/JG.KD.rep/04.phasing/OUTPUTs/02.chr_phasing/
 
 
 ## python
