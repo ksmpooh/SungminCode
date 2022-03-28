@@ -1,0 +1,10 @@
+KR KD LR LD
+
+mkdir discovery
+mkdir replication
+
+mkdir discovery/01.QCed.PLINK
+mkdir discovery/02.Imputed.VCF
+
+mkdir replication/01.QCed.PLINK
+mkdir replication/02.Imputed.VCF

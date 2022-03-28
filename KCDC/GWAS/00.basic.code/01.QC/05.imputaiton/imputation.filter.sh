@@ -15,7 +15,7 @@ ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0
 
 
 
-ls *gz | xargs -I{} -P 24 bash -c 'tabix -f -p vcf {}'
+ls *gz | xargs -I{} -P 4 bash -c 'tabix -f -p vcf {}'
 
 
  #bcftools sort input.vcf > output.vcf

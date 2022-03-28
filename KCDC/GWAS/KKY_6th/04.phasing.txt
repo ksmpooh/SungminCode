@@ -15,7 +15,7 @@ for chr in $(seq 1 22);do
 ##plink --bfile /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip_fil --chr $chr --reference-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG_2020/04.phasing/OUTPUTs/01.split/JG.KR.rep.merge.chr$chr
 
 
-
+## plink to vcf 
 for chr in $(seq 1 22);do
 	plink --bfile /BDATA/smkim/KKY_6th/03.QC_2nd/KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_rmdup_indel_flip_fil_updateID --chr $chr --a1-allele /BDATA/smkim/JG/04.phasing/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out /BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/01.split/KKY.6th.QCed.chr$chr
     done
@@ -38,7 +38,7 @@ for chr in range(1,22+1):
 #/DATA/smkim/KKY/04.phasing/OUTPUTs/02.chr_phasing/KKY.7th.phasing.chr" +chr
 
 
-
+##### VCF to VCF phasing
 import os
 
 tool =   "~/Downloads/Eagle_v2.4.1/eagle"

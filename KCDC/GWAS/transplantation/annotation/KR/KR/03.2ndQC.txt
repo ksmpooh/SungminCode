@@ -1,0 +1,18 @@
+#### 2nd for open
+
+108
+cd /BDATA/smkim/JG.KR/03.2ndQC
+#JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_rmscreenFailure
+
+
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_rmscreenFailure --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_rmscreenFailure_fil
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_rmscreenFailure --geno 0.05 --chr 1-22 --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_rmscreenFailure_forOPEN
+  
+
+  
+  
+  
+  
+  
+  
+  
