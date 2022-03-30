@@ -9,6 +9,8 @@ plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --maf 0
 plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --geno 0.05 --chr 1-22 --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp_forOPEN
   
 
+ #### 다시 marker dupfilt
+ 
   
   
   

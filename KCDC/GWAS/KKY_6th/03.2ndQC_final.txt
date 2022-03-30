@@ -340,3 +340,21 @@ awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd
 plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_rmdup_indel_flip_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_rmdup_indel_flip_fil_updateID
 
 
+######## marker QC 20220329 (reference allele 처리 안된것 처리)
+
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil
+
+
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID

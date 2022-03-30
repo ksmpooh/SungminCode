@@ -1,0 +1,35 @@
+/BDATA/smkim/TOOLs/minimac4 --chr 10 --start 72000001 --end 77000000 --minRatio 0.000001 --window 1000000 
+--refhaps /BDATA/smkim/REF/KRG1KGP/m3vcf/chr10_72000001_77000000.m3vcf.gz --haps /BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/02.chr_phasing/KKY.6th.phasing.chr10.vcf.gz --noPhoneHome --allTypedSites --format GT,DS,GP --prefix ./test.txt --referenceEstimates --cpu 1
+
+
+Additional Options:
+                              --minRatioPercent [1.0e-06]
+
+ Starting Main Imputation/Estimation Analysis ...
+
+ Performing preliminary check on input parameters...
+
+ NOTE: Default "--window" parameter to be used = 500000
+ ------------------------------------------------------------------------------
+                             PRELIMINARY FILE CHECK
+ ------------------------------------------------------------------------------
+
+ Checking GWAS haplotype file : /BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/02.chr_phasing/KKY.6th.phasing.chr10.vcf.gz
+
+ Gathering variant information ...
+
+
+ ERROR !!!
+ Duplicate Variant found chr:10:97918915 with identical REF = C and ALT = A
+
+ Use handle "--ignoreDuplicates" to ignore duplicate instances ...
+
+ Program Exiting ...
+
+
+
+
+
+zcat chr10_72000001_77000000.m3vcf.gz 
+
+AX-114025049 | AX-38914231
