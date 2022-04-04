@@ -13,6 +13,23 @@ plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_rmdup_convert_indel_filp --geno 
  
   
   
+JG.LR.2nd_snpolisher_rmPCA_rmaffy
+  
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/ConvertToBim.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.txt JG.LR.2nd_snpolisher_rmPCA_rmaffy JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel
+
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip
+
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip
+
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup
+
+
+
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_fil
+plink --bfile JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup --geno 0.05 --chr 1-22 --make-bed --out JG.LR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_forOPEN
   
   
   

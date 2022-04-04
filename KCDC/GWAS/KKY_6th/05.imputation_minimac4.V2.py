@@ -39,6 +39,8 @@ def main():
 		print("Chunk count : %s"%(str(count)))
 		VCFin = ""
 		chr,front,tail = ref.replace(refDir,"").replace(".m3vcf.gz","").split("_")
+                #if chr not in ["chr1","chr2","chr3"]:
+                        #continue
 		for fileIn in inputs:
 			if VCFin != "":
 				break
@@ -50,6 +52,7 @@ def main():
 					mapin = mapDir + "genetic_map_%s_combined_b37_addCHR.m3vcf.txt"%chr
 					with open(shDir + "Phased.to.imputation.%s.%s_%s.minimca4.sh"%(chr,front,tail),"w") as shwrite:
 						shwrite.write("%s --ignoreDuplicates --chr %s --start %s --end %s --minRatio 0.000001 --window 1000000 --refhaps %s --haps %s --noPhoneHome --allTypedSites --format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1\n"%(minimac4,chr.replace("chr",""),front,tail,ref,VCFin,VCFout,mapin))
+                                                #shwrite.write("tabix -f -p vcf %s.dose.vcf.gz"%(VCFout))
 					break
 
 
@@ -67,6 +70,8 @@ def main2():
         ref_panel = refDir + "%s.m3vcf.gz"%(ref)
         ref_chr,ref_start,ref_end = ref.split("_")
         imp_chr,imp_start,imp_end = imp.split("_")
+        #if chr not in ["chr1","chr2","chr3"]:
+        #        continue
         VCFin = glob.glob(phasingDir + "*%s.*vcf.gz"%ref_chr)
         mapin = mapDir + "genetic_map_%s_combined_b37_addCHR.m3vcf.txt"%imp_chr
         #if len(VCFin)
@@ -74,6 +79,7 @@ def main2():
         VCFout = VCFin.replace(phasingDir,outDir).replace(".vcf.gz",".%s_%s"%(imp_start,imp_end)).replace("phasing","imputation_MINIMAC4")
         with open(shDir + "Phased.to.imputation.%s.%s_%s.minimca4.sh"%(imp_chr,imp_start,imp_end),"w") as shwrite:
             shwrite.write("%s --ignoreDuplicates --chr %s --start %s --end %s --minRatio 0.000001 --window 1000000 --refhaps %s --haps %s --noPhoneHome --allTypedSites --format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1\n"%(minimac4,imp_chr.replace("chr",""),imp_start,imp_end,ref_panel,VCFin,VCFout,mapin))
+            shwrite.write("tabix -f -p vcf %s.dose.vcf.gz"%(VCFout))
 
 
 main2()

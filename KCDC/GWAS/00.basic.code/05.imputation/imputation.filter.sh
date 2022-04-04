@@ -2,17 +2,17 @@
 #bcftools view -i 'INFO >= 0.8 & MAF >= 0.01'
 #tabix -f -p
 ###bcftools filter
-mkdir ./05.vcf.filter_MAF0.01INFO0.08/
-mkdir ./05.vcf.filter_INFO0.08/
-ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8 & MAF >= 0.01' {}.vcf.gz -Oz > ./05.vcf.filter_MAF0.01INFO0.08/{}_MAF0.01_INFO0.8.filter.vcf.gz"
-ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8' {}.vcf.gz -Oz > ./05.vcf.filter_INFO0.08/{}_INFO0.8.filter.vcf.gz"
+mkdir ./05.vcf.filter_MAF0.01INFO0.8/
+mkdir ./05.vcf.filter_INFO0.8/
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 11 bash -c "bcftools view -i 'INFO >= 0.8 & MAF >= 0.01' {}.vcf.gz -Oz > ./05.vcf.filter_MAF0.01INFO0.8/{}_MAF0.01_INFO0.8.filter.vcf.gz"
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8' {}.vcf.gz -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.vcf.gz"
 
 
-ls JG*gz | cut -d"." -f1-5 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8 & MAF >= 0.01' {}.vcf.gz | bcftools sort -Oz > ./05.vcf.filter_MAF0.01INFO0.08/{}_MAF0.01_INFO0.8.filter.vcf.gz"
-ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8' {}.vcf.gz | bcftools sort -Oz > ./05.vcf.filter_INFO0.08/{}_INFO0.8.filter.vcf.gz"
+ls JG*gz | cut -d"." -f1-5 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8 & MAF >= 0.01' {}.vcf.gz | bcftools sort -Oz > ./05.vcf.filter_MAF0.01INFO0.8/{}_MAF0.01_INFO0.8.filter.vcf.gz"
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0.8' {}.vcf.gz | bcftools sort -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.vcf.gz"
 
 
-ls *gz | cut -d"." -f1-5 | xargs -I{} -P 15  bash -c "bcftools view -i 'R2 >= 0.8' {}.dose.vcf.gz -Oz > ./05.vcf.filter_INFO0.08/{}_INFO0.8.filter.does.vcf.gz"
+ls *gz | cut -d"." -f1-5 | xargs -I{} -P 15  bash -c "bcftools view -i 'R2 >= 0.8' {}.dose.vcf.gz -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.does.vcf.gz"
 
 ls *gz | xargs -I{} -P 4 bash -c 'tabix -f -p vcf {}'
 ls *gz | xargs -I{} -P 22 bash -c 'tabix -f -p vcf {}'
@@ -23,7 +23,13 @@ ls *gz | xargs -I{} -P 22 bash -c 'tabix -f -p vcf {}'
 
 
 
+## ID_ID -> ID 변경 
+#bcftools reheader -s [inputfile] -o [new_vcf.gz] [old_vcf.gz]
 
+
+ls *.gz | cut -d"." -f4 | xargs -I {} -P 1 bash -c "bcftools reheader -h ../new_header_forKKY.6h.txt -o ./FINAL/KNHANES.6th.Minimac4_Imputed_KBA.{}.filter_INFO0.8.vcf.gz KKY.6th.imputation_MINIMAC4.{}.filter.vcf.gz"
+
+KNHANES.6th.KBA_Minimac4_Imputed.{}.filter_INFO0.8.vcf.gz
 
 ==================
 ##VCF sort : bcftools sort input > output

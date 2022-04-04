@@ -1,0 +1,34 @@
+	1. gene list -> uscs db에서 rs ID 및 위치 정보 수집
+	/BDATA/smkim/JG/99.open/20220404/ucsc.ensemble.table
+	2. 데이터 처리
+	3. rs ID 처리  (--update-name
+	4. plink 로 데이터 추출 및 ID update (--update-ids)
+plink --bfile JG.KD.QCed_s3_updateID --update-name ../s3.list_withrsID.txt --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recodeA --out JG.KD.QCed_s3_updateID_r
+
+	1. ped/map
+
+
+
+
+1. 정보 수집
+2. geneID -> kchip ID
+3. plink data 처리 
+
+==> s3.list_v2_rsID.txt <==
+Probe_Set_ID	dbSNP_RS_ID
+AX-106712798	rs1051640
+AX-106712907	rs11045351
+AX-106714064	rs17274058
+
+==> s3.list_v2.txt <==
+Probe_Set_ID
+AX-106712798
+AX-106712907
+AX-106714064
+
+
+
+plink --bfile ../../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --keep ../../KR.ID.txt --extract ../s3.list_v2.txt --make-bed --out ESRD.QCed_onlyKR_s3
+plink --bfile ESRD.QCed_onlyKR_s3 --update-ids ../../KBA_ID_barcodeID.txt --make-bed --out ESRD.QCed_onlyKR_s3_updateID
+plink --bfile ESRD.QCed_onlyKR_s3_updateID --update-name ../s3.list_withrsID.txt --recode tab --out ESRD.QCed_onlyKR_s3_updateID_raw
+
