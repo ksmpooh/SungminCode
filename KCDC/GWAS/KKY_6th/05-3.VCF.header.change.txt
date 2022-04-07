@@ -1,0 +1,3 @@
+## header에 QC 내용 지우고, 파일이름도 변경하여 정리
+
+ls *.gz | cut -d"." -f4 | xargs -I {} -P 22 bash -c "bcftools reheader -h ../new_header_forKKY.6h.txt -o ./FINAL/KBA.KNHANES.6th.Imputed_MINIMAC4.{}.filter_INFO0.8.vcf.gz KKY.6th.imputation_MINIMAC4.{}.filter.vcf.gz"
