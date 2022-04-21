@@ -19,21 +19,33 @@ fi
 --do-rare-het-adjustment true \
 --summaries -dual-channel-normalization true \
 --genotyping-node:snp-posteriors-output true \
+--genotyping-node:snp-priors-input-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.r1.generic_prior.txt \
 --out-dir $2 \
 --cel-files $1 \
 --log-file $2/log/
 
+#--summaries -dual-channel-normalization true \
+#--genotyping-node:snp-posteriors-output true \
 
 
 
 ##SNPolisher
-~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-metrics --posterior-file $2/AxiomGT1.snp-posteriors.txt --call-file $2/AxiomGT1.calls.txt --metrics-file $2/AxiomGT1.out.txt
 
-~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification --species-type human --metrics-file $2/AxiomGT1.out.txt --output-dir $2/
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-metrics \
+--summary-file $2/AxiomGT1.summary.txt \
+--posterior-file $2/AxiomGT1.snp-posteriors.txt \
+--call-file $2/AxiomGT1.calls.txt \
+--metrics-file $2/metrics.txt
 
-~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification-supplemental \
---performance-file $2/Ps.performance.txt --summary-file $2/AxiomGT1.summary.txt \
---call-file $2/AxiomGT1.calls.txt --posterior-file $2/AxiomGT1.snp-posteriors.txt \
---output-dir $2/
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification --species-type human \
+--metrics-file $2/metrics.txt --output-dir $2/classification/ \
+--log-file $2/classification/
 
 
+# conert plink
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-format-result \
+--calls-file $2/AxiomGT1.calls.txt \
+--annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+--export-plink-file $2/plink/Axiom_KBAv1.1 \
+--plink-sort-by-chrpos True \
+--log-file $2/plink/Axiom_KBAv1.1_convert.log

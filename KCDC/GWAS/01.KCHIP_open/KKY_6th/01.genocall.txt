@@ -122,3 +122,24 @@ apt-format-result --calls-file <file> \
 --export-plink-file ./plink/Axiom_KBAv1.1 \
 --plink-sort-by-chrpos True \
 --log-file ./plink/Axiom_KBAv1.1_convert.log
+
+
+
+
+################### ㅎㅏ나 테스트
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-genotype-axiom \
+--analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis \
+--arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml \
+--do-rare-het-adjustment true \
+--out-dir /BDATA/smkim/test/output \
+--cel-files /BDATA/smkim/test/cel.files.txt
+#--log-file /BDATA/smkim/test/1st/20220311_KKY.6th.all.apt-genotype-axiom.log
+
+
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-format-result \
+--calls-file /BDATA/smkim/test/output/AxiomGT1.calls.txt \
+--annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+--export-vcf-file /BDATA/smkim/test/output/vcf/One.CEL.call.to.VCF
+

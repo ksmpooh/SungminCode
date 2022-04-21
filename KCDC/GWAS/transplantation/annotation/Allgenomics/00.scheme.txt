@@ -233,6 +233,7 @@ df[1:5,1:10]
 ref <-read.table("../Allogenomics_KR.KD.QCin.pairTable_ref.txt",header=T)
 ref <- ref[,c(1,3)]
 
+
 out <- merge(ref,df[df$FID %in% ref$KBA_ID.x,],by.x="KBA_ID.x",by.y="FID")
 out <- merge(out,df[df$FID %in% ref$KBA_ID.y,],by.x="KBA_ID.y",by.y="FID")
 write.table(out,"./PairTable/KR.KD.ALL.recode.txt",col.names=T,row.names=F,quote=F,sep="\t")
@@ -276,3 +277,15 @@ grep -v "^#" in.vcf | sort -k1,1V -k2n >> out.vcf
 ## n 옵션을 넣지 않으면, ## 숫자가 아닌 문자열로 정렬되어 
 ## 122134 다음에 12345가 오게 됩니다
 
+
+
+
+###
+df <- read.table("KR.KD.CD47.raw", header=T)
+##Filter(function(x)!all(is.na(x)), df)
+#Filter(function(x) !any(is.na(x)), Itun)
+#newdf <- t(na.omit(t(df)))
+
+out <- Filter(function(x)!all(is.na(x)), df)
+#out <- df[!is.na(df),]
+write.table(out,"test.rmNA.txt",col.names=T,row.names=F,quote=F)

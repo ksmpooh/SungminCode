@@ -1,0 +1,44 @@
+#103
+
+cd /BDATA/smkim/preg/01.genocall/1st/plink
+
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/preg/02.1stQC/PREG.1stQC
+
+cd /BDATA/smkim/KKY_7th/02.1stQC
+
+plink --bfile KKY.7th.1stQC --extract /BDATA/smkim/KKY_7th/01.genocall/1st/classification/Recommended.ps --make-bed --out KKY.7th.1stQC_snpolisher
+
+plink --bfile KKY.7th.1stQC_snpolisher --missing --out MISS
+plink --bfile KKY.7th.1stQC_snpolisher --het --out HET
+
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+#setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.18), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY.7th.1stQC ALL missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.6, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.5), cex=1, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15 | 17.6 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+head(rmList)

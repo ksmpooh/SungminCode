@@ -1,0 +1,216 @@
+cd /BDATA/smkim/KR_allogenomics/new_20220418
+/BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink
+
+cat JG.KR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_rmscreenfailure_forOPEN.bim JG.KD.2nd_snpolisher_rmaffy_convert_indel_flip_rmdup_forOPEN.bim | sort |uniq -c | awk '$1==2{print $3}' > intersectID.txt
+
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_rmscreenfailure_forOPEN --extract intersectID.txt --make-bed --out JG.KR.QCed_common
+plink --bfile JG.KD.2nd_snpolisher_rmaffy_convert_indel_flip_rmdup_forOPEN --extract intersectID.txt --make-bed --out JG.KD.QCed_common
+
+
+plink --bfile JG.KD.QCed_common --bmerge JG.KR.QCed_common --make-bed --out JG.KR.KD.merge
+plink --bfile JG.KR.KD.merge_onlyPair --update-name ../../KCHIP_SNPID.update.list.txt --make-bed --out JG.KR.KD.merge_onlyPair_SNPID.update
+
+
+plink --bfile ../00.oridata_plink/JG.KR.KD.merge_onlyPair --chr 20 --from-bp 1874813 --to-bp 1921238 --recodeA 
+
+/BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+hg19
+
+chr20:1874813-1921238
+
+chrX:15402921-15511687
+
+chr3:107761938-107810709
+
+
+
+###
+#### sh 01.geno.sh [from_bp] [to_bp] [gene]
+
+if [ $# -ne 3 ]; then
+ echo "Usage: $0 [from_bp] [to_bp] [gene]"
+ echo "ex) sh 01.geno.sh 1 2 gene"
+ exit -1
+else
+ echo "from  : $1"
+ echo "to : $2"
+ echo "gene : $3"
+ echo "ok"
+fi
+
+
+plink --bfile JG.KR.KD.merge_onlyPair_SNPID.update --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --from-bp $1 --to-bp $2 --make-bed --out JG.KR.KD.merge_onlyPair.$3
+
+
+####
+HLA gene
+
+cd /BDATA/smkim/JG/99.open/20220419
+
+awk '$5=="I"{print $1,$2,$3,$4}' MHC.gene.list_withpos_withclass.v2.txt > MHC.gene.list_withpos_classI.txt
+awk '$5!="I"{print $1,$2,$3,$4}' MHC.gene.list_withpos_withclass.v2.txt > MHC.gene.list_withpos_classII.txt
+
+
+python3 ../SCRIPTs/01.extract.gene.list.py MHC.gene.list_withpos_classI.txt /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update.bim
+python3 ../SCRIPTs/01.extract.gene.list.py MHC.gene.list_withpos_classII.txt /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update.bim
+
+
+ref : /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update.bim
+
+## each gene
+MHC.gene.list_withpos_classII_info.txt
+MHC.gene.list_withpos_classI_info.txt
+#gene chrom start end
+#gene chrom start end
+#HLA-DMA chr6 32916389 32936871
+#HLA-DMB chr6 32902405 32908847
+#HLA-DOA chr6 32971954 32977389
+
+
+
+
+####
+cd /BDATA/smkim/KR_allogenomics/new_20220418/01.targetGene/MHC_I
+
+plink --bfile /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update \
+--recode A --extract /BDATA/smkim/JG/99.open/20220419/MHC.gene.list_withpos_classI_info_snp.inbim_onlySNPID.txt \
+--out KR.KD.MHC_I
+
+cd /BDATA/smkim/KR_allogenomics/new_20220418/01.targetGene/MHC_II
+
+plink --bfile /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update \
+--recode A --extract /BDATA/smkim/JG/99.open/20220419/MHC.gene.list_withpos_classII_info_snp.inbim_onlySNPID.txt \
+--out KR.KD.MHC_II
+
+
+##python3
+
+import os
+
+#inData = "/BDATA/smkim/JG/99.open/20220419/MHC.gene.list_withpos_classI_info.txt"
+#inData = "/BDATA/smkim/JG/99.open/20220419/MHC.gene.list_withpos_classII_info.txt"
+inData = "/BDATA/smkim/JG/99.open/20220419/transmembrane/transmembrane.gene.list_withpos_v2_info.txt"
+#plinkIn = "/BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update"
+def main():
+    df = open(inData,"r")
+    dfs = [s.replace("\n","") for s in df]
+    for i in dfs:
+        gene,chr,start,end = i.split()
+        os.system("sh run.sh %s %s %s %s"%(chr.replace("chr",""),start,end,gene))
+
+main()
+    
+###
+
+cd /BDATA/smkim/JG/99.open/20220419
+#transmembrane
+
+python3 ../SCRIPTs/01.extract.gene.list.py transmembrane.gene.list_withpos_v2.txt /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update.bim
+
+cd /BDATA/smkim/KR_allogenomics/new_20220418/01.targetGene/
+
+plink --bfile /BDATA/smkim/KR_allogenomics/new_20220418/00.oridata_plink/JG.KR.KD.merge_onlyPair_SNPID.update \
+--recode A --extract /BDATA/smkim/JG/99.open/20220419/transmembrane/transmembrane.gene.list_withpos_v2_info_snp.inbim_onlySNPID.txt \
+--out KR.KD.transmembrane
+
+
+# other gene
+cd /BDATA/smkim/KR_allogenomics/new_20220418/01.targetGene
+
+hg19
+
+#SIRPa chr20:1874813-1921238
+#PIR-A chrX:15402921-15511687
+#CD47 chr3:107761938-107810709
+sh run.sh 20 1874813 1921238 SIRPa
+sh run.sh 23 15402921 15511687 PIR-A
+sh run.sh 3 107761938 107810709 CD47
+
+
+
+
+## 참고
+#plink --bfile JG.KR.KD.merge_onlyPair --a2-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt  \
+#--recode A --out KR.KD.merge.common_pairOnly_convertplink \
+#--update-name KCHIPID_chrposrefaltID_formerge.txt
+
+
+
+
+####
+python3 03.score_v2.py [input.raw]
+
+
+ls *raw | xargs -I{} -P 32 bash -c 'python3 03.score_v2.py {}'
+
+
+### extarct score 
+mkdir score_sum
+
+##.sh
+in=$1
+awk '{print $1,$2,$NF}' $in.txt > ./score_sum/$in.tail.txt
+##
+
+mkdir score_sum
+ls *ScoreTable.txt | cut -d"." -f1-3 | xargs -I{} -P 32 bash -c "sh extract.tail.sh {}"
+
+
+
+
+## data merge
+#R
+cd score_sum
+
+R
+a <- list.files(pattern = "tail.txt")
+df = read.table(a[1],header = T)
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  t = as.data.frame(tmp[,3])
+  colnames(t) <- colnames(tmp)[3]
+  df =cbind(df,t)
+  
+}
+
+#write.table(df,"KR.KD.transmembrane_each_gene.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+write.table(df,"KR.KD.Main_Category.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(df,"KR.KD.MHC_I_each_gene.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(df,"KR.KD.MHC_II_each_gene.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+#### score 0 1 allele matching 같은 allele 만 체크
+cd /BDATA/smkim/KR_allogenomics/new_20220418/02.score.table_forAllelematching
+
+
+ls *raw | xargs -I{} -P 32 bash -c 'python3 03.score_01.py {}'
+ls *raw | xargs -I{} -P 32 bash -c 'python3 03.score_01.py {} /BDATA/smkim/KR_allogenomics/new_20220418/02.score.table_forAllelematching/MHC_I/'
+ls *raw | xargs -I{} -P 32 bash -c 'python3 03.score_01.py {} /BDATA/smkim/KR_allogenomics/new_20220418/02.score.table_forAllelematching/MHC_II/'
+ls *raw | xargs -I{} -P 32 bash -c 'python3 03.score_01.py {} /BDATA/smkim/KR_allogenomics/new_20220418/02.score.table_forAllelematching/transmembrane/'
+
+
+
+
+
+R
+a <- list.files(pattern = "_alleleMatching.txt")
+df = read.table(a[1],header = T)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t)
+  
+}
+
+#write.table(df,"../KR.KD.transmembrane_each_gene.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+write.table(df,"../KR.KD.Main_Category.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(df,"../KR.KD.MHC_I_each_gene.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(df,"../KR.KD.MHC_II_each_gene.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+

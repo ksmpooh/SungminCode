@@ -8,3 +8,30 @@ mkdir discovery/02.Imputed.VCF
 
 mkdir replication/01.QCed.PLINK
 mkdir replication/02.Imputed.VCF
+
+
+
+
+
+
+plink --bfile JG.KR.rep.2nd_snpolisher_rmaffy_convert_indel_flip_rmdup --geno 0.05 --make-bed --out JG.KR.rep.2nd_snpolisher_rmaffy_convert_indel_flip_rmdup_forOPEN
+
+rsync -avhP *forOPEN* 
+
+rsync -avhP *forOPEN* /LaCie2/KOTRY/99.open/forOpen/KR/replication/01.QCed.PLINK/
+
+
+plink --bfile JG.KR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_rmscreenfailure --geno 0.05 --make-bed --out JG.KR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_rmscreenfailure_forOPEN
+
+zcat forOpen/KR/discovery/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/LR/discovery/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/KD/discovery/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/LD/discovery/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+
+
+zcat forOpen/KR/replication/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/LR/replication/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/KD/replication/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+zcat forOpen/LD/replication/02.Imputed.VCF/*gz | grep -v "#" |wc -l
+
+

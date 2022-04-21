@@ -1,0 +1,24 @@
+ls *gz | cut -d"." -f1-8 |xargs -I{} -P 22 bash -c "plink --vcf {}.vcf.gz --make-bed --out ./plink/{}_vcfToplink"
+
+
+
+
+import os,glob
+chr1=  glob.glob("*chr1_*log")
+print(chr1)
+#chr1 = pop()
+
+
+
+
+
+def main():
+    out = open("merge-list.txt","w")
+    for i in range(2,22+1):
+        out.write("%s\n"%chr1[0].replace("chr1_","chr%s_"%str(i)).replace(".log",""))
+    out.close()
+    os.system("plink --bfile %s --merge-list merge-list.txt --make-bed --out %s"%(chr1[0].replace(".log",""),chr1[0].replace(".log","").replace("chr1","ALLchr")))
+
+main()        
+    
+

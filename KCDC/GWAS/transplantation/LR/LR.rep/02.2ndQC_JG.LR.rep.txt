@@ -197,7 +197,7 @@ plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_
 
 
 plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup --maf 0.01 --geno 0.05 --chr 1-22 --make-bed --out JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup_fil
-plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup --geno 0.05 --chr 1-22 --make-bed --out JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup_forOPEN
+plink --bfile JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup --geno 0.05 --make-bed --out JG.LR.rep.2nd_snpolisher_rmMissing-het_rmPCA_rmaffy_convert_indel_flip_rmdup_forOPEN
   
   
   

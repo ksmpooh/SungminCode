@@ -1,0 +1,32 @@
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-genotype-axiom \
+--analysis-files-path /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis \
+--arg-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1_96orMore_Step2.r1.apt-genotype-axiom.AxiomGT1.apt2.xml \
+--do-rare-het-adjustment true \
+--out-dir /BDATA/smkim/KKY_7th/01.genocall/1st/ \
+--cel-files /BDATA/smkim/KKY_7th/00.rawData/kky.7th.cel.files_20220412.txt \
+--log-file /BDATA/smkim/KKY_7th/01.genocall/1st/20220311_KKY.7th.all.apt-genotype-axiom.log
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-metrics \
+--summary-file /BDATA/smkim/KKY_7th/01.genocall/1st/AxiomGT1.summary.txt \
+--posterior-file /BDATA/smkim/KKY_7th/01.genocall/1st/AxiomGT1.snp-posteriors.txt \
+--call-file /BDATA/smkim/KKY_7th/01.genocall/1st/AxiomGT1.calls.txt \
+--metrics-file /BDATA/smkim/KKY_7th/01.genocall/1st/metrics.txt
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/ps-classification --species-type human \
+--metrics-file /BDATA/smkim/KKY_7th/01.genocall/1st/metrics.txt --output-dir /BDATA/smkim/KKY_7th/01.genocall/1st/classification/ \
+--log-file /BDATA/smkim/KKY_7th/01.genocall/1st/classification/
+
+# conver plink
+
+~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-format-result \
+--calls-file /BDATA/smkim/KKY_7th/01.genocall/1st/AxiomGT1.calls.txt \
+--annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+--export-plink-file ./plink2/Axiom_KBAv1.1_convert \
+--plink-sort-by-chrpos True \
+--log-file ./plink2/Axiom_KBAv1.1_convert.log
+
+
+
+/BDATA/smkim/KKY_7th/00.rawData/kky.7th.cel.files_20220412.txt
+
+/BDATA/smkim/KKY_7th/01.genocall/1st
