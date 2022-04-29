@@ -5,6 +5,7 @@ library(tidyverse)
 library(stringr)
 
 setwd("~/Desktop/KCDC/일반용역/")
+setwd("~/Desktop/KCDC/일반용역/장기이식/")
 
 
 
@@ -74,5 +75,7 @@ shortread <- hlaseq_short %>%rename(Shortread_filename_R1 = V1) %>% mutate(index
 head(longread)
 head(shortread)
 
-merge(shortread,longread %>% select(longread_ID,KBA_ID.2020,Longread_filename,Longread_filePath),by.x="KBA_ID",by.y = "KBA_ID.2020") %>% 
-  head()
+out <- merge(shortread,longread %>% select(longread_ID,KBA_ID.2020,Longread_filename,Longread_filePath),by.x="KBA_ID",by.y = "KBA_ID.2020")
+
+library(writexl)
+write_xlsx(out,"HLAsequencing.ID.table_2022.xlsx")

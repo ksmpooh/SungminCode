@@ -1,0 +1,41 @@
+bwa.kit/bwa mem -t 8 -M -R '@RG\tID: SNUM0377-01\tPL:ILLUMINA\tPU: SNUM0377-01\tSM: SNUM0377-01\tLB: SNUM0377-01-1' ref/human_g1k_v37_decoy.fasta <(zcat fastq/SNUM0377-01_L001_R1_001.fastq.gz) <(zcat fastq/SNUM0377-01_L001_R2_001.fastq.gz) | /home/ec2-user/programs/samtools-1.10/bin/samtools view -huS | /home/ec2-user/programs/samtools-1.10/bin/samtools sort -@ 8 -m 2G -o SNUM0377-01.bam -O bam -T SNUM0377-01.tmp
+
+
+java -jar /home/ec2-user/bms553_lab08/picard/picard.jar MarkDuplicates I=SNUM0377-01.bam O=dedup.SNUM0377-01.bam M=markdups_SNUM0377-01.txt ASSUME_SORT_ORDER=queryname MAX_RECORDS_IN_RAM=2000000 COMPRESSION_LEVEL=1 CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT PROGRAM_RECORD_ID=null ADD_PG_TAG_TO_READS=false READ_NAME_REGEX=null; /home/ec2-user/programs/samtools-1.10/samtools index /home/ec2-user/bms553_lab08/dedup.SNUM0377-01.bam
+
+gatk-4.1.6.0/gatk BaseRecalibrator -R ref/human_g1k_v37_decoy.fasta -I dedup.SNUM0377-01.bam --known-sites ref/dbsnp_138.b37.vcf --known-sites ref/1000G_phase1.snps.high_confidence.b37.vcf --known-sites ref/Mills_and_1000G_gold_standard.indels.b37.vcf -L ref/hs37d5_MedExome_and_coding_padded_Nov2015.bed -O SNUM0377-01.recal.table
+
+gatk-4.1.6.0/gatk ApplyBQSR -R ref/human_g1k_v37_decoy.fasta -I dedup.SNUM0377-01.bam -O SNUM0377-01.cram -bqsr SNUM0377-01.recal.table --static-quantized-quals 10 --static-quantized-quals 20 --static-quantized-quals 30
+/home/ec2-user/programs/samtools-1.10/samtools index /home/ec2-user/bms553_lab08/SNUM0377-01.cram
+
+
+gatk-4.1.6.0/gatk HaplotypeCaller -R ref/human_g1k_v37_decoy.fasta -I SNUM0377-01.cram -O SNUM0377-01.g.vcf.gz -ERC GVCF -L ref/hs37d5_MedExome_and_coding_padded_Nov2015.bed
+
+gatk-4.1.6.0/gatk GenotypeGVCFs -R ref/human_g1k_v37_decoy.fasta -V SNUM0377-01.g.vcf.gz -O rawcalls.SNUM0377-01.vcf.gz -L ref/hs37d5_MedExome_and_coding_padded_Nov2015.bed
+
+
+####bash
+
+#### sh 01.fastq_to_VCF.sh [R1.fastq] [R2.fastq]
+
+if [ $# -ne 2 ]; then
+ echo "Usage: $0 [R1.fastq or fastq.gz] [R2.fastq or fastq.gz]"
+ echo "ex) sh 01.fastq_to_VCF.sh S1.R1.fastq S1.R2.fastq
+ exit -1
+else
+ echo "R1 : $1"
+ echo "R2 : $2"
+ echo "ok" 
+fi
+
+echo "Alignment : Fastq to mapped Map"
+sampleID=$(echo $1 | cut -d"_" -f1)
+echo $sampleID
+
+bwa.kit/bwa mem -t 8 ref/human_g1k_v37_decoy.fasta $1 $2 > tmp.sam
+bwa.kit/bwa mem -t 8 -M -R '@RG\tID: $sample\tPL:ILLUMINA\tPU: SNUM0377-01\tSM: SNUM0377-01\tLB: SNUM0377-01-1' ref/human_g1k_v37_decoy.fasta <(zcat fastq/SNUM0377-01_L001_R1_001.fastq.gz) <(zcat fastq/SNUM0377-01_L001_R2_001.fastq.gz) | /home/ec2-user/programs/samtools-1.10/bin/samtools view -huS | /home/ec2-user/programs/samtools-1.10/bin/samtools sort -@ 8 -m 2G -o SNUM0377-01.bam -O bam -T SNUM0377-01.tmp
+
+
+(Extra-points) Please write a streamlined bash script that takes the paired-end sequencing reads 
+(sampleID_L001_R1_001.fastq.gz & sampleID_L001_R2_001.fastq.gz) as an input and outputs unfiltered VCF file 
+(rawcalls_sampleID.vcf.gz). Please show the usage of your script. 

@@ -1,4 +1,4 @@
-~/bwa-mem2/bwa-mem2 mem -t 2 ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz >test_align.sam
+~/bwa-mem2/bwa-mem2 mem -t 4 ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz >test_align.sam
 
 
 
@@ -71,3 +71,19 @@ sudo docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test/":"/inpu
 /opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/HLA.target.fasta \
 --reads /input/test_align_sorted.bam --output_gvcf /output/test_align_sorted_deepvariant.gvcf.gz \
 --output_vcf /output/test_align_sorted_deepvariant.vcf.gz --num_shards 20
+
+
+
+###
+#samtools sort test_align.sam -o test_align_sorted.bam
+
+~/bwa-mem2/bwa-mem2 mem -t 4 ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz | samtools sort -o test999.sorted.bam
+###mapping
+ls *R1*gz | cut -d"_" -f1-3 | xargs -I{} -P 8 bash -c "~/bwa-mem2/bwa-mem2 mem -t 4 ./test/HLA.target.fasta {}_R1_001.fastq.gz {}_R2_001.fastq.gz > ./01.mapping/{}_align.sam"
+
+
+index
+ls *bam | xargs -I{} -P 32 bash -c "samtools index {}"
+
+Variant calling
+

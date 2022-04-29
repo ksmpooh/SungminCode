@@ -4,16 +4,16 @@ cd /BDATA/smkim/preg/01.genocall/1st/plink
 
 plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/preg/02.1stQC/PREG.1stQC
 
-cd /BDATA/smkim/KKY_7th/02.1stQC
+/BDATA/smkim/preg/02.1stQC
 
-plink --bfile KKY.7th.1stQC --extract /BDATA/smkim/KKY_7th/01.genocall/1st/classification/Recommended.ps --make-bed --out KKY.7th.1stQC_snpolisher
+plink --bfile PREG.1stQC --extract /BDATA/smkim/preg/01.genocall/1st/classification/Recommended.ps --make-bed --out PREG.1stQC_snpolisher
 
-plink --bfile KKY.7th.1stQC_snpolisher --missing --out MISS
-plink --bfile KKY.7th.1stQC_snpolisher --het --out HET
+plink --bfile PREG.1stQC_snpolisher --missing --out MISS
+plink --bfile PREG.1stQC_snpolisher --het --out HET
 
 
 
-setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+setwd("/Volumes/DATA/KCHIPQC/PREG/1st/")
 #setwd("~/")
 miss <-read.table("MISS.imiss",header = T)
 het <- read.table("HET.het", header = T)
@@ -27,18 +27,86 @@ lowSample <- merge(miss, het, by="FID")
 #pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
 #png("KKY.1stQC.PCA.png", height = 800, width = 800)
 plot(lowSample$HET, lowSample$F_MISS, 
-     xlim=c(12,24), ylim=c(0,0.18), 
+     xlim=c(12,24), ylim=c(0,0.15), 
      xlab="heterozygosity rate",
-     ylab="missing rate", main="KKY.7th.1stQC ALL missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
-abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
-abline(v=17.6, col=rgb(1,0,0,1), lty=3, lwd=2)
+     ylab="missing rate", main="PREG 1stQCmissing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.2, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
-points(lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
-       lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+points(lowSample[lowSample$HET < 15.5 | 17.2 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17.2 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
        col=rgb(1,0,0,0.5), cex=1, pch=16)
 dev.off()
 
-rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15 | 17.6 < lowSample$HET,]
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17.2 < lowSample$HET,]
 write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 dim(rmList)
 head(rmList)
+
+
+plink --bfile PREG.1stQC_snpolisher --remove rmLQsamples.txt --make-bed --out PREG.1stQC_snpolisher_rmLQsample
+
+
+
+plink --bfile PREG.1stQC_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PREG.1stQC_snpolisher_rmLQsample_pruning
+plink --bfile PREG.1stQC_snpolisher_rmLQsample --extract PREG.1stQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out PREG.1stQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile PREG.1stQC_snpolisher_rmLQsample_pruned --outpc PCA.txt
+
+
+#PCA2
+cd PCA2
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-22 --out PREG.1stQC_snpolisher_rmLQsample_pruning
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --extract PREG.1stQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out PREG.1stQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile PREG.1stQC_snpolisher_rmLQsample_pruned --outpc PCA2.txt
+
+#PCA3
+mkdir PCA34
+cd PCA34
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out PREG.1stQC_snpolisher_rmLQsample_pruning_v3
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --extract PREG.1stQC_snpolisher_rmLQsample_pruning_v3.prune.in --make-bed --out PREG.1stQC_snpolisher_rmLQsample_pruned_v3
+flashpca_x86-64 --bfile PREG.1stQC_snpolisher_rmLQsample_pruned_v3 --outpc PCA3.txt
+
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out PREG.1stQC_snpolisher_rmLQsample_pruning_v4
+plink --bfile ../PREG.1stQC_snpolisher_rmLQsample --extract PREG.1stQC_snpolisher_rmLQsample_pruning_v4.prune.in --make-bed --out PREG.1stQC_snpolisher_rmLQsample_pruned_v4
+flashpca_x86-64 --bfile PREG.1stQC_snpolisher_rmLQsample_pruned_v4 --outpc PCA4.txt
+
+
+
+
+
+#
+setwd("/Volumes/DATA/KCHIPQC/PREG/1st/")
+setwd("~/")
+#setwd("~/")
+
+#pca <- read.table("PCA.txt", header=T)
+pca <- read.table("PCA2.txt", header=T)
+#pca <- read.table("PCA.v2.txt", header=T)
+
+head(pca)
+
+pdf("./PREG.1st.QC_PCA2.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+#     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="PREG 1st QC PCA2", cex=0.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=0.5, pch=16)
+legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
+       x = 0.1,y=-0.2,
+       legend = c("-0.1< PCA1 <0.1\n-0.1< PCA2 <0.1\n Pruning SNP : 12084\nMAF:0.25, HWE 0.001,geno:0.01\nindep-pairwise 50 5 0.01\nrm chr6-14"))
+
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
