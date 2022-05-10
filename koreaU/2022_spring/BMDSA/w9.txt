@@ -1,0 +1,71 @@
+/home/ec2-user/programs/annovar/table_annovar.pl exome_calls_pass.vcf /home/ec2-user/programs/annovar/humandb/ -buildver hg19 -out exome_calls_pass_anno -remove -protocol refGene,clinvar_20200316,hgmd,gnomad211_exome,ljb26_all,icgc21 -operation gx,f,f,f,f,f -nastring . -vcfinput
+
+
+awk -F'\t' '$18 < 0.001 || $18 == "\."' exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_anno.hg19_multianno.txt
+awk -F'\t' 'NR==1 || $18 < 0.001 || $18 == "\."' exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_anno.hg19_multianno.txt
+
+
+awk -F '\t' '{if($6 ~ "splicing" && $9 == "\.") $9="splice_site"; print $0}' OFS="\t" rare_exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_splice_anno.hg19_multianno.txt
+
+awk -F'\t' '$9 == "nonsynonymous SNV" && $50 == "D"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt
+
+awk -F'\t' '$9 ~ "frameshift" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/1" && $NF ~ "0/0"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt
+
+awk -F'\t' '$15 ~ "Pathogenic" || $16 ~ "DM"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+
+
+
+
+
+awk -F'\t' 'NR==1 || $18 =< 0.0001 || $18 == "\."' exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_anno.hg19_multianno.txt
+awk -F'\t' '{print $6}' exome_calls_pass_anno.hg19_multianno.txt | sort -u 
+
+awk -F'\t' '{print $9}' exome_calls_pass_anno.hg19_multianno.txt | sort -u 
+
+ExonicFunc.refGene
+frameshift deletion
+frameshift insertion
+nonframeshift deletion
+nonframeshift insertion
+nonsynonymous SNV
+splice_site
+startloss
+stopgain
+stoploss
+synonymous SNV
+unknown
+awk -F '\t' '{if($6 ~ "splicing" && $9 == "\.") $9="splice_site"; print $0}' OFS="\t" rare_exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_splice_anno.hg19_multianno.txt
+awk -F '\t' '{if($6 ~ "Stopgain" && $9 == "\.") $9="splice_site"; print $0}' OFS="\t" rare_exome_calls_pass_anno.hg19_multianno.txt > rare_exome_calls_pass_splice_anno.hg19_multianno.txt
+
+
+Stopgain, frameshift insertion / deletion, and splice site variants 
+awk -F'\t' '$9 ~ "frameshift" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/1" && $NF ~ "0/0"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+awk -F'\t' '$9 ~ "stopgain" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/1" && $NF ~ "0/0"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+awk -F'\t' '$9 ~ "splice_site" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/1" && $NF ~ "0/0"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+
+
+
+awk -F'\t' '$9 ~ "stopgain" && $(NF-2) ~ "0/0" && $(NF-1) ~ "0/0" && $NF ~ "0/1"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+awk -F'\t' '$9 ~ "frameshift" && $(NF-2) ~ "0/0" && $(NF-1) ~ "0/0" && $NF ~ "0/1"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+awk -F'\t' '$9 ~ "splice_site" && $(NF-2) ~ "0/0" && $(NF-1) ~ "0/0" && $NF ~ "0/1"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+
+awk -F'\t' '$9 ~ "frameshift" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/1" && $NF ~ "0/0"' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | \
+awk -F'\t' '$9 ~ "stopgain|splice_site|frameshift" && $(NF-2) ~ "0/0" && $(NF-1) ~ "0/0" && $NF ~ "0/1"' 
+
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | wc -l
+
+
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | \
+awk -F'\t' '$9 ~ "stopgain|splice_site|frameshift"' | less -NS
+
+
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | \
+awk -F'\t' '$9 ~ "stopgain|splice_site|frameshift" && $(NF-2) ~ "0/1" && $(NF-1) ~ "0/0" && $NF ~ "0/1"' | less -NS
+
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | \
+awk -F'\t' '$9 ~ "stopgain|splice_site|frameshift"' | less -NS
+
+awk -F'\t' '($15 ~ "Pathogenic" || $16 ~ "DM")' rare_exome_calls_pass_splice_anno.hg19_multianno.txt | \
+awk -F'\t' '$9 == "nonsynonymous SNV" && $50 == "D"' | wc -l 
+ 

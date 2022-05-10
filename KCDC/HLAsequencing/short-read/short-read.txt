@@ -85,5 +85,14 @@ ls *R1*gz | cut -d"_" -f1-3 | xargs -I{} -P 8 bash -c "~/bwa-mem2/bwa-mem2 mem -
 index
 ls *bam | xargs -I{} -P 32 bash -c "samtools index {}"
 
-Variant calling
 
+
+
+### mark deduplication
+sudo docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test/":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test":"/output" -v "/DATA/smkim/pacbio/INPUTs":"/ref" broadinstitute/picard \
+java -jar /usr/picard/picard.jar MarkDuplicates \
+I=/input/test_align_sorted.bam \
+O=/input/test_align_sorted_dedup.bam \
+METRICS_FILE=duplicates \
+REMOVE_DUPLICATES=True \
+CREATE_INDEX=True

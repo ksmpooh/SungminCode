@@ -12,6 +12,8 @@
 
 #pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta ../2nd_Cell.bc1001--bc1001.bam test.bam --sort --preset CCS --sample HLAseqtest_1
 
+pbmm2 align ref.fasta movie.Q20.fastq ref.movie.bam --preset CCS --sort --rg '@RG\tID:myid\tSM:mysample'
+pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta 2nd_Cell.264.bc1001--bc1001.bam test.bam --sort --preset CCS --rg '@RG\tID:myid\tSM:mysample'
 
 conda 
 

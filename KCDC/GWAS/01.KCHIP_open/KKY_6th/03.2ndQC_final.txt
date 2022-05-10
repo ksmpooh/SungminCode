@@ -358,3 +358,97 @@ awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd
 
 
 plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
+
+
+
+
+
+##### 20220509 sex chromosome 추가 작업
+
+23, 25가 PAR 구분 잘 된건지 체크해주세요.
+     non-PAR: X chromosome의 Chr23: 2,699,521-154,931,043	
+     PAR: non-PAR외의 모든 지역
+
+PAR 지역은 autosomal region의 QC와 동일합니다.
+     그런데 HWE는 보통 1e-6으로 cut-off 했는데 이건 왜 0.001이죠? (이 수치는 보통 control 정보에서 많이 사용하는데)
+
+non-PAR의 경우
+     남성은 heterozygous를 set to missing 또는 homozygous 처리 (plink 메뉴얼 참조)
+     여성은 autosomal region의 QC와 동일	
+아마 non-PAR의 경우 성별 정보를 fam 파일이나 pheno에 잘 넣어두면 자동으로 hwe 체크나 missing 처리를 할겁니다. (로그 확인해보세요)
+
+#KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID
+
+Two simular commands (but that cannot be run at the same time as --update-ids) are
+--update-sex myfile1.txt
+that expects 3 columns per row:
+     FID
+     IID
+     SEX    Coded 1/2/0 for M/F/missing
+
+
+cd /BDATA/smkim/KKY_6th/00.rawData
+R
+df <- read.table("Sample.Info.2019",header =T)
+df1 <- read.table("Sample.info.2020",header=T)
+df2 <- read.table("2021.KKY.summary.info.20220311.txt",header=T)
+df2 <- df2[df2$기수=="6th",]
+
+df <- df[,c(1,2,5)]
+df1 <- df1[,c(1,2,5)]
+df2 <-df2[,c(1,1,3)]
+
+colnames(df) <- c("FID","IID","SEX")
+colnames(df1) <- c("FID","IID","SEX")
+colnames(df2) <- c("FID","IID","SEX")
+
+out <- rbind(df,df1)
+out <- rbind(out,df2)
+write.table(out,"KKY.6th.ALL.sampleINFO_20220509.txt",col.names=T,row.names=F,quote=F,sep="\t")
+q()
+
+
+cd /BDATA/smkim/KKY_6th
+df <- read.table("00.rawData/Sample.Info.2019")
+df1 <- read.table("00.rawData/kky.6th.2019pro.txt",header=T)
+ref<-read.table("03.2ndQC/sex/plink.sexcheck",header=T)
+out <- merge(ref,df1,by.x="IID",by.y="ID")
+out[out$STATUS != "OK",c(1,3,4,5,10)]
+
+### Y chromosome sex check
+cd /BDATA/smkim/KKY_6th/03.2ndQC/sex.check
+
+
+R
+df <-read.table("check-sex.sexcheck",header=T)
+ref <-read.table("y.txt.raw",header=T)
+
+ref[ref$IID %in% df[df$STATUS != "OK",]$IID,]
+write.table(ref[ref$IID %in% df[df$STATUS != "OK",]$IID,],"5sample.Y.SNP.txt",col.names=T,row.names=F,quote=F,sep = "\t")
+###
+##
+#A PROBLEM arises if the two sexes do not match, or if the SNP data or pedigree data are ambiguous with regard to sex. A male call is made if F is more than 0.8; a femle call is made if F is less than 0.2.
+
+cd /BDATA/smkim/KKY_6th/03.2ndQC/sex
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 23-25 --make-bed --out KKY.6th.preQC.onlySEX
+plink --bfile KKY.6th.preQC.onlySEX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out KKY.6th.preQC.onlySEX_nonPAR
+plink --bfile KKY.6th.preQC.onlySEX --exclude KKY.6th.preQC.onlySEX_nonPAR.bim --make-bed --out KKY.6th.preQC.onlySEX_PAR
+
+
+plink --bfile KKY.6th.preQC.onlySEX_PAR --maf 0.01 --hwe 0.001 --geno 0.05 --make-bed --out KKY.6th.preQC.onlySEX_PAR_fil
+
+
+
+## chr y
+plink --bfile KKY.6th.preQC.onlySEX --chr 24 --make-bed --out KKY.6th.preQC.onlySEX_onlyCHRY
+plink --bfile KKY.6th.preQC.onlySEX_onlyCHRY --geno 0.05 --make-bed --out KKY.6th.preQC.onlySEX_onlyCHRY_onlygeno
+
+## non-PAR
+
+## chr 26( mit)
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 26 --make-bed --out KKY.6th.preQC.onlySEX_MIT
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 26 --geno 0.05 --make-bed --out KKY.6th.preQC.onlySEX_MIT_fil
+plink --bfile KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat_fil
+

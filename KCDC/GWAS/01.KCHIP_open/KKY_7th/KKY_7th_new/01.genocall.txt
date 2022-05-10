@@ -16,7 +16,7 @@
 --metrics-file /BDATA/smkim/KKY_7th/01.genocall/1st/metrics.txt --output-dir /BDATA/smkim/KKY_7th/01.genocall/1st/classification/ \
 --log-file /BDATA/smkim/KKY_7th/01.genocall/1st/classification/
 
-# conver plink
+# convert plink
 
 ~/Downloads/apt_2.11.4_linux_64_bit_x86_binaries/bin/apt-format-result \
 --calls-file /BDATA/smkim/KKY_7th/01.genocall/1st/AxiomGT1.calls.txt \
