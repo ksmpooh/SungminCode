@@ -1,0 +1,108 @@
+import pandas as pd
+
+# (SAMPLES,)=glob_wildcards("fastq/{sample}_2x_trimmed_R1.fastq.gz")
+
+################################################################################
+# Globals                                                                      #
+################################################################################
+
+samples = pd.read_csv('samples.tsv', sep='\t')
+is_paired = "fastq2" in samples.columns
+
+REF="reference/hg19/hg19.fa"
+
+################################################################################
+# Functions                                                                    #
+################################################################################
+
+def get_samples():
+    """Returns list of all samples."""
+    return list(samples["sample"].unique())
+
+def get_samples_with_lane():
+    """Returns list of all combined lane/sample identifiers."""
+    return list((samples["sample"] + "." + samples["lane"]).unique())
+
+def get_sample_lanes(sample):
+    """Returns lanes for given sample."""
+    subset = samples.loc[samples["sample"] == sample]
+    return list(subset["lane"].unique())
+
+print(get_samples())
+
+
+################################################################################
+# Rules                                                                        #
+################################################################################
+
+rule all:
+	input:
+		expand("aligned/{sample}.bam", sample=get_samples()),
+		expand("aligned/{sample}.bam.bai", sample=get_samples()),
+		expand("aligned/{sample}.bam.stats", sample=get_samples()),
+		expand("aligned/{sample}.dedup.bam", sample=get_samples()),
+		expand("called/{sample}.g.vcf.gz", sample=get_samples())
+
+rule bwa_mem:
+	input:
+		REF,
+		"fastq/{sample}_30x_trimmed_R1.fastq.gz",
+		"fastq/{sample}_30x_trimmed_R2.fastq.gz"
+	output:
+		"aligned/{sample}.bam"
+	params:
+		r"-R '@RG\tID:{sample}\tLB:{sample}\tPL:ILLUMINA\tSM:{sample}'"
+	threads: 8
+	shell:
+		"bwa mem -M -t {threads} {params} {input} | samtools view -Sb - | samtools sort -@  {threads} -T aligned/{wildcards.sample} - > {output}"
+
+rule samtools_index:
+	input:
+		"aligned/{sample}.bam"
+	output:
+		"aligned/{sample}.bam.bai"
+	shell:
+		"samtools index {input}"
+
+rule samtools_stats:
+	input:
+		"aligned/{sample}.bam"
+	output:
+		"aligned/{sample}.bam.stats"
+	shell:
+		"samtools stats {input} > {output}"
+
+rule mark_duplicates:
+	input:
+		"aligned/{sample}.bam"
+	output:
+		bam="aligned/{sample}.dedup.bam",
+		metrics="aligned/{sample}.dedup.bam.metrics.txt"
+	params:
+		"REMOVE_DUPLICATES=true",
+		"CREATE_INDEX=true"
+	shell:
+		"java -jar tools/picard/picard.jar MarkDuplicates I={input} O={output.bam} M={output.metrics} {params}"
+
+# rule bam_split:
+	# input:
+		# bam="aligned/{sample}.bam",
+		# ref_dict=REF_DICT
+	# output:
+		# bam="aligned/split/{sample}.dedup.bam"
+	# params:
+		# "REMOVE_DUPLICATES=true",
+		# "CREATE_INDEX=true"
+	# shell:
+		# "java -jar tools/picard/picard.jar MarkDuplicates I={input} O={output.bam} M={output.metrics} {params}"
+
+rule haplotype_caller:
+	input:
+		bam="aligned/{sample}.dedup.bam",
+		ref=REF
+	output:
+		gvcf="called/{sample}.g.vcf.gz"
+	params:
+		"-ERC GVCF"
+	shell:
+		"tools/gatk/gatk --java-options \"-Xmx32g\" HaplotypeCaller -R {input.ref} -I {input.bam} -O {output}"

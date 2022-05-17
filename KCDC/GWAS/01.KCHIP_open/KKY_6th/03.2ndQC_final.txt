@@ -452,3 +452,106 @@ plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rm
 plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 26 --geno 0.05 --make-bed --out KKY.6th.preQC.onlySEX_MIT_fil
 plink --bfile KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat_fil
 
+
+
+########
+wc -l
+  
+    180 KKY.6th.preQC.onlySEX_MIT.bim
+    180 KKY.6th.preQC.onlySEX_MIT_fil.bim *
+  23184 KKY.6th.preQC.onlySEX_nonPAR.bim
+  18625 KKY.6th.preQC.onlySEX_nonPAR_fil.bim 
+  23184 KKY.6th.preQC.onlySEX_nonPAR_onlygeno.bim
+  23184 KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat.bim
+  18624 KKY.6th.preQC.onlySEX_nonPAR_recode_hettohomo_reformat_fil.bim *
+    861 KKY.6th.preQC.onlySEX_onlyCHRY.bim
+     28 KKY.6th.preQC.onlySEX_onlyCHRY_fil.bim *
+    861 KKY.6th.preQC.onlySEX_onlyCHRY_onlygeno.bim 
+   2713 KKY.6th.preQC.onlySEX_PAR.bim (PAR + Y)
+   1668 KKY.6th.preQC.onlySEX_PAR_fil.bim (PAR + Y)
+  
+
+
+
+
+
+#######
+[오후 3:55] 김영진
+    25번이 원래 있음 안되는건데, 이거 x에 포함을 해야해요 (--merge-x 사용)
+
+https://www.cog-genomics.org/plink/1.9/data
+
+--split-x <last bp position of head> <first bp position of tail> ['no-fail']
+--split-x <build code> ['no-fail']
+--merge-x ['no-fail']
+
+​[오후 3:56] 김영진
+    그리고 haploid error (nonPAR에 남자 hetero있는거 등)는 --set-hh-missing 해서 처리를 해야 bfile이 수정됩니다.
+혹시 별도 처리 안했으면 output할때만 set-hh 해서 나오는거라 로그를 꼭 잘 봐야해요
+​[오후 3:56] 김영진
+    위의 --merge-x를 하면 23이랑 25랑 합쳐집니다
+
+위에 Non-PAR의 경우 여자에서만 MAF, HWE 측정이 되어야하는데 로그 확인 좀 해주세요.
+아 Y도 --set-hh-missing하면 알아서 정리 됩니다. (여성은 없는 정보로 처리) Y는 --geno만 하면 됩니다. mitochondria와 동일해요
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 23-25 --make-bed --out KKY.6th.preQC.onlySEX
+plink --bfile KKY.6th.preQC.onlySEX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out KKY.6th.preQC.onlySEX_nonPAR
+plink --bfile KKY.6th.preQC.onlySEX --exclude KKY.6th.preQC.onlySEX_nonPAR.bim --make-bed --out KKY.6th.preQC.onlySEX_PAR
+plink --bfile KKY.6th.preQC.onlySEX_PAR --merge-x --make-bed --out KKY.6th.preQC.onlySEX_PAR_mergeX
+
+plink --bfile KKY.6th.preQC.onlySEX_nonPAR --set-hh-missing --make-bed --out KKY.6th.preQC.onlySEX_nonPAR_sethhmissing
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 26 --make-bed --out KKY.6th.preQC.onlySEX_MIT
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 26 --geno 0.05 --make-bed --out KKY.6th.preQC.onlySEX_MIT_fil
+
+#--maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out
+plink --bfile KKY.6th.preQC.onlySEX_PAR_mergeX --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KKY.6th.preQC.onlySEX_PAR_mergeX_fil
+plink --bfile KKY.6th.preQC.onlySEX_nonPAR_sethhmissing --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KKY.6th.preQC.onlySEX_nonPAR_sethhmissing_fil
+
+plink --bfile KKY.6th.preQC.onlySEX_nonPAR_sethhmissing_fil --bmerge KKY.6th.preQC.onlySEX_PAR_mergeX_fil --make-bed --out KKY.6th.preQC.onlySEX_QCed
+plink --bfile KKY.6th.preQC.onlySEX_QCed --bmerge KKY.6th.preQC.onlySEX_MIT_fil --make-bed --out KKY.6th.preQC.chr23-26.QCed
+
+
+
+(남자+여자)18624 KKY.6th.preQC.onlySEX_nonPAR_sethhmissing_fil.bim
+(여자만)  18569 KKY.6th.preQC.onlySEX_nonPAR_sethhmissing_onlyfemale.fil.bim
+
+
+
+### sex Final
+
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 23,25 --make-bed --out KKY.6th.preQC.chrX
+plink --bfile KKY.6th.preQC.chrX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out KKY.6th.preQC.chrX_nonPAR
+
+
+awk '$5==2{print $1,$2}' KKY.6th.preQC.chrX.fam > female.txt
+awk '$5==1{print $1,$2}' KKY.6th.preQC.chrX.fam > male.txt
+plink --bfile KKY.6th.preQC.chrX_nonPAR --keep female.txt --maf 0.01 --hwe 0.001 --make-bed --out KKY.6th.preQC.chrX_nonPAR_onlyFemale.fil
+plink --bfile KKY.6th.preQC.chrX_nonPAR --keep male.txt --set-hh-missing  --make-bed --out KKY.6th.preQC.chrX_nonPAR_onlyMale_sethhmissing
+plink --bfile KKY.6th.preQC.chrX_nonPAR_onlyMale_sethhmissing --extract KKY.6th.preQC.chrX_nonPAR_onlyFemale.fil.bim --make-bed --out KKY.6th.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect
+
+plink --bfile KKY.6th.preQC.chrX_nonPAR_onlyFemale.fil --bmerge KKY.6th.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect --make-bed --out KKY.6th.preQC.chrX_nonPAR_GenderMerge
+plink --bfile KKY.6th.preQC.chrX_nonPAR_GenderMerge --geno 0.05 --make-bed --out KKY.6th.preQC.chrX_nonPAR_GenderMerge_geno
+
+
+plink --bfile KKY.6th.preQC.chrX --exclude KKY.6th.preQC.chrX_nonPAR.bim --make-bed --out KKY.6th.preQC.chrX_PAR
+plink --bfile KKY.6th.preQC.chrX_PAR --merge-x --make-bed --out KKY.6th.preQC.chrX_PAR_mergeX
+plink --bfile KKY.6th.preQC.chrX_PAR_mergeX --maf 0.01 --hwe 0.001 --geno 0.05 --make-bed --out KKY.6th.preQC.chrX_PAR_mergeX_fil
+
+
+
+plink --bfile ../KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 24,26 --make-bed --out KKY.6th.preQC.chrY_MIT
+plink --bfile KKY.6th.preQC.chrY_MIT --geno 0.05 --make-bed --out KKY.6th.preQC.chrY_MIT_geno
+
+
+plink --bfile KKY.6th.preQC.chrX_nonPAR_GenderMerge_geno --bmerge KKY.6th.preQC.chrX_PAR_mergeX_fil --make-bed --out KKY.6th.preQC.chrX_PARmerge_QCed
+plink --bfile KKY.6th.preQC.chrX_PARmerge_QCed --bmerge KKY.6th.preQC.chrY_MIT_geno --make-bed --out KKY.6th.preQC.chr23-26.QCed
+
+
+
+cd /BDATA/smkim/KKY_6th/03.2ndQC
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 1-22 --maf 0.01 --hwe 0.001 --geno 0.05 --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil --bmerge FIANL_sex/KKY.6th.preQC.chr23-26.QCed --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_FINALQCed

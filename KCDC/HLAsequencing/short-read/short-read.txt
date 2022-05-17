@@ -96,3 +96,35 @@ O=/input/test_align_sorted_dedup.bam \
 METRICS_FILE=duplicates \
 REMOVE_DUPLICATES=True \
 CREATE_INDEX=True
+
+### recalibrastion -> 수행 안함
+
+gatk-4.1.6.0/gatk BaseRecalibrator -R ref/human_g1k_v37_decoy.fasta -I dedup.SNUM0377-01.bam --known-sites ref/dbsnp_138.b37.vcf \
+--known-sites ref/1000G_phase1.snps.high_confidence.b37.vcf --known-sites ref/Mills_and_1000G_gold_standard.indels.b37.vcf \
+ -L ref/hs37d5_MedExome_and_coding_padded_Nov2015.bed -O SNUM0377-01.recal.table
+
+
+/DATA/smkim/HLA_seq/REF/
+sudo docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test":"/output" -v "/DATA/smkim/HLA_seq/REF/":"/ref" -it broadinstitute/gatk \
+bash -c 'gatk BaseRecalibrator \
+-I /input/test_align_sorted_dedup.bam \
+-R /ref/HLA.target.fasta \
+-O /input/test_align_sorted_dedup_recal.table \
+--known-sites /ref/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+--known-sites /ref/gatk_resources/1000G_phase1.snps.high_confidence.b37.vcf.bgz \
+--known-sites /ref/gatk_resources/Mills_and_1000G_gold_standard.indels.b37.vcf.bgz'
+
+A USER ERROR has occurred: Input files reference and features have incompatible contigs: No overlapping contigs found.
+  reference contigs = [6:28477797-33448354]
+  features contigs = [chrM, chr1, chr2, ch
+
+
+
+
+sudo docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/test":"/input" \
+-it broadinstitute/gatk bash -c 'gatk CountVariants -V /input/2nd_Cell.264.bc1001--bc1001_variant.calling.vcf.gz > /input/CountVariants.txt'
+
+sudo docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/test":"/input" \
+-it broadinstitute/gatk bash -c 'gatk CountVariants -V /input/2nd_Cell.264.bc1001--bc1001_variant.calling.gvcf.gz > /input/CountVariants_gvcf.txt'
+
+      

@@ -565,3 +565,9 @@ df <- rbind(bad_plate,rmList2)
 table(df$FID %in% rmList$FID)
 table(rmList$FID %in% rmList1$FID)
 table(rmList2$FID %in% rmList1$FID)
+
+
+
+
+
+############
