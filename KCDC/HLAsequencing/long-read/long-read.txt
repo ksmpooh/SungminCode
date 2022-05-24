@@ -29,20 +29,74 @@ sudo docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/02.mapping":"/input" 
 
 
 
-
+### Deep variant
 # bash
 
 in=$1
 echo in
 docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/":"/output" -v "/DATA/smkim/pacbio/INPUTs":"/ref" google/deepvariant \
 /opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.fasta \
---reads /input/$1.bam --output_gvcf /output/$1.Deepvariant.Variantcalling.gvcf.gz \
---output_vcf /output/$1.Deepvariant.Variantcalling.vcf.gz --num_shards 20
+--reads /input/$1.bam --output_gvcf /output/$1.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$1.Deepvariant_Variantcalling.vcf.gz --num_shards 20
 ##
 
-ls ../02.mapping/*bam | cut -d"/" -f3 | cut -d"." -f1-4 | xargs -I{} -P1 bash -c "sh run.sh {}"
+ls ../02.mapping/*.bam | cut -d"/" -f3 | cut -d"." -f1-4 | xargs -I{} -P1 bash -c "sh run.sh {}"
+ls ../02.mapping/*Q20.bam | cut -d"/" -f3 | cut -d"." -f1-5 | xargs -I{} -P1 bash -c "sh run.sh {}"
 
 
+
+#GATK_haplotypeCaller_VariantCalling
+
+
+in=$1
+echo $in
+docker run -v "/DATA/smkim/HLA_seq/long-read/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk HaplotypeCaller -R /ref/HLA.target.fasta -I /input/$1.bam -O /output/$1.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
 
 ### bam ID change
 HLA.Longread.Seq.NIH19KT2259.bam
+
+
+ls HLA*bam | cut -d"." -f"1-4" |xargs -I{} -P 1 bash -c 'pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta {}.bam ./{}_mapped.bam --sort --preset CCS'
+
+#samtools view -q 20
+
+
+
+
+ls HLA.*_mapped.bam |cut -d"." -f 1-4 | xargs -I{} -P 12 bash -c "samtools view -h -q 20 {}.bam -o {}.Q20.bam"
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools index ../02.mapping/{}_mapped.bam"
+
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools view -h -q 20 ../02.mapping/{}_mapped.bam -o ../02.mapping/{}_mapped.Q20.bam"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools index ../02.mapping/{}_mapped.Q20.bam"
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools stats ../02.mapping/{}_mapped.Q20.bam > ../02.mapping/{}_mapped.Q20.bam.stats"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools stats ../02.mapping/{}_mapped.bam >../02.mapping/{}_mapped.bam.stats"
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools coverage ../02.mapping/{}_mapped.Q20.bam > ../02.mapping/{}_mapped.Q20.bam.coverage"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools coverage ../02.mapping/{}_mapped.bam > ../02.mapping/{}_mapped.bam.coverage"
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools flagstats ../02.mapping/{}_mapped.Q20.bam > ../02.mapping/{}_mapped.Q20.bam.flagstats"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools flagstats ../02.mapping/{}_mapped.bam > ../02.mapping/{}_mapped.bam.flagstats"
+
+
+stats
+fstats
+coverage
+
+
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools coverage ./{}.bam > ./stats/{}.bam.coverage"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools coverage ./{}.bam > ./stats/{}.bam.coverage"
+ls KCDCP.2020HLAseq*bam |  cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools coverage ./{}.bam > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/01.unmapped_bam/stats/{}.bam.coverage"
+
+
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools stats ./{}.bam > ./stats/{}.bam.stats"
+
+/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/01.unmapped_bam
+
+
+cat *stats | grep ^SN | cut -f 2- | grep "average length" > ../00.bam.average.length.txt
+

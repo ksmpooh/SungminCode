@@ -80,15 +80,15 @@ head(pca)
 
 #pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
-#     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
-     xlab="PC1", ylab="PC2", main="1st.QC_PCA", cex=0.5, pch=16)
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY.7th.1stQC ALL PCA", cex=0.5, pch=16)
 abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
        pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
-       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+       col=rgb(1,0,0,0.5), cex=0.5, pch=16)
 dev.off()
 
 rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
@@ -97,3 +97,32 @@ rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 q()
+
+
+
+
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY.7th.1stQC ALL PCA", cex=0.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.5), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]
+dim(rmList)
+head(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
