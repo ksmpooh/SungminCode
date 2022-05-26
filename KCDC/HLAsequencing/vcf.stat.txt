@@ -1,0 +1,31 @@
+cd /DATA/smkim/HLA_seq/VCF
+
+
+
+#chr	pos	ref	alt	QUAL
+bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\n' HLA.merge_usingGLnexus.vcf.gz > HLA.merge_usingGLnexus_marker.QUAL.txt
+
+
+chr pos ref alt QUAL    DP  MQ  QD
+bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\t%DP\t%MQ\t%QD\n' HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.vcf.gz > HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.marker.info.txt
+
+
+####
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
+
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
+
+
+
+0-1. plot-vcfstats -p outdir file.vchk
+
+plot-vcfstats -p ./ 2020HLAseq.pass_vcfmerge_devidedMultiAllelic_bcfstats.txt
+
+ls *.stats | xargs -I{} -P 6 bash -c "plot-vcfstats {} -p ./plot"
+
+
+
+
+1. multi-allelic split
+1-1.bcftools norm -m -any INPUT.vcf.gz | bcftools annotate --set-id “%CHROM:%POS:%REF:%ALT” | bgzip -c >

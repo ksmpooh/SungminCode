@@ -127,4 +127,60 @@ sudo docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/te
 sudo docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/test":"/input" \
 -it broadinstitute/gatk bash -c 'gatk CountVariants -V /input/2nd_Cell.264.bc1001--bc1001_variant.calling.gvcf.gz > /input/CountVariants_gvcf.txt'
 
-      
+
+## joint cllinag
+
+
+glnexus
+
+
+
+ls *gvcf.gz > gvcf.list.txt ### /input/
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/DV":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.vcf.gz
+#/input/HLA.Shortread.Seq.NIH19KT3813.align.sorted.dedup.Deepvariant_VariantCalling.gvcf.gz
+
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/DV":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant_unfiltered \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+DeepVariant_unfiltered
+
+
+# gatk
+
+
+ls *gvcf.gz > gvcf.list.txt 
+### %s/HLA/\/input\/HLA/g
+
+
+docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/GATK":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk CombineGVCFs -R /ref/HLA.target.fasta -V /input/gvcf.list.txt -O /output/HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz
+HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/long-read/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk GenotypeGVCFs -R /ref/HLA.target.fasta -I /input/$1.bam -O /output/$1.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+
+
+ gatk CombineGVCFs \
+   -R reference.fasta \
+   -V sample1.g.vcf.gz \
+   -V sample2.g.vcf.gz \
+   -O cohort.g.vcf.gz
+
+
+
+gatk --java-options "-Xmx4g" GenotypeGVCFs \
+   -R Homo_sapiens_assembly38.fasta \
+   -V input.g.vcf.gz \
+   -O output.vcf.gz
+ 

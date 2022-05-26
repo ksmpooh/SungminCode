@@ -100,3 +100,83 @@ ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools stats ./{}.b
 
 cat *stats | grep ^SN | cut -f 2- | grep "average length" > ../00.bam.average.length.txt
 
+
+
+
+
+#### glnexus
+
+
+#Configuration presets:
+            Name          CRC32C	Description
+            gatk      1926883223	Joint-call GATK-style gVCFs
+ gatk_unfiltered      4039280095	Merge GATK-style gVCFs with no QC filters or genotype revision
+          xAtlas      1991666133	Joint-call xAtlas gVCFs
+xAtlas_unfiltered       221875257	Merge xAtlas gVCFs with no QC filters or genotype revision
+          weCall      2898360729	Joint-call weCall gVCFs
+weCall_unfiltered      4254257210	Merge weCall gVCFs with no filtering or genotype revision
+     DeepVariant      2932316105	Joint call DeepVariant whole genome sequencing gVCFs
+  DeepVariantWGS      2932316105	Joint call DeepVariant whole genome sequencing gVCFs
+  DeepVariantWES      1063427682	Joint call DeepVariant whole exome sequencing gVCFs
+DeepVariantWES_MED_DP      2412618877	Joint call DeepVariant whole exome sequencing gVCFs, populating 0/0 DP from MED_DP instead of MIN_DP
+DeepVariant_unfiltered      3285998180	Merge DeepVariant gVCFs with no QC filters or genotype revision
+        Strelka2       395868656	[EXPERIMENTAL] Merge Strelka2 gVCFs with no QC filters or genotype revision
+
+
+
+ls *gvcf.gz > gvcf.list.txt ### /input/
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+
+#DeepVariant_unfiltered
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant_unfiltered \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant_unfiltered \
+--list /input/gvcf.list.txt' > test.bcf
+
+#### gatk
+
+ls *gvcf.gz > gvcf.list.txt 
+### %s/HLA/\/input\/HLA/g
+
+
+docker run -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/input" -v "/DATA/smkim/HLA_seq/long-read/04.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk CombineGVCFs -R /ref/HLA.target.fasta --variant /input/gvcf.list.txt -O /output/HLA.Longread.Seq.NIH19KT3813_mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz
+
+
+p
+
+
+
+
+gvcf.list.txt
+
+docker run -v "/DATA/smkim/HLA_seq/long-read/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk GenotypeGVCFs -R /ref/HLA.target.fasta -I /input/$1.bam -O /output/$1.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+
+
+ gatk CombineGVCFs \
+   -R reference.fasta \
+   -V sample1.g.vcf.gz \
+   -V sample2.g.vcf.gz \
+   -O cohort.g.vcf.gz
+
+
+
+gatk --java-options "-Xmx4g" GenotypeGVCFs \
+   -R Homo_sapiens_assembly38.fasta \
+   -V input.g.vcf.gz \
+   -O output.vcf.gz
+ 

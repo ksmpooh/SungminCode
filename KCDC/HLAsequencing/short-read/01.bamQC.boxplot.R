@@ -32,10 +32,13 @@ for (i in ls_nodup) {
   df_nodup <- rbind(df_nodup,tmp)
 }
 
+mean(df_nodup$meandepth)
+
 df_dedup$type <- 'MarkDup'
 df_nodup$type <- "BeforeRmDup"
 
 df <- rbind(df_dedup,df_nodup)
+
 head(df)
 par(mfrow = c(2, 3))
 dev.off()
