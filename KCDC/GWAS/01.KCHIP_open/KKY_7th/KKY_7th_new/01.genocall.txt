@@ -30,3 +30,14 @@
 /BDATA/smkim/KKY_7th/00.rawData/kky.7th.cel.files_20220412.txt
 
 /BDATA/smkim/KKY_7th/01.genocall/1st
+
+
+
+
+#### 2nd_Cell
+
+/BDATA/smkim/KKY_7th/00.rawData/kky.7th.cel.files_for2ndQC.txt
+/BDATA/smkim/KKY_7th/01.genocall/2nd/
+
+sh 01.geno.sh /BDATA/smkim/KKY_7th/00.rawData/kky.7th.cel.files_for2ndQC.txt /BDATA/smkim/KKY_7th/01.genocall/2nd/
+

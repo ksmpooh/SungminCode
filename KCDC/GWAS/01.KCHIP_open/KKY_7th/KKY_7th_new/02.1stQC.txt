@@ -126,3 +126,73 @@ ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
 head(ref)
 colnames(ref) <- c("BATCH","IID")
 rmList %>% inner_join(ref) %>% count(BATCH)
+
+rmList %>% mutate(plate = str_split_fixed(FID,"_",6)[,4]) %>% count(plate) %>%
+        filter(n > 10)
+
+badplate <- rmList %>% mutate(plate = str_split_fixed(FID,"_",6)[,4]) %>% filter(plate == "043178" | plate == "5507694418577040722814") %>%
+        select(FID,IID)
+        
+write.table(badplate,"PCA1.badplate.list.txt",row.names = F,col.names = F,quote = F)
+
+
+######### remove bad plate
+
+bim : 17418 
+fam : 8530
+
+plink --bfile KKY.7th.1stQC_snpolisher__rmMissing-het --remove PCA1.badplate.list.txt --make-bed --out KKY.7th.1stQC_snpolisher__rmMissing-het_rmbadplate
+
+cd /BDATA/smkim/KKY_7th/02.1stQC/after_badplate_PCA
+
+plink --bfile ../KKY.7th.1stQC_snpolisher__rmMissing-het_rmbadplate --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PCA_AfterRmBad_pruning
+plink --bfile ../KKY.7th.1stQC_snpolisher__rmMissing-het_rmbadplate --extract PCA_AfterRmBad_pruning.prune.in --make-bed --out PCA_AfterRmBad_pruned
+flashpca_x86-64 --bfile PCA_AfterRmBad_pruned --outpc PCA_AfterRmBad.txt
+
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+setwd("~/")
+
+pca <- read.table("PCA_AfterRmBad.txt", header=T)
+
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+          xlim=c(-0.8, 0.1), ylim=c(-0.2,0.8),
+#           xlim=c(-0.2, 0.2), ylim=c(-0.2,0.2),
+     xlab="PC1", ylab="PC2", main="KKY.7th.1stQC ALL after Bad plate PCA", cex=0.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA_afterbadplate.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
+
+
+
+> rmList %>% inner_join(ref) %>% count(BATCH)
+Joining, by = "IID"
+                 BATCH  n
+1 2020_pro_7th_DNAlink 30
+2 2020_pro_7th_Teragen  1
+3         2021_pro_7th  9
+
+
+cat rmLQsamples.txt PCA1.badplate.list.txt after_badplate_PCA/rmPCA_afterbadplate.txt > KKY.7th.1stQCout.list.txt
+
+wc -l KKY.7th.1stQCout.list.txt
+99 KKY.7th.1stQCout.list.txt

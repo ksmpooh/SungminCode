@@ -27,5 +27,37 @@ ls *.stats | xargs -I{} -P 6 bash -c "plot-vcfstats {} -p ./plot"
 
 
 
+
+0. chr, pos info update
+
+
+
+
+
+0-1 chr udate
+
+chr : 6:28477797-33448354 -> 6
+pos : pos+28477797
+
+#bcftools annotate --rename-chrs chr.txt HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz| less -NS
+
+01.VCF.chr.pos.change.py
+
+cd /DATA/smkim/HLA_seq/VCF
+ls *gz | xargs -I{} -P 1 bash -c "python vcf.modify.py {}"
+
+
+0-2. DB selelction : 
+Chr 마킹 : chr6 (o), 6 (x)
+
+
+0-3. VSQR
+
+
+HLA 지역만 추출해서 사용해봐야함..............
+0-3-1 reference fast 
+
+
+
 1. multi-allelic split
 1-1.bcftools norm -m -any INPUT.vcf.gz | bcftools annotate --set-id “%CHROM:%POS:%REF:%ALT” | bgzip -c >

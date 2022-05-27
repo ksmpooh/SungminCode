@@ -1,0 +1,95 @@
+$ sudo docker run -v /mnt/ramdisk:/media -v /ADATA/dongmun/workspace/20220319:/mnt -it broadinstitute/gatk:4.2.0.0
+#
+
+docker run -v "/DATA/smkim/HLA_seq/long-read/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk GenotypeGVCFs -R /ref/HLA.target.fasta -I /input/$1.bam -O /output/$1.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+#/DATA/smkim/HLA_seq/REF/gatk_resources
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/hapmap_3.3.hg19.sites.vcf.bgz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/1000G_omni2.5.hg19.sites.vcf.bgz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/1000G_phase1.snps.high_confidence.hg19.sites.vcf.bgz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+     -O /input/recal/test.snps.recal \
+     --tranches-file /input/recal/test.snps.tranches \
+     --rscript-file /input/recal/test.snps.plots.R 2>&1 | tee -a /input/recal/test.log
+
+
+---------------------------------
+3. Variant recalibration
+---------------------------------
+a. Calculate VQSLOD tranches for SNPs using VariantRecalibrator
+$ gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /media/reference/hg19/hg19.fa \
+     -V /mnt/WGS.sample_480.jointed.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /media/gatk_resources/hapmap_3.3.hg19.sites.vcf.bgz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /media/gatk_resources/1000G_omni2.5.hg19.sites.vcf.bgz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /media/gatk_resources/1000G_phase1.snps.high_confidence.hg19.sites.vcf.bgz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /media/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+     -O /mnt/recal/WGS.sample_480.snps.recal \
+     --tranches-file /mnt/recal/WGS.sample_480.snps.tranches \
+     --rscript-file /mnt/recal/WGS.sample_480.snps.plots.R 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+b. Filter SNPs on VQSLOD using ApplyVQSR
+ $ gatk --java-options "-Xmx32g -Xms32g" \
+    ApplyVQSR \
+    -V /mnt/WGS.sample_480.jointed.vcf.gz \
+    --recal-file /mnt/recal/WGS.sample_480.snps.recal \
+    --tranches-file /mnt/recal/WGS.sample_480.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /mnt/recal/WGS.sample_480.snps.recal.vcf.gz 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+c. Calculate VQSLOD tranches for indels using VariantRecalibrator
+$ gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /media/reference/hg19/hg19.fa \
+     -V /mnt/recal/WGS.sample_480.snps.recal.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /media/gatk_resources/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.bgz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /media/gatk_resources/1000G_phase1.indels.hg19.sites.vcf.bgz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /media/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+     -O /mnt/recal/WGS.sample_480.indels.recal \
+     --tranches-file /mnt/recal/WGS.sample_480.indels.tranches \
+     --rscript-file /mnt/recal/WGS.sample_480.indels.plots.R 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+d. Filter indels on VQSLOD using ApplyVQSR
+$ gatk --java-options "-Xmx32g -Xms32g" \
+    ApplyVQSR \
+    -V /mnt/recal/WGS.sample_480.snps.recal.vcf.gz \
+    --recal-file /mnt/recal/WGS.sample_480.indels.recal \
+    --tranches-file /mnt/recal/WGS.sample_480.indels.tranches \
+    --truth-sensitivity-filter-level 99.0 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /mnt/recal/WGS.sample_480.recal.vcf.gz 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+---------------------------------
+4. filtering
+---------------------------------
+$ bcftools view -f PASS WGS.sample_480.recal.vcf.gz | bgzip -c > ./filtered/WGS.sample_480.recal.pass.vcf.gz
+$ bcftools view -v snps ./filtered/WGS.sample_480.recal.pass.vcf.gz -Oz -o ./filtered/WGS.sample_480.recal.pass.snps.vcf.gz
+$ bcftools view -v indels ./filtered/WGS.sample_480.recal.pass.vcf.gz -Oz -o ./filtered/WGS.sample_480.recal.pass.indels.vcf.gz
+ksmpooh@genomeui-iPro raw %
