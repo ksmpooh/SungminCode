@@ -1,0 +1,400 @@
+$ sudo docker run -v /mnt/ramdisk:/media -v /ADATA/dongmun/workspace/20220319:/mnt -it broadinstitute/gatk:4.2.0.0
+#
+
+docker run --rm -v $PWD:/usr/working picard CreateSequenceDictionary R=genome.fa O=genome.fa.dict
+
+java -jar picard.jar ExtractSequences \
+      INTERVAL_LIST=regions_of_interest.interval_list \
+      R=reference.fasta \
+      O=extracted_IL_sequences.fasta
+
+broadinstitute/picard
+java -jar /usr/picard/picard.jar ExtractSequences
+
+docker run -v "/DATA/smkim/HLA_seq/REF/hg19":"/ref" \
+--rm broadinstitute/picard ExtractSequences \
+      INTERVAL_LIST=6:28477797-33448354 \
+      R=/ref/hg19.fa \
+      O=/ref/HLA_extracted_hg19.fa
+
+
+docker run -v "/DATA/smkim/HLA_seq/REF/hg19":"/ref" \
+broadinstitute/picard /usr/picard/picard.jar CreateSequenceDictionary \ 
+R=test.fa \ 
+O=test.dict
+
+
+
+ gatk UpdateVCFSequenceDictionary \
+     -V resource.vcf.gz \
+     -R reference.fasta \
+     --output resource_newcontiglines.vcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/REF/gatk_resources/test":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk UpdateVCFSequenceDictionary \
+     -V /input/HLA.hapmap_3.3.b37.vcf.gz \
+     -R /ref/HLA.target.fasta \
+     --output /input/test.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/REF/hg19":"/ref" -it broadinstitute/picard 
+java -jar /usr/picard/picard.jar CreateSequenceDictionary R=/ref/test.fa O=/ref/test.dict
+
+docker run -v "/DATA/smkim/HLA_seq/REF/hg19":"/ref" -it broadinstitute/picard
+
+docker run -v "/DATA/smkim/HLA_seq/REF/gatk_resources/HLA_chr6":"/ref" -it broadinstitute/picard
+
+
+samtools faidx hg19.fasta chr6:28477797-33448354
+
+
+chr_chr6/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/long-read/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/long-read/03.variant.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk GenotypeGVCFs -R /ref/HLA.target.fasta -I /input/$1.bam -O /output/$1.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+#/DATA/smkim/HLA_seq/REF/gatk_resources
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/HLA/HLA.hapmap_3.3.hg19.sites.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/HLA/HLA.1000G_omni2.5.hg19.sites.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/HLA/HLA.1000G_phase1.snps.high_confidence.hg19.sites.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/HLA/HLA.dbsnp_138.hg19.vcf.gz \
+     -O /input/recal/test.snps.recal \
+     --tranches-file /input/recal/test.snps.tranches \
+     --rscript-file /input/recal/test.snps.plots.R 2>&1 | tee -a /input/recal/test.log
+
+
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/hg19/test.fa \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/HLA/HLA.hapmap_3.3.hg19.sites.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/HLA/HLA.1000G_omni2.5.hg19.sites.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/HLA/HLA.1000G_phase1.snps.high_confidence.hg19.sites.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/HLA/HLA.dbsnp_138.hg19.vcf.gz \
+     -O /input/recal/test.snps.recal \
+     --tranches-file /input/recal/test.snps.tranches \
+     --rscript-file /input/recal/test.snps.plots.R 2>&1 | tee -a /input/recal/test.log
+
+
+
+#6:28477797-33448354
+##contig=<ID=6:28477797-33448354,length=4970557>
+cd /DATA/smkim/HLA_seq/REF/gatk_resources
+
+
+###  chr6
+hapmap_3.3.hg19.sites.vcf.bgz
+1000G_omni2.5.hg19.sites.vcf.bgz
+1000G_phase1.snps.high_confidence.hg19.sites.vcf.bgz
+dbsnp_138.hg19.vcf.bgz
+
+
+###  6
+hapmap_3.3.b37.vcf.gz
+1000G_omni2.5.b37.vcf.gz
+1000G_phase1.snps.high_confidence.b37.vcf.gz
+dbsnp_138.b37.vcf.gz
+
+
+
+hapmap_3.3.hg19.sites.vcf.bgz
+     39 ##contig=<ID=chr6_apd_hap1,length=4622290,assembly=hg19>
+     40 ##contig=<ID=chr6_cox_hap2,length=4795371,assembly=hg19>
+     41 ##contig=<ID=chr6_dbb_hap3,length=4610396,assembly=hg19>
+     42 ##contig=<ID=chr6_mann_hap4,length=4683263,assembly=hg19>
+     43 ##contig=<ID=chr6_mcf_hap5,length=4833398,assembly=hg19>
+     44 ##contig=<ID=chr6_qbl_hap6,length=4611984,assembly=hg19>
+     45 ##contig=<ID=chr6_ssto_hap7,length=4928567,assembly=hg19>
+
+bcftools view -r chr6:28477797-33448354 hapmap_3.3.hg19.sites.vcf.bgz |grep -v "#"  |awk '{print $1}' | sort |uniq -c
+
+
+bcftools view -r chr6:28477797-33448354 hapmap_3.3.hg19.sites.vcf.bgz > ./HLA/HLA.hapmap_3.3.hg19.sites.vcf
+bcftools view -r chr6:28477797-33448354 1000G_omni2.5.hg19.sites.vcf.bgz > ./HLA/HLA.1000G_omni2.5.hg19.sites.vcf
+bcftools view -r chr6:28477797-33448354 1000G_phase1.snps.high_confidence.hg19.sites.vcf.bgz > ./HLA/HLA.1000G_phase1.snps.high_confidence.hg19.sites.vcf
+bcftools view -r chr6:28477797-33448354 dbsnp_138.hg19.vcf.bgz > ./HLA/HLA.dbsnp_138.hg19.vcf
+
+bcftools view -r 6:28477797-33448354 hapmap_3.3.b37.vcf.bgz > ./HLA_6/HLA.hapmap_3.3.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_omni2.5.b37.vcf.bgz > ./HLA_6/HLA.1000G_omni2.5.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_phase1.snps.high_confidence.b37.vcf.bgz > ./HLA_6/HLA.1000G_phase1.snps.high_confidence.b37.vcf
+bcftools view -r 6:28477797-33448354 dbsnp_138.b37.vcf.bgz > ./HLA_6/HLA.dbsnp_138.b37.vcf
+
+
+bcftools view -r 6:28477797-33448354 hapmap_3.3.b37.vcf.bgz > ./test/HLA.hapmap_3.3.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_omni2.5.b37.vcf.bgz > ./test/HLA.1000G_omni2.5.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_phase1.snps.high_confidence.b37.vcf.bgz > ./test/HLA.1000G_phase1.snps.high_confidence.b37.vcf
+bcftools view -r 6:28477797-33448354 dbsnp_138.b37.vcf.bgz > ./test/HLA.dbsnp_138.b37.vcf
+
+
+ls *vcf | xargs -I {} -P 4 bash -c "bgzip {}"
+ls *vcf.gz | xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+
+
+bcftools view -r 6:28477797-33448354 hapmap_3.3.b37.vcf.bgz |  bcftools annotate --rename-chrs ./test1/chr.update > 
+
+
+bcftools view -r 6:28477797-33448354 hapmap_3.3.b37.vcf.bgz |bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.hapmap_3.3.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_omni2.5.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.1000G_omni2.5.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_phase1.snps.high_confidence.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf
+bcftools view -r 6:28477797-33448354 dbsnp_138.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update >  ./test1/HLA.dbsnp_138.b37.vcf
+bcftools view -r 6:28477797-33448354 Mills_and_1000G_gold_standard.indels.b37.vcf.bgz| bcftools annotate --rename-chrs ./test1/chr.update >  ./test1/HLA.Mills_and_1000G_gold_standard.indels.b37.vcf
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/test1/HLA.hapmap_3.3.b37.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/test1/HLA.1000G_omni2.5.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+     -O /input/recal/test.snps.recal \
+     --tranches-file /input/recal/test.snps.tranches \
+     --rscript-file /input/recal/test.snps.plots.R 2>&1 | tee -a /input/recal/test.log
+
+
+
+ gatk UpdateVCFSequenceDictionary \
+     -V resource.vcf.gz \
+     -R reference.fasta \
+     --output resource_newcontiglines.vcf.gz
+
+
+
+#2d
+gatk CNNScoreVariants \
+   -I aligned_reads.bam \
+   -V vcf_to_annotate.vcf.gz \
+   -R reference.fasta \
+   -O annotated.vcf \
+   -tensor-type read-tensor
+
+#1d
+ gatk CNNScoreVariants \
+   -V vcf_to_annotate.vcf.gz \
+   -R reference.fasta \
+   -O annotated.vcf
+ 
+
+##contig=<ID=6:28477797-33448354,length=4970557>
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/pos":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk CNNScoreVariants \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     -R /ref/HLA.target.fasta \
+     --output /input/pos/CNN/test.vcf.gz
+
+
+
+###### 된다!!!!
+### 수정 사항 : contig 정보 삭제 및 통일
+# step 1
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/test1/HLA.hapmap_3.3.b37.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/test1/HLA.1000G_omni2.5.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+     -O /input/pos/recal/HLA.Shortread.Seq.GATK.snps.recal \
+     --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.tranches \
+     --rscript-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.plots.R
+     
+     
+      2>&1 | tee -a /input/pos/recal/test.log
+
+
+
+$ gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /media/reference/hg19/hg19.fa \
+     -V /mnt/WGS.sample_480.jointed.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /media/gatk_resources/hapmap_3.3.hg19.sites.vcf.bgz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /media/gatk_resources/1000G_omni2.5.hg19.sites.vcf.bgz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /media/gatk_resources/1000G_phase1.snps.high_confidence.hg19.sites.vcf.bgz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /media/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+     -O /mnt/recal/WGS.sample_480.snps.recal \
+     --tranches-file /mnt/recal/WGS.sample_480.snps.tranches \
+     --rscript-file /mnt/recal/WGS.sample_480.snps.plots.R 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+# step 2
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+    --recal-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.recal \
+    --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf
+    
+    -R /ref/HLA.target.fasta \
+    2>&1 | tee -a /input/pos/recal/snp.step2.log
+
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+-R /ref/HLA.target.fasta \
+     -V /input/pos/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+    --recal-file /input/pos/recal/test.snps.recal \
+    --tranches-file /input/pos/recal/test.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /input/pos/recal/test.recalSNP.vcf.gz 
+
+
+ java –jar GenomeAnalysisTK.jar –T ApplyRecalibra6on \ –R human.fasta \
+–input raw.vcf \
+–mode SNP \
+–recalFile raw.SNPs.recal \ –tranchesFile raw.SNPs.tranches \ –o recal.SNPs.vcf \
+–ts_filter_level 99.0
+
+
+b. Filter SNPs on VQSLOD using ApplyVQSR
+ $ gatk --java-options "-Xmx32g -Xms32g" \
+    ApplyVQSR \
+    -V /mnt/WGS.sample_480.jointed.vcf.gz \
+    --recal-file /mnt/recal/WGS.sample_480.snps.recal \
+    --tranches-file /mnt/recal/WGS.sample_480.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /mnt/recal/WGS.sample_480.snps.recal.vcf.gz 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+
+
+# step 3
+c. Calculate VQSLOD tranches for indels using VariantRecalibrator
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /ref/gatk_resources/test1/HLA.Mills_and_1000G_gold_standard.indels.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+     -O /input/pos/recal/HLA.Shortread.Seq.GATK.indels.recal \
+     --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.tranches \
+     --rscript-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.plots.R
+     
+     
+     
+     #2>&1 | tee -a /input/pos/recal/test_indel.log
+
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/test1/HLA.hapmap_3.3.b37.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/test1/HLA.1000G_omni2.5.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+
+HLA.Mills_and_1000G_gold_standard.indels.b37.vcf.gz
+
+
+
+$ gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /media/reference/hg19/hg19.fa \
+     -V /mnt/recal/WGS.sample_480.snps.recal.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /media/gatk_resources/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.bgz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /media/gatk_resources/1000G_phase1.indels.hg19.sites.vcf.bgz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /media/gatk_resources/dbsnp_138.hg19.vcf.bgz \
+     -O /mnt/recal/WGS.sample_480.indels.recal \
+     --tranches-file /mnt/recal/WGS.sample_480.indels.tranches \
+     --rscript-file /mnt/recal/WGS.sample_480.indels.plots.R 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+
+# step 4
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" ApplyVQSR \
+     -V /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf \
+    --recal-file /input/pos/recal/HLA.Shortread.Seq.GATK.indels.recal \
+    --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.recalINDEL.vcf
+
+
+d. Filter indels on VQSLOD using ApplyVQSR
+$ gatk --java-options "-Xmx32g -Xms32g" \
+    ApplyVQSR \
+    -V /mnt/recal/WGS.sample_480.snps.recal.vcf.gz \
+    --recal-file /mnt/recal/WGS.sample_480.indels.recal \
+    --tranches-file /mnt/recal/WGS.sample_480.indels.tranches \
+    --truth-sensitivity-filter-level 99.0 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /mnt/recal/WGS.sample_480.recal.vcf.gz 2>&1 | tee -a /mnt/recal/out_20220320.log
+
+
+
+
+
+
+###
+---------------------------------
+4. filtering
+---------------------------------
+cd /DATA/smkim/HLA_seq/VCF/pos/recal
+bcftools view -f PASS HLA.Shortread.Seq.GATK.recalSNP.recalINDEL.vcf.gz | bgzip -c > ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz
+bcftools view -v snps ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz -Oz -o ./filtered/HLA.Shortread.Seq.GATK.recal.pass.snps.vcf.gz
+bcftools view -v indels ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz -Oz -o ./filtered/HLA.Shortread.Seq.GATK.recal.pass.indels.vcf.gz
+
+
+
+
+
+
+

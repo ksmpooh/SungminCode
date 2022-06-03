@@ -1,9 +1,9 @@
-cd /BDATA/smkim/KKY_7th/02.1stQC
+cd /BDATA/smkim/KKY_7th/03.2ndQC
 
-plink --bfile KKY.7th.1stQC --extract /BDATA/smkim/KKY_7th/01.genocall/1st/classification/Recommended.ps --make-bed --out KKY.7th.1stQC_snpolisher
+ plink --bfile KKY.7th.2ndQC --extract /BDATA/smkim/KKY_7th/01.genocall/2nd/classification/Recommended.ps --make-bed --out KKY.7th.2ndQC_snpolisher
 
-plink --bfile KKY.7th.1stQC_snpolisher --missing --out MISS
-plink --bfile KKY.7th.1stQC_snpolisher --het --out HET
+plink --bfile KKY.7th.2ndQC_snpolisher --missing --out MISS
+plink --bfile KKY.7th.2ndQC_snpolisher --het --out HET
 
 
 
@@ -77,6 +77,26 @@ pca <- read.table("PCA1.txt", header=T)
 pca <- read.table("PCA2.txt", header=T)
 
 head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY.7th.1stQC ALL PCA", cex=0.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.5), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+#dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
 
 
 

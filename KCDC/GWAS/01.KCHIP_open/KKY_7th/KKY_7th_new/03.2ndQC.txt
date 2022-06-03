@@ -1,0 +1,361 @@
+cd /BDATA/smkim/KKY_7th/03.2ndQC
+
+ plink --bfile KKY.7th.2ndQC --extract /BDATA/smkim/KKY_7th/01.genocall/2nd/classification/Recommended.ps --make-bed --out KKY.7th.2ndQC_snpolisher
+
+plink --bfile KKY.7th.2ndQC_snpolisher --missing --out MISS
+plink --bfile KKY.7th.2ndQC_snpolisher --het --out HET
+
+
+#####################
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     #xlim=c(12,24), ylim=c(0,0.18),
+     xlim=c(12,22), ylim=c(0,0.10), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY 7th 2ndQC ALL missing-het", col=rgb(0,0,1,0.5), cex=0.8, pch=16)
+abline(v=15.2, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.2 | 17< lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.2 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.7), cex=0.8, pch=16)
+dev.off()
+
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.2 | 17 < lowSample$HET,]
+dim(rmList)
+head(rmList)
+library(tidyverse)
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","FID")
+rmList %>% inner_join(ref) %>% count(BATCH)
+
+######################
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.2| 17 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+####################
+
+plink --bfile KKY.7th.2ndQC_snpolisher --remove rmLQsamples.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het
+
+
+
+#king
+mkdir king
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-22 --out KKY.7th.2ndQC_snpolisher_rmMissing-het_pruning
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het --extract KKY.7th.2ndQC_snpolisher_rmMissing-het_pruning.prune.in --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_pruned
+
+cd KING
+nohup king -b ../KKY.7th.2ndQC_snpolisher_rmMissing-het_pruned.bed --prefix KKY.7th.2ndQC_snpolisher_rmMissing-het_pruned --degree 2 --related > RESULT.txt &
+nohup king -b ../KKY.7th.2ndQC_snpolisher_rmMissing-het.bed --prefix KKY.7th.2ndQC_snpolisher_rmMissing-het --degree 2 --related
+
+
+
+
+
+plink --bfile ../KKY.7th.2ndQC_snpolisher_rmMissing-het --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PCA1_pruning
+plink --bfile ../KKY.7th.2ndQC_snpolisher_rmMissing-het --extract PCA1_pruning.prune.in --make-bed --out PCA1_pruned
+flashpca_x86-64 --bfile PCA1_pruned --outpc PCA1.txt
+
+
+cd PCA2
+plink --bfile ../KKY.7th.2ndQC_snpolisher_rmMissing-het --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/chr6_14_rm.txt --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PCA2_pruning
+plink --bfile ../KKY.7th.2ndQC_snpolisher_rmMissing-het --extract PCA2_pruning.prune.in --make-bed --out PCA2_pruned
+flashpca_x86-64 --bfile PCA2_pruned --outpc PCA2.txt
+
+
+################ PCA1 선택
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+#setwd("~/")
+
+pca <- read.table("PCA1.txt", header=T)
+#pca <- read.table("PCA2.txt", header=T)
+
+head(pca)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY 7th 2ndQC ALL PCA", cex=0.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+dim(rmList)
+head(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
+
+rmList %>% mutate(plate = str_split_fixed(FID,"_",6)[,4]) %>% count(plate) #%>%
+  filter(n > 10)
+
+#####PCA on server
+
+cd /BDATA/smkim/KKY_7th/03.2ndQC
+
+
+###R
+pca <- read.table("PCA1/PCA1.txt", header=T)
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+dim(rmList)
+head(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+#####
+
+
+##### QC
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het --remove rmPCA.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy
+
+######## marker QC 20220329 (reference allele 처리 안된것 처리)
+
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/indel/indelChange.py /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel
+
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel --flip /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip
+
+
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup
+
+
+### 1KGP
+
+mkdir ethnic 
+cd ethnic
+plink --bfile ../KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_forEthnic
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/02.updateSNPIDtype.py KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+
+cat KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile  KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID --extract intersectSNP.txt --make-bed --out  KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID_intersect
+plink --bfile /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge --extract intersectSNP.txt  --make-bed --out 1kpg_merge_intersect
+
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA.txt
+
+#############
+library(tidyverse)
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+setwd("~/")
+
+#setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/LD/2nd/")
+pca <- read.table("PCA_ethnic.txt",header = T)
+#pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/ethical/1000GP_Phase3.sample",header = T)
+head(samplegnomad)
+case <- pca %>% select("FID") %>% filter(grepl("NIH",FID))
+#case <- pca %>% select("FID")
+
+#control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+#control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+#control$GROUP <- "CONTROL"
+table(df$GROUP)
+df <- rbind(gnomad,case)
+#df <- rbind(df,control)
+head(df)
+df <- merge(pca,df,by = "FID")
+#png("JG.LD.ethnic.PCA.png",height = 800,width = 800)
+#png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="KKY 7th Ethnic PCA",
+     xlim = c(-0.2,0.2),ylim = c(-0.2,0.2),
+     #cex.main = 1,
+     cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.5), cex = 0.7 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.5), cex = 0.7 , pch = 16)
+#points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 0.7 , pch = 16)
+abline(v=0.04, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+color <- c(
+  #  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+  rgb(0,1,0,1),
+  rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  rgb(1,0,1,1))
+
+list <- c("KKY","SAS","AFR","AMR","EAS","EUR")
+
+legend("topright",list,col = color,cex = 0.8,pch = 16,pt.cex = 0.5)
+#legend("bottomright",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+legend("bottom",c("# of Markers : 5,214"),box.lwd = 0,box.col = "white",bg = "white")
+dev.off()
+
+
+#rmList <- df[df$PC1 > -0.07 & df$GROUP == "CASE",]
+rmList <- pca[pca$PC1 < 0.04 & grepl(".CEL",pca$IID),]
+
+dim(rmList)
+rmList
+rmList$plate <- str_split_fixed(rmList$IID,"_",6)
+table(str_split_fixed(rmList$IID,"_",6)[,4])
+
+write.table(rmList[,c(1:2)], "rmPCA.ethnic.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
+
+  
+  
+  
+  
+  
+  
+######## QC 내용 정리
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
+  
+### relist Check
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+colnames(ref) <- c("BATCH","V1")
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+setwd("~/")
+misshet <- read.table("rmLQsamples.txt")
+pca <- read.table("rmPCA_afterbadplate.txt")
+bad_plate <- read.table("PCA1.badplate.list.txt")
+
+misshet$type <- "missing-het"
+bad_plate$type <- "bad_plate"
+pca$type <- "pca"
+
+QC1st <- pca %>% full_join(misshet) %>% full_join(bad_plate) %>% inner_join(ref) %>% mutate(QC = "1st")
+
+
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+#setwd("~/")
+misshet <- read.table("rmLQsamples.txt")
+pca <- read.table("rmPCA.txt")
+ethnic <- read.table("rmPCA.ethnic.txt")
+
+misshet$type <- "missing-het"
+#bad_plate$type <- "bad_plate"
+pca$type <- "pca"
+ethnic$type <- "ethnic_pca"
+
+
+QC2nd <- misshet %>% full_join(pca) %>% full_join(ethnic) %>% inner_join(ref) %>% mutate(QC = "2nd")
+
+head(QC1st)
+#QC1st %>% full_join(QC2nd) %>% group_by(QC) %>%
+#QC1st %>% full_join(QC2nd) %>% group_by(QC,type) %>%
+QC1st %>% full_join(QC2nd) %>% group_by(BATCH) %>%
+#QC1st %>% full_join(QC2nd) %>% group_by() %>%
+  count() %>% summarise(n = sum(n))
+  
+out <- QC1st %>% full_join(QC2nd)
+head(ref)
+head(out)
+table(ref$V1 %in% out$V1)
+table(ref$BATCH)
+table(ref[!(ref$V1 %in% out$V1),]$BATCH)
+
+
+############# QC 내용 정리 : end 다시 해야함
+
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+
+python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil
+
+
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
+
+
+
+
+
+
+
+
+
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil
+
+
+
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
+
+
+plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
+
+
+
+
+

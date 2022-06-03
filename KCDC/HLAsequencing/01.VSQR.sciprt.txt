@@ -1,0 +1,128 @@
+### 20220602
+
+
+####### make VSQR DB for HLA using GATK provied VSQR bundle DB 
+
+## 1. Jonint calling VCF position info change
+
+
+- 0-1.VCF.chr.pos.change.py 를 이용하여 position 정보 변경
+- 변경하는 이유는 HLA targeted region의 reference fasta를 이용하여 mapping 했기 때문에 6:28477797-33448354 지역을 1번부터 차례로 인식하기 때문에
+ex) pos : 28477797 -> 1
+- 처음에는 chrom 이나 ID도 바꿔서 진행하려고 햇는데, contig 정보에서 문제가 발생했기 때문에 통일 하기 위해서 position 정보만 변경하여 분석 진행
+
+python 0-1.VCF.chr.pos.change.py [input.vcf.gz]
+
+## 2. GATK VSQR bundle DB 처리
+ - HLA 지역만 추출하고 contig 정보 수정 : VSQR 진행 시 contig 정보 등으로 문제가 발생
+ - chr.update file 내용
+ $cat chr.update
+ 6	6:28477797-33448354
+
+### 2.1 HLA 지역 추출 및 chrom 명 변경 (6 -> 6:28477797-33448354)
+
+bcftools view -r 6:28477797-33448354 hapmap_3.3.b37.vcf.bgz |bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.hapmap_3.3.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_omni2.5.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.1000G_omni2.5.b37.vcf
+bcftools view -r 6:28477797-33448354 1000G_phase1.snps.high_confidence.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update > ./test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf
+bcftools view -r 6:28477797-33448354 dbsnp_138.b37.vcf.bgz | bcftools annotate --rename-chrs ./test1/chr.update >  ./test1/HLA.dbsnp_138.b37.vcf
+bcftools view -r 6:28477797-33448354 Mills_and_1000G_gold_standard.indels.b37.vcf.bgz| bcftools annotate --rename-chrs ./test1/chr.update >  ./test1/HLA.Mills_and_1000G_gold_standard.indels.b37.vcf
+
+### 2.2 config 정보 삭제 및 추가
+ - vi, nano 등을 통해 db에 있는 ## contig 정보 삭제
+ - 삭제 후 새로훈 config 정보 추가
+ 
+ ##contig=<ID=6:28477797-33448354,length=4970557>
+
+### 2.3 압축 및 indexing
+
+ls *vcf | xargs -I {} -P 4 bash -c "bgzip {}"
+ls *vcf.gz | xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+
+
+## 3. VQRS 수행 : Variant recalibration
+
+
+### 3.1 Calculate VQSLOD tranches for SNPs using VariantRecalibrator
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources/test1/HLA.hapmap_3.3.b37.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources/test1/HLA.1000G_omni2.5.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+     -O /input/pos/recal/HLA.Shortread.Seq.GATK.snps.recal \
+     --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.tranches \
+     --rscript-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.plots.R
+
+
+### 3.2 Filter SNPs on VQSLOD using ApplyVQSR
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz \
+    --recal-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.recal \
+    --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf
+
+
+### 3.3 Calculate VQSLOD tranches for indels using VariantRecalibrator
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /ref/gatk_resources/test1/HLA.Mills_and_1000G_gold_standard.indels.b37.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources/test1/HLA.1000G_phase1.snps.high_confidence.b37.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources/test1/HLA.dbsnp_138.b37.vcf.gz \
+     -O /input/pos/recal/HLA.Shortread.Seq.GATK.indels.recal \
+     --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.tranches \
+     --rscript-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.plots.R
+     
+
+
+### 3.4 Filter indels on VQSLOD using ApplyVQSR
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" ApplyVQSR \
+     -V /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.vcf \
+    --recal-file /input/pos/recal/HLA.Shortread.Seq.GATK.indels.recal \
+    --tranches-file /input/pos/recal/HLA.Shortread.Seq.GATK.indel.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /input/pos/recal/HLA.Shortread.Seq.GATK.recalSNP.recalINDEL.vcf
+
+
+
+### 4. filtering
+
+cd /DATA/smkim/HLA_seq/VCF/pos/recal
+bcftools view -f PASS HLA.Shortread.Seq.GATK.recalSNP.recalINDEL.vcf.gz | bgzip -c > ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz
+bcftools view -v snps ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz -Oz -o ./filtered/HLA.Shortread.Seq.GATK.recal.pass.snps.vcf.gz
+bcftools view -v indels ./filtered/HLA.Shortread.Seq.GATK.recal.pass.vcf.gz -Oz -o ./filtered/HLA.Shortread.Seq.GATK.recal.pass.indels.vcf.gz
+
+
+
+
+
+
+
