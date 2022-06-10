@@ -1,0 +1,58 @@
+## CAD 정리
+
+- CEL file
+2019 : 7495개
+2020 : 3182개
+
+- CEL 총 3개 subgroup
+
+1 : 일반인 
+2 : 일반인
+3 : 고위험군(환자)
+
+- 각그룹별 샘플 개수
+
+2019 - 1 : 3540
+2019 - 2 : 3955
+2020 - 3 : 3182
+
+
+cd /BDATA/smkim/CAD/00.rawData/sampleINFO
+
+
+awk '{print "/ADATA/ghyoon/CAD/CEL/"$1}' 2019.CAD.group1.list.txt > CAD.2019.celfile.list_g1.txt
+awk '{print "/ADATA/ghyoon/CAD/CEL/"$1}' 2019.CAD.group2.list.txt > CAD.2019.celfile.list_g2.txt
+
+
+
+
+총 3개 gruop으로 genotype calling 진행
+
+
+
+00.rawData  01.genocall  02.1stQC  03.2ndQC
+1st  2nd
+
+
+
+
+# genocall
+
+/BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2019.celfile.list_g1.txt
+/BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2019.celfile.list_g2.txt
+/BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2020.celfile.list_g3.txt
+
+cd /BDATA/smkim/CAD/01.genocall
+
+/BDATA/smkim/CAD/01.genocall/1st/g1
+
+
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2019.celfile.list_g1.txt /BDATA/smkim/CAD/01.genocall/1st/g1/
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2019.celfile.list_g2.txt /BDATA/smkim/CAD/01.genocall/1st/g2/
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2020.celfile.list_g3.txt /BDATA/smkim/CAD/01.genocall/1st/g3/
+
+
+cd /BDATA/smkim/CAD/01.genocall/1st/g1/plink
+
+
+

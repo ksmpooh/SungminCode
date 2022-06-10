@@ -317,17 +317,9 @@ table(ref[!(ref$V1 %in% out$V1),]$BATCH)
 
 ############# QC 내용 정리 : end 다시 해야함
 
+KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup
 
 
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/affy_snp_list.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy
-
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/indel/indelChange.py /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel
-
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel --flip /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
-
-python2 /BDATA/smkim/JG/03.QC_2nd/SCRIPTs/01_select_dupID.py KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
-
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup
 
 plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil
 

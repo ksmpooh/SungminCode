@@ -1,63 +1,113 @@
-cd /DATA/smkim/HLA_seq/VCF
+cd /DATA/smkim/HLA_seq/VCF/pos
+
+총 8개 set
+ - longread/shortread 별로 GATK/Deepvariant 분석 결과(marker QC or not)
+
+
+HLA.Longread.Seq.GATK.recal.pass.vcf.gz
+HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.updateID.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling_unfiltered.updateID.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.vcf.gz
+
+
+0. data preprocessing
+ - position 정보 변경 (hg19)
+
+0.1 multi-allelic 나누기 
+
+#bcftools norm -m -any INPUT.vcf.gz | bcftools annotate --set-id “%CHROM:%POS:%REF:%ALT” | bgzip -c >
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools norm -m -any {}.vcf.gz | bcftools annotate --set-id 6:%POS:%REF:%ALT | bgzip -c > ./devided_multiallelic/{}.devied_multiallelic.vcf.gz'
+
+ls *gz | xargs -I{} -P 4 bash -c 'tabix -f -p vcf {}'
+
+0.2 pos count
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools query -f "6\t%POS\n" {}.vcf.gz > ./pos_count/{}.pos_count.txt'
+
+- GATK 에는 * allele이 있음. dv에서는 이게 filtering 됨
+- grep 해서 체크함
+
+0.3 only SNP without multiallelic
+
+bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz | bgzip -c > ./onlySNP/{}.onlySNP.vcf.gz'
 
 
 
-#chr	pos	ref	alt	QUAL
-bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\n' HLA.merge_usingGLnexus.vcf.gz > HLA.merge_usingGLnexus_marker.QUAL.txt
 
 
-chr pos ref alt QUAL    DP  MQ  QD
-bcftools query  -f '6\t%POS\t%REF\t%ALT\t%QUAL\t%DP\t%MQ\t%QD\n' HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.vcf.gz > HLA.GATK.GenotypeGVCFs.12sample.Using.GATK.marker.info.txt
-
-
-####
-bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
-
-
-bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' file.vcf.gz
-
-
-
-0-1. plot-vcfstats -p outdir file.vchk
-
-plot-vcfstats -p ./ 2020HLAseq.pass_vcfmerge_devidedMultiAllelic_bcfstats.txt
-
-ls *.stats | xargs -I{} -P 6 bash -c "plot-vcfstats {} -p ./plot"
-
-
-
-
-
-0. chr, pos info update
+#####
+      1 ##FORMAT=<ID=RGQ,Number=1,Type=Integer,Description="Unconditional reference genotype confidence, encoded as a phred quality -10*log10 p(genotype call is wrong)">
+      2 6:28477797-33448354     28479643        .       TGCGC   *,TAAGCGC       225.95  PASS    AC=3,1;AF=0.031,0.01;AN=98;BaseQRankSum=0;DP=1480;ExcessHet=3.2861;FS=1.229;InbreedingCoeff=0.1646;MLEAC=4,1;MLEAF=0.041,0.01;MQ=56.44;MQRankSum=1.01;NEGATIVE_TRAIN_SITE;QD=5.>
+      3 6:28477797-33448354     28479645        .       C       *,CATGCA,CACAT  244.02  PASS    AC=3,3,1;AF=0.043,0.043,0.014;AN=70;BaseQRankSum=0.809;DP=1216;ExcessHet=0.0488;FS=3.795;InbreedingCoeff=0.2957;MLEAC=5,5,2;MLEAF=0.071,0.071,0.029;MQ=57.17;MQRankSum=-0.967;N>
+      4 6:28477797-33448354     28479647        .       CGTGG   *,CTGTGG        117.29  PASS    AC=3,1;AF=0.044,0.015;AN=68;BaseQRankSum=0.875;DP=1215;ExcessHet=3.4145;FS=1.191;InbreedingCoeff=0.2171;MLEAC=6,2;MLEAF=0.088,0.029;MQ=57.05;MQRankSum=0;NEGATIVE_TRAIN_SITE;QD>
+      5 6:28477797-33448354     28479648        .       GTGGCA  G,*,ATGGCA      752.5   PASS    AC=4,3,5;AF=0.059,0.044,0.074;AN=68;BaseQRankSum=0.253;DP=1216;ExcessHet=0.0976;FS=0.858;InbreedingCoeff=0.2314;MLEAC=6,6,9;MLEAF=0.088,0.088,0.132;MQ=56.95;MQRankSum=0;NEGATI>
+      6 6:28477797-33448354     28479649        .       TGGCAC  *,CGGCAC,GGGCAC,AGGCAC  829.87  PASS    AC=7,4,1,1;AF=0.103,0.059,0.015,0.015;AN=68;BaseQRankSum=0;DP=1215;ExcessHet=0.1733;FS=1.966;InbreedingCoeff=0.2071;MLEAC=11,7,2,2;MLEAF=0.162,0.103,0.029,0.029;MQ=56.>
+      7 6:28477797-33448354     28479650        .       GGCA    *,CGCA,AGCA     604.9   PASS    AC=8,3,2;AF=0.121,0.045,0.03;AN=66;BaseQRankSum=0;DP=1215;ExcessHet=0.1894;FS=3.097;InbreedingCoeff=0.2154;MLEAC=14,5,4;MLEAF=0.212,0.076,0.061;MQ=56.63;MQRankSum=-0.674;NEGAT>
+      8 6:28477797-33448354     28479651        .       GCACT   *,GCT   36.81   PASS    AC=8,1;AF=0.125,0.016;AN=64;BaseQRankSum=-0.852;DP=1215;ExcessHet=0.0118;FS=6.3;InbreedingCoeff=0.3127;MLEAC=15,2;MLEAF=0.234,0.031;MQ=57.36;MQRankSum=-1.704;NEGATIVE_TRAIN_SITE;QD=0.>
+      9 6:28477797-33448354     28479658        .       C       *,CAT   31.45   PASS    AC=4,1;AF=0.051,0.013;AN=78;BaseQRankSum=0;DP=1211;ExcessHet=0.2916;FS=0;InbreedingCoeff=0.1888;MLEAC=7,2;MLEAF=0.09,0.026;MQ=56.32;MQRankSum=0;NEGATIVE_TRAIN_SITE;QD=1.26;ReadPosRank>
+     10 6:28477797-33448354     28479671        .       A       *,G     2291.88 PASS    AC=1,14;AF=0.017,0.233;AN=60;BaseQRankSum=-0.157;DP=1175;ExcessHet=0.0107;FS=2.39;InbreedingCoeff=0.289;MLEAC=2,25;MLEAF=0.033,0.417;MQ=56.83;MQRankSum=0;NEGATIVE_TRAIN_SITE;POSITIVE_>
+     11 6:28477797-33448354     28479675        .       CACGT   TACGT,* 1184.24 PASS    AC=7,1;AF=0.117,0.017;AN=60;BaseQRankSum=0;DP=1169;ExcessHet=1.17;FS=4.766;InbreedingCoeff=0.1715;MLEAC=14,2;MLEAF=0.233,0.033;MQ=56.93;MQRankSum=0;NEGATIVE_TRAIN_SITE;QD=19.74;ReadPo>
+     12 6:28477797-33448354     28479676        .       ACGTGGGAG       GCGTGGGAG,*     2458.52 PASS    AC=13,1;AF=0.217,0.017;AN=60;BaseQRankSum=-0.21;DP=1169;ExcessHet=0.0583;FS=3.988;InbreedingCoeff=0.2341;MLEAC=24,2;MLEAF=0.4,0.033;MQ=56.66;MQRankSum=0;NEGATIVE_TRAIN>
+     13 6:28477797-33448354     28479692        .       AGCGG   TGCGG,* 300.49  PASS    AC=6,1;AF=0.13,0.022;AN=46;DP=1366;ExcessHet=0.0029;FS=1.685;InbreedingCoeff=0.3811;MLEAC=9,3;MLEAF=0.196,0.065;MQ=57.39;MQRankSum=-1.645;NEGATIVE_TRAIN_SITE;QD=27.32;ReadPosRankSum=1>
+     14 6:28477797-33448354     28479694        .       CG      C,TG,*  875.28  PASS    AC=3,5,1;AF=0.063,0.104,0.021;AN=48;BaseQRankSum=0;DP=1364;ExcessHet=0.4083;FS=1.45;InbreedingCoeff=0.1995;MLEAC=5,11,3;MLEAF=0.104,0.229,0.063;MQ=57.75;MQRankSum=0;NEGATIVE_TRAIN_SIT>
+     15 6:28477797-33448354     28479712        .       C       CCACCG,*        726.16  PASS    AC=6,1;AF=0.077,0.013;AN=78;BaseQRankSum=0;DP=1367;ExcessHet=0.0436;FS=4.632;InbreedingCoeff=0.0459;MLEAC=11,2;MLEAF=0.141,0.026;MQ=58.16;MQRankSum=0;NEGATIVE_TRAIN_SITE;QD=33>
+     16 6:28477797-33448354     28479713        .       GGCCA   G,*,AGCCA       279.73  PASS    AC=3,1,3;AF=0.041,0.014,0.041;AN=74;DP=1366;ExcessHet=0.0008;FS=0;InbreedingCoeff=0.1666;MLEAC=5,2,5;MLEAF=0.068,0.027,0.068;MQ=57.13;MQRankSum=-1.645;NEGATIVE_TRAIN_SITE;QD=2>
+     17 6:28477797-33448354     28479715        .       C       T,*     147.55  PASS    A
 
 
 
 
 
-0-1 chr udate
-
-chr : 6:28477797-33448354 -> 6
-pos : pos+28477797
-
-#bcftools annotate --rename-chrs chr.txt HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz| less -NS
-
-01.VCF.chr.pos.change.py
-
-cd /DATA/smkim/HLA_seq/VCF
-ls *gz | xargs -I{} -P 1 bash -c "python vcf.modify.py {}"
+2-1. intersect 
+2-2-0. 공통 마커 : bcftools isec -p dir A.vcf.gz B.vcf.gz 
+bcftools isec -p inter 01.variant.calling_onlySNP.vcf.gz 02.multi.caaling_onlySNPvcf.gz
 
 
-0-2. DB selelction : 
-Chr 마킹 : chr6 (o), 6 (x)
+cd  /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP
+0000.vcf - VCF1 만 있는 것
+0001.vcf - VCF2 만 있는 것 
+0002.vcf - 공통 마커 VCF1
+0003.vcf - 공통 마커 VCF2
 
-
-0-3. VSQR
-
-
-HLA 지역만 추출해서 사용해봐야함..............
-0-3-1 reference fast 
+- longread
+bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
 
 
-1. multi-allelic split
-1-1.bcftools norm -m -any INPUT.vcf.gz | bcftools annotate --set-id “%CHROM:%POS:%REF:%ALT” | bgzip -c >
+
+- shortread
+bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+
+
+
+
+
+2-1-1. ID / ref 마커 추출
+
+#bcftools query -f "%ID\t%ALT" 0002.vcf > intersect.ID.ALT.txt
+
+2-1-2. freq check
+/Users/ksmpooh/Desktop/KCDC/long_read/analysis/03.check/02.SNP/inter/freq
+
+bcftools +fill-tags 0002.vcf -- -t AF > 0002_withAF.vcf
+
+bcftools query -f '%POS\t%REF\t%ALT\t%AF' ../0002_withAF.vcf > type1.AF.txt
+bcftools query -f '%POS\t%REF\t%ALT\t%AF' ../0003.vcf > type2.AF.txt
+
+
+bcftools query -f '%POS\t%REF\t%ALT\t%AF\n' ./0002.vcf > GATK.AF.txt
+bcftools query -f '%POS\t%REF\t%ALT\t%AF\n' ./0003.vcf > DV.AF.txt
+
+
+2-2. DP : bcftools query -f "%ID\t[%DP\t]\n" 0002.vcf
+DP 값 SUM 값 비교
+bcftools query -f "%POS\t%REF\t%ALT\t[%DP\t]\n" 0002.vcf >  GATK.DP.txt
+bcftools query -f "%POS\t%REF\t%ALT\t%DP\n" 0002.vcf >  GATK.DPv2.txt
+bcftools query -f "%POS\t%REF\t%ALT\t[%DP\t]\n" 0003.vcf >  DV.DP.txt
