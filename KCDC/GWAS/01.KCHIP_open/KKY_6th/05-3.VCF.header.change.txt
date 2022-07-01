@@ -4,3 +4,6 @@ ls *.gz | cut -d"." -f4 | xargs -I {} -P 22 bash -c "bcftools reheader -h ../new
 
 
 bcftools reheader -h [new_header.txt] -o [output.vcf.gz] [input.vcf.gz]
+
+## sample name chagne
+#bcftools reheader KBA.KOTRY.KD.discovery.IMPUTE4_IMPUTED.filterMAF0.01_INFO0.08.vcf.gz -s /BDATA/smkim/JG/00.rawData/sample_info/JG.IDupdate.NIHtobCODE.txt -o test.vcf.gz

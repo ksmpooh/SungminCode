@@ -1,0 +1,122 @@
+109
+cd /BDATA/smkim/KKY_8th/01.genocall/1st/plink
+
+
+
+
+plink --file Axiom_KBAv1.1 --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/KKY_8th/02.1stQC/KKY.8th.1stQC
+
+cd /BDATA/smkim/KKY_8th/02.1stQC
+
+plink --bfile KKY.8th.1stQC --extract /BDATA/smkim/KKY_8th/01.genocall/1st/classification/Recommended.ps --make-bed --out KKY.8th.1stQC_snpolisher
+
+
+plink --bfile KKY.8th.1stQC_snpolisher --missing --out MISS
+plink --bfile KKY.8th.1stQC_snpolisher --het --out HET
+
+
+
+
+
+######## missing-het
+
+setwd("/Volumes/DATA/KKY/8th/1st/")
+#setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.15), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY 8th 1stQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15.6, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.6, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.6 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.6 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.6 | 17.6 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+head(rmList)
+
+####
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+lowSample <- merge(miss, het, by="FID")
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.6 | 17.6 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+###
+
+plink --bfile KKY.8th.1stQC_snpolisher --remove rmLQsamples.txt --make-bed --out KKY.8th.1stQC_snpolisher_rmMissing-het
+
+
+mkdir PCA1
+cd PCA1
+
+
+plink --bfile ../KKY.8th.1stQC_snpolisher_rmMissing-het --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out PCA1_pruning
+plink --bfile ../KKY.8th.1stQC_snpolisher_rmMissing-het --extract PCA1_pruning.prune.in --make-bed --out PCA1_pruned
+flashpca_x86-64 --bfile PCA1_pruned --outpc PCA1.txt
+
+
+mkdir PCA2
+cd PCA2
+
+
+plink --bfile ../KKY.8th.1stQC_snpolisher_rmMissing-het --maf 0.2 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out PCA2_pruning
+plink --bfile ../KKY.8th.1stQC_snpolisher_rmMissing-het --extract PCA2_pruning.prune.in --make-bed --out PCA2_pruned
+flashpca_x86-64 --bfile PCA2_pruned --outpc PCA2.txt
+
+
+
+##### PCA2 선택
+
+setwd("/Volumes/DATA/KKY/8th/1st/")
+#setwd("~/")
+
+pca <- read.table("PCA1.txt", header=T)
+pca <- read.table("PCA2.txt", header=T)
+
+head(pca)
+
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY 8th 1stQC PCA", cex=0.5, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+dim(rmList)
+head(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+#####
+pca <- read.table("PCA2.txt", header=T)
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+

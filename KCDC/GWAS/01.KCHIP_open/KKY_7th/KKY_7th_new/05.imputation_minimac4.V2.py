@@ -1,0 +1,77 @@
+import os,glob
+
+
+minimac4 = "/BDATA/smkim/TOOLs/minimac4"
+wdir = "/BDATA/smkim/KKY_7th/"
+phasingDir = wdir + "04.phasing/OUTPUTs/02.chr_phasing/"
+#phasingDir = "/ADATA/smkim/JG/04.phasing/OUTPUTs/03.5Ksplit/"
+
+imputationDir = wdir + "05.imputation/"
+
+outDir = imputationDir + "OUTPUTs/01.imputation/"
+os.system("mkdir %s"%outDir)
+shDir = imputationDir + "SCRIPTs/01.imputationsh/"
+os.system("mkdir %s"%shDir)
+
+# chr21_39000001_44000000.m3vcf.gz
+# genetic_map_chr22_combined_b37_addCHR.txt
+#refDir = inDir + "KGP3KRG/"
+refDir = "/BDATA/smkim/GWAS/ref/KRG1KGP/m3vcf/"
+mapDir = "/BDATA/smkim/GWAS/ref/map/m3vcf/"
+
+
+# KKY.6th.phasing.chr16.vcf.gz
+
+chunk_ref = "/BDATA/smkim/GWAS/imputation.POS.auto_forMINIMAC_20220320.txt"
+#main()
+
+def main2():
+    print("main : ...")
+
+    chunk_list = open(chunk_ref,"r")
+    chunks = [s.replace("\n","") for s in chunk_list]
+    chunks.pop(0)
+    for chunk in chunks:
+        ref,imp = chunk.split("\t")
+        ref_panel = refDir + "%s.m3vcf.gz"%(ref)
+        ref_chr,ref_start,ref_end = ref.split("_")
+        imp_chr,imp_start,imp_end = imp.split("_")
+        #if chr not in ["chr1","chr2","chr3"]:
+        #        continue
+        VCFin = glob.glob(phasingDir + "*%s.*vcf.gz"%ref_chr)
+        mapin = mapDir + "genetic_map_%s_combined_b37_addCHR.m3vcf.txt"%imp_chr
+        #if len(VCFin)
+        VCFin = VCFin.pop()
+        VCFout = VCFin.replace(phasingDir,outDir).replace(".vcf.gz",".%s_%s"%(imp_start,imp_end)).replace("phasing","imputation_MINIMAC4")
+        with open(shDir + "Phased.to.imputation.%s.%s_%s.minimca4.sh"%(imp_chr,imp_start,imp_end),"w") as shwrite:
+            shwrite.write("%s --ignoreDuplicates --chr %s --start %s --end %s --minRatio 0.000001 --window 1000000 --refhaps %s --haps %s --noPhoneHome --allTypedSites --format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1\n"%(minimac4,imp_chr.replace("chr",""),imp_start,imp_end,ref_panel,VCFin,VCFout,mapin))
+            shwrite.write("tabix -f -p vcf %s.dose.vcf.gz"%(VCFout))
+
+
+main2()
+
+
+
+
+
+#main()
+#chr21_39000001_44000000.m3vcf.gz
+#Phased.to.imputation.chr2.125000001_130000000.minimca4.sh
+def check():
+        print("main : ...")
+        vcfs = glob.glob(outDir + "*gz")
+        shs = glob.glob(shDir + "*.sh")
+	#KKY.6th.imputation_MINIMAC4.chr4.35000001_40000000.dose.vcf.gz
+        os.system("mkdir %s"%(shDir+"end/"))
+        count = 0
+        for sh in shs:
+               	tmp = sh.replace(shDir,"").replace("Phased.to.imputation.","").replace(".minimca4.sh","")
+                for vcf in vcfs:
+                        if tmp in vcf:
+                                os.system("mv %s ./01.imputationsh/end/%s"%(sh,sh.replace(shDir,"")))
+                                count = count + 1
+                                break
+        print("count : %s"%(str(count)))
+
+#check()
+

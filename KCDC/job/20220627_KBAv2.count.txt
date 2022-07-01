@@ -1,0 +1,29 @@
+108
+/ADATA/myhwang/KBA_Upgrade/08_Screening/RESULTs/QCedKBA/chr21
+
+ls *_Norm.vcf.gz | xargs -I{} -P 6 bash -c "bcftools view -r chr21 {}| bcftools view --samples-file ./chr21/KBAv2_SampleList.txt | bgzip -c > ./chr21/chr21_{}"
+ls *gz | xargs -I{} -P 6 bash -c "tabix -f -p vcf {}"
+
+
+
+
+ls *gz > filelist.txt
+
+
+
+bcftools concat --allow-overlaps --file-list ./filelist.txt | bcftools norm --remove-duplicates | bgzip -c > chr21_Axiom_KBAv2_merge.vcf.gz
+
+
+109
+cd /BDATA/myhwang/Platform/DATA/KBAv2_chr21
+
+/BDATA/myhwang/TOOLs/gatk-4.2.3.0/gatk LiftoverVcf --java-options "-Xmx10G" --INPUT /BDATA/myhwang/Platform/DATA/KBAv2_chr21/chr21_Axiom_KBAv2_merge.vcf.gz --OUTPUT /BDATA/myhwang/Platform/DATA/KBAv2_chr21/chr21_Axiom_KBAv2_merge_liftover.vcf.gz --REJECT /BDATA/myhwang/Platform/DATA/KBAv2_chr21/chr21_Axiom_KBAv2_merge_rejected.vcf.gz --REFERENCE_SEQUENCE /BDATA/myhwang/Platform/DATA/GRCh37/hg19.fa --CHAIN /BDATA/myhwang/Platform/DATA/GRCh37/hg38ToHg19.over.chain.gz
+
+
+
+bcftools view --exclude ID==@/BDATA/myhwang/Platform/02_IMPUTATION/RESULTs/KBAv2/KBAv2_filMAF_ambiguous_ID.txt /BDATA/myhwang/Platform/02_IMPUTATION/RESULTs/KBAv2/KBAv2_filMAF.vcf.gz | bgzip -c > /BDATA/myhwang/Platform/02_IMPUTATION/RESULTs/KBAv2/KBAv2_filMAF_ambiguous.vcf.gz
+
+
+/BDATA/myhwang/Platform/02_IMPUTATION/INPUTs/KBAv1_1_ID.txt
+
+bcftools annotate --set-id '%CHROM:%POS:%REF:%ALT' chr21_Axiom_KBAv2_merge_liftover.vcf.gz | bcftools view --include ID==@/BDATA/myhwang/Platform/02_IMPUTATION/INPUTs/KBAv1_1_ID.txt | bgzip -c > chr21_Axiom_KBAv2_merge_liftover_extractKBAv1.1SNP.vcf.gz

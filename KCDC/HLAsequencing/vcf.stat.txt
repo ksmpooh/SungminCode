@@ -78,16 +78,36 @@ cd  /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP
 - longread
 bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
-
-
-
 - shortread
 bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
+- GATK (long short)
+bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP.vcf.gz
+
+- DV (long short)
+bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
 
 
+ gatk Concordance \
+   -R reference.fa \
+   -eval eval.vcf \
+   --truth truth.vcf \
+   --summary summary.tsv    
+ 
+~/Downloads/gatk-4.2.6.1/gatk Concordance -R ~/Desktop/KCDC/long_read/HLA.target.fasta -eval 0003.vcf --truth 0002.vcf --summary summary.tsv
 
+
+gatk Concordance \
+   -R reference.fa \
+   -eval long-read.vcf \
+   --truth short-redad.vcf \
+   --summary summary.tsv    
+ 
+
+
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz > DV/longread.SNP.txt
 
 2-1-1. ID / ref 마커 추출
 

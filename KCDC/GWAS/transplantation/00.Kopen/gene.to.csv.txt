@@ -32,3 +32,51 @@ plink --bfile ../../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmS
 plink --bfile ESRD.QCed_onlyKR_s3 --update-ids ../../KBA_ID_barcodeID.txt --make-bed --out ESRD.QCed_onlyKR_s3_updateID
 plink --bfile ESRD.QCed_onlyKR_s3_updateID --update-name ../s3.list_withrsID.txt --recode tab --out ESRD.QCed_onlyKR_s3_updateID_raw
 
+
+
+
+
+## add list 20220610
+
+cd /BDATA/smkim/JG/99.open/20220404_add
+
+gene	chr	start	end
+ABCC7	7	117120079	117308719
+CYP2D7P1	22	42535587	42540484
+DHRS4L1	14	24476293	24520586
+NOS2A	17	26083792	26127555
+
+
+
+../20220125/plink/JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil
+
+../20220125/plink/Jmerge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure
+
+
+plink --bfile ../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --chr 7 --from-bp 117120079 --to-bp 117308719 --make-bed --out test1
+
+plink --bfile ../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --chr 22 --from-bp 42535587 --to-bp 42540484 --make-bed --out test2
+
+plink --bfile ../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --chr 14 --from-bp 24476293 --to-bp 24520586 --make-bed --out test3
+
+plink --bfile ../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --chr 17 --from-bp 26083792 --to-bp 26127555 --make-bed --out test4
+
+plink --bfile --from-bp --to-bp --make-bed --out 
+
+plink --bfile --from-bp --to-bp --make-bed --out 
+
+plink --bfile --from-bp --to-bp --make-bed --out 
+
+
+python3 ../SCRIPTs/01.extract.gene.list.py s3a.gene.list.txt ../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure.bim
+KR
+plink --bfile ../../20220125/plink/merge_rmking_rmfrq_rmMissingtest_rmethnic_rmScreeningFailure --keep ../../KR.ID.txt --extract ../s3a.gene.list_info_snp.inbim_onlySNPID.txt --make-bed --out ESRD.QCed_onlyKR_s3a
+plink --bfile ESRD.QCed_onlyKR_s3a --update-ids ../../KBA_ID_barcodeID.txt --make-bed --out ESRD.QCed_onlyKR_s3a_updateID
+plink --bfile ESRD.QCed_onlyKR_s3a_updateID --update-name ../s3a.list_withrsID.txt --recode tab --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out ESRD.QCed_onlyKR_s3a_updateID_raw
+
+KD
+JG.KD.QCed_s3_updateID.bed
+
+plink --bfile ../../20220125/plink/JG.KD.2nd_snpolisher_rmaffy_rmdup_convert_indel_flip_fil --extract ../s3a.gene.list_info_snp.inbim_onlySNPID.txt --make-bed --out JG.KD.QCed_s3a
+plink --bfile JG.KD.QCed_s3a --update-ids ../../KBA_ID_barcodeID.txt --make-bed --out JG.KD.QCed_s3a_updateID
+plink --bfile JG.KD.QCed_s3a_updateID --update-name ../s3a.list_withrsID.txt --recode tab --a1-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --out JG.KD.QCed_s3a_updateID_raw

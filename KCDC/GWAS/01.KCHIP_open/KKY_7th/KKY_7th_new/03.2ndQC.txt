@@ -321,33 +321,10 @@ KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup
 
 
 
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil
-
-
-awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
-
-
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
-
-
-
-
-
-
-
-
-
-
 plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil
 
 
-
-awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
-
-
-plink --bfile KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY6th.All.2nd_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
 
 
-
-
-
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID

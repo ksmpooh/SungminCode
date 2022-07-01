@@ -1,0 +1,38 @@
+### 1. QC plink split by chromosome
+mkdir 01.split
+
+for chr in $(seq 1 22);do
+	plink --bfile [QCedplink] --chr $chr --a1-allele Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out [output].chr$chr
+    done
+
+#output ex : KKY.6th.QCed.chr$chr
+
+
+
+
+### 2. split plink to vcf
+
+mkdir 01.split_convert_vcf
+
+for chr in $(seq 1 22);do
+	plink --bfile [output].chr$chr --chr $chr --recode vcf --out [output].chr$chr
+    done
+
+
+
+
+mkdir 02.chr_phasing
+
+### 3. vcf to vcf phasing
+
+import os
+
+tool =   "~/Downloads/Eagle_v2.4.1/eagle"
+a = [5]
+for chr in range(1,22+1):
+	chr = str(chr)
+	i= "/BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/01.split_convert_vcf/KKY.6th.QCed.chr"+chr
+	m = "/BDATA/smkim/JG/04.phasing/INPUTs/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
+	os.system(tool + " --vcf "+i+".vcf --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix /BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/02.chr_phasing/KKY.6th.phasing.chr" +chr+" --numThreads 48")
+
+
