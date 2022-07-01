@@ -13,19 +13,25 @@ os.system("mkdir %s"%outDir)
 shDir = imputationDir + "SCRIPTs/01.imputationsh/"
 os.system("mkdir %s"%shDir)
 
-# chr21_39000001_44000000.m3vcf.gz
-# genetic_map_chr22_combined_b37_addCHR.txt
-#refDir = inDir + "KGP3KRG/"
+vcfDir = imputationDir + "OUTPUTs/01.imputation/"
+vcfMergeDir = imputationDir + "OUTPUTs/02.merge/"
+os.system("mkdir %s"%vcfMergeDir)
+shDir = imputationDir + "SCRIPTs/02.merge/"
+os.system("mkdir %s"%shDir)
+
 refDir = "/BDATA/smkim/GWAS/ref/KRG1KGP/m3vcf/"
 mapDir = "/BDATA/smkim/GWAS/ref/map/m3vcf/"
 
 
 # KKY.6th.phasing.chr16.vcf.gz
+# KKY.6th.imputation_MINIMAC4"
+out_prefix = "KKY.7th.imputation_MINIMAC4."
+
 
 chunk_ref = "/BDATA/smkim/GWAS/imputation.POS.auto_forMINIMAC_20220320.txt"
 #main()
 
-def main2():
+def minimac_mksh():
     print("main : ...")
 
     chunk_list = open(chunk_ref,"r")
@@ -48,10 +54,50 @@ def main2():
             shwrite.write("tabix -f -p vcf %s.dose.vcf.gz"%(VCFout))
 
 
-main2()
 
 
 
+
+
+
+def vcf_merge_command(vcflist,chrom):
+    out = open(shDir+chrom+".merge.sh","w")
+    out.write("bcftools concat")
+    outname = vcfMergeDir+out_prefix+chrom+".vcf.gz"
+    for vcf in vcflist:
+        out.write(" %s"%vcf)
+    out.write(" -Oz >%s\n"%(outname))
+    out.write("tabix -f -p vcf %s"%outname)
+    out.close()
+
+
+#KKY.6th.imputation_MINIMAC4.chr22.16050076_21000000.dose.vcf.gz
+def vcfMERGE():
+        refs = open(chunk_ref,"r")
+        refin = [x.replace("\n","") for x in refs]
+        refin.pop(0)
+        chr1 = "chr1"
+        count = 0
+        vcfmerge = []
+        for refs in refin:
+                ref,imp = refs.split("\t")
+                chr2,start,end = imp.split("_")
+                ref = "%s.%s_%s"%(chr2,start,end)
+                if ref == "chr22.51000001_51244237":
+                        vcfmerge.append(''.join(glob.glob(vcfDir + "*%s*gz"%ref)))
+                        vcf_merge_command(vcfmerge,chr1)
+                        print("%s size: %s"%(chr1,str(len(vcfmerge))))
+                        count = count + len(vcfmerge)
+                        break
+                elif chr1 != chr2:
+                        vcf_merge_command(vcfmerge,chr1)
+                        print("%s size: %s"%(chr1,str(len(vcfmerge))))
+                        count = count + len(vcfmerge)
+                        chr1 = chr2
+                        vcfmerge=[]
+                ref = "%s.%s_%s"%(chr2,start,end)
+                vcfmerge.append(''.join(glob.glob(vcfDir + "*%s*gz"%ref)))
+        print("count : %s"%str(count))
 
 
 #main()
@@ -73,5 +119,10 @@ def check():
                                 break
         print("count : %s"%(str(count)))
 
-#check()
 
+
+def main():
+        #minimac_mksh()
+        vcfMERGE()
+
+main()
