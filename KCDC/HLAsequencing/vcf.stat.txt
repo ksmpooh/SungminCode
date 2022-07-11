@@ -38,6 +38,19 @@ bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
 ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz | bgzip -c > ./onlySNP/{}.onlySNP.vcf.gz'
 
 
+0.4 GATK SNP id change
+GATK는 아이디가 이상함...
+. -> 6:28477797-33448354_28478294_T_A
+
+#bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' file.vcf
+bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' 
+
+ls *GATK*.gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}.vcf.gz | bgzip -c > ./{}_SNPIDupdate.vcf.gz"
+
+ls HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz | sed "s/.vcf.gz//g"| xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz | bgzip -c > ./onlySNP/{}.onlySNP.vcf.gz'
+bcftools view --max-alleles 2 --exclude-types indels HLA.Longread.Seq.GATK.recal.pass.vcf.gz | bgzip -c > ./onlySNP/HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz
+
+
 
 
 
@@ -76,13 +89,13 @@ cd  /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP
 0003.vcf - 공통 마커 VCF2
 
 - longread
-bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
 - shortread
-bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
 - GATK (long short)
-bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP.vcf.gz
+bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
 
 - DV (long short)
 bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz

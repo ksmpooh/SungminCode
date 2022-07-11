@@ -1,0 +1,37 @@
+### concordance test
+
+#java -jar SnpSift.jar concordance -v 2X.vcf.gz 30X.vcf.gz > QualityMetrics_2X.txt
+
+
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/DV/concordance
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+
+
+
+
+
+
+plink --bfile long --bmerge short --merge-mode 7 --out concordance --allow-extra-chr
+plink --bfile WGS2x_Common --bmerge WGS4X_Common.bed WGS4X_Common.bim WGS4X_Common.fam --merge-mode 7 --out WGS2x_4x_Concor
+
+
+### long-read : DV vs GATK
+
+
+bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longread/plink
+
+
+plink --vcf ../0002.vcf --vcf-half-call m --make-bed --out longread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call m --make-bed --out longread_DV --allow-extra-chr
+
+cp longread_GATK.bim longread_GATK.bim_ori
+cp longread_DV.bim longread_GATK.bim
+
+
+plink --bfile longread_GATK --bmerge longread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+
