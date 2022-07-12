@@ -100,6 +100,12 @@ bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.g
 - DV (long short)
 bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
+- mkdir longDV_shortGATK
+
+bcftools isec -p longDV_shortGATK HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+
+
 
 
  gatk Concordance \

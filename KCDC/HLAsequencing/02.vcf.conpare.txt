@@ -1,5 +1,15 @@
 ### concordance test
 
+## plink
+--vcf-half-call <mode>
+
+The current VCF standard does not specify how '0/.' and similar GT values should be interpreted. By default (mode 'error'/'e'), PLINK 1.9 errors out and reports the line number of the anomaly. Should the half-call be intentional, though (this can be the case with Complete Genomics data), you can request the following other modes:
+
+'haploid'/'h': Treat half-calls as haploid/homozygous (the PLINK 1 file format does not distinguish between the two). This maximizes similarity between the VCF and BCF2 parsers.
+'missing'/'m': Treat half-calls as missing.
+'reference'/'r': Treat the missing part as reference.
+
+## snpsift
 #java -jar SnpSift.jar concordance -v 2X.vcf.gz 30X.vcf.gz > QualityMetrics_2X.txt
 
 
@@ -8,30 +18,127 @@ cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/DV/concordance
 SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
 
 
-
-
-
-
-
 plink --bfile long --bmerge short --merge-mode 7 --out concordance --allow-extra-chr
 plink --bfile WGS2x_Common --bmerge WGS4X_Common.bed WGS4X_Common.bim WGS4X_Common.fam --merge-mode 7 --out WGS2x_4x_Concor
 
 
-### long-read : DV vs GATK
+## long vs short in DV
 
+bcftools isec -p longDV_shortGATK HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+mkdir plink
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longDV_shortGATK/plink
+
+plink --vcf ../0002.vcf --vcf-half-call m --make-bed --out longDV --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call m --make-bed --out shortGATK --allow-extra-chr
+plink --bfile longDV --bmerge shortGATK --merge-mode 7 --out concordance --allow-extra-chr
+
+#3249960 overlapping calls, 3055141 nonmissing in both filesets.
+#2073809 concordant, for a concordance rate of 0.678793.
+
+
+mkdir plink_h
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longDV_shortGATK/plink_h
+
+plink --vcf ../0002.vcf --vcf-half-call h --make-bed --out longDV --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call h --make-bed --out shortGATK --allow-extra-chr
+plink --bfile longDV --bmerge shortGATK --merge-mode 7 --out concordance --allow-extra-chr
+
+#3249960 overlapping calls, 3055899 nonmissing in both filesets.
+#2074144 concordant, for a concordance rate of 0.678734.
+
+
+mkdir plink_r
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longDV_shortGATK/plink_r
+
+plink --vcf ../0002.vcf --vcf-half-call r --make-bed --out longDV --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call r --make-bed --out shortGATK --allow-extra-chr
+plink --bfile longDV --bmerge shortGATK --merge-mode 7 --out concordance --allow-extra-chr
+
+3249960 overlapping calls, 3055899 nonmissing in both filesets.
+2074182 concordant, for a concordance rate of 0.678747.
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longDV_shortGATK/snpsift_concordance
+
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longTool.txt
+
+
+
+
+
+### long-read : DV vs GATK
 
 bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
 
+mkdir plink
 cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longread/plink
-
 
 plink --vcf ../0002.vcf --vcf-half-call m --make-bed --out longread_GATK --allow-extra-chr
 plink --vcf ../0003.vcf --vcf-half-call m --make-bed --out longread_DV --allow-extra-chr
-
-cp longread_GATK.bim longread_GATK.bim_ori
-cp longread_DV.bim longread_GATK.bim
-
-
 plink --bfile longread_GATK --bmerge longread_DV --merge-mode 7 --out concordance --allow-extra-chr
 
+#3519120 overlapping calls, 3276174 nonmissing in both filesets.
+#3085644 concordant, for a concordance rate of 0.941844.
 
+mkdir plink_h
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/shortread/plink_h
+
+plink --vcf ../0002.vcf --vcf-half-call h --make-bed --out longread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call h --make-bed --out longread_DV --allow-extra-chr
+plink --bfile longread_GATK --bmerge longread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+#3519120 overlapping calls, 3276717 nonmissing in both filesets.
+#3101638 concordant, for a concordance rate of 0.946569.
+
+
+mkdir plink_r
+
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/shortread/plink_r
+
+plink --vcf ../0002.vcf --vcf-half-call r --make-bed --out longread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call r --make-bed --out longread_DV --allow-extra-chr
+plink --bfile longread_GATK --bmerge longread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+#3519120 overlapping calls, 3276717 nonmissing in both filesets.
+#3101651 concordant, for a concordance rate of 0.946573.
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/longread/snpsift_concordance
+
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longTool.txt
+
+
+
+### short-read : DV vs GATK
+bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+mkdir plink
+
+plink --vcf ../0002.vcf --vcf-half-call m --make-bed --out shortread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call m --make-bed --out shortread_DV --allow-extra-chr
+plink --bfile shortread_GATK --bmerge shortread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+#3058020 overlapping calls, 2812080 nonmissing in both filesets.
+#2665579 concordant, for a concordance rate of 0.947903.
+
+mkdir plink_h
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/shortread/plink_h
+
+plink --vcf ../0002.vcf --vcf-half-call h --make-bed --out shortread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call h --make-bed --out shortread_DV --allow-extra-chr
+plink --bfile shortread_GATK --bmerge shortread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+#3058020 overlapping calls, 2812225 nonmissing in both filesets.
+#2665594 concordant, for a concordance rate of 0.947859.
+
+mkdir plink_r
+
+
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/shortread/plink_r
+
+plink --vcf ../0002.vcf --vcf-half-call r --make-bed --out shortread_GATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call r --make-bed --out shortread_DV --allow-extra-chr
+plink --bfile shortread_GATK --bmerge shortread_DV --merge-mode 7 --out concordance --allow-extra-chr
+
+#3058020 overlapping calls, 2812225 nonmissing in both filesets.
+#2665704 concordant, for a concordance rate of 0.947899.
