@@ -139,8 +139,6 @@ plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het --remove rmPCA.txt --make-b
 
 plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy
 
-######## marker QC 20220329 (reference allele 처리 안된것 처리)
-
 
 python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/indel/indelChange.py /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel
 
@@ -260,11 +258,28 @@ rmList %>% inner_join(ref) %>% count(BATCH)
 ######## QC 내용 정리
 
 
-ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
-head(ref)
-colnames(ref) <- c("BATCH","IID")
-rmList %>% inner_join(ref) %>% count(BATCH)
-  
+#############
+
+KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup
+
+
+##20220712 MZ list 다 지우고 SNP QC 진행
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --remove ./ethnic/rmPCA.ethnic.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic --remove KING/MZ.rmlist.20220712.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist
+
+
+
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist_fil
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist_fil.fam > sampleID.update.txt
+plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist_fil --update-ids sampleID.update.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist_fil_updateID
+
+
+
+
+### QC 정리
+
+library(tidyverse)
 ### relist Check
 
 ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
@@ -291,22 +306,23 @@ setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
 misshet <- read.table("rmLQsamples.txt")
 pca <- read.table("rmPCA.txt")
 ethnic <- read.table("rmPCA.ethnic.txt")
+MZlist <- read.table("MZ.rmlist.20220712.reallist.txt")
 
 misshet$type <- "missing-het"
-#bad_plate$type <- "bad_plate"
 pca$type <- "pca"
 ethnic$type <- "ethnic_pca"
+MZlist$type <- "MZlist"
 
 
-QC2nd <- misshet %>% full_join(pca) %>% full_join(ethnic) %>% inner_join(ref) %>% mutate(QC = "2nd")
+QC2nd <- misshet %>% full_join(pca) %>% full_join(ethnic) %>% full_join(MZlist) %>% inner_join(ref) %>% mutate(QC = "2nd")
 
 head(QC1st)
 #QC1st %>% full_join(QC2nd) %>% group_by(QC) %>%
 #QC1st %>% full_join(QC2nd) %>% group_by(QC,type) %>%
 QC1st %>% full_join(QC2nd) %>% group_by(BATCH) %>%
-#QC1st %>% full_join(QC2nd) %>% group_by() %>%
+  #QC1st %>% full_join(QC2nd) %>% group_by() %>%
   count() %>% summarise(n = sum(n))
-  
+
 out <- QC1st %>% full_join(QC2nd)
 head(ref)
 head(out)
@@ -315,16 +331,11 @@ table(ref$BATCH)
 table(ref[!(ref$V1 %in% out$V1),]$BATCH)
 
 
-############# QC 내용 정리 : end 다시 해야함
-
-KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup
 
 
 
-plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil
 
 
-awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil.fam > sampleID.update.txt
-
-
-plink --bfile KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil --update-ids sampleID.update.txt --make-bed --out KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID
+python3 ~/apps/PRScs/PRScs.py --ref_dir=/BiO/kogo/home/edu/KOGO_Workshop_Data/02_ASSO/03_PRS/ldblk_1kg_eas \
+--chrom=16 --bim_prefix=/BiO/kogo/home/edu/KOGO_Workshop_Data/02_ASSO/03_PRS/KOGO.HDL.PRS.FINAL \
+--sst_file=/BiO/kogo/home/edu/KOGO_Workshop_Data/02_ASSO/03_PRS/BBJ.HDL.SS.txt --n_gwas=136615 --out_dir=/BiO/kogo/home/edu/KOGO_Workshop_Data/02_ASSO/03_PRS/PRS_BETA

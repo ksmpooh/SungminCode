@@ -10,7 +10,7 @@ mkdir OUTPUTs/02.chr_phasing
 cd /BDATA/smkim/KKY_7th/04.phasing/OUTPUTs/01.split
 
 for chr in $(seq 1 22);do
-	plink --bfile /BDATA/smkim/KKY_7th/03.2ndQC/KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_fil_updateID --chr $chr --a1-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/KKY_7th/04.phasing/OUTPUTs/01.split/KKY.7th.QCed.chr$chr
+	plink --bfile /BDATA/smkim/KKY_7th/03.2ndQC/KKY.7th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_rmEthnic_rmMZlist_fil_updateID --chr $chr --a1-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/KKY_7th/04.phasing/OUTPUTs/01.split/KKY.7th.QCed.chr$chr
     done
 ##plink --bfile /DATA/smkim/KKY/03.2ndQC/OUTPUTs/ALL_Final/KKY.2nd.Final_snpolisher_rmmissing-het_rmtest-missing_rmPCA_rmaffy_rmdup_convert_indel_flip_fil --chr $chr --reference-allele /BDATA/smkim/JG/03.QC_2nd/INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --make-bed --out /BDATA/smkim/JG_2020/04.phasing/OUTPUTs/01.split/JG.KR.rep.merge.chr$chr
 

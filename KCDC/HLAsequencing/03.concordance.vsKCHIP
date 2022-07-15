@@ -1,0 +1,19 @@
+## concordance test vs KCHIP
+## DV 랑 gatk 이랑 너무 달라서 체크해 보려고 함
+
+
+#103 : /DATA/smkim/JG/08.HLAseq/
+
+
+
+cd /DATA/smkim/JG/08.HLAseq/DATA/HLAseq_plink
+
+plink --vcf ../onlySNP/HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz --make-bed --out HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_convertPLINK --allow-extra-chr
+plink --vcf ../onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz --make-bed --out ./HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_convertPLINK --allow-extra-chr --vcf-half-call m
+plink --vcf ../onlySNP/HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz --make-bed --out ./HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_convertPLINK --allow-extra-chr
+plink --vcf ../onlySNP/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz --make-bed -out ./HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP_convertPLINK --allow-extra-chr --vcf-half-call m
+
+
+
+
+
