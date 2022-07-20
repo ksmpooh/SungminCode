@@ -1,0 +1,476 @@
+#################################
+######### 한국인칩 정도관리 #########
+################################
+
+
+###정도관리 할 위치로 이동
+cd ~/DATA/01_QC/
+
+~/DATA/01_QC/01_QC/         ### 정도관리 폴더
+~/DATA/01_QC/02_IMPUTATION/ ### 임퓨테이션 폴더
+~/DATA/RESULTs/             ### 결과 폴더
+
+
+########### 샘플 정도관리 #############
+######## 1.SNPolisher를 이용한 저품질변이 제거 ########
+
+
+### 정도관리 대상 데이터 확인
+cd ~/DATA/01_QC/01_QC/
+ls -alhtr
+wc -l KOGO.bim
+wc -l KOGO.fam
+
+
+###제거 마커 리스트 확인
+head INPUTs/low.Quality.SNPs.txt
+wc -l INPUTs/low.Quality.SNPs.txt
+
+
+### Plink 파일에서 마커 제거
+plink --bfile KOGO \
+--exclude INPUTs/low.Quality.SNPs.txt \
+--make-bed --out KOGO.rmLQSNP
+
+
+### 제거 후 파일 생성여부 확인
+ls -alhtr
+
+
+### 마커 숫자로 제거여부 확인
+wc -l *.bim
+
+
+### 제거대상 마커 리스트에 있는 것이 삭제 후 plink 파일에서 제거되었는지 확인
+head INPUTs/low.Quality.SNPs.txt
+grep SNP-3918306 *.bim
+
+
+
+######## 2.저품질 샘플 제거 ########
+
+plink --bfile KOGO.rmLQSNP --missing --out KOGO.rmLQSNP_MISS
+plink --bfile KOGO.rmLQSNP --het --out KOGO.rmLQSNP_HET
+
+ls -alhtr
+head KOGO.rmLQSNP_MISS.imiss
+head KOGO.rmLQSNP_HET.het
+
+
+##R scripts
+mkdir PDF
+
+
+### R을 활용하여 missing vs. het plotting (제거대상 샘플 선정)
+R
+
+miss <- read.table("KOGO.rmLQSNP_MISS.imiss", header = T)
+het <- read.table("KOGO.rmLQSNP_HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+head(miss)
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+head(het)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("PDF/KOGO.rmLQSamples.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(25, 40), ylim=c(0,0.05), xlab="heterozygosity rate", 
+     ylab="missing rate", main="Missing vs. heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=30, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=33.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 30 | 33.8 < lowSample$HET | 0.3 < lowSample$F_MISS,]$HET, 
+       lowSample[lowSample$HET < 30 | 33.8 < lowSample$HET | 0.3 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 30 | 33.8 < lowSample$HET,]
+dim(rmList)
+head(rmList)
+head(rmList[,c(1:2)])
+
+write.table(rmList[,c(1:2)], "rmLQSamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+ls PDF/
+
+
+ls -alhtr
+wc -l rmLQSamples.txt
+
+plink --bfile KOGO.rmLQSNP \
+--remove INPUTs/rmLQSamples.txt \
+--make-bed --out KOGO.rmLQSNP.rmLQSamples
+
+wc -l *.fam
+
+
+######## 3.PCA (flashPCA) ########
+### SNP pruning
+plink --bfile KOGO.rmLQSNP.rmLQSamples --maf 0.1 --geno 0.01 --hwe 0.001 \
+--indep-pairwise 50 5 0.5 --out KOGO.rmLQSNP.rmLQSamples
+plink --bfile KOGO.rmLQSNP.rmLQSamples --extract KOGO.rmLQSNP.rmLQSamples.prune.in \
+--make-bed --out KOGO.rmLQSNP.rmLQSamples.Pruned
+
+ls -alhtr
+wc -l KOGO.rmLQSNP.rmLQSamples.prune.in
+head KOGO.rmLQSNP.rmLQSamples.prune.in
+wc -l *.bim
+
+
+### PCA
+flashpca --bfile KOGO.rmLQSNP.rmLQSamples.Pruned \
+--outpc KOGO.rmLQSNP.rmLQSamples.Pruned.PCA.txt
+
+ls -alhtr
+less -NS KOGO.rmLQSNP.rmLQSamples.Pruned.PCA.txt
+
+
+### R을 PCA 결과 plotting (제거대상 샘플 선정)
+R
+
+pca <- read.table("KOGO.rmLQSNP.rmLQSamples.Pruned.PCA.txt", header=T)
+
+head(pca)
+
+pdf("PDF/KOGO.rmPCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.3, 1.1), ylim=c(-0.3,0.3), 
+	xlab="PC1", ylab="PC2", main="PCA", cex=1.5, pch=16)
+abline(v=-0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]$PC1, 
+       pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
+dim(rmList)
+head(rmList)
+head(rmList[,c(1:2)])
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+ls -alhtr
+head rmPCA.txt
+wc -l rmPCA.txt
+
+ls PDF/
+
+
+
+######## 4.친인척(king, sample 관계 추출) ########
+king -b KOGO.rmLQSNP.rmLQSamples.bed --related --degree 2 \
+--prefix KOGO.rmLQSNP.rmLQSamples --cpu 2
+
+### 제거대상 샘플 선정
+awk '0.354<=$10{print $1}' KOGO.rmLQSNP.rmLQSamples.kin0 | uniq | \
+tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > rmKING.txt
+
+### 결과 확인
+ls -alhtr *.txt
+head rmKING.txt
+wc -l rmKING.txt
+
+
+## kinship만 계산
+king -b KOGO.rmLQSNP.rmLQSamples.bed --kinship --degree 2 \
+--prefix KOGO.rmLQSNP.rmLQSamples --cpu 2
+
+### 결과 확인
+ls -alhtr
+head KOGO.rmLQSNP.rmLQSamples.kin0
+
+awk '0.354<=$8{print $1}' KOGO.rmLQSNP.rmLQSamples.kin0 | uniq | \
+tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > rmKING.txt
+
+
+### PCA 저품질 샘플 제거
+plink --bfile KOGO.rmLQSNP.rmLQSamples \
+--remove INPUTs/rmPCA.txt \
+--make-bed --out KOGO.rmLQSNP.rmLQSamples.rmPCA
+
+
+### KING 저품질 샘플 제거
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA \
+--remove INPUTs/rmKING.txt \
+--make-bed --out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING
+
+ls -alhtr
+wc -l *.fam ## 결과 확인
+
+ 
+######## 5.Singleton ########
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING \
+--hardy --out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING
+
+ls -alhtr
+
+less -NS KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.hwe
+q
+
+
+### Singleton 선정
+awk '{if($3=="ALL") print $6"\t"$2}' KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.hwe | \
+awk -F"/" '($1+$2)==1{print $1,$2,$3}' | awk '{print $4}' > selectSingleton.txt
+
+ls -alhtr
+wc -l selectSingleton.txt
+
+
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING \
+--recodeA --extract INPUTs/selectSingleton.txt \
+--out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.selectSIN
+
+ls -alhtr
+head KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.selectSIN.raw
+
+
+### Singelton 계산 및 샘플 선정
+awk '{sum=0; for (i=7; i<=NF; i++) { sum+= $i } print $1"\t"sum}' KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.selectSIN.raw | head
+
+awk '{sum=0; for (i=7; i<=NF; i++) { sum+= $i } print $1"\t"sum}' \
+KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.selectSIN.raw | awk '15<= $2{print $1"\t"$1}' > rmSIN.txt
+
+
+ls -alhtr
+head rmSIN.txt
+wc -l rmSIN.txt
+
+### Singleton 샘플 제거
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING \
+--remove INPUTs/rmSIN.txt --make-bed \
+--out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN
+
+ls -alhtr
+wc -l *.fam
+
+
+
+######## 6.성별 불일치 제거 ########
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN \
+--check-sex --out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN
+
+ls -alhtr
+head KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.sexcheck
+grep OK KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.sexcheck | head
+grep PROBLEM KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.sexcheck | head
+
+
+### 성별불일치 샘플 선정
+grep PROBLEM KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.sexcheck | \
+awk '{print $1"\t"$2}' > rmSEX.txt
+
+
+
+
+### 성별불이치 샘플 제거
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN \
+--remove INPUTs/rmSEX.txt --make-bed \
+--out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.rmSEX
+
+ls -alhtr
+wc -l *.fam
+
+
+########### 마커정도관리 #############
+######## 1.저품질변이제거########
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN \
+--geno 0.05 --make-bed \
+--out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.rmLQSNPs 
+
+ls -alhtr
+wc -l *.bim
+
+
+######## 2.HWE ########
+plink --bfile KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.rmLQSNPs \
+--hwe 1e-6 --make-bed \
+--out KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.rmLQSNPs.rmHWE 
+
+ls -alhtr
+wc -l *.bim
+
+
+#################################
+########## IMPUTATION ##########
+################################
+
+######## 1.phasing ########
+cd ~/DATA/01_QC/02_IMPUTATION/Phasing/
+ls -alhtr
+
+## Phasing & imputation은 분석시간이 오래 걸려 OUTPUT 폴더에 저장하고
+## 시간여건 상 분석을 완료하지 못할 것을 대비하여 미리 준비된 파일을 사용함
+
+mkdir OUTPUT  ##결과 저장 폴더
+
+
+######## chr16 추출 (phsing은 chr 단위로 분석)
+plink --bfile ~/DATA/01_QC/01_QC/KOGO.rmLQSNP.rmLQSamples.rmPCA.rmKING.rmSIN.rmLQSNPs.rmHWE \
+--chr 16 --make-bed --out OUTPUT/KOGO.CHR16
+
+ls -alhtr OUTPUT/
+wc -l *.bim
+wc -l *.fam
+
+## Plink to VCF
+plink --bfile KOGO.CHR16 \
+--chr 16 --recode vcf --out OUTPUT/KOGO.CHR16
+
+bgzip -c KOGO.CHR16.vcf > KOGO.CHR16.vcf.gz
+tabix -f -p vcf KOGO.CHR16.vcf.gz
+
+
+
+######## Phasing
+## VCF로 phasing
+eagle --chrom 16 --bpStart 55000001 --bpEnd 55200000 \
+--vcf KOGO.CHR16.vcf.gz --geneticMapFile ../INPUTs/genetic_map_chr16_combined_b37_addCHR.txt \
+--allowRefAltSwap --numThreads 2 --vcfOutFormat z --outPrefix OUTPUT/phasing.chr16
+
+ls -alhtr OUTPUT/  ##결과 저장 폴더
+less -NS phasing.chr16.vcf.gz
+
+bcftools view --regions 16:55000001-55200000 KOGO.CHR16.vcf.gz | less -NS
+
+
+## Plink로 phasing
+eagle --bfile=KOGO.CHR16 --numThreads=4 \
+--geneticMapFile=../INPUTs/genetic_map_chr16_combined_b37_addCHR.txt \
+--chrom=16 --bpStart=55000001 --bpEnd=55200000 \
+--maxMissingPerSnp 0.3 --maxMissingPerIndiv 0.5 --outPrefix=OUTPUT/phasing.chr16
+
+
+######## haps to VCF
+gzip -dk phasing.chr16.haps.gz ## 압축 풀기
+ls -alhtr
+
+######## 결과 확인
+less -NS phasing.chr16.haps
+
+
+shapeit -convert --input-haps phasing.chr16 \
+--output-vcf OUTPUT/phasing.chr16.vcf \
+--output-log OUTPUT/phasing.chr16.vcf.log
+
+######## 결과 확인
+ls -alhtr
+less -NS phasing.chr16.vcf
+
+bgzip -c phasing.chr16.vcf > OUTPUT/phasing.chr16.vcf.gz ## 압축
+
+
+
+######## 2. Minimac4 ########
+cd ~/DATA/01_QC/02_IMPUTATION/Minimac4/
+
+mkdir OUTPUT
+
+######## Imputation using Minimac4
+minimac4 --mapFile ../INPUTs/genetic_map_chr16_combined_b37_addCHR.txt \
+--refHaps ../INPUTs/16.1000g.Phase3.v5.With.Parameter.Estimates.m3vcf.gz \
+--haps phasing.chr16.vcf.gz --chr 16 --start 55300001 --end 55310000 --window 10000 \
+--format DS,GT,GP --prefix OUTPUT/chr16_55300001_55310000_Minimac4 --cpu 2 
+
+
+######## 결과 확인
+ls -alhtr OUTPUT/
+less -NS chr16_55300001_55310000_Minimac4.dose.vcf.gz 
+head chr16_55300001_55310000_Minimac4.info 
+
+
+
+######## 3. IMPUTE4 ########
+cd ~/DATA/01_QC/02_IMPUTATION/IMPUTE4/
+
+mkdir OUTPUT
+
+
+######## Imputation using IMPUTE4
+#impute4 -int 55300001 55310000 -buffer 10000 -no_maf_align \
+#-h ../INPUTs/1000GP_Phase3_chr16.hap.gz -l ../INPUTs/1000GP_Phase3_chr16.legend.gz \
+#-m ../INPUTs/genetic_map_chr16_combined_b37.txt -g phasing.chr16.haps.gz \
+#-o_gz -o OUTPUT/chr16_55300001_55310000_IMPUTE4
+
+
+######## 결과 확인
+ls -alhtr OUTPUT/
+less -NS chr16_55300001_55310000_IMPUTE4.gen.gz
+
+
+######## Imputation quality score
+qctool -g chr16_55300001_55310000_IMPUTE4.gen.gz -snp-stats -threads 2 \
+-osnp OUTPUT/chr16_55300001_55310000_IMPUTE4_info
+
+
+######## 결과 확인
+ls -alhtr OUTPUT/
+less -NS chr16_55300001_55310000_IMPUTE4_info
+
+
+######## gen to VCF
+gen2vcf --gen-file chr16_55300001_55310000_IMPUTE4.gen.gz \
+--sample-file phasing.chr16.sample --chr 16 \
+--out OUTPUT/chr16_55300001_55310000_IMPUTE4.vcf.gz
+
+
+######## 결과 확인
+ls -alhtr OUTPUT/
+less -NS chr16_55300001_55310000_IMPUTE4.vcf.gz
+
+
+
+
+#########################
+##### Analysis tips #####
+#########################
+
+
+cd ~/DATA/01_QC/02_IMPUTATION/Phasing/
+
+
+# 1. 압축 
+bgzip -c phasing.chr16.vcf > phasing.chr16.vcf.gz
+tabix -f -p vcf phasing.chr16.vcf.gz
+
+# 2. 마커 추출
+bcftools view --regions 16:55000154,16:55000195 phasing.chr16.vcf.gz | less -NS
+bcftools view --regions 16:55000154-55035380 phasing.chr16.vcf.gz | less -NS
+bcftools view --targets ^16:55000154 phasing.chr16.vcf.gz | less -NS
+cat ../INPUTs/snpList.txt
+bcftools view --regions-file ../INPUTs/snpPOS.txt phasing.chr16.vcf.gz | less -NS
+16	55000154
+
+# 3. 샘플 추출
+bcftools view --samples ID00502,ID00503 phasing.chr16.vcf.gz | less -NS
+bcftools view --samples ^ID00502 phasing.chr16.vcf.gz | less -NS
+cat ../INPUTs/sampleList.txt
+bcftools view --samples-file ../INPUTs/sampleID.txt phasing.chr16.vcf.gz | less -NS
+ID00503
+
+# 4. Row 합치기
+bcftools view --targets 16:55000154 phasing.chr16.vcf.gz | bcftools view --samples ID00502,ID00503 | bgzip -c > phase.snp1.vcf.gz
+bcftools view --targets 16:55000195 phasing.chr16.vcf.gz | bcftools view --samples ID00502,ID00503 | bgzip -c > phase.snp2.vcf.gz
+
+bcftools concat --file-list ../INPUTs/filelist.txt | bgzip -c > phase.snp.vcf.gz
+
+# 5. Column 합치기
+bcftools view --samples ID00502 phase.snp.vcf.gz | bgzip -c > phase.sample1.vcf.gz
+bcftools view --samples ID00503 phase.snp.vcf.gz | bgzip -c > phase.sample2.vcf.gz
+
+tabix -f -p vcf phase.sample1.vcf.gz
+tabix -f -p vcf phase.sample2.vcf.gz
+
+bcftools merge --file-list ../INPUTs/samplelist.txt | bgzip -c > phase.sample.vcf.gz
+
+
+
+
+

@@ -1,0 +1,208 @@
+﻿###############################################
+### 1. Association - Single variant test
+###############################################
+### 1-1. Moving to the analysis path
+cd ./DATA/02_ASSO/01_EPACTS/
+
+
+### 1-2. Checking INPUT FILEs
+### - KOGO.vcf, KOGO.vcf.gz / imputation data generated in the previous step (16:54000023-)
+### - KOGO.Phenotype.ped / subject phenotype (ex. age, sex)
+
+less -NS KOGO.vcf.gz
+less -NS KOGO.HDL.ped
+
+
+### 1-3. IF INPUT FILE = KOGO.vcf
+### Compressing
+### - bgzip -c KOGO.vcf > ../04_OUTPUT/KOGO.vcf.gz
+### Indexing
+### - tabix -f -p vcf ../04_OUTPUT/KOGO.vcf.gz
+### There is no 'KOGO.vcf' file to reduce the current transfer time. Can be used by decompressing a 'KOGO.vcf.gz' file.
+### gunzip KOGO.vcf.gz
+
+
+### 1-4. IF INPUT FILE = KOGO.vcf.gz
+### Indexing
+### - tabix -f -p vcf ../04_OUTPUT/KOGO.vcf.gz
+
+##ls -althr KOGO.vcf.*
+### data size
+### - KOGO.vcf (18G) -> KOGO.vcf.gz (2.2G), KOGO.vcf.tbi (1.7K)
+
+
+### 1-5. Running the Single Variant Test 
+epacts-single \
+--vcf KOGO.vcf.gz \
+--ped KOGO.HDL.ped --pheno HDL --cov AGE --cov SEX -no-plot \
+--test q.linear --run 4 --field DS --min-mac 5 --min-maf 0.01 --min-callrate 0.95 --missing NA \
+--out ../04_OUTPUT/KOGO.HDL.single.q.linear --region 16:54770000-55780000
+
+
+### 1-6. Checking OUTPUT FILE(s)
+ls -alhtr ../04_OUTPUT/KOGO.HDL.single.q.linear*
+less -NS ../04_OUTPUT/KOGO.HDL.single.q.linear.epacts.gz
+
+
+
+########################################################
+### 2. Association - Gene-based test 
+########################################################
+### 2-1. Checking INFUT FILEs
+### - KOGO.Phenotype.ped / subject phenotype (ex. age, sex)
+### - KOGO.anno.vcf / annotated file of "KOGO.vcf.gz” file 
+###   * Annotation build : gencode v14 (hg19, GRCh37)
+
+
+### 2-2. Annotating
+#epacts anno -buildver hg19 \
+#-in KOGO.vcf.gz \
+#-out ../04_OUTPUT/KOGO.anno.vcf
+#bgzip -c ../04_OUTPUT/KOGO.anno.vcf > ../04_OUTPUT/KOGO.anno.vcf.gz 
+#tabix -f -p vcf ../04_OUTPUT/KOGO.anno.vcf.gz
+
+less -NS KOGO.anno.vcf.gz
+less -NS KOGO.vcf.gz
+
+
+### 2-3. Making group meaning gene XX
+epacts make-group \
+--vcf KOGO.anno.vcf.gz \
+--out ../04_OUTPUT/KOGO.gene.all.grp --format epacts --nonsyn
+
+less -NS ../04_OUTPUT/KOGO.gene.all.grp
+
+
+### 2-4. Running the Gene-Based Test 
+epacts-group --vcf KOGO.anno.vcf.gz \
+--ped KOGO.HDL.ped --groupf KOGO.gene.all.grp \
+--min-mac 5 --pheno HDL --cov AGE --cov SEX --test skat –no-plot  \
+--skat-o --unit 1 -min-callrate 0.90 --run 4 --field DS --missing NA \
+--out ../04_OUTPUT/KOGO.HDL.gene.skat  
+
+
+### 2-6. Checking OUTPUT FILE(s)
+ls -alhtr ../04_OUTPUT/KOGO.HDL.gene.skat*
+less -NS ../04_OUTPUT/KOGO.HDL.gene.skat.epacts
+
+
+
+###############################################
+### 3. Meta analysis
+###############################################
+### 3-1. Moving to the analysis path
+cd ../02_META/
+
+
+### 3-2. Checking INPUT FILEs
+less -NS KOGO.HDL.single.q.linear.epacts.gz 
+less -NS BBJ.HDL-C.autosome.txt
+head TITLE.txt
+
+### - BBJ.HDL.FINAL.txt / analysis results provided by Bio Bank Japan (BBJ)
+###   * URL: http://jenger.riken.jp/en/result
+###   * Search : High-density-lipoprotein cholesterol (HDL-C) (autosome)
+###   * File to download : BBJ.HDL-C.autosome.txt.gz
+###   * Command for uncompression : gzip -d BBJ.HDL-C.autosome.txt
+
+
+### 3-3. File formatting to use METAL tool
+### Input fiel 1. KOGO.HDL.single.q.linear.epacts.gz
+### 1 #CHROM  BEGIN   END     MARKER_ID       NS      AC      CALLRATE        MAF     PVALUE  BETA    SEBETA  TSTAT   R2
+### 2 16      54500021        54500021        16:54500021_G/A_16:54500021:G:A 35000   130.89  1       0.0018698       0.51816 2.5292  3.914   0.64619 1.1931e-05
+###
+### Input file 2. BBJ.HDL-C.autosome.txt
+### 1 SNP     CHR     POS     REF     ALT     Frq     Rsq     BETA    SE      P       LOG10P  N
+### 2 rs12922563      16      53001788        T       C       0.8626  0.751   0.003753        0.008767        0.6686  0.1748  70657
+###
+### => MARKER_ID	CHR	POS	REF	ALT	BETA	SE	PVALUE	N
+
+awk '$2 == 16 {print $2":"$3"_"$4"/"$5"_"$2":"$3":"$4":"$5"\t"$2"\t"$3"\t"$4"\t"$5"\t"$8"\t"$9"\t"$10"\t"$12}' BBJ.HDL-C.autosome.txt > ../04_OUTPUT/BBJ.HDL.txt
+cat TITLE.txt ../04_OUTPUT/BBJ.HDL.txt > ../04_OUTPUT/BBJ_meta_input.txt
+
+gunzip -c KOGO.HDL.single.q.linear.epacts.gz | tail -n+2 | \
+awk '{split($4,arr,":"); print $4"\t"$1"\t"$2"\t"arr[4]"\t"arr[5]"\t"$10"\t"$11"\t"$9"\t"$5}' > ../04_OUTPUT/KBA.HDL.txt
+cat TITLE.txt ../04_OUTPUT/KBA.HDL.txt > ../04_OUTPUT/KBA_meta_input.txt
+
+head ../04_OUTPUT/BBJ_meta_input.txt
+head ../04_OUTPUT/KBA_meta_input.txt
+
+
+### 3-4. Accessing the METAL
+metal
+
+
+### 3-5. Connecting column names between METAL and INPUT FILEs
+SCHEME STDERR
+MARKER MARKER_ID
+ALLELE ALT REF
+EFFECT BETA
+STDERR SE
+PVALUE PVALUE
+PROCESS BBJ_meta_input.txt
+PROCESS KBA_meta_input.txt
+OUTFILE ../04_OUTPUT/KBA_BBJ_META_HDL .txt   
+ANALYZE HETEROGENEITY 
+QUIT
+
+
+### 3-7. Checking OUTPUT FILE(s)
+ls -alhtr ../04_OUTPUT/KBA_BBJ_META_HDL*
+less -NS ../04_OUTPUT/KBA_BBJ_META_HDL1.txt
+
+
+
+###############################################
+### 4. PRS analysis
+###############################################
+### 4-1. Moving to the analysis path
+cd ../03_PRS/
+
+
+### 4-2. Checking INPUT FILEs
+head BBJ.HDL-C.autosome.txt
+less -NS KOGO.vcf.gz
+
+
+### 4-3. File formatting to use PRS-CS tool (GWAS summary statistic)
+awk '{print $1"\t"$5"\t"$4"\t"$8"\t"$10}' BBJ.HDL-C.autosome.txt > \
+../04_OUTPUT/BBJ.HDL.SS.txt
+head ../04_OUTPUT/BBJ.HDL.SS.txt
+
+### 4-4. File formatting to use PRS-CS tool (Genotype data)
+## vcf format -> plink format 
+plink --vcf KOGO.vcf.gz --make-bed --out ../04_OUTPUT/KOGO.HDL.PRS
+ls –ahl ../04_OUTPUT/KOGO.HDL.PRS*
+head ../04_OUTPUT/KOGO.HDL.PRS.bim
+
+## SNP ID -> rsID 
+awk '{print $2":"$3":"$4":"$5"\t"$1}' BBJ.HDL-C.autosome.txt > rsID_MAT
+head rsID_MAT
+plink --bfile KOGO.HDL.PRS --update-name rsID_MAT --make-bed --out ../04_OUTPUT/KOGO.HDL.PRS.rsID
+ls –ahl ../04_OUTPUT/KOGO.HDL.PRS.rsID*
+head ../04_OUTPUT/KOGO.HDL.PRS.rsID.bim
+
+## overlap SNP selection 
+grep -E "rs" KOGO.HDL.PRS.rsID.bim | awk '{print $2}' > ext_rsID_SNP
+plink --bfile KOGO.HDL.PRS.rsID --extract ext_rsID_SNP --make-bed --out ../04_OUTPUT/KOGO.HDL.PRS.FINAL
+head ../04_OUTPUT/KOGO.HDL.PRS.FINAL.bim
+
+
+### 4-5. Running the PRS-CS
+
+## sudo apt install pip
+## pip install scipy
+## pip install h5py
+
+python3 ./PRScs/PRScs.py --ref_dir=./ldblk_1kg_eas \
+--chrom=16 --bim_prefix=./KOGO.HDL.PRS.FINAL \
+--sst_file=./BBJ.HDL.SS.txt --n_gwas=136615 --out_dir=../04_OUTPUT/PRS_BETA
+
+head ../04_OUTPUT/PRS_BETA_pst_eff_a1_b0.5_phiauto_chr16.txt
+
+### 4-6. PRS scorin 
+plink --bfile KOGO.HDL.PRS.FINAL --allow-no-sex \
+ --out ../04_OUTPUT/HDL.PRS.OUT \
+ --score ../04_OUTPUT/PRS_BETA_pst_eff_a1_b0.5_phiauto_chr16.txt 2 4 6 header sum
+head ../04_OUTPUT/HDL.PRS.OUT.profile
+

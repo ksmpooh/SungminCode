@@ -1,0 +1,80 @@
+
+
+### KOGO Annotation Script
+
+pwd
+#rsync -avhP /BiO/kogo/DATA .
+cd DATA/03_ANNO
+ls
+
+
+##### 01_Manhattan plot
+
+cd 01_Manhattanplot
+ls
+cp Input/KOGO.HDL.ALL.epacts .
+
+R-3.6.0
+library(qqman)
+#.libPaths('/BiO/kogo/home/edu/R/x86_64-pc-linux-gnu-library/3.6')
+epacts <- read.table("KOGO.HDL.ALL.epacts")
+colnames(epacts) <- c("CHROM","BEGIN", "END", "MARKER_ID", "NS", "AC", "CALLRATE", "MAF", "PVALUE", "BETA", "SEBETA", "TSTAT", "R2")
+epacts_noNApval <- na.omit(epacts)
+pdf("manhattanplot.pdf")
+manhattan(epacts_noNApval, main="epacts", chr='CHROM', bp='BEGIN', p='PVALUE', snp='MARKER_ID', cex=0.5, cex.axis=0.8, col = c("blue4", "orange3"))
+dev.off()
+q()
+n
+
+ls
+cd ..
+
+
+##### 02_Regional plot 
+
+
+
+##### 03_FUMA
+
+
+
+##### 04_SNPnexus
+
+
+
+##### 05_SnpEff_VEP
+
+cd 05_SnpEff_VEP
+cp Input/KOGO_chr16.vcf .
+ls
+head KOGO_chr16.vcf
+
+### snpEff
+java -jar /BiO/kogo/apps/snpEff/snpEff.jar hg19 -v KOGO_chr16.vcf > KOGO_chr16.snpeff.vcf
+ls
+head KOGO_chr16.snpeff.vcf 
+
+### snpSift - dbNSFP
+java -jar /BiO/kogo/apps/snpEff/SnpSift.jar dbnsfp -db /BiO/kogo/apps/snpEff/db/dbNSFP2.9.3_chr16.txt.gz -v KOGO_chr16.snpeff.vcf > KOGO_chr16.snpeff.snpsift_dbnsfp.vcf
+ls
+head -50 KOGO_chr16.snpeff.snpsift_dbnsfp.vcf
+
+### snpSift - GWAS catalog
+java -jar /BiO/kogo/apps/snpEff/SnpSift.jar gwasCat -db /BiO/kogo/apps/snpEff/db/gwascatalog_chr16.txt -v KOGO_chr16.snpeff.vcf > KOGO_chr16.snpeff.snpsift_gwas.vcf
+ls
+head -20 KOGO_chr16.snpeff.snpsift_gwas.vcf
+
+### snpSift - filter
+java -jar /BiO/kogo/apps/snpEff/SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') | \
+(ANN[*].EFFECT has 'start_lost') | \
+(ANN[*].EFFECT has 'stop_gained') | \
+(ANN[*].EFFECT has 'stop_lost')" \
+KOGO_chr16.snpeff.snpsift_dbnsfp.vcf > KOGO_chr16.snpeff.snpsift_filter.vcf
+ls
+grep -cv "#" KOGO_chr16.snpeff.snpsift_filter.vcf
+
+### VEP
+/BiO/kogo/apps/ensembl-vep/vep --dir_cache /BiO/kogo/apps/ensembl-vep/cache -i KOGO_chr16.vcf -o KOGO_chr16.vep.txt --cache_version 104 --offline 
+head KOGO_chr16.vep.txt 
+
+

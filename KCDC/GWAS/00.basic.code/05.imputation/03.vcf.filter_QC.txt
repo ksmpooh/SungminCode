@@ -22,5 +22,20 @@ ls *.gz | cut -d"." -f4 | xargs -I {} -P 22 bash -c "bcftools reheader -h ../new
 
 bcftools reheader -h [new_header.txt] -o [output.vcf.gz] [input.vcf.gz]
 
-## sample name chagne
+## sample name change
 #bcftools reheader KBA.KOTRY.KD.discovery.IMPUTE4_IMPUTED.filterMAF0.01_INFO0.08.vcf.gz -s /BDATA/smkim/JG/00.rawData/sample_info/JG.IDupdate.NIHtobCODE.txt -o test.vcf.gz
+
+
+## marker couount and query
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2\n' KKY.7th.imputation_MINIMAC4.chr9_INFO0.8.filter.vcf.gz 
+
+ls *.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c  "bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2\n' {}.vcf.gz > ./marker/{}_marker.txt"
+
+
+## name change
+KBA.KNHANES.7th.Imputed_MINIMAC4.chr10.filter_INFO0.8.vcf.gz
+
+KKY.7th.imputation_MINIMAC4.chr4_INFO0.8.filter.vcf.gz
+
+ls *.gz | cut -d"." -f 4 | cut -d"_" -f 1 | xargs -I {} -P 22 bash -c "bcftools view KKY.7th.imputation_MINIMAC4.{}_INFO0.8.filter.vcf.gz -Oz > KBA.KNHANES.7th.Imputed_MINIMAC4.{}.filter_INFO0.8.vcf.gz"
