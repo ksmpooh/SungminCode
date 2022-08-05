@@ -5,6 +5,14 @@
 #103 : /DATA/smkim/JG/08.HLAseq/
 
 
+cd /DATA/smkim/JG/08.HLAseq/DATA
+
+plink --bfile JG.QCed.forHLAseq_intersect --update-name change.ID.txt --make-bed --out JG.QCed.forHLAseq_intersect_updateids
+plink --bfile JG.QCed.forHLAseq_intersect_updateids --update-chr change.chr.txt --make-bed --out JG.QCed.forHLAseq_intersect_updateids_updatechr
+
+awk '$5==0 || $6==0 {print $2}' JG.QCed.forHLAseq_intersect_updateids_updatechr.bim > 2nd.rmlist.txt
+plink --bfile JG.QCed.forHLAseq_intersect_updateids_updatechr --exclude 2nd.rmlist.txt --make-bed --out JG.QCed.forHLAseq_intersect_updateids_updatechr_rm2ndlist --allow-extra-chr
+
 
 cd /DATA/smkim/JG/08.HLAseq/DATA/HLAseq_plink
 
@@ -14,6 +22,97 @@ plink --vcf ../onlySNP/HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf
 plink --vcf ../onlySNP/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz --make-bed -out ./HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP_convertPLINK --allow-extra-chr --vcf-half-call m
 
 
+cd /DATA/smkim/JG/08.HLAseq/concordance/longDV
+
+plink --bfile ../../DATA/HLAseq_plink/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_convertPLINK --bmerge ../../DATA/JG.QCed.forHLAseq_intersect_updateids_updatechr --merge-mode 7 --out concordance --allow-extra-chr
+
+
+###다시 진행
+#공통변이 만 찾아서 다시 진행
+
+KCHIP data
+
+/DATA/smkim/JG/08.HLAseq/DATA/JG.QCed.forHLAseq_intersect_updateids_updatechr_rm2ndlist
+
+HLA Seq
+cd /DATA/smkim/JG/08.HLAseq/DATA/DV
+
+long
+/DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf
+
+short
+/DATA/smkim/JG/08.HLAseq/DATA/DV/0003.vcf
 
 
 
+bcftools query -f '%ID\n' /DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf > HLAseq.intersect.snpID.txt
+awk '{print $2}' /DATA/smkim/JG/08.HLAseq/DATA/JG.QCed.forHLAseq_intersect_updateids_updatechr_rm2ndlist.bim > kchip.snpID.txt
+cat HLAseq.intersect.snpID.txt kchip.snpID.txt | sort |uniq -c | awk '$1 ==2{print $0}' > HLAseq.kchip.intersect.snp.txt
+
+plink --bfile /DATA/smkim/JG/08.HLAseq/DATA/JG.QCed.forHLAseq_intersect_updateids_updatechr_rm2ndlist --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.kchip.QCed --allow-extra-chr
+
+
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.longreadseq.QCed --allow-extra-chr --vcf-half-call m
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0003.vcf --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.shortreadseq.QCed --allow-extra-chr --vcf-half-call m
+
+
+plink --bfile HLA.longreadseq.QCed --bmerge HLA.kchip.QCed --merge-mode 7 --out concordance_longkchip --allow-extra-chr
+plink --bfile HLA.shortreadseq.QCed --bmerge HLA.kchip.QCed --merge-mode 7 --out concordance_shortkchip --allow-extra-chr
+plink --bfile HLA.longreadseq.QCed --bmerge HLA.shortreadseq.QCed --merge-mode 7 --out concordance_longshort --allow-extra-chr
+
+
+
+### 초록 only short-read 
+
+# VEP
+
+bcftools query -f '6\t%POS\t%ID\t%REF\t%ALT\t%QUAL\t%FILTER\t%INFO\n' HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz > ../annotation/HLA.shortreadSeq.forANNO.vcf
+
+/BDATA/smkim/HLAseq/annotation
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i ./HLA.shortreadSeq.forANNO.vcf -o HLA.shortread.DV_VEP.vcf --offline --fork 20 --stats_text --force_overwrite
+
+
+##fileformat=VCFv4.1
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+
+awk '{print $2"\t"$3"\t"$2"_"$3"_"$4"_"$5"\t"$4"\t"$5"\t.\t.\t."}'
+
+awk '{print "6\t"$2"\t"$}
+
+# HAN에 없는거
+cd /BDATA/smkim/HLAseq/annotation
+contig	pos	ref	alt	ID	gnomad_eas_check
+awk '{print "6\t"$2"\t"$5"\t"$3"\t"$4"\t.\t.\t."}'
+
+
+awk '{print "6\t"$2"\t"$5"\t"$3"\t"$4"\t.\t.\t."}' shortredad_genoad_eas.check.txt > shortread.intersect.NoinHanREF.vcf
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i ./shortread.intersect.NoinHanREF.vcf -o ./noHanREF/HLA.shortread.DV.noHanREF_VEP.vcf --offline --fork 20 --stats_text --force_overwrite
+
+
+## long -read ID change
+
+cd /DATA/smkim/JG/08.HLAseq/afterIDchang
+
+
+plink --bfile /DATA/smkim/JG/08.HLAseq/DATA/JG.QCed.forHLAseq_intersect_updateids_updatechr_rm2ndlist --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.kchip.QCed --allow-extra-chr
+
+
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf --update-ids /DATA/smkim/JG/08.HLAseq/DATA/long_ID.check.table2.txt --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.longreadseq.QCed --allow-extra-chr --vcf-half-call m
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0003.vcf --extract HLAseq.kchip.intersect.snp.txt --make-bed --out HLA.shortreadseq.QCed --allow-extra-chr --vcf-half-call m
+
+
+
+plink --bfile HLA.longreadseq.QCed --bmerge HLA.kchip.QCed --merge-mode 7 --out concordance_longkchip --allow-extra-chr
+plink --bfile HLA.shortreadseq.QCed --bmerge HLA.kchip.QCed --merge-mode 7 --out concordance_shortkchip --allow-extra-chr
+plink --bfile HLA.longreadseq.QCed --bmerge HLA.shortreadseq.QCed --merge-mode 7 --out concordance_longshort --allow-extra-chr
+
+
+
+
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf --update-ids /DATA/smkim/JG/08.HLAseq/DATA/long_ID.check.table2.txt --make-bed --out HLA.longreadseq.short_intersect --allow-extra-chr --vcf-half-call m
+plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0003.vcf --make-bed --out HLA.shortreadseq.long_intersect --allow-extra-chr --vcf-half-call m
+
+plink --bfile HLA.longreadseq.short_intersect --bmerge HLA.shortreadseq.long_intersect --merge-mode 7 --out concordance_longshortintersect --allow-extra-chr

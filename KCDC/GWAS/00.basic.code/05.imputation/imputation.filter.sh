@@ -44,3 +44,19 @@ grep -v "^#" in.vcf | sort -k1,1V -k2n >> out.vcf
 ## n 옵션을 넣지 않으면, ## 숫자가 아닌 문자열로 정렬되어 
 ## 122134 다음에 12345가 오게 됩니다
 
+
+
+#### marker count
+
+bcftools query -f "%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2"
+
+cat *txt | awk '$5 >= 0.1 && $6 >= 0.8{print $0}' |wc -l 
+cat *txt | awk '$5 >= 0.05 && $5 < 0.1 && $6 >= 0.8{print $0}'|wc -l
+cat *txt | awk '$5 >= 0.01 && $5 < 0.05 && $6 >= 0.8{print $0}'|wc -l
+cat *txt | awk '$5 < 0.01 && $6 >= 0.8{print $0}'|wc -l
+
+
+cat *txt | awk '$5 >= 0.1{print $0}' |wc -l 
+cat *txt | awk '$5 >= 0.05 && $5 < 0.1{print $0}'|wc -l
+cat *txt | awk '$5 >= 0.01 && $5 < 0.05{print $0}'|wc -l
+cat *txt | awk '$5 < 0.01{print $0}'|wc -l

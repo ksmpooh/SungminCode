@@ -20,10 +20,10 @@ library(tidyverse)
 data %>% select(Sensitivity,Precision,Accuracy)
 
 head(df)
-par(mfrow=c(1,2))
+#par(mfrow=c(1,2))
 
 data <- read.table("concordance_0002_0003.by_sample.txt",header = T)
-data <- read.table("../../GATK/concordance/concordance_0002_0003.by_sample.txt",header = T)
+data <- read.table("../../gatk/concordance/concordance_0002_0003.by_sample.txt",header = T)
 
 head(data)
 data <- cbind(data, TP=(data$REF.REF + data$ALT_1.ALT_1 + data$ALT_2.ALT_2))

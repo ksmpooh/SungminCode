@@ -64,6 +64,24 @@ SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longTool.txt
 
 
 
+## long vs short in gatk
+
+mkdir concordance
+
+
+bcftools isec -p gatk HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+mkdir plink
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/onlySNP/gatk/plink
+
+plink --vcf ../0002.vcf --vcf-half-call m --make-bed --out longGATK --allow-extra-chr
+plink --vcf ../0003.vcf --vcf-half-call m --make-bed --out shortGATK --allow-extra-chr
+plink --bfile longGATK --bmerge shortGATK --merge-mode 7 --out concordance --allow-extra-chr
+
+#3582420 overlapping calls, 3414022 nonmissing in both filesets.
+#2255643 concordant, for a concordance rate of 0.6607.
+
+
 
 
 ### long-read : DV vs GATK

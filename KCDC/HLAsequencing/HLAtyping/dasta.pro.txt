@@ -1,0 +1,10 @@
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools view --max-alleles 2 --exclude-types indels |bcftools query -f "%POS\n" | sort |uniq -c | awk '$1 !=1{print $0}
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools view --max-alleles 2 --exclude-types indels |bcftools query -f "%POS\n" |wc -l
+
+
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools view --max-alleles 2 --exclude-types indels |
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools norm -D |less -NS
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools norm -D | bcftools query -f "%POS\t%REF\t%ALT\n" |wc -l
+
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools view --max-alleles 2 --exclude-types indels |  bcftools norm -D | bcftools query -f "%POS\t%REF\t%ALT\n" |wc -l
+bcftools sort 01.HLAgeneMerge/HLAtyping.VCF.NIH19KT0001.vcf | bcftools view --max-alleles 2 --exclude-types indels |  bcftools norm -D | bcftools query -f "%POS\n" |sort |uniq -c | awk '$1 !=1{print $0}' | wc -l
