@@ -1,5 +1,5 @@
 ## concordance test vs KCHIP
-## DV 랑 gatk 이랑 너무 달라서 체크해 보려고 함
+## DV 랑 gatk 이랑 너무 달라서 체크해 보려고 함 -> 문제점 : long-read ID 섞임 문제 2<->4 3<->5
 
 
 #103 : /DATA/smkim/JG/08.HLAseq/

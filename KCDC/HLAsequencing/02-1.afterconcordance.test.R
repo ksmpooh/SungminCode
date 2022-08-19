@@ -1,4 +1,4 @@
-setwd("~/Desktop/KCDC/long_read/2022/VCF/onlySNP/DV/concordance/")
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/DV/concordance")
 data <- read.table("QulityMetricx_longshort.txt", header = T)
 
 data <- cbind(data, TP=(data$REF.REF + data$ALT_1.ALT_1 + data$ALT_2.ALT_2))
@@ -14,6 +14,18 @@ data %>% select(sample,Sensitivity,Precision,Accuracy) %>%
   ggplot(aes(x=type,y=Val)) +
   geom_boxplot()
 
+data %>% select(Sensitivity,Precision,Accuracy) %>%
+  pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>%
+  ggplot(aes(x=type,y=Val)) +
+  geom_boxplot() + 
+  coord_cartesian(ylim = c(0.5, 1))
+
+
+
+data %>% select(Sensitivity,Precision,Accuracy) %>%
+
+summary(data %>% select(Sensitivity,Precision,Accuracy))
+
 
 library(tidyverse)
 
@@ -22,8 +34,13 @@ data %>% select(Sensitivity,Precision,Accuracy)
 head(df)
 #par(mfrow=c(1,2))
 
-data <- read.table("concordance_0002_0003.by_sample.txt",header = T)
-data <- read.table("../../gatk/concordance/concordance_0002_0003.by_sample.txt",header = T)
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/")
+data <- read.table("DV/concordance/QulityMetricx_longshort.txt", header = T)
+data <- read.table("gatk/concordance/QulityMetricx_longshort.txt", header = T)
+
+
+#data <- read.table("concordance_0002_0003.by_sample.txt",header = T)
+#data <- read.table("../../gatk/concordance/concordance_0002_0003.by_sample.txt",header = T)
 
 head(data)
 data <- cbind(data, TP=(data$REF.REF + data$ALT_1.ALT_1 + data$ALT_2.ALT_2))
@@ -41,12 +58,17 @@ b <- data
 a$Tool <- "DV"
 b$Tool <- "GATK"
 df <- rbind(a,b)
-
+head(df)
 df %>% select(Tool,sample,Sensitivity,Precision,Accuracy) %>%
   pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>%
   ggplot(aes(x=type,y=Val,fill=Tool)) +
   geom_boxplot()
   
+summary(df$Accuracy)
+df %>% select(Tool,Sensitivity,Precision,Accuracy) %>%
+  pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>%
+  ggplot(aes(x=type,y=Val,fill=Tool)) +
+  geom_boxplot()
 
 
 

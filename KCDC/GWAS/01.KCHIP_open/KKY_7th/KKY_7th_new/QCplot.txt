@@ -1,0 +1,158 @@
+setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+#setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.18), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY 7th 1stQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.6, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15 | 17.6 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,1), cex=1, pch=16)
+dev.off()
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/02.1stQC/")
+setwd("~/")
+
+pca <- read.table("PCA_AfterRmBad.txt", header=T)
+
+
+head(pca)
+
+#pdf("../PDF/KKY.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     xlim=c(-0.8, 0.1), ylim=c(-0.2,0.8),
+     #           xlim=c(-0.2, 0.2), ylim=c(-0.2,0.2),
+     xlab="PC1", ylab="PC2", main="KKY 7th 1stQC PCA", cex=0.7, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,1), cex=0.7, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]
+dim(rmList)
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+setwd("~/")
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.1st_missing-het.pdf", height = 7, width = 10)
+#png("KKY.1stQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     #xlim=c(12,24), ylim=c(0,0.18),
+     xlim=c(12,22), ylim=c(0,0.10), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="KKY 7th 2ndQC missing-het", col=rgb(0,0,1,0.5), cex=0.8, pch=16)
+abline(v=15.2, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.2 | 17< lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.2 | 17 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,1), cex=0.8, pch=16)
+dev.off()
+
+
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+#setwd("~/")
+
+pca <- read.table("PCA1.txt", header=T)
+#pca <- read.table("PCA2.txt", header=T)
+
+head(pca)
+
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-0.9, 0.3), ylim=c(-0.3,0.3),
+     xlab="PC1", ylab="PC2", main="KKY 7th 2ndQC PCA", cex=0.7, pch=16)
+abline(v=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.07, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.07 | 0.07 < pca$PC1 | pca$PC2 < -0.07 | 0.07 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,1), cex=0.7, pch=16)
+dev.off()
+
+
+
+library(tidyverse)
+setwd("/Volumes/DATA/KKY/7th_2022/03.2ndQC/")
+setwd("~/")
+
+#setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/LD/2nd/")
+pca <- read.table("PCA_ethnic.txt",header = T)
+#pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/ethical/1000GP_Phase3.sample",header = T)
+head(samplegnomad)
+case <- pca %>% select("FID") %>% filter(grepl("NIH",FID))
+#case <- pca %>% select("FID")
+
+#control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+#control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+#control$GROUP <- "CONTROL"
+table(df$GROUP)
+df <- rbind(gnomad,case)
+#df <- rbind(df,control)
+head(df)
+df <- merge(pca,df,by = "FID")
+#png("JG.LD.ethnic.PCA.png",height = 800,width = 800)
+#png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="KKY 7th Ethnic PCA",
+     xlim = c(-0.2,0.2),ylim = c(-0.2,0.2),
+     #cex.main = 1,
+     cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.8), cex = 1 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.8), cex = 1 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.8), cex = 1 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.8), cex = 1 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.8), cex = 1 , pch = 16)
+#points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.8), cex = 1 , pch = 16)
+abline(v=0.04, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+color <- c(
+  #  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+  rgb(0,1,0,1),
+  rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  rgb(1,0,1,1))
+
+list <- c("KKY","SAS","AFR","AMR","EAS","EUR")
+
+legend("topright",list,col = color,cex = 0.8,pch = 16,pt.cex = 0.5)
+#legend("bottomright",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+legend("bottom",c("# of Markers : 5,214"),box.lwd = 0,box.col = "white",bg = "white")
+
+

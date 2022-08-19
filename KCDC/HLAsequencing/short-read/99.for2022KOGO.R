@@ -31,7 +31,7 @@ ref$ID <- paste0(ref$chr,":",ref$hg19,"_",ref$ref,"/",ref$alt)
 
 table(long$ID %in% ref$ID)
 
-
+dim(ref)
 
 library(RColorBrewer)
 myCol <- brewer.pal(3, "Pastel2")
@@ -79,11 +79,11 @@ colnames(short1)<- c("contig","pos","ref","alt","ID","gnomad_eas_check")
 #write.table(short1,"~/Desktop/KCDC/long_read/2022/forKOGO2022/shortredad_genoad_eas.check.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 head(gnomad_eas)
 
-
+head(short)
 venn.diagram(
-  x=list(df2$ID,ref$ID,gnomad_eas$ID),
+  x=list(short$ID,ref$ID,gnomad_eas$ID),
   category.names = c("1.HLAsequencing","2.HanREF","3.gnomAD_EAS"),
-  filename = "gnomAD-EAS_1types_calling.png",
+  filename = "gnomAD-EAS_types_calling.png",
   output = TRUE,
   
   imagetype="png" ,
@@ -108,6 +108,36 @@ venn.diagram(
   cat.fontfamily = "sans",
   rotation = 1
 )
+
+venn.diagram(
+  x=list(short$ID,ref$ID,gnomad$ID),
+  category.names = c("1.HLAsequencing","2.HanREF","3.gnomAD"),
+  filename = "gnomAD_types_calling.png",
+  output = TRUE,
+  
+  imagetype="png" ,
+  height = 600 , 
+  width = 600 , 
+  resolution = 400,
+  compression = "lzw",
+  
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  cex = .4,
+  #fontface = "bold",
+  fontfamily = "sans",
+  
+  cat.cex = 0.4,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 18, 140),
+  cat.dist = c(0.055, 0.055, 0.05),
+  cat.fontfamily = "sans",
+  rotation = 1
+)
+
 
 19778 + 123085
 19832 + 123192
@@ -154,6 +184,17 @@ library(tidyverse)
 af_check <- af_check %>%  filter(gnomad_eas_check == "Yes")
 cor(af_check$EAS,af_check$V5) # [1] 0.8531091
 
+ggplot(af_check, aes(x=EAS,y=V5)) +
+  geom_point(size=1,shape=23) +
+  geom_smooth(method = lm) +
+  labs(title = "Compare Allele frequency" ,
+       x= "gnomAD EAS",y="HLA sequencing") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_poly_line()
+
+library(ggpmisc)
+
+
 
 ## after annotation
 
@@ -172,7 +213,9 @@ head(anno_out)
 str(anno_out)
 anno_out$noInHanREF_count <- as.numeric(anno_out$noInHanREF_count)
 anno_out$ALL_count <- as.numeric(anno_out$ALL_count)
-
+anno_out$ALL_per <- anno_out$ALL_count/sum(anno_out$ALL_count) * 100
+anno_out$noInHanREF_per <- anno_out$noInHanREF_count/sum(anno_out$noInHanREF_count) * 100
+anno_out <- anno_out[,c(1,2,4,3,5)]
 #write.csv(anno_out,"anno_Result.csv")
 anno_out %>% pivot_longer(ALL_count,)
 

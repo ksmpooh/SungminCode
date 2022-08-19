@@ -1,0 +1,396 @@
+#102
+# geno call 준비
+
+cd /BDATA/smkim/CAD/00.rawData/sampleINFO
+cut -d"/" -f 6 CAD.2019.celfile.list_g1.txt > ./only.NIH.ID/CAD.2019.celfile.list_g1.celname.txt
+cut -d"/" -f 6 CAD.2019.celfile.list_g2.txt > ./only.NIH.ID/CAD.2019.celfile.list_g2.celname.txt
+cut -d"/" -f 8 CAD.2020.celfile.list_g3.txt > ./only.NIH.ID/CAD.2020.celfile.list_g3.celname.txt
+
+cd /BDATA/smkim/CAD/00.rawData/sampleINFO/only.NIH.ID
+header 지우고
+  3540 CAD.2019.celfile.list_g1.celname.txt
+  3955 CAD.2019.celfile.list_g2.celname.txt
+  3182 CAD.2020.celfile.list_g3.celname.txt
+
+cd /BDATA/smkim/CAD/00.rawData/sampleINFO/only.NIH.ID
+cat CAD.2019.celfile.list_g1.celname.txt ../../../02.1stQC/1st.QC.out/g1.1st.qc.out.txt | sort |uniq -c | awk '$1==1{print $2}' > ../2ndQC.cel.path/CAD.2019.celfile.list_g1.2ndQC.txt
+cat CAD.2019.celfile.list_g2.celname.txt ../../../02.1stQC/1st.QC.out/g2.1st.qc.out.txt | sort |uniq -c | awk '$1==1{print $2}' > ../2ndQC.cel.path/CAD.2019.celfile.list_g2.2ndQC.txt
+cat CAD.2020.celfile.list_g3.celname.txt ../../../02.1stQC/1st.QC.out/g3.1st.qc.out.txt | sort |uniq -c | awk '$1==1{print $2}' > ../2ndQC.cel.path/CAD.2020.celfile.list_g3.2ndQC.txt
+
+cd /BDATA/smkim/CAD/00.rawData/sampleINFO/2ndQC.cel.path
+
+  3489 CAD.2019.celfile.list_g1.2ndQC.txt
+  3888 CAD.2019.celfile.list_g2.2ndQC.txt
+  3138 CAD.2020.celfile.list_g3.2ndQC.txt
+
+header 수정 : 1. full path 설정  2. line1 에 celfiles 추가
+
+g1 : /ADATA/ghyoon/CAD/CEL/
+g2 : /ADATA/ghyoon/CAD/CEL/
+g3 : /BDATA/smkim/CAD/00.rawData/CEL/2020_pro/
+
+
+## geno call 진행
+cd /BDATA/smkim/CAD/01.genocall
+
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/2ndQC.cel.path/CAD.2019.celfile.list_g1.2ndQC.txt /BDATA/smkim/CAD/01.genocall/2nd/g1/
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/2ndQC.cel.path/CAD.2019.celfile.list_g2.2ndQC.txt /BDATA/smkim/CAD/01.genocall/2nd/g2/
+sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/2ndQC.cel.path/CAD.2020.celfile.list_g3.2ndQC.txt /BDATA/smkim/CAD/01.genocall/2nd/g3/
+
+
+
+==========여기까지 진행 중===========
+
+## call to plink
+cd /BDATA/smkim/CAD/01.genocall/2nd/g1/plink
+
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/CAD/03.2ndQC/g1/CAD.g1.2ndQC
+
+cd /BDATA/smkim/CAD/01.genocall/2nd/g2/plink
+
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/CAD/03.2ndQC/g2/CAD.g2.2ndQC
+
+
+cd /BDATA/smkim/CAD/01.genocall/2nd/g3/plink
+
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/CAD/03.2ndQC/g3/CAD.g3.2ndQC
+
+
+
+
+# snpolisher
+cd /BDATA/smkim/CAD/03.2ndQC
+
+plink --bfile g1/CAD.g1.2ndQC --extract /BDATA/smkim/CAD/01.genocall/2nd/g1/classification/Recommended.ps --make-bed --out g1/CAD.g1.2ndQC_snpolisher
+plink --bfile g2/CAD.g2.2ndQC --extract /BDATA/smkim/CAD/01.genocall/2nd/g2/classification/Recommended.ps --make-bed --out g2/CAD.g2.2ndQC_snpolisher
+plink --bfile g3/CAD.g3.2ndQC --extract /BDATA/smkim/CAD/01.genocall/2nd/g3/classification/Recommended.ps --make-bed --out g3/CAD.g3.2ndQC_snpolisher
+
+
+# missing -het
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher --missing --out miss-het/g1.MISS
+plink --bfile g2/CAD.g2.2ndQC_snpolisher --missing --out miss-het/g2.MISS
+plink --bfile g3/CAD.g3.2ndQC_snpolisher --missing --out miss-het/g3.MISS
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher --het --out miss-het/g1.HET
+plink --bfile g2/CAD.g2.2ndQC_snpolisher --het --out miss-het/g2.HET
+plink --bfile g3/CAD.g3.2ndQC_snpolisher --het --out miss-het/g3.HET
+
+
+
+
+
+######## missing-het
+par(mfrow = c(1,3))
+dev.off()
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/miss-het/")
+#setwd("~/")
+miss <-read.table("g1.MISS.imiss",header = T)
+het <- read.table("g1.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.2nd_missing-het.pdf", height = 7, width = 10)
+#png("KKY.2ndQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="CAD g1 2ndQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=16, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 16 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16 | 17.5 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "g1.rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+head(rmList)
+
+miss <-read.table("g2.MISS.imiss",header = T)
+het <- read.table("g2.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.2nd_missing-het.pdf", height = 7, width = 10)
+#png("KKY.2ndQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="CAD g2 2ndQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15.7, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.7, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.7 | 17.7 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.7 | 17.7 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+#dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.7 | 17.7 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+head(rmList)
+
+
+
+miss <-read.table("g3.MISS.imiss",header = T)
+het <- read.table("g3.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+#pdf("../PDF/KKY.2nd_missing-het.pdf", height = 7, width = 10)
+#png("KKY.2ndQC.PCA.png", height = 800, width = 800)
+plot(lowSample$HET, lowSample$F_MISS, 
+     xlim=c(12,24), ylim=c(0,0.1), 
+     xlab="heterozygosity rate",
+     ylab="missing rate", main="CAD g3 2ndQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=17.5, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 15.5 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 15.5 | 17.5 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17.5 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "g3.rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+head(rmList)
+
+
+########## server
+cd /BDATA/smkim/CAD/02.2ndQC
+R
+
+#
+miss <-read.table("g1/g1.MISS.imiss",header = T)
+het <- read.table("g1/g1.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 16 | 17.5 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "g1/g1.rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+
+#g2
+miss <-read.table("g2/g2.MISS.imiss",header = T)
+het <- read.table("g2/g2.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.7 | 17.7 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "g2/g2.rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+
+#g3
+miss <-read.table("g3/g3.MISS.imiss",header = T)
+het <- read.table("g3/g3.HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17.5 < lowSample$HET,]
+write.table(rmList[,c(1:2)], "g3/g3.rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+dim(rmList)
+#
+
+
+
+##########
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher --remove g1/g1.rmLQsamples.txt --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample
+plink --bfile g2/CAD.g2.2ndQC_snpolisher --remove g2/g2.rmLQsamples.txt --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample
+plink --bfile g3/CAD.g3.2ndQC_snpolisher --remove g3/g3.rmLQsamples.txt --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample
+
+####### PCA
+mkdir PCA1
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning
+
+
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --extract g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --extract g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --extract g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA1/g1.PCA.txt
+flashpca_x86-64 --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA1/g2.PCA.txt
+flashpca_x86-64 --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA1/g3.PCA.txt
+
+
+mkdir PCA2
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning
+
+
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --extract g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --extract g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --extract g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA2/g1.PCA.txt
+flashpca_x86-64 --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA2/g2.PCA.txt
+flashpca_x86-64 --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA2/g3.PCA.txt
+
+
+mkdir PCA3
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning
+
+
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --extract g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --extract g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --extract g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA3/g1.PCA.txt
+flashpca_x86-64 --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA3/g2.PCA.txt
+flashpca_x86-64 --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA3/g3.PCA.txt
+
+
+mkdir PCA4
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.01 --chr 1-5,7-13,15-22 --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning
+
+
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --extract g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --extract g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --extract g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned
+
+flashpca_x86-64 --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA4/g1.PCA.txt
+flashpca_x86-64 --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA4/g2.PCA.txt
+flashpca_x86-64 --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned --outpc ./PCA4/g3.PCA.txt
+
+
+
+
+
+
+
+
+
+#
+par(mfrow = c(1,3))
+
+dev.off()
+
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/PCA/")
+#setwd("~/")
+
+pca <- read.table("g1.PCA.txt", header=T)
+
+#pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.7),
+     #     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="CAD g1 2ndQC PCA", cex=0.9, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.9), cex=1, pch=16)
+
+dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "g1.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/PCA/")
+#setwd("~/")
+
+pca <- read.table("g2.PCA.txt", header=T)
+
+#pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.7),
+     #     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="CAD g2 2ndQC PCA", cex=0.9, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.09, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.11, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.10 | 0.09 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.10 | 0.09 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.9), cex=1, pch=16)
+
+dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.09 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "g2.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/PCA/")
+#setwd("~/")
+
+pca <- read.table("g3.PCA.txt", header=T)
+
+#pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.7),
+     #     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="CAD g3 2ndQC PCA", cex=0.9, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.9), cex=1, pch=16)
+
+dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "g3.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+##
+pca <- read.table("g1.PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "g1.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+pca <- read.table("g2.PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.09 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "g2.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+pca <- read.table("g3.PCA.txt", header=T)
+dim(rmList)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]
+write.table(rmList[,c(1:2)], "g3.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+## qc out list
+cat ../g1/rmLQsamples.txt ../PCA/g1.rmPCA.txt > g1.2nd.qc.out.txt
+cat ../g2/rmLQsamples.txt ../PCA/g2.rmPCA.txt > g2.2nd.qc.out.txt
+cat ../g3/rmLQsamples.txt ../PCA/g3.rmPCA.txt > g3.2nd.qc.out.txt

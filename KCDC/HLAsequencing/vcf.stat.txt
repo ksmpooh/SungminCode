@@ -36,6 +36,7 @@ ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools query -f "6\t%PO
 bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
 
 ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz | bgzip -c > ./onlySNP/{}.onlySNP.vcf.gz'
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz -o ./onlySNP/{}.onlySNP.vcf.gz'
 
 
 0.4 GATK SNP id change

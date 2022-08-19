@@ -1,0 +1,105 @@
+## kchip
+2019년도에 생산된 장기이식 샘플 중, QC out된 샘플 제거하고 HLA sequencing 60개가 포함된 샘플만 가지고 genotype calling 진행
+
+
+cd /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink
+
+--chr 6 --from-bp 28477797 --to-bp 33448354 --geno 0.05 --hwe 1e-6 --make-bed --out JG.QCed.forHLAseq
+
+
+## long-read ID change
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF
+cd /DATA/smkim/HLA_seq/Final.VCF  #101
+
+
+
+#ls ./DV/HLA.Longread.*gz | sed "s/vcf.gz//g" | sed "s/.\/DV\///g" | xargs -I {} -P 2 bash -c "bcftools reheader -s ./ID.change.txt ./DV/{}vcf.gz -o ./Final.VCF/{}sampleIDCheck.vcf.gz"
+#ls ./GATK/HLA.Longread.*gz | sed "s/vcf.gz//g" | sed "s/.\/GATK\///g" | xargs -I {} -P 2 bash -c "bcftools reheader -s ./ID.change.txt ./GATK/{}vcf.gz -o ./Final.VCF/{}sampleIDCheck.vcf.gz"
+
+
+bcftools reheader -s ./ID.change.txt ./DV/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.vcf.gz -o ./Final.VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDcheck.vcf.gz
+bcftools reheader -s ./ID.change.txt ./DV/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.updateID.vcf.gz -o ./Final.VCF//HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.updateID.sampleIDcheck.vcf.gz
+
+bcftools reheader -s ID.change.txt ./GATK/HLA.Longread.Seq.GATK.recal.pass.vcf.gz -o ./Final.VCF/HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.vcf.gz
+bcftools reheader -s ID.change.txt ./GATK/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz -o ./Final.VCF/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.sampleIDcheck.vcf.gz
+
+ls *gz | xargs -I{} -P 4 bash -c 'tabix -f -p vcf {}'
+ls *gz | xargs -I{} -P 32 bash -c 'tabix -f -p vcf {}'
+
+
+
+### only SNP
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 1 bash -c "bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz -o ./onlySNP/{}.onlySNP.vcf.gz"
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 1 bash -c "bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz -o {}.onlySNP.vcf.gz"
+
+
+HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.vcf.gz
+HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.sampleIDcheck.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.vcf.gz
+
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.updateID.sampleIDcheck.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling_unfiltered.updateID.vcf.gz
+
+#"bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}.vcf.gz | bgzip -c > ./{}_SNPIDupdate.vcf.gz"
+##### GATK : onlysnp -> id change
+import os,glob
+dfs = glob.glob("*GATK*.gz")
+for df in dfs:
+    os.system("bcftools view --max-alleles 2 --exclude-types indels %s | bcftools annotate --set-id \'%%CHROM\\_%%POS\\_%%REF\\_%%ALT\' | bgzip -c > ./onlySNP/%s"%(df,df.replace(".vcf.gz",".onlySNP.SNPIDupdate.vcf.gz")))
+    #print("bcftools view --max-alleles 2 --exclude-types indels %s | bcftools annotate --set-id \'%%CHROM\\_%%POS\\_%%REF\\_%%ALT\' | bgzip -c > ./onlySNP/%s"%(df,df.replace(".vcf.gz",".onlySNP.SNPIDupdate.vcf.gz")))
+
+
+##### DV : onlysnp 
+import os,glob
+dfs = glob.glob("*Deep*.gz")
+for df in dfs:
+    os.system("bcftools view --max-alleles 2 --exclude-types indels %s -o ./onlySNP/%s"%(df,df.replace(".vcf.gz",".onlySNP.vcf.gz")))
+
+
+
+### 비교
+
+
+cd  /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP
+0000.vcf - VCF1 만 있는 것
+0001.vcf - VCF2 만 있는 것 
+0002.vcf - 공통 마커 VCF1
+0003.vcf - 공통 마커 VCF2
+
+
+HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.onlySNP.SNPIDupdate.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.updateID.sampleIDcheck.onlySNP.vcf.gz
+HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.sampleIDcheck.onlySNP.SNPIDupdate.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.onlySNP.SNPIDupdate.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling_unfiltered.updateID.onlySNP.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.updateID.onlySNP.SNPIDupdate.vcf.gz
+
+- longread
+bcftools isec -p HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.onlySNP.SNPIDupdate.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+
+- shortread
+bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP.SNPIDupdate.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+- GATK (long short)
+bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.onlySNP.SNPIDupdate.vcf.gz HLA.Shortread.Seq.GATK.recal.pass.onlySNP.SNPIDupdate.vcf.gz
+
+- DV (long short)
+bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+
+
+
+
+ls *vcf | xargs -I{} -P 4 bash -c "bcftools query -f '%POS\t%REF\t%ALT\t%AF\n' {} > {}.txt"
+
+
+mkdir concordance
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt

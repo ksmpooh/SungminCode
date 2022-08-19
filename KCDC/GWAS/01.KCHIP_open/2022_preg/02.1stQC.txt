@@ -29,14 +29,15 @@ lowSample <- merge(miss, het, by="FID")
 plot(lowSample$HET, lowSample$F_MISS, 
      xlim=c(12,24), ylim=c(0,0.15), 
      xlab="heterozygosity rate",
-     ylab="missing rate", main="PREG 1stQCmissing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
+     ylab="missing rate", main="PREG 1stQC missing-het", col=rgb(0,0,1,0.5), cex=1, pch=16)
 abline(v=15.5, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(v=17.2, col=rgb(1,0,0,1), lty=3, lwd=2)
 abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
 points(lowSample[lowSample$HET < 15.5 | 17.2 < lowSample$HET | 0.03 < lowSample$F_MISS,]$HET,
        lowSample[lowSample$HET < 15.5 | 17.2 < lowSample$HET | 0.03 < lowSample$F_MISS,]$F_MISS,
-       col=rgb(1,0,0,0.5), cex=1, pch=16)
+       col=rgb(1,0,0,1), cex=1, pch=16)
 dev.off()
+
 
 rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 15.5 | 17.2 < lowSample$HET,]
 write.table(rmList[,c(1:2)], "rmLQsamples.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
@@ -82,21 +83,26 @@ setwd("~/")
 #setwd("~/")
 
 #pca <- read.table("PCA.txt", header=T)
-pca <- read.table("PCA2.txt", header=T)
-#pca <- read.table("PCA.v2.txt", header=T)
+#pca <- read.table("PCA2.txt", header=T)
+pca <- read.table("PCA3.txt", header=T)
+pca <- read.table("PCA4.txt", header=T)
+
 
 head(pca)
-
-pdf("./PREG.1st.QC_PCA2.pdf", height = 10, width = 10)
+#dev.off()
+#pdf("./PREG.1st.QC_PCA2.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
-#     xlim=c(-1, 1), ylim=c(-1,1),
-     xlab="PC1", ylab="PC2", main="PREG 1st QC PCA2", cex=0.5, pch=16)
-abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+     #     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="PREG 1st QC PCA4", cex=0.5, pch=16)
+abline(v=-0.055, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.055, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.06, col=rgb(1,0,0,0.5), lty=3, lwd=2)
 points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
        pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.6), cex=0.5, pch=16)
+points(pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]$PC2,
        col=rgb(1,0,0,0.6), cex=0.5, pch=16)
 legend(box.lwd = 0,box.col = "white",bg = "white",cex = 0.5,
        x = 0.1,y=-0.2,
@@ -110,3 +116,27 @@ dim(rmList)
 
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
+
+
+
+pca <- read.table("PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]
+dim(rmList)
+pca <- read.table("PCA2.txt", header=T)
+rmList <- pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]
+dim(rmList)
+pca <- read.table("PCA3.txt", header=T)
+rmList <- pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]
+dim(rmList)
+pca <- read.table("PCA4.txt", header=T)
+rmList <- pca[pca$PC1 < -0.055 | 0.055 < pca$PC1 | pca$PC2 < -0.06 | 0.06 < pca$PC2,]
+dim(rmList)
+dim(rmList)
+
+
+
+PCA 문제가 있는것 같아서..king 확인
+## king check
+
+nohup king -b PREG.1stQC_snpolisher_rmLQsample_pruned.bed --related --degree 2 --prefix king/king1 > king/RESULT1.txt &
+nohup king -b PREG.1stQC_snpolisher.bed --related --degree 2 --prefix king/king2 > king/RESULT2.txt &
