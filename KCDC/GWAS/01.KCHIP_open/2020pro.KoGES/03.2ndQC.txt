@@ -14,7 +14,7 @@ sh geno.sh /BDATA/smkim/2020_KoGES/00.rawData/2nd.genocall.celpath.txt /BDATA/sm
 ########################### 진행중
 
 cd /BDATA/smkim/2020_KoGES/01.genocall/2nd/plink
-plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/2020_KoGES/02.2ndQC/KoGES.2020pro.2ndQC
+plink --ped Axiom_KBAv1.1.ped --map Axiom_KBAv1.1.map --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out /BDATA/smkim/2020_KoGES/03.2ndQC/KoGES.2020pro.2ndQC
 
 cd /BDATA/smkim/2020_KoGES/02.2ndQC
 
@@ -74,7 +74,7 @@ dim(rmList)
 plink --bfile KoGES.2020pro.2ndQC_snpolisher --remove rmLQsamples.txt --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample
 
 
-
+mkdir PCA1
 plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out ./PCA1/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruning
 plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample --extract ./PCA1/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out ./PCA1/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruned
 
@@ -82,6 +82,7 @@ flashpca_x86-64 --bfile ./PCA1/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruned 
 
 
 #PCA2
+mkdir PCA2
 plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out ./PCA2/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruning
 plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample --extract ./PCA2/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruning.prune.in --make-bed --out ./PCA2/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruned
 
@@ -89,45 +90,161 @@ flashpca_x86-64 --bfile ./PCA2/KoGES.2020pro.2ndQC_snpolisher_rmLQsample_pruned 
 
 
 
-
-#PCA2 선택
+#PCA1 선택
 
 setwd("/Volumes/DATA/KCHIPQC/2020_KoGES/2nd/")
 setwd("~/")
-#pca <- read.table("PCA1.txt", header=T)
-pca <- read.table("PCA2.txt", header=T)
-#pca <- read.table("PCA3.txt", header=T)
-#pca <- read.table("PCA4.txt", header=T)
+pca <- read.table("PCA1.txt", header=T)
+#pca <- read.table("PCA2.txt", header=T)
 
 
 head(pca)
 #dev.off()
 #pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
-#          xlim=c(-1, 1), ylim=c(-1,1),
-          xlim=c(-0.4, 0.4), ylim=c(-0.4,0.4),
+#               xlim=c(-1, 1), ylim=c(-1,1),
+     xlim=c(-0.5, 0.5), ylim=c(-0.5,0.5),
      xlab="PC1", ylab="PC2", main="KoGES 2020 2nd QC PCA", cex=0.7, pch=16)
-abline(v=-0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(v=0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(h=0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-abline(h=-0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
-points(pca[pca$PC1 < -0.08 | 0.08 < pca$PC1 | pca$PC2 < -0.08 | 0.08 < pca$PC2,]$PC1,
-       pca[pca$PC1 < -0.08 | 0.08 < pca$PC1 | pca$PC2 < -0.08 | 0.08 < pca$PC2,]$PC2,
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
        col=rgb(1,0,0,1), cex=0.7, pch=16)
 dev.off()
 
-rmList <- pca[pca$PC1 < -0.08 | 0.08 < pca$PC1 | pca$PC2 < -0.08 | 0.08 < pca$PC2,]
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 dim(rmList)
-
-write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 ### server
 cd /BDATA/smkim/2020_KoGES/02.2ndQC/PCA2
 
 R
-pca <- read.table("./PCA2.txt", header=T)
-rmList <- pca[pca$PC1 < -0.08 | 0.08 < pca$PC1 | pca$PC2 < -0.08 | 0.08 < pca$PC2,]
+pca <- read.table("./PCA1.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA1.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
-write.table(rmList[,c(1:2)], "rmPCA2.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
+
+##### QC
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample --remove PCA1/rmPCA1.txt --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA
+
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA --exclude /LaCie2/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy
+
+
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/indel/indelChange.py /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel
+
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel --flip /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip
+
+
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup
+
+
+### 1KGP
+
+mkdir ethnic 
+cd ethnic
+plink --bfile ../KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/02.updateSNPIDtype.py KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.bim /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+
+cat KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID.bim /LaCie2/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID --extract intersectSNP.txt --make-bed --out  KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID_intersect
+plink --bfile /LaCie2/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge --extract intersectSNP.txt  --make-bed --out 1kpg_merge_intersect
+
+
+plink --bfile KoGES.2020pro.2ndQC_snpolisher_rmLQsample_rmPCA_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID_intersect --bmerge 1kpg_merge_intersect --make-bed --out MERGE
+
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA.txt
+
+#############
+library(tidyverse)
+setwd("/Volumes/DATA/KCHIPQC/2020_KoGES/2nd/")
+setwd("~/")
+
+pca <- read.table("ethnic.PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/ethical/1000GP_Phase3.sample",header = T)
+head(samplegnomad)
+case <- pca %>% select("FID") %>% filter(grepl("NIH",FID))
+#case <- pca %>% select("FID")
+
+#control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+#control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+#control$GROUP <- "CONTROL"
+table(df$GROUP)
+df <- rbind(gnomad,case)
+#df <- rbind(df,control)
+head(df)
+df <- merge(pca,df,by = "FID")
+#png("JG.LD.ethnic.PCA.png",height = 800,width = 800)
+#png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="2020 KoGES Ethnic PCA",
+#     xlim = c(-0.2,0.2),ylim = c(-0.2,0.2),
+     #cex.main = 1,
+     cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.5), cex = 0.7 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.5), cex = 0.7 , pch = 16)
+#points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 0.7 , pch = 16)
+#abline(v=0.04, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+color <- c(
+        #  rgb(0,0,0,1),
+        rgb(1,0,0,1),
+        rgb(0,1,0,1),
+        rgb(0,0,1,1),
+        rgb(1,1,0,1),
+        rgb(0,1,1,1),
+        rgb(1,0,1,1))
+
+list <- c("KoGES","SAS","AFR","AMR","EAS","EUR")
+
+legend("bottomright",list,col = color,cex = 0.8,pch = 16,pt.cex = 0.5)
+#legend("bottomright",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+legend("bottom",c("# of Markers : 5,214"),box.lwd = 0,box.col = "white",bg = "white")
+dev.off()
+
+
+#rmList <- df[df$PC1 > -0.07 & df$GROUP == "CASE",]
+rmList <- pca[pca$PC1 < 0.04 & grepl(".CEL",pca$IID),]
+
+dim(rmList)
+rmList
+rmList$plate <- str_split_fixed(rmList$IID,"_",6)
+table(str_split_fixed(rmList$IID,"_",6)[,4])
+
+write.table(rmList[,c(1:2)], "rmPCA.ethnic.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
+head(ref)
+colnames(ref) <- c("BATCH","IID")
+rmList %>% inner_join(ref) %>% count(BATCH)
