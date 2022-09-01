@@ -193,7 +193,7 @@ lm(af_check$V5~af_check$EAS)
 ggplot(af_check, aes(y=EAS,x=V5)) +
   geom_point(size=0.3,shape=23,colour=rgb(0,0,1,0.6)) +
   geom_abline(slope=1, intercept=0,colour='red',size=2) + 
-  labs(title = "Compare Allele frequency" ,
+  labs(title = "Scatter plot of allele frequency",
        y= "gnomAD EAS",x="HLA sequencing") + 
   theme(plot.title = element_text(hjust = 0.5,size = 20),panel.background = element_blank())
 #  stat_poly_line()
