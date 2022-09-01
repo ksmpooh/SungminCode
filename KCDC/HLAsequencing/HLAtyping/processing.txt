@@ -1,0 +1,45 @@
+genome@genome108:/BDATA/smkim/HLAtyping/01.HLAtypingMerge$ ls -atlhr *vcf | awk '$5==0 {print $0}'
+
+1. typing VCF merge
+ - A, B, C, DRB1, DPA1...-> merge
+
+1.1 용량 0인거 체크
+
+ls -atlhr *vcf | awk '$5==0 {print $0}'
+
+
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5898.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0259.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0262.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0727.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0750.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0997.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0998.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT0999.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT1003.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT1006.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT1007.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT1008.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2258.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2263.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2273.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT3830.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5821.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5835.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5837.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5839.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5841.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5844.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5951.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5952.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT5977.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT6210.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT6281.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2287.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2315.vcf
+-rw-rw-r-- 1 genome genome     0  8월 23 13:27 HLAtyping.VCF.NIH19KT2321.vcf
+
+genome@genome108:/BDATA/smkim/HLAtyping/00.rawDATA/HLAtypingIDmatching$ grep NIH19KT5898 *txt
+2019.HLAtypingIDfolder.txt:NIH19KT5898	H144	CDC144
+genome@genome108:/BDATA/smkim/HLAtyping/00.rawDATA/HLAtypingIDmatching$ grep NIH19KT0259 *txt
+2020.HLAtypingIDfolder.txt:NIH19KT0259	2020KDCA028	N2020KDCA028

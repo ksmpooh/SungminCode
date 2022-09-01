@@ -8,7 +8,7 @@ export PATH=$PATH:$JAVA_HOME/bin
 
 export SPARK_HOME=$HOME/spark-3.1.2
 export HADOOP_HOME=$HOME/hadoop-3.3.0
-export PATH=$SPARK_HOME/bin:$PATH
+#export PATH=$SPARK_HOME/bin:$PATH
 export PATH=$HADOOP_HOME/bin:$PATH
 export PATH=$HADOOP_HOME/sbin:$PATH
 
@@ -156,6 +156,8 @@ genome101
 genome103
 
 # yarn-site.xml
+<configuration>
+
 <property>
 <name>yarn.resourcemanager.resource-tracker.address</name>
 <value>10.20.30.101:8025</value>
@@ -212,13 +214,8 @@ genome@genome103:~/hadoop-3.3.0/etc/hadoop$ jps
 103365 DataNode
 
 
-
-
 ~/hadoop-3.3.0/sbin/stop-dfs.sh
 ~/hadoop-3.3.0/sbin/stop-yarn.sh
-
-
-
 
 
 
@@ -244,8 +241,9 @@ jps
 python
 =========================================================================== python3
 import hail as hl
-hl.init(master='spark://genome101:7077')
-
+#hl.init(master='spark://genome101:7077')
+#hl.init(master='spark://genome101:7077',tmp_dir = "hdfs://genome101:9000/user/")
+hl.init(master='spark://genome101:7077',tmp_dir = "/LaCie1H/smkim/hail/")
 mt = hl.balding_nichols_model(n_populations=3,
                               n_samples=500,
                               n_variants=500_000,
@@ -254,7 +252,8 @@ mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
 gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
                                  x=mt.GT.n_alt_alleles(),
                                  covariates=[1.0])
-gwas.export('hdfs://genome101:9000/user/test/test.tsv')
+#gwas.export('hdfs://genome101:9000/user/test.tsv')
+gwas.export('/LaCie1H/smkim/hail/test.tsv')
 2021-12-29 13:40:35 Hail: INFO: merging 32 files totalling 42.8M...26 + 6) / 32]
 2021-12-29 13:40:36 Hail: INFO: while writing:
     hdfs://genome101:9000/user/test/test.tsv
@@ -273,3 +272,12 @@ drwxr-xr-x   - genome supergroup          0 2021-12-29 13:30 /user/test/JG.for.l
 
 gwas.export("file:///home/genome/test/test1.output.tsv")
 gwas.export("file:///DATA/smkim/test.cluster/noinput-output.tsv")
+
+
+### trouble shooting
+
+1. hadoop dfs datanode가 안켜질때...
+
+해당 폴더를 다시 지우고 다시 만들기
+
+2.

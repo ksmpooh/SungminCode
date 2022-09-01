@@ -1,0 +1,26 @@
+# LD plot
+#/Users/ksmpooh/Downloads/LDBlockShow-1.40/bin/LDBlockShow
+
+
+/Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP
+
+HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.onlySNP.SNPIDupdate.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.onlySNP.SNPIDupdate.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+cp /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz ./
+
+    
+6:28477797-33448354     
+28477901 
+33448188
+
+
+/Users/ksmpooh/Downloads/LDBlockShow-1.40/bin/LDBlockShow \
+-InVCF /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz \
+-OutPut test \ 
+-Region chr6:28477797-33448354
+
+
+/Users/ksmpooh/Downloads/LDBlockShow-1.40/bin/LDBlockShow -InVCF /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz -OutPut test -Region chr6:28477797-33448354 -OutPng -SeleVar 1

@@ -1,0 +1,108 @@
+# concordance test
+cd /Volumes/DATA/HLA_seq_2021/forKOGO/kchip/new_flip
+
+plink --bfile JG.sampledQC.regenocall_snpolisher_indel_flip --chr 6 --from-bp 28477797 --to-bp 33448354 --make-bed --out JG.QCed.forHLAseq
+plink --bfile JG.QCed.forHLAseq --update-ids id.change.txt --make-bed --out JG.QCed.forHLAseq_idchange
+plink --bfile JG.QCed.forHLAseq_idchange --update-name ../forKOGO2022.final.SNPlist.txt --make-bed --out JG.QCed.forHLAseq_idchange_forKOGO2022
+plink --bfile JG.QCed.forHLAseq_idchange_forKOGO2022 --extract ../old/HLAseq.intersect.snpID.txt --make-bed --out JG.QCed.forHLAseq_idchange_forKOGO2022_inter
+
+awk '{print $2"\t6:28477797-33448354"}' JG.QCed.forHLAseq_idchange_idchange_forKOGO2022_inter_updatechr.bim > chr.update.txt
+
+#plink --bfile JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter --update-chr chr.update.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter_updatechr --allow-extra-chr
+#plink --bfile JG.sampledQC.regenocall_snpolisher_HLAregion --update-ids id.change.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_HLAregion_idchange
+#plink --bfile JG.sampledQC.regenocall_snpolisher_HLAregion_idchange --update-name ../forKOGO2022.final.SNPlist.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022
+#plink --bfile JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022 --extract ../old/HLAseq.intersect.snpID.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter
+#awk '{print $2"\t6:28477797-33448354"}' JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter_updatechr.bim > chr.update.txt
+#plink --bfile JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter --update-chr chr.update.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter_updatechr --allow-extra-chr
+
+cd /Volumes/DATA/HLA_seq_2021/forKOGO/chip_short_concordance
+
+bcftools query -f '%ID\t%REF\n' HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz > ref.allele
+
+#plink --bfile ../kchip/new/JG.sampledQC.regenocall_snpolisher_HLAregion_idchange_forKOGO2022_inter_updatechr --recode vcf --allow-extra-chr --out JG.HLAQCed.forKOGO2022
+plink --bfile ../kchip/new_flip/JG.QCed.forHLAseq_idchange_idchange_forKOGO2022_inter --recode vcf --a2-allele ref.allele --out JG.HLAQCed.forKOGO2022
+plink --bfile ../kchip/new_flip/JG.QCed.forHLAseq_idchange_idchange_forKOGO2022 --recode vcf --a2-allele ref.allele --out JG.HLAQCed.forKOGO2022
+plink --bfile ../kchip/new_flip/JG.QCed.forHLAseq_idchange_idchange_forKOGO2022_inter --recode vcf --a2-allele ref.allele --out JG.HLAQCed.forKOGO2022
+
+
+# chr.update.txt
+#6   6:28477797-33448354
+bcftools annotate --rename-chrs chr.update.txt JG.HLAQCed.forKOGO2022.vcf -Oz -o JG.HLAQCed.forKOGO2022_updatechr.vcf.gz
+tabix -f -p vcf JG.HLAQCed.forKOGO2022_updatechr.vcf.gz
+
+
+bcftools query --list-sample JG.HLAQCed.forKOGO2022_updatechr.vcf.gz | awk '{split($1,a,"_");print $1,a[1]}'  > new_sampleID.txt
+bcftools reheader --samples new_sampleID.txt JG.HLAQCed.forKOGO2022_updatechr.vcf.gz -o JG.HLAQCed.forKOGO2022_updatechr_updatename.vcf.gz
+tabix -f -p vcf JG.HLAQCed.forKOGO2022_updatechr_updatename.vcf.gz
+## MAF 별로 나누기 (0~10, 10~50, 50~100)
+
+(base) ➜  chip_short_concordance head shortread.AF.txt
+ID	AF
+6:28477797-33448354_28478294_T_A	0.1
+
+
+awk '$2<0.1 {print $1}' shortread.AF.txt > maf0.1.txt
+awk '$2>=0.1 && $2<0.5 {print $1}' shortread.AF.txt > maf0.5.txt
+awk '$2 >= 0.5 {print $1}' shortread.AF.txt > maf1.txt
+
+R##
+setwd("/Volumes/DATA/HLA_seq_2021/forKOGO/chip_short_concordance")
+#setwd("~/")
+
+
+ref <- read.table("marker.list.txt",header = F)
+head(ref)
+
+
+
+m1 <- read.table("maf0.1.txt")
+m2 <- read.table("maf0.5.txt")
+m3 <- read.table("maf1.txt")
+
+
+out1 <- ref[ref$V1 %in% m1$V1,]
+out2 <- ref[ref$V1 %in% m2$V1,]
+out3 <- ref[ref$V1 %in% m3$V1,]
+
+head(ref)
+head(out1)
+head(out1)
+out1 <- as.data.frame(out1)
+out2 <- as.data.frame(out2)
+out3 <- as.data.frame(out3)
+
+
+write.table(out1,"maf0.1_marker.txt",col.names = F,row.names = F, quote = F,sep = "\t")
+write.table(out2,"maf0.5_marker.txt",col.names = F,row.names = F, quote = F,sep = "\t")
+write.table(out3,"maf1_marker.txt",col.names = F,row.names = F, quote = F,sep = "\t")
+
+
+
+###
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+JG.HLAQCed.forKOGO2022_updatechr.vcf.gz
+
+
+bcftools view --include 'ID=@maf0.1_marker.txt' HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz -Oz -0 ./maf0.1
+bcftools view --include 'ID=@maf0.1_marker.txt' JG.HLAQCed.forKOGO2022_updatechr.vcf.gz -Oz -0 ./maf0.1
+bcftools view --include 'ID=@maf0.5_marker.txt' HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz -Oz -0 ./maf0.5
+bcftools view --include 'ID=@maf0.5_marker.txt' JG.HLAQCed.forKOGO2022_updatechr.vcf.gz -Oz -0 ./maf0.5
+bcftools view --include 'ID=@maf1_marker.txt' HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz -Oz -0 ./maf1
+bcftools view --include 'ID=@maf1_marker.txt' JG.HLAQCed.forKOGO2022_updatechr.vcf.gz -Oz -0 ./maf1
+
+
+bcftools isec -p inter HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz JG.HLAQCed.forKOGO2022_updatechr_updatename.vcf.gz
+
+SnpSift concordance -v 0002.vcf 0003.vcf > QulityMetricx_forKOGO.txt
+
+
+
+
+Zhou et al. Deep sequencing of the MHC region in the Chinese population contributes to studies of complex disease. Nat Genet 48, 740–746 (2016). 
+Taedong Yun et al Accurate, scalable cohort variant calls using DeepVariant and GLnexus, Bioinformatics, Volume 36, Issue 24, 15 December 2020, Pages 5582–5589.
+Sanghoon Moon et al. The Korea Biobank Array: Design and Identification of Coding  Variants Associated with Blood Biochemical Traits. Scientific reports 2019;9:138
+
+
+
+
+
