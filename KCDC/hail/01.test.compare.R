@@ -24,7 +24,7 @@ points(d[d$check.pvalue == 1,]$hail.BETA,
 points(d[d$epacts.PVALUE < 0.05,]$hail.BETA,
        d[d$epacts.PVALUE < 0.05,]$epacts.BETA,
        col = "red")
-
+cor(d$hail.BETA,d$epacts.BETA)
 d$abs <- abs(d$hail.BETA - d$epacts.BETA)
 summary(d$abs)
 head(d)
@@ -40,6 +40,7 @@ points(d[d$check.pvalue != 1,]$hail.PVALUE,
        d[d$check.pvalue != 1,]$epacts.PVALUE,
        col = "darkgrey")
 summary(d)
+cor(d$hail.PVALUE,d$epacts.PVALUE)
 ##########
 setwd("~/Desktop/KCDC/hail/")
 library(stringr)
@@ -102,6 +103,8 @@ plot(-log10(d$hail.PVALUE),-log10(d$epacts.PVALUE),col = adjustcolor("blue",alph
 
 dev.off()
 
+
+cor(d$hail.PVALUE,d$epacts.PVALUE)
 
 
 #####################

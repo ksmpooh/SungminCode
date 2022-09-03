@@ -39,8 +39,6 @@ sh geno.sh /BDATA/smkim/CAD/00.rawData/sampleINFO/2ndQC.cel.path/CAD.2020.celfil
 
 
 
-==========여기까지 진행 중===========
-
 ## call to plink
 cd /BDATA/smkim/CAD/01.genocall/2nd/g1/plink
 
@@ -295,6 +293,7 @@ flashpca_x86-64 --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample_pruned --outpc ./P
 
 
 
+ Division of Genome Science, Department of Precision Medicine, Korea National Institute of Health, Republic of Korea
 
 
 #
@@ -388,6 +387,81 @@ pca <- read.table("g3.PCA.txt", header=T)
 dim(rmList)
 rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]
 write.table(rmList[,c(1:2)], "g3.rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+#####20220902 합처서 PCA (따로 missing-het 한 후)
+
+cd  /BDATA/smkim/CAD/03.2ndQC
+cat g1/CAD.g1.2ndQC_snpolisher_rmLQsample.bim g2/CAD.g2.2ndQC_snpolisher_rmLQsample.bim g3/CAD.g3.2ndQC_snpolisher_rmLQsample.bim |awk '{print $2}' | sort |uniq -c | awk '$1==3{print $0}' > merge/intersect.SNP.txt
+
+plink --bfile g1/CAD.g1.2ndQC_snpolisher_rmLQsample --extract merge/intersect.SNP.txt --make-bed --out g1/CAD.g1.2ndQC_snpolisher_rmLQsample_intersect
+plink --bfile g2/CAD.g2.2ndQC_snpolisher_rmLQsample --extract merge/intersect.SNP.txt --make-bed --out g2/CAD.g2.2ndQC_snpolisher_rmLQsample_intersect
+plink --bfile g3/CAD.g3.2ndQC_snpolisher_rmLQsample --extract merge/intersect.SNP.txt --make-bed --out g3/CAD.g3.2ndQC_snpolisher_rmLQsample_intersect
+
+## merge_list
+g2/CAD.g2.2ndQC_snpolisher_rmLQsample_intersect
+g3/CAD.g3.2ndQC_snpolisher_rmLQsample_intersect
+
+cd /BDATA/smkim/CAD/03.2ndQC/merge
+
+plink --bfile ../g1/CAD.g1.2ndQC_snpolisher_rmLQsample_intersect --merge-list merge.list.txt --make-bed --out CAD.mergd.2nd
+
+genome@genome102:/BDATA/smkim/CAD/03.2ndQC/merge$ wc -l *bim
+775048 CAD.mergd.2nd.bim
+genome@genome102:/BDATA/smkim/CAD/03.2ndQC/merge$ wc -l *fam
+10511 CAD.mergd.2nd.fam
+
+
+
+# PCA
+mkdir PCA1
+cd PCA1
+
+
+plink --bfile ../CAD.mergd.2nd --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out PCA1_pruning
+plink --bfile ../CAD.mergd.2nd --extract PCA1_pruning.prune.in --make-bed --out PCA1_pruned
+flashpca_x86-64 --bfile PCA1_pruned --outpc PCA1.txt
+
+
+mkdir PCA2
+cd PCA2
+
+
+plink --bfile ../CAD.mergd.2nd --maf 0.2 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-5,7-13,15-22 --out PCA2_pruning
+plink --bfile ../CAD.mergd.2nd --extract PCA2_pruning.prune.in --make-bed --out PCA2_pruned
+flashpca_x86-64 --bfile PCA2_pruned --outpc PCA2.txt
+
+
+
+### PCA1 선택
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/merge/")
+#setwd("~/")
+pca <- read.table("PCA1.txt", header=T)
+pca <- read.table("PCA2.txt", header=T)
+
+#pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.7),
+#          xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="CAD merge 2ndQC PCA", cex=0.9, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.9), cex=1, pch=16)
+
+dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
 
 
 ## qc out list
