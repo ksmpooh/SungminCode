@@ -84,7 +84,7 @@ head(short)
 venn.diagram(
   x=list(short$ID,ref$ID,gnomad_eas$ID),
   #category.names = c("1.HLAsequencing","2.HanREF","3.gnomAD_EAS"),
-  category.names = c("1.KMHC","2.HanREF","3.gnomAD_EAS"),
+  category.names = c("KMHC","HanREF","gnomAD_EAS"),
   filename = "gnomAD-EAS_types_calling.png",
   output = TRUE,
   
@@ -113,7 +113,7 @@ venn.diagram(
 
 venn.diagram(
   x=list(short$ID,ref$ID,gnomad$ID),
-  category.names = c("1.KMHC","2.HanREF","3.gnomAD"),
+  category.names = c("KMHC","HanREF","gnomAD"),
   filename = "gnomAD_types_calling.png",
   output = TRUE,
   

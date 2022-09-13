@@ -463,6 +463,10 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 
 
+### 서버
+pca <- read.table("PCA1.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
 
 ## qc out list
 cat ../g1/rmLQsamples.txt ../PCA/g1.rmPCA.txt > g1.2nd.qc.out.txt

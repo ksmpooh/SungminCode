@@ -1,0 +1,16 @@
+setwd("/Volumes/DATA/KCHIPQC/PREG/king/")
+setwd("~/")
+df <- read.table("king2.kin0",header = T)
+head(df)
+ 
+library(tidyverse)
+library(writexl)
+
+
+head(df)
+df %>% filter(str_detect(InfType,"MZ")) %>%
+  select(FID1,FID2) %>%
+  mutate("ID1" = str_split_fixed(FID1,"_",6)[,6],"ID2" = str_split_fixed(FID2,"_",6)[,6]) %>%
+  mutate(ID1 = str_replace(ID1,".CEL",""),ID2 = str_replace(ID2,".CEL","")) %>%
+  select(ID1,ID2) %>%
+  write_xlsx("~/Desktop/KCDC/KCHIP_open/Preg.MZ.list.xlsx")
