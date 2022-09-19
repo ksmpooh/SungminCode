@@ -244,9 +244,17 @@ rmList$plate <- str_split_fixed(rmList$IID,"_",6)
 table(str_split_fixed(rmList$IID,"_",6)[,4])
 
 write.table(rmList[,c(1:2)], "rmPCA.ethnic.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+###
+
+ethnic PCA 없음
 
 
-ref <- read.table("~/Desktop/KCDC/KKY/7th/kky.7th.cel.files_20220519_batch.txt")
-head(ref)
-colnames(ref) <- c("BATCH","IID")
-rmList %>% inner_join(ref) %>% count(BATCH)
+
+
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup.fam > sampleID.update.txt
+plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup --update-ids sampleID.update.txt --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID
+
+
+plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_fil
+
+
