@@ -17,6 +17,14 @@ def give_score(a):
     else:
         return "\t0"
 
+def make_score_table(pair_table):
+    print("Make_pair table....from .raw file")
+    print("FILE IN : "+pair_table)
+    outData = pair_table.replace(".raw","_pairTable.txt")
+    os.system("Rscript --vanilla 03.data.Pair.matching.R %s %s"%(inData,outData))
+    return outData
+
+
 def calculate_score(dataIn,theme):
     print("Calculate Score : ..."+dataIn)
     print("theme : "+theme)
@@ -71,7 +79,7 @@ def main():
     theme = inData.replace(wDir +"/","").replace("KR.KD.","").replace(".raw","")
     
     tmp_df = inData.replace(".raw","_pairTable.txt")
-    #tmp_df = make_score_table(inData)
+    tmp_df = make_score_table(inData)
     calculate_score(tmp_df,theme)
     print("Done! ALL python script...")
 

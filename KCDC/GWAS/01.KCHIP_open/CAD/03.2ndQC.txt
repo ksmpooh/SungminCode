@@ -441,7 +441,7 @@ flashpca_x86-64 --bfile PCA2_pruned --outpc PCA2.txt
 setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/merge/")
 #setwd("~/")
 pca <- read.table("PCA1.txt", header=T)
-pca <- read.table("PCA2.txt", header=T)
+#pca <- read.table("PCA2.txt", header=T)
 
 #pdf("./PREG.2nd.QC_PCA2.pdf", height = 10, width = 10)
 plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.7),
@@ -464,11 +464,150 @@ write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep
 
 
 ### 서버
-pca <- read.table("PCA1.txt", header=T)
+pca <- read.table("./PCA1/PCA1.txt", header=T)
 rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
 write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+plink --bfile CAD.mergd.2nd --remove rmPCA.txt --make-bed --out CAD.mergd.2nd_rmPCA
+
 
 ## qc out list
 cat ../g1/rmLQsamples.txt ../PCA/g1.rmPCA.txt > g1.2nd.qc.out.txt
 cat ../g2/rmLQsamples.txt ../PCA/g2.rmPCA.txt > g2.2nd.qc.out.txt
 cat ../g3/rmLQsamples.txt ../PCA/g3.rmPCA.txt > g3.2nd.qc.out.txt
+
+
+
+### MZ list 제거
+
+plink --bfile CAD.mergd.2nd_rmPCA --remove king/MZ.list --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ
+
+
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy
+
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/indel/indelChange.py /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt CAD.mergd.2nd_rmPCA_rmMZ_rmaffy CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel --flip /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip
+
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup
+
+### 1KGP
+
+
+mkdir ethnic 
+cd ethnic
+plink --bfile ../CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/02.updateSNPIDtype.py CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+
+cat CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile  CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID --extract intersectSNP.txt --make-bed --out  CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID_intersect
+plink --bfile /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge --extract intersectSNP.txt  --make-bed --out 1kpg_merge_intersect
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_forEthnic.updateSNPID_intersect --bmerge 1kpg_merge_intersect --allow-no-sex --make-bed --out MERGE
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA_ethnic.txt
+
+
+
+
+###R
+library(tidyverse)
+setwd("/Volumes/DATA/KCHIPQC/CAD/2ndQC/merge/")
+setwd("~/")
+
+#setwd("~/Desktop/KCDC/transplantation/QCrepliation_2020/LD/2nd/")
+pca <- read.table("PCA_ethnic.txt",header = T)
+#pca <- read.table("PCA.txt",header = T)
+samplegnomad<- read.table("~/Desktop/KCDC/transplantation/ethical/1000GP_Phase3.sample",header = T)
+head(samplegnomad)
+case <- pca %>% select("FID") %>% filter(grepl("NIH",FID))
+#case <- pca %>% select("FID")
+
+#control <- tera %>% select("FID")
+case$FID <- as.factor(case$FID)
+#control$FID <- as.factor(control$FID)
+
+gnomad <- subset(samplegnomad,select = c("ID","GROUP"))
+colnames(gnomad) <- c("FID","GROUP")
+case$GROUP <- "CASE"
+#control$GROUP <- "CONTROL"
+table(df$GROUP)
+df <- rbind(gnomad,case)
+#df <- rbind(df,control)
+head(df)
+df <- merge(pca,df,by = "FID")
+#png("JG.LD.ethnic.PCA.png",height = 800,width = 800)
+#png("KKY.7th.ethnic.PCA_east.png",height = 800,width = 800)
+plot(df$PC1,df$PC2,col = rgb(1,1,1,0.1),xlab = "PC1",ylab = "PC2",main="CAD Ethnic PCA",
+     #     xlim = c(-0.2,0.2),ylim = c(-0.2,0.2),
+     #cex.main = 1,
+     cex = 1,pch = 16
+)
+points(df[df$GROUP == "AFR",]$PC1,df[df$GROUP == "AFR",]$PC2,col = rgb(0,0,1,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "AMR",]$PC1,df[df$GROUP == "AMR",]$PC2,col = rgb(1,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EUR",]$PC1,df[df$GROUP == "EUR",]$PC2,col = rgb(1,0,1,0.5), cex = 0.7 , pch = 16)
+
+points(df[df$GROUP == "SAS",]$PC1,df[df$GROUP == "SAS",]$PC2,col = rgb(0,1,0,0.5), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "EAS",]$PC1,df[df$GROUP == "EAS",]$PC2,col = rgb(0,1,1,0.5), cex = 0.7 , pch = 16)
+#points(df[df$GROUP == "CONTROL",]$PC1,df[df$GROUP == "CONTROL",]$PC2,col = rgb(0,0,0,1), cex = 0.7 , pch = 16)
+points(df[df$GROUP == "CASE",]$PC1,df[df$GROUP == "CASE",]$PC2,col = rgb(1,0,0,0.5), cex = 0.7 , pch = 16)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+color <- c(
+  #  rgb(0,0,0,1),
+  rgb(1,0,0,1),
+  rgb(0,1,0,1),
+  rgb(0,0,1,1),
+  rgb(1,1,0,1),
+  rgb(0,1,1,1),
+  rgb(1,0,1,1))
+
+list <- c("CAD","SAS","AFR","AMR","EAS","EUR")
+
+legend("topright",list,col = color,cex = 0.8,pch = 16,pt.cex = 0.5)
+#legend("bottomright",list,col = color,cex = 1,pch = 16)
+#legend(y = -0.05,x=-0.15,list,col = color,cex = 1,pch = 16)
+
+legend("bottom",c("# of Markers : 5,214"),box.lwd = 0,box.col = "white",bg = "white")
+dev.off()
+
+
+#rmList <- df[df$PC1 > -0.07 & df$GROUP == "CASE",]
+rmList <- pca[pca$PC1 < 0.04 & grepl(".CEL",pca$IID),]
+
+dim(rmList)
+rmList
+rmList$plate <- str_split_fixed(rmList$IID,"_",6)
+table(str_split_fixed(rmList$IID,"_",6)[,4])
+
+write.table(rmList[,c(1:2)], "rmPCA.ethnic.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+###
+
+ethnic PCA 없음
+
+
+
+
+awk '{split($1,a,"_"); split(a[6],b,"."); print $1,$1,b[1],b[1]}' CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup.fam > sampleID.update.txt
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup --update-ids sampleID.update.txt --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID --maf 0.01 --geno 0.05 --hwe 1e-6 --chr 1-22 --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_fil
+
+

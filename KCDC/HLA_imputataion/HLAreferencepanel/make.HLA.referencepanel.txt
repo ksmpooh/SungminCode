@@ -1,0 +1,35 @@
+### HLA-papas
+
+
+1. HLA nomenclean
+
+python -m NomenCleaner \
+    --hped NomenCleaner/example/g1k_subset.ped \
+    --out NomenCleaner/example/g1k_subset \
+    --4field
+
+
+
+
+2. reference het_rmPCA_rmaffy_indel_flip_rmdup
+ 
+ 
+ python -m MakeReference \
+    --variants  DATA/00.rawDATA/KBA/JG.QCed.HLA \
+    --chped DATA/01.nomenclean/HLA.nomenclean.chped \
+    --hg 19 \
+    --out DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 32g \
+    --nthreads 20
+
+ python -m MakeReference \
+    --variants  MakeReference/example/g1k_subset_snps\
+    --chped MakeReference/example/g1k_subset.chped \
+    --hg 19 \
+    --out MakeReference/example/g1k_subset.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing

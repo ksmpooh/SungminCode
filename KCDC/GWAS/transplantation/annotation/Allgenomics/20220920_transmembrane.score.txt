@@ -1,0 +1,92 @@
+######
+
+uniProt으로 진행
+
+
+준비
+
+DB : uniprot gene description
+
+VEP : 인혜샘이 준 한국인칩 functional annotation 결과 
+ - 유전자 별로 나눠서 데이터 정리
+
+
+ cd /BDATA/smkim/KR_allogenomics/refDATA
+ 
+ cat KBAv1_1_ref_VEP_func_rform_splitGENE.txt
+
+1:69610:C:T	missense_variant	OR4F5
+1:738539:T:C	missense_variant	AL669831.1
+1:739132:A:C	missense_variant	AL669831.1
+1:819959:C:T	splice_acceptor_variant	AL645608.2
+1:863258:A:G	missense_variant	AL645608.1
+
+
+cd /BDATA/smkim/KR_allogenomics/03.transmembrane_uniprot/gene_extract
+#02.extract.variant.inGenelist.py
+
+# pair matching
+준비 : 03.data.Pair.matching.R, 03.score.py
+
+ls *raw | xargs -I{} -P 32 bash -c "python3 03.score_01.py {}"
+
+
+R - merge SUM
+a <- list.files(pattern = "_ScoreTable.txt")
+df = read.table(a[1],header = T)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t) 
+}
+
+write.table(df,"../KR.KD.transmemebrane_inUniProt.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+R - count variant
+a <- list.files(pattern = "_ScoreTable.txt")
+df = read.table(a[1],header = T)
+
+out <- data.frame(gene=)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t) 
+}
+
+write.table(df,"../KR.KD.transmemebrane_inUniProt.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+# python3
+
+import os, glob
+
+a = glob.glob("*_ScoreTable.txt")
+##KR.KD.TMUB1_ScoreTable.txt
+out = open("variant.num.byGene.txt","w")
+out.write("gene\tN_snp\n")
+for i in a:
+    tmp = open(i,"r")
+    tmp = tmp.readline().split()
+    gene = i.replace("KR.KD.","").replace("_ScoreTable.txt","")
+    n_snp = len(tmp) - 3
+    out.write("%s\t%s\n"%(gene,n_snp))
+
+out.close()
+
+
+
+
+
+
+
