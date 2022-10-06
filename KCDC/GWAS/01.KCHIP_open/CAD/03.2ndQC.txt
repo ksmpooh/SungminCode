@@ -611,3 +611,68 @@ plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup --update-ids samp
 plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID --maf 0.01 --geno 0.05 --hwe 1e-6 --chr 1-22 --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_fil
 
 
+##### sex chr QC
+genome@genome102:/BDATA/smkim/CAD/00.rawData/sampleINFO$ head CAD.2022.All.sample.txt
+FID	IID	SEX
+NIH19E1629508	NIH19E1629508	2
+NIH19E1655235	NIH19E1655235	2
+NIH19E1527025	NIH19E1527025	1
+NIH19E1983848	NIH19E1983848	2
+NIH19E1540664	NIH19E1540664	1
+NIH19E1635293	NIH19E1635293	2
+NIH19E1734391	NIH19E1734391	2
+NIH19E1448394	NIH19E1448394	2
+NIH19E1993679	NIH19E1993679	2
+
+
+cd /BDATA/smkim/CAD/03.2ndQC/merge
+mkdir sex_chr
+cp /BDATA/smkim/CAD/00.rawData/sampleINFO/CAD.2022.All.sample.txt ./sex_chr/
+
+
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID --update-sex ./sex_chr/CAD.2022.All.sample.txt --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX
+
+
+cd /BDATA/smkim/KKY_7th/03.2ndQC/sex_chr
+awk '$3==1{print $1,$1}' CAD.2022.All.sample.txt > male.txt
+awk '$3==2{print $1,$1}' CAD.2022.All.sample.txt > female.txt
+
+
+
+
+plink --bfile ../CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 23,25 --make-bed --out CAD.2022.preQC.chrX
+plink --bfile CAD.2022.preQC.chrX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out CAD.2022.preQC.chrX_nonPAR
+
+
+#awk '$5==2{print $1,$2}' KKY.7th.preQC.chrX.fam > female.txt
+#awk '$5==1{print $1,$2}' KKY.7th.preQC.chrX.fam > male.txt
+
+plink --bfile CAD.2022.preQC.chrX_nonPAR --keep female.txt --maf 0.01 --hwe 1e-6 --make-bed --out CAD.2022.preQC.chrX_nonPAR_onlyFemale.fil
+plink --bfile CAD.2022.preQC.chrX_nonPAR --keep male.txt --set-hh-missing  --make-bed --out CAD.2022.preQC.chrX_nonPAR_onlyMale_sethhmissing
+plink --bfile CAD.2022.preQC.chrX_nonPAR_onlyMale_sethhmissing --extract CAD.2022.preQC.chrX_nonPAR_onlyFemale.fil.bim --make-bed --out CAD.2022.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect
+
+plink --bfile CAD.2022.preQC.chrX_nonPAR_onlyFemale.fil --bmerge CAD.2022.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect --make-bed --out CAD.2022.preQC.chrX_nonPAR_GenderMerge
+plink --bfile CAD.2022.preQC.chrX_nonPAR_GenderMerge --geno 0.05 --make-bed --out CAD.2022.preQC.chrX_nonPAR_GenderMerge_geno
+
+
+plink --bfile CAD.2022.preQC.chrX --exclude CAD.2022.preQC.chrX_nonPAR.bim --make-bed --out CAD.2022.preQC.chrX_PAR
+plink --bfile CAD.2022.preQC.chrX_PAR --merge-x --make-bed --out CAD.2022.preQC.chrX_PAR_mergeX
+plink --bfile CAD.2022.preQC.chrX_PAR_mergeX --maf 0.01 --hwe 1e-6 --geno 0.05 --make-bed --out CAD.2022.preQC.chrX_PAR_mergeX_fil
+
+
+
+plink --bfile ../CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 24,26 --make-bed --out CAD.2022.preQC.chrY_MIT
+plink --bfile CAD.2022.preQC.chrY_MIT --geno 0.05 --make-bed --out CAD.2022.preQC.chrY_MIT_geno
+
+
+plink --bfile CAD.2022.preQC.chrX_nonPAR_GenderMerge_geno --bmerge CAD.2022.preQC.chrX_PAR_mergeX_fil --make-bed --out CAD.2022.preQC.chrX_PARmerge_QCed
+plink --bfile CAD.2022.preQC.chrX_PARmerge_QCed --bmerge CAD.2022.preQC.chrY_MIT_geno --make-bed --out CAD.2022.preQC.chr23-26.QCed
+
+
+
+cd /BDATA/smkim/CAD/03.2ndQC/merge
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 1-22 --maf 0.01 --hwe 1e-6 --geno 0.05 --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil
+
+plink --bfile CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil --bmerge sex_chr/CAD.2022.preQC.chr23-26.QCed --make-bed --out CAD.mergd.2nd_rmPCA_rmMZ_rmaffy_indel_flip_rmdup_updateID_updateSEX_FINALQCed

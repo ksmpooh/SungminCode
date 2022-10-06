@@ -10,9 +10,13 @@ outDir = sys.argv[2]
 #outData = inData.replace(".txt","_dataproScore.txt")
 
 ##Rscript --vanilla 03.ploting.R [input.raw] [output.txt]
+os.system("mkdir %s"%outDir)
+#outData = inData.replace(".txt","_dataproScore.txt")
+
+##Rscript --vanilla 03.ploting.R [input.raw] [output.txt]
 wDir = os.getcwd()
 def give_score(a):
-    if a[0] == a[1]:
+    if a[0] != a[1] and a.count("NA") == 0:
         return "\t1"
     else:
         return "\t0"
@@ -26,7 +30,7 @@ def make_score_table(pair_table):
 
 
 def calculate_score(dataIn,theme):
-    print("Calculate Score : ..."+dataIn)
+    print("Calculate Score : ...\n DATA : "+dataIn)
     print("theme : "+theme)
     df = open(dataIn,"r")
     outData = outDir + dataIn.replace("_pairTable","_ScoreTable_alleleMatching")

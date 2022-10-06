@@ -257,4 +257,69 @@ plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmd
 
 plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID --maf 0.01 --geno 0.05 --hwe 0.001 --chr 1-22 --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_fil
 
+##### sex chr QC
+genome@genome109:/BDATA/smkim/KKY_8th/03.2ndQC$ cp KKY.8th.gender.info.txt sex_chr/
 
+
+FID	IID	SEX
+NIH19E1629508	NIH19E1629508	2
+NIH19E1655235	NIH19E1655235	2
+NIH19E1527025	NIH19E1527025	1
+NIH19E1983848	NIH19E1983848	2
+NIH19E1540664	NIH19E1540664	1
+NIH19E1635293	NIH19E1635293	2
+NIH19E1734391	NIH19E1734391	2
+NIH19E1448394	NIH19E1448394	2
+NIH19E1993679	NIH19E1993679	2
+
+
+cd /BDATA/smkim/KKY_8th/03.2ndQC
+mkdir sex_chr
+
+
+plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID --update-sex ./sex_chr/KKY.8th.gender.info.txt --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX
+
+
+cd /BDATA/smkim/KKY_8th/03.2ndQC/sex_chr
+
+awk '$3==1{print $1,$1}' KKY.8th.gender.info.txt > male.txt
+awk '$3==2{print $1,$1}' KKY.8th.gender.info.txt > female.txt
+
+
+
+
+plink --bfile ../KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 23,25 --make-bed --out KKY.8th.preQC.chrX
+plink --bfile KKY.8th.preQC.chrX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out KKY.8th.preQC.chrX_nonPAR
+
+
+#awk '$5==2{print $1,$2}' KKY.7th.preQC.chrX.fam > female.txt
+#awk '$5==1{print $1,$2}' KKY.7th.preQC.chrX.fam > male.txt
+
+plink --bfile KKY.8th.preQC.chrX_nonPAR --keep female.txt --maf 0.01 --hwe 1e-3 --make-bed --out KKY.8th.preQC.chrX_nonPAR_onlyFemale.fil
+plink --bfile KKY.8th.preQC.chrX_nonPAR --keep male.txt --set-hh-missing  --make-bed --out KKY.8th.preQC.chrX_nonPAR_onlyMale_sethhmissing
+plink --bfile KKY.8th.preQC.chrX_nonPAR_onlyMale_sethhmissing --extract KKY.8th.preQC.chrX_nonPAR_onlyFemale.fil.bim --make-bed --out KKY.8th.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect
+
+plink --bfile KKY.8th.preQC.chrX_nonPAR_onlyFemale.fil --bmerge KKY.8th.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect --make-bed --out KKY.8th.preQC.chrX_nonPAR_GenderMerge
+plink --bfile KKY.8th.preQC.chrX_nonPAR_GenderMerge --geno 0.05 --make-bed --out KKY.8th.preQC.chrX_nonPAR_GenderMerge_geno
+
+
+plink --bfile KKY.8th.preQC.chrX --exclude KKY.8th.preQC.chrX_nonPAR.bim --make-bed --out KKY.8th.preQC.chrX_PAR
+plink --bfile KKY.8th.preQC.chrX_PAR --merge-x --make-bed --out KKY.8th.preQC.chrX_PAR_mergeX
+plink --bfile KKY.8th.preQC.chrX_PAR_mergeX --maf 0.01 --hwe 1e-3 --geno 0.05 --make-bed --out KKY.8th.preQC.chrX_PAR_mergeX_fil
+
+
+
+plink --bfile ../KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 24,26 --make-bed --out KKY.8th.preQC.chrY_MIT
+plink --bfile KKY.8th.preQC.chrY_MIT --geno 0.05 --make-bed --out KKY.8th.preQC.chrY_MIT_geno
+
+
+plink --bfile KKY.8th.preQC.chrX_nonPAR_GenderMerge_geno --bmerge KKY.8th.preQC.chrX_PAR_mergeX_fil --make-bed --out KKY.8th.preQC.chrX_PARmerge_QCed
+plink --bfile KKY.8th.preQC.chrX_PARmerge_QCed --bmerge KKY.8th.preQC.chrY_MIT_geno --make-bed --out KKY.8th.preQC.chr23-26.QCed
+
+
+
+cd /BDATA/smkim/KKY_8th/03.2ndQC
+
+plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX --chr 1-22 --maf 0.01 --hwe 1e-3 --geno 0.05 --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil
+
+plink --bfile KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_fil --bmerge sex_chr/KKY.8th.preQC.chr23-26.QCed --make-bed --out KKY.8th.2ndQC_snpolisher_rmMissing-het_rmPCA_rmaffy_indel_flip_rmdup_updateID_updateSEX_FINALQCed

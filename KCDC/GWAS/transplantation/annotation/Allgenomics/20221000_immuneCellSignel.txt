@@ -1,0 +1,87 @@
+###
+
+#데이터 정리
+
+cd /BDATA/smkim/KR_allogenomics/04.immune_cell_signal//BDATA/smkim/KR_allogenomics/04.immune_cell_signal
+
+Immune.signal.Genelist.txt
+
+awk '{print $4}' Immune.signal.Genelist.txt | tail -n+2 | sort | uniq -c | grep -v NA | awk '{print $2}' > Receptor.txt
+awk '{print $5}' Immune.signal.Genelist.txt | tail -n+2 | sort | uniq -c | grep -v NA | awk '{print $2}' > Ligand.txt
+awk '{print $6}' Immune.signal.Genelist.txt | tail -n+2 | sort | uniq -c | grep -v NA | awk '{print $2}'> Intracellular.txt
+
+
+
+cat Intracellular.txt Ligand.txt Receptor.txt | uniq -c | awk '{print $2}' > co_signal.txt
+
+
+head /BDATA/smkim/KR_allogenomics/refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt
+
+
+# ref -> gene 추출
+
+R
+
+df <-read.table("co_signal.txt")
+ref <- read.table("../refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt")
+out <- ref[ref$V3 %in% df$V1,]
+write.table(out,"immune.cell.signal_targetGene.txt",col.names=F,row.names=F,quote=F)
+
+
+#gene target 해서 뽑기
+
+mkdir gene_extract
+
+
+python 02.extract.py ../00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant immune.cell.signal_targetGene.txt
+
+
+# pair matching
+준비 : 03.data.Pair.matching.R, 03.score.py
+
+ls *raw | xargs -I{} -P 4 bash -c "python3 03.score_01.py {} ./"
+
+
+
+
+
+#R - merge SUM
+a <- list.files(pattern = "_ScoreTable_alleleMatching.txt")
+df = read.table(a[1],header = T)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t) 
+}
+
+write.table(df,"../KR.KD.immune.cell.signal_targetGene.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+# python3
+
+import os, glob
+
+a = glob.glob("*_ScoreTable_alleleMatching.txt")
+##KR.KD.TMUB1_ScoreTable.txt
+out = open("variant.num.byGene.txt","w")
+out.write("gene\tN_snp\n")
+for i in a:
+    tmp = open(i,"r")
+    tmp = tmp.readline().split()
+    gene = i.replace("KR.KD.","").replace("_ScoreTable_alleleMatching.txt","")
+    n_snp = len(tmp) - 3
+    out.write("%s\t%s\n"%(gene,n_snp))
+
+out.close()
+
+
+
+
+
+
+

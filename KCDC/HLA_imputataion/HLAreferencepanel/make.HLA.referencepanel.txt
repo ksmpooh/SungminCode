@@ -33,3 +33,22 @@ python -m NomenCleaner \
     --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
     --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
     --phasing
+
+
+
+3. HLA imputation
+
+python -m SNP2HLA \
+  --target DATA/00.rawDATA/KBA/toy_ID.change \
+  --reference DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+  --out DATA/03.SNP2HLA/IMPUTED.1958BC_usnigKBAref \
+  --nthreads 20 \
+  --mem 64g
+
+
+$ python -m SNP2HLA \
+    --target SNP2HLA/example/1958BC \
+    --reference resources/1000G.bglv4 \
+    --out MySNP2HLA/IMPUTED.1958BC \
+    --nthreads 2 \
+    --mem 4g
