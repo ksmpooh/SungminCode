@@ -103,3 +103,108 @@ ls *vcf | xargs -I{} -P 4 bash -c "bcftools query -f '%POS\t%REF\t%ALT\t%AF\n' {
 
 mkdir concordance
 SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+
+
+##### 20221011
+long-read ID 변경 후 재진행
+
+103 
+cd /DATA/smkim/JG/08.HLAseq/DATA/onlySNP
+
+#head ../long_ID.check.table.txt
+
+OLD_ID	NEW_ID
+NIH19KT0247	NIH19KT0247
+NIH19KT0248	NIH19KT0248
+NIH19KT0249	NIH19KT0249
+NIH19KT0252	NIH19KT0252
+
+
+bcftools reheader --samples ../long_ID.check.table.txt HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz -o HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz
+bcftools reheader --samples ../long_ID.check.table.txt HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz -o HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz
+
+cd /DATA/smkim/JG/08.HLAseq/20221011_concordance
+
+- longread
+bcftools isec -p longread HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz
+
+
+- shortread
+bcftools isec -p shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+- GATK (long short)
+bcftools isec -p GATK HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz shortread HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+- DV (long short)
+bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+
+
+## KCHIP QC
+- SNP ID 변경
+R
+
+df <-read.table("JG.HLAseq.intersect.ref.allele.txt",header=T)
+ref <-read.table("/BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.txt",header=T)
+out <- merge(df,ref[,c(1,10,11)],by.x="V2",by.y="Probe_Set_ID",all.x=T)
+ref1<-read.table("/BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt",header=T)
+out1 <- merge(out,ref1[,c(1,7,8)],by.x="V2",by.y="AFFYID",all.x=T)
+out1[!(out1$Ref_Allele %in% c("A","G","C","T")),]
+write.table(out1,"rough.merge.HLAsnpID.check.v1.txt",col.names=T,row.names=F,sep="\t",quote=F)
+
+
+python3
+
+import os
+
+def main():
+    df = open("rough.merge.HLAsnpID.check.v1.txt","r")
+    out = open("kchip.ID.change.for.HLAseq.v2.txt","w")
+    header = df.readline()
+    header = header.split()
+    while 1:
+        line = df.readline()
+        if not line:
+            break
+        tmp = line.replace("\n","").split("\t")
+        # 14 # 15 NA
+        if tmp[header.index("REF")] != "NA" or tmp[header.index("ALT")] != "NA":
+            if tmp[header.index("REF")] == tmp[header.index('ref')]:
+                id = "6:28477797-33448354_" + tmp[header.index("pos")] + "_"+tmp[header.index("REF")] + "_" + tmp[header.index("ALT")]
+            else:
+                id = "6:28477797-33448354_" + tmp[header.index("pos")] + "_"+tmp[header.index("ALT")] + "_" + tmp[header.index("REF")]
+        #elif (tmp[header.index('Ref_Allele')] == "0" or tmp[header.index('Ref_Allele')] =="0") and :
+        elif tmp[header.index('Ref_Allele')]  == tmp[header.index('ref')]:
+            id = "6:28477797-33448354_" + tmp[header.index("pos")] + "_"+tmp[header.index("ref")] + "_" + tmp[header.index("Alt_Allele")]
+        else:
+            id = "6:28477797-33448354_" + tmp[header.index("pos")] + "_"+tmp[header.index("ref")] + "_" + tmp[header.index("Ref_Allele")]
+
+        out.write("%s\t%s\n"%(tmp[0],id))
+    out.closed()
+
+main()
+
+- dup pos SNP 제거
+
+python3
+
+df = open("JG.QCed.forHLAseq.bim","r")
+out = open("rm_duplist.txt","w")
+        
+
+
+
+plink --bfile JG.QCed.forHLAseq --update-name kchip.ID.change.for.HLAseq.v2.txt --make-bed --out JG.QCed.forHLAseq_updateSNP
+
+
+
+
+
+
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+
+
+
+
