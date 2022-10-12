@@ -1,0 +1,16 @@
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+     gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+     -R /ref/HLA.target.fasta \
+     -V /input/gatk.hardfilter/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz \
+     --filter-name "QD_filter" \
+     -filter "QD'<'2.0" \
+     --filter-name "FS_filter" \
+     -filter "FS'>'60.0" \
+     --filter-name "MQ_filter" \
+     -filter "MQ'<'40.0" \
+     --filter-name "SOR_filter" \
+     -filter "SOR'>'10.0" \
+
+
+
+     

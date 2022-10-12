@@ -1,0 +1,46 @@
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/marker_filter
+
+gatk.cnn.filtering:
+HLA.longread.1DCNNfilter_annotated.vcf.gz      HLA.shortread.1DCNNfilter_annotated.vcf.gz
+HLA.longread.1DCNNfilter_annotated.vcf.gz.tbi  HLA.shortread.1DCNNfilter_annotated.vcf.gz.tbi
+
+gatk.joint.call.raw:
+HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+
+
+/Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/v1
+HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+
+output : rm_multi.allele
+
+1. multi allele, indel 제거
+
+bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 4 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {}.vcf.gz | bgzip -c > ./onlySNP/{}.onlySNP.vcf.gz'
+
+
+bcftools view --max-alleles 2 --exclude-types indels ./gatk.cnn.filtering/HLA.longread.1DCNNfilter_annotated.vcf.gz -o ./rm_multi.allele/HLA.longread.1DCNNfilter_annotated_onlySNP.vcf.gz
+bcftools view --max-alleles 2 --exclude-types indels ./gatk.cnn.filtering/HLA.shortread.1DCNNfilter_annotated.vcf.gz -o ./rm_multi.allele/HLA.shortread.1DCNNfilter_annotated_onlySNP.vcf.gz
+
+bcftools view --max-alleles 2 --exclude-types indels ./gatk.joint.call.raw/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz -o ./rm_multi.allele/HLA.longread.GATK.raw_onlySNP.vcf.gz
+bcftools view --max-alleles 2 --exclude-types indels ./gatk.joint.call.raw/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz -o ./rm_multi.allele/HLA.shortread.GATK.raw_onlySNP.vcf.gz
+
+
+2. bcftools query -f 
+bcftools query -f '%POS\t%QD\t%QUAL\t%SOR\t%FS\t%MQ\t%MQRankSum\t%ReadPosRankSum\n'
+
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "SOR > 3.0" --filter-name "SOR3" \
+    -filter "FS > 60.0" --filter-name "FS60" \
+    -filter "MQ < 40.0" --filter-name "MQ40" \
+    -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+    -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+
+
+ls *gz | sed "s/.vcf.gz//g"  | xargs -I{} -P 4 bash -c 'bcftools query -f "%POS\t%QD\t%QUAL\t%SOR\t%FS\t%MQ\t%MQRankSum\t%ReadPosRankSum\n" {}.vcf.gz > {}_INFO.txt'
+

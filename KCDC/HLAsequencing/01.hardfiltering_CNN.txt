@@ -1,0 +1,125 @@
+### 20221012 hard filtering
+
+
+gatk -T SelectVariants -R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna -V raw_variants.vcf -selectType SNP -o raw_snps.vcf
+gatk -T SelectVariants -R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna -V raw_variants.vcf -selectType INDEL -o raw_indels.vcf
+
+
+SNP
+
+gatk -T VariantFiltration \
+-R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna \
+-V raw_snps.vcf \
+-filterName "QD_filter" \
+-filter "QD'<'2.0" \
+-filterName "FS_filter" \
+-filter "FS'>'60.0" \
+-filterName "MQ_filter" \
+-filter "MQ'<'40.0" \
+-filterName "SOR_filter" \
+-filter "SOR'>'10.0" \
+-o filtered_snps.vcf
+
+Indels
+
+gatk -T VariantFiltration \
+-R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna \
+-V raw_indels.vcf \
+-filterName "QD_filter" \
+-filter "QD'<'2.0" \
+-filterName "FS_filter" \
+-filter "FS'>'200.0" \
+-filterName "SOR_filter" \
+-filter "SOR'>'10.0" \
+-o filtered_indels.vcf
+
+
+####### DATA
+101
+
+inDir : /DATA/smkim/HLA_seq/VCF
+#outDir : /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/04.filtering/hard.filter/
+
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+
+
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+     gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+
+
+
+gatk -T SelectVariants -R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna -V raw_variants.vcf -selectType SNP -o raw_snps.vcf
+gatk -T SelectVariants -R GCF_000001405.33_GRCh38.p7_chr20_genomic.fna -V raw_variants.vcf -selectType INDEL -o raw_indels.vcf
+###1 variant select
+
+
+## short-read
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type SNP \
+    -O /input/gatk.hardfilter/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type INDEL \
+    -O /input/gatk.hardfilter/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectINDEL.vcf.gz
+
+## long-read
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type SNP \
+    -O /input/gatk.hardfilter/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type INDEL \
+    -O /input/gatk.hardfilter/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectINDEL.vcf.gz
+
+
+## 2. hard filtering
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+     gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+     -R /ref/HLA.target.fasta \
+     -V /input/gatk.hardfilter/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz \
+     --filter-name "QD_filter" \
+     -filter "QD'<'2.0" \
+     --filter-name "FS_filter" \
+     -filter "FS'>'60.0" \
+     --filter-name "MQ_filter" \
+     -filter "MQ'<'40.0" \
+     --filter-name "SOR_filter" \
+     -filter "SOR'>'10.0" \
+     -O /input/gatk.hardfilter/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.hardfilter.vcf.gz
+
+
+
+
+############ CNN filtering
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+     gatk --java-options "-Xmx32g -Xms32g" CNNScoreVariants \
+     -R /ref/HLA.target.fasta \
+     -V /input/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+     -O /input/gatk.cnn.filtering/HLA.shortread.1DCNNfilter_annotated.vcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+     gatk --java-options "-Xmx32g -Xms32g" CNNScoreVariants \
+     -R /ref/HLA.target.fasta \
+     -V /input/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+     -O /input/gatk.cnn.filtering/HLA.longread.1DCNNfilter_annotated.vcf.gz
+
+
+
+

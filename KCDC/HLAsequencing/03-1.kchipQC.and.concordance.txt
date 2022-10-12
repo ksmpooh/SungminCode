@@ -191,15 +191,85 @@ python3
 
 df = open("JG.QCed.forHLAseq.bim","r")
 out = open("rm_duplist.txt","w")
-        
+
+pos = []
+count = 0
+while 1:
+    line = df.readline()
+    if not line:break
+    tmp = line.split()
+    if tmp[3] in pos:
+        count= count + 1
+        print(count)
+        continue
+    pos.append(tmp[3])
+    out.write("%s\n"%tmp[1])
+
+out.close()
+
+
+plink --bfile JG.QCed.forHLAseq --extract rm_duplist.txt --make-bed --out JG.QCed.forHLAseq_rmdup
+plink --bfile JG.QCed.forHLAseq_rmdup --update-name kchip.ID.change.for.HLAseq.v2.txt --make-bed --out JG.QCed.forHLAseq_rmdup_updateSNP
+
+plink --bfile JG.QCed.forHLAseq_rmdup_updateSNP --update-chr change.chr.txt --make-bed --out JG.QCed.forHLAseq_rmdup_updateSNP_updatechr --allow-extra-chr
+
+
+plink --bfile JG.QCed.forHLAseq_rmdup --a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out JG.QCed.forHLAseq_rmdup_convert
 
 
 
-plink --bfile JG.QCed.forHLAseq --update-name kchip.ID.change.for.HLAseq.v2.txt --make-bed --out JG.QCed.forHLAseq_updateSNP
+
+
+cd /DATA/smkim/JG/08.HLAseq/20221011_concordance
+
+
+bcftools annotate --rename-chrs update.chr JG.QCed.forHLAseq_rmdup_convert.vcf -o JG.QCed.forHLAseq_rmdup_convert_updatechr.vcf
+
+
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' JG.QCed.forHLAseq_rmdup_convert_updatechr.vcf -o JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID.vcf.gz
+
+
+bcftools query -l JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID.vcf.gz > sample.v0.txt
+awk '{split($1,a,"_"); print $1,a[1]}' sample.v0.txt > sample.v1.txt
+
+header change
+
+bcftools reheader -s sample.v1.txt JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID.vcf.gz -o JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf.gz
 
 
 
 
+####### concordance
+my mac!!!
+cd /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/concordance
+
+HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+
+
+# longread
+bcftools isec -p longread ../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz ../v1/HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz
+
+# shortread
+bcftools isec -p shortread ../v1/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz ../v1/HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+# GATK (long short)
+bcftools isec -p GATK ../v1/HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz ../v1/HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz
+
+# DV (long short)
+bcftools isec -p DV ../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz ../v1/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+
+
+
+## with KCHIP (long,short,kchip)
+
+bcftools isec --nfiles 3 -p withKCHIP_DV ../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz ../v1/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz ../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf.gz
+
+bcftools isec -p withKCHIP_GATK ./GATK/0002.vcf ./GATK/0003.vcf ../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf
 
 
 SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
