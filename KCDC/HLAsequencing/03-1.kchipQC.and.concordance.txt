@@ -268,11 +268,39 @@ bcftools isec -p DV ../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexu
 ## with KCHIP (long,short,kchip)
 
 bcftools isec --nfiles 3 -p withKCHIP_DV ../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz ../v1/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz ../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf.gz
+bcftools isec --nfiles 3 -p withKCHIP_GATK ../v1/HLA.Longread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate_checksampleID.vcf.gz ../v1/HLA.Shortread.Seq.GATK.recal.pass.onlySNP_SNPIDupdate.vcf.gz ../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf.gz
 
-bcftools isec -p withKCHIP_GATK ./GATK/0002.vcf ./GATK/0003.vcf ../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf
+
 
 
 SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+withKCHIP_DV/0000.vcf	for stripped	../v1/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.onlySNP_checksampleID.vcf.gz
+withKCHIP_DV/0001.vcf	for stripped	../v1/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+withKCHIP_DV/0002.vcf	for stripped	../kchip/JG.QCed.forHLAseq_rmdup_convert_updatechr_updateID_updateSampleID.vcf.gz
+
+
+##concordance_result
+#withKCHIP_DV
+
+
+#SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+SnpSift concordance -v ./longread/0002.vcf ./longread/0003.vcf > ./concordance_result/QulityMetricx_longread.txt
+SnpSift concordance -v ./shortread/0002.vcf ./shortread/0003.vcf > ./concordance_result/QulityMetricx_shortread.txt
+SnpSift concordance -v ./GATK/0002.vcf ./GATK/0003.vcf > ./concordance_result/QulityMetricx_GATK_longshort.txt
+SnpSift concordance -v ./DV/0002.vcf ./DV/0003.vcf > ./concordance_result/QulityMetricx_DV_longshort.txt
+
+SnpSift concordance -v ./withKCHIP_DV/0002.vcf ./withKCHIP_DV/0000.vcf > ./concordance_result/QulityMetricx_DV_kbalong.txt
+SnpSift concordance -v ./withKCHIP_DV/0002.vcf ./withKCHIP_DV/0001.vcf > ./concordance_result/QulityMetricx_DV_kbashort.txt
+
+
+SnpSift concordance -v ./withKCHIP_GATK/0002.vcf ./withKCHIP_GATK/0000.vcf > ./concordance_result/QulityMetricx_GATK_kbalong.txt
+SnpSift concordance -v ./withKCHIP_GATK/0002.vcf ./withKCHIP_GATK/0001.vcf > ./concordance_result/QulityMetricx_GATK_kbashort.txt
+
+
+
+
 
 
 
