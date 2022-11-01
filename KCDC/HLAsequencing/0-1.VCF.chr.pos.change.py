@@ -60,3 +60,29 @@ def test():
 
 
 
+# python test.py [input.vcf.gz]
+import gzip, os, sys
+vcfIn = sys.argv[1]
+print('VCF in : %s'%vcfIn)
+vcfOut = vcfIn.replace(".vcf.gz",".updateID.vcf")
+# ori -> 1
+def pos_chagne_gatkbundle():
+    with open(vcfOut,"w") as out:
+        with gzip.open(vcfIn,"rt") as fin:
+            for line in fin:
+                if line[0] == "#":
+                    out.write(line)
+                    continue
+                pos = line.split("\t")[1]
+                new_pos = str(int(pos)-28477797)
+                #new_line = line.replace("6:28477797-33448354","chr6").replace("\t%s\t"%(pos),"\t%s\t"%(new_pos)).replace("_%s_"%(pos),"_%s_"%(new_pos))
+                new_line = line.replace("\t%s\t"%pos,"\t%s\t"%new_pos)
+                out.write(new_line)
+    
+    os.system("bgzip -f %s"%(vcfOut))
+    os.system("tabix -f -p vcf %s.gz"%vcfOut)
+
+
+pos_chagne_gatkbundle()
+
+    

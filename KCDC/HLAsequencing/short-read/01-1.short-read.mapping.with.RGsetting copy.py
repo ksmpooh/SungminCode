@@ -1,4 +1,4 @@
-## HLA short-read alignment 
+## HLA short-read alignment  after trmmined
 # 20220427
 # change ID (set @RG)
 
@@ -12,21 +12,28 @@
 #
 import os,glob
 
-wDir = "/DATA/smkim/HLA_seq/"
-shortread_Dir = wDir + "MHC_Illumina_Rawdata/"
+#wDir = "/DATA/smkim/HLA_seq/"
+wDir = "/ADATA/smkim/HLA_seq/"
+#shortread_Dir = wDir + "MHC_Illumina_Rawdata/"
+shortread_Dir = wDir + "short-read/"
 
-shortread_raw = shortread_Dir + "Fastq/"
+#shortread_raw = shortread_Dir + "Fastq/"
+shortread_raw = shortread_Dir +  "00.rawDATA/trimmed/"
 shortread_mapping = shortread_Dir + "01.mapping/"
 
-#os.system("mkdir %s"%(shortread_mapping))
+os.system("mkdir %s"%(shortread_mapping))
 
 shDir = wDir + "SCRIPTs/"
-refDir = "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test/"
+#refDir = "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test/"
 refDir = "/DATA/smkim/HLA_seq/REF/"
 #~/bwa-mem2/bwa-mem2 mem -t 4 ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz | samtools sort -o test999.sorted.bam
 #bwa mem -M -R "@RG\tID:HWI\tSM:[샘플이름]\tPL:ILLUMINA\tLB:[기계]" -t 10 [참조유전체 fasta] [FASTQ.gz 1; 압축형태 이용가능] [FASTQ.gz 2]
 #~/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:733\tPL:ILLUMINA\tLB:Novaseq7000" ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz >test_align.sam
 #samtools sort test_align.sam -o test_align_sorted.bam
+
+
+#00.rawDATA/trimmed/1003_S71_L002_R1_001_paired.fastq.gz
+#00.rawDATA/trimmed/1003_S71_L002_R1_001_unpaired.fastq.gz
 
 def shortread_mapping_sh(ID_table,col_index):
     print("shortread mapping!")
@@ -41,10 +48,10 @@ def shortread_mapping_sh(ID_table,col_index):
     for i in ID_table:
         i = i.split()
         #print(i)
-        R1 = shortread_raw + i[2] + ".fastq.gz"
+        R1 = shortread_raw + i[2] + "_paired.fastq.gz"
         R2 = R1.replace("_R1_","_R2_")
         #out = shortread_mapping + "HLA.Shortread.Seq.%s.align.sorted.bam"%i[0]
-        out = "%sHLA.Shortread.Seq.%s.align.sorted.bam"%(shortread_mapping,i[0])
+        out = "%sHLA.Shortread.Seq.%s.trimmed.align.sorted.bam"%(shortread_mapping,i[0])
         with open(shDir2 + "%s_%s.sh"%(i[0],i[2]),"w") as shout:
             shout.write("%s mem -t 16 -R \"@RG\\tID:HWI\\tSM:%s\\tPL:ILLUMINA\\tLB:Novaseq7000\" %s/HLA.target.fasta %s %s | samtools sort -o %s\n"%(tool,i[0],refDir,R1,R2,out))
             shout.write("samtools index %s\n"%(out))
@@ -142,7 +149,7 @@ def main():
     refs = [s.replace("\n","") for s in refs]
 
     header = refs.pop(0)
-    #shortread_mapping_sh(refs,2)
+    shortread_mapping_sh(refs,2)
     #mark_duplicated()
     #deepvariant_calling()
     gatk_calling()

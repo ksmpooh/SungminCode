@@ -1,0 +1,76 @@
+#### long read after trimmend
+
+samtools veie -shb input.bam >  output.bam
+
+samtools veie -shb input.bam >  output.bam
+
+samtools veie --rg '@RG\tID:myid\tSM:mysample' -shb 5th_Cell.3832.bc1008--bc1008_trimmed.bam >  output.bam
+samtools veie --rg '@RG\tID:myid\tSM:mysample' -shb 5th_Cell.3832.bc1008--bc1008_trimmed.bam |less -NS
+
+
+samtools addreplacerg -r '@RG\tID:myid\tSM:IDtest' 5th_Cell.3832.bc1008--bc1008_trimmed.bam |samtools view -Shb > test.bam
+
+
+samtools view -Shb 5th_Cell.3832.bc1008--bc1008_trimmed.bam > th_Cell.3832.bc1008--bc1008_trimmed_test1.bam
+
+pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta 2nd_Cell.264.bc1001--bc1001.bam test1.bam --sort --preset CCS --rg '@RG\tID:myid\tSM:mysample'
+5th_Cell.3832.bc1008--bc1008_trimmed.bam
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 5th_Cell.3832.bc1008--bc1008_trimmed.bam 5th_Cell.3832.bc1008--bc1008_trimmed_mapped.bam --sort --preset CCS --rg '@RG\tID:myid\tSM:mysample'
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 5th_Cell.3832.bc1008--bc1008_trimmed.bam test.bam --sort --preset CCS --rg '@RG\tID:103test\tSM:mysample'
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta test.bam test1.bam --sort --preset CCS
+
+
+#### 1
+samtools view -Shb 5th_Cell.3832.bc1008--bc1008_trimmed.bam > th_Cell.3832.bc1008--bc1008_trimmed_test1.bam
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta th_Cell.3832.bc1008--bc1008_trimmed_test1.bam th_Cell.3832.bc1008--bc1008_trimmed_test2.bam --sort --preset CCS
+samtools addreplacerg -r '@RG\tID:myid\tSM:IDtest' th_Cell.3832.bc1008--bc1008_trimmed_test2.bam |samtools view -Shb >  th_Cell.3832.bc1008--bc1008_trimmed_test3.bam
+
+
+
+
+###test
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta intest.bam --sort --preset CCS
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg19/hg19.chr6.fa ../5th_Cell.3832.bc1008--bc1008_trimmed_toBAM.bam 5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp.bam --sort --preset CCS
+
+
+docker run -v "/BDATA/smkim/HLA_seq/longread/01.unmapped/trimmed/test":"/input" -v "/BDATA/smkim/HLA_seq/REF/":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/hg19/hg19.chr6.fa \
+--reads /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp.bam --output_gvcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp_DB.gvcf.gz \
+--output_vcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp_DB..vcf.gz --num_shards 60
+
+
+docker run -v "/BDATA/smkim/HLA_seq/longread/01.unmapped/trimmed/test":"/input" -v "/BDATA/smkim/HLA_seq/REF/":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.fasta \
+--reads /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped.bam --output_gvcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped_DB.gvcf.gz \
+--output_vcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped_DB.vcf.gz --num_shards 60
+
+## q20
+
+
+docker run -v "/BDATA/smkim/HLA_seq/longread/01.unmapped/trimmed/test":"/input" -v "/BDATA/smkim/HLA_seq/REF/":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/hg19/hg19.chr6.fa \
+--reads /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp.Q20.bam --output_gvcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp.Q20_DB.gvcf.gz \
+--output_vcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapp.Q20_DB.vcf.gz --num_shards 60
+
+
+docker run -v "/BDATA/smkim/HLA_seq/longread/01.unmapped/trimmed/test":"/input" -v "/BDATA/smkim/HLA_seq/REF/":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.fasta \
+--reads /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped.Q20.bam --output_gvcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped.Q20_DB.gvcf.gz \
+--output_vcf /input/5th_Cell.3832.bc1008--bc1008_trimmed_toBAM_mapped.Q20_DB.vcf.gz --num_shards 60
+
+
+
+
+
+ls *Cell.*bam |xargs -I{} -P 4 bash -c "samtools stats {} > {}.stats"
+ls *Cell.*bam |xargs -I{} -P 4 bash -c "samtools flagstat {} > {}.flagstat"
+#####
+#####
+
+
+ls  *trimmed.bam | sed "s/.bam//g" | xargs -I {} -P 1 bash -c "samtools view -Shb {}.bam > {}_toBAM.bam"
+ls *_toBAM.bam | sed "s/.bam//g"  |  xargs -I {} -P 2 bash -c "pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta {}.bam {}_mapped.bam --sort --preset CCS"

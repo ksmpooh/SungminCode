@@ -1,3 +1,13 @@
+### longQC
+python ~/LongQC/longQC.py sampleqc -x pb-hifi 3rd_Cell.998.bc1007--bc1007.bam -p 32 -c
+
+python ~/LongQC/longQC.py sampleqc -x pb-hifi 3rd_Cell.998.bc1007--bc1007.bam -p 32 -c 3rd_Cell.998.bc1007--bc1007_trimed.bam -o test
+
+ls *Cell*bam | sed "s/.bam//g" | xargs -I {} -P 1 bash -c "python ~/LongQC/longQC.py sampleqc -x pb-hifi {}.bam -p 4 -c {}_trimmed.bam -o ./LongQC_{}"
+
+#KCDCP.2020HLAseq010.bc1010--bc1010.ccs.bam
+ls KCC*Cell*bam | sed "s/.bam//g" | xargs -I {} -P 1 bash -c "python ~/LongQC/longQC.py sampleqc -x pb-hifi {}.bam -p 4 -c {}_trimmed.bam -o ./LongQC_{}"
+###
 ~/Downloads/minimap2-2.24_x64-linux/minimap2  -ax map-hifi /DATA/smkim/pacbio/INPUTs/Data/HLA.target.fasta.tgz  2nd_Cell.bc1001--bc1001.fastq -t 16 > test_2.bam
 
 -ax map-hifi ref.fa pacbio-ccs.fq.gz 2nd_Cell.bc1001--bc1001.fastq > test.samp
@@ -65,6 +75,8 @@ ls HLA*bam | cut -d"." -f"1-4" |xargs -I{} -P 1 bash -c 'pbmm2 align /DATA/smkim
 
 
 ls HLA.*_mapped.bam |cut -d"." -f 1-4 | xargs -I{} -P 12 bash -c "samtools view -h -q 20 {}.bam -o {}.Q20.bam"
+ls *bam |sed 's/.bam//g' | xargs -I{} -P 2 bash -c "samtools view -h -q 20 {}.bam -o {}.Q20.bam"
+
 
 ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools index ../02.mapping/{}_mapped.bam"
 

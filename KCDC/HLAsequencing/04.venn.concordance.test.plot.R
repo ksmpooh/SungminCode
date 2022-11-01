@@ -2,7 +2,8 @@
 
 ##### HLA seqeuncing
 library(ggplot2)
-library(ggbreak) 
+library(ggbreak)
+library(tidyverse) 
 
 setwd("~/Desktop/KCDC/long_read/2022/VCF/onlySNP/DV/")
 setwd("~/")
@@ -467,9 +468,6 @@ for (i in file_list[-1]) {
 head(df)
 table(df$title)
 
-df %>%
-  mutate(conf = recode(conf, 'East' = 'E', 'West' = 'W', 'North' = 'N'), 
-         position = recode(position, 'Guard' = 'G', 'Forward' = 'F'))
 
 means <- aggregate(Val ~  type, df, mean)
 

@@ -25,6 +25,23 @@ python -m NomenCleaner \
     --mem 32g \
     --nthreads 20
 
+ 
+ python -m MakeReference \
+    --variants  DATA/00.rawDATA/KBA/JG.QCed.HLA_onlyHLAtypingSample \
+    --chped DATA/01.nomenclean/HLA.nomenclean.chped \
+    --hg 19 \
+    --out DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 32g \
+    --nthreads 20
+
+ 
+ 
+ 
+ 
+ 
  python -m MakeReference \
     --variants  MakeReference/example/g1k_subset_snps\
     --chped MakeReference/example/g1k_subset.chped \
@@ -42,6 +59,14 @@ python -m SNP2HLA \
   --target DATA/00.rawDATA/KBA/toy_ID.change \
   --reference DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
   --out DATA/03.SNP2HLA/IMPUTED.1958BC_usnigKBAref \
+  --nthreads 20 \
+  --mem 64g
+
+
+python -m SNP2HLA \
+  --target SNP2HLA/example/1958BC \
+  --reference DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+  --out DATA/03.SNP2HLA/IMPUTED.1958BC_usnigKBAref_test \
   --nthreads 20 \
   --mem 64g
 
