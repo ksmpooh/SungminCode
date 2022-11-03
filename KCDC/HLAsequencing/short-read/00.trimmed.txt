@@ -183,3 +183,48 @@ bash -c 'glnexus_cli \
 --list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.vcf.gz
 
 HLA.Shortread.Seq.NIH19KT3832.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.gvcf.gz
+
+
+
+### conda gatk
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c 'gatk HaplotypeCaller -R ../../REF/HLA.target.fasta -I {}.bam -O /BDATA/smkim/HLA_seq/short-read/02.variant.call/gatk/{}.GATK_haplotypeCaller_VariantCalling.gvcf.gz --native-pair-hmm-threads 10 -ERC GVCF'
+
+
+
+
+gatk HaplotypeCaller \
+-R ../REF/HLA.target.fasta \
+-I ./01.mapping/HLA.Shortread.Seq.NIH19KT2254.trimmed.align.sorted.dedup.bam \
+-O ./test/test.output.gvcf.gz \
+--native-pair-hmm-threads 20 \
+-ERC GVCF
+
+
+
+
+
+gatk HaplotypeCaller \
+-R ../REF/HLA.target.fasta \
+-I ./01.mapping/HLA.Shortread.Seq.NIH19KT2254.trimmed.align.sorted.dedup.bam \
+-O ./test/test.output.gvcf.gz \
+--native-pair-hmm-threads 20 \
+-ERC GVCF
+
+../../REF/hg19/hg19.chr6.fa
+../../REF/hg19/hg19.fa
+
+gatk HaplotypeCaller \
+-R ../../REF/hg19/hg19.chr6.fa \
+-I ./HLA.Longread.Seq.NIH19KT2254_mapped_wholechrREF.bam \
+-O ./test/HLA.Longread.Seq.NIH19KT2254_mapped_wholechrREF_gatkcall.bam \
+--native-pair-hmm-threads 20 \
+-ERC GVCF
+
+gatk HaplotypeCaller \
+-R ../../REF/hg19/hg19.fa \
+-I ./HLA.Longread.Seq.NIH19KT2254_mapped_wholeREF.bam \
+-O ./test/HLA.Longread.Seq.NIH19KT2254_mapped_wholeREF_gatkcall.bam \
+--native-pair-hmm-threads 20 \
+-ERC GVCF
+

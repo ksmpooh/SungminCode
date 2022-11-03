@@ -114,7 +114,14 @@ cat *stats | grep ^SN | cut -f 2- | grep "average length" > ../00.bam.average.le
 
 
 
-
+### DV
+in=$1
+echo $in
+docker run -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/02.mapping":"/input" -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling/":"/output" -v "/DATA/smkim/pacbio/INPUTs":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+##
 
 #### glnexus
 
