@@ -193,38 +193,112 @@ ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c 'gatk HaplotypeCaller -R ..
 
 
 
-gatk HaplotypeCaller \
--R ../REF/HLA.target.fasta \
--I ./01.mapping/HLA.Shortread.Seq.NIH19KT2254.trimmed.align.sorted.dedup.bam \
--O ./test/test.output.gvcf.gz \
---native-pair-hmm-threads 20 \
--ERC GVCF
+## GATK joint
+
+ls *gvcf.gz > gvcf.list.txt 
+### %s/HLA/\/input\/HLA/g
+
+/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call_gatk_BQSR
+
+docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call_gatk_BQSR":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk bash -c \
+'gatk CombineGVCFs -R /ref/HLA.target.fasta \
+-V /input/HLA.Shortread.Seq.NIH19KT0247.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0248.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0249.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0252.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0254.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0258.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0259.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0262.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0263.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0264.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0265.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0724.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0725.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0729.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0730.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0731.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0732.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0733.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0734.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0735.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0736.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0739.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0740.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0741.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0743.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0745.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0746.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0747.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0748.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0750.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0998.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT0999.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1003.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1006.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1007.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1008.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1009.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1012.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1014.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT1017.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2245.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2246.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2248.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2254.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2255.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2259.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2263.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2275.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2277.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2293.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2295.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2302.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2304.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT2325.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3798.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3809.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3813.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3814.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3824.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-V /input/HLA.Shortread.Seq.NIH19KT3832.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz \
+-O /output/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz'
+
+
+
+docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call_gatk_BQSR":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk bash -c \
+'gatk GenotypeGVCFs -R /ref/HLA.target.fasta -V /output/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz \
+-O /output/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz'
+
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+
+### gatk -> glnexus
+
+ls *gvcf.gz > gvcf.list.txt  ## input
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call_gatk_BQSR":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/04.joint_calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config gatk \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling.vcf.gz
+
+/input/HLA.Shortread.Seq.NIH19KT3832.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+
+#gatk_unfiltered
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call_gatk_BQSR":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/04.joint_calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config gatk_unfiltered \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant_unfiltered \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
 
 
 
 
-
-gatk HaplotypeCaller \
--R ../REF/HLA.target.fasta \
--I ./01.mapping/HLA.Shortread.Seq.NIH19KT2254.trimmed.align.sorted.dedup.bam \
--O ./test/test.output.gvcf.gz \
---native-pair-hmm-threads 20 \
--ERC GVCF
-
-../../REF/hg19/hg19.chr6.fa
-../../REF/hg19/hg19.fa
-
-gatk HaplotypeCaller \
--R ../../REF/hg19/hg19.chr6.fa \
--I ./HLA.Longread.Seq.NIH19KT2254_mapped_wholechrREF.bam \
--O ./test/HLA.Longread.Seq.NIH19KT2254_mapped_wholechrREF_gatkcall.bam \
---native-pair-hmm-threads 20 \
--ERC GVCF
-
-gatk HaplotypeCaller \
--R ../../REF/hg19/hg19.fa \
--I ./HLA.Longread.Seq.NIH19KT2254_mapped_wholeREF.bam \
--O ./test/HLA.Longread.Seq.NIH19KT2254_mapped_wholeREF_gatkcall.bam \
---native-pair-hmm-threads 20 \
--ERC GVCF
-
+ls HLA*bam | xargs -I{} -P 12 bash -c "samtools stats {} > {}.stats"
+ls HLA*dedup.bam | xargs -I{} -P 12 bash -c "samtools stats {} > {}.stats"

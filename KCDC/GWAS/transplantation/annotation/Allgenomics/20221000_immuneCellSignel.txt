@@ -81,7 +81,106 @@ out.close()
 
 
 
+### main signal 추출
+
+Cell type	Signal1	Signal1_c	Search
+T_cell_(αβ)	TCR	TRA	TRAV
+            		TRB	TRBV
+T_cell_(γδ)	TCR	TRG	TRGV
+		            TRD	TRDV
+NKT	iTCR		
+B_cell	BCR	BCR	BCR
+NK_cell	NKG2D	KLRK1	KLRK1
+NK_cell	NKp30	NCR3	NCR3
+NK_cell	NKp44	NCR2	NCR2
+NK_cell	NKp46	NCR1	NCR1
+Myeloid_cells	TLR	TASL	TLR
+Myeloid_cells	RLR	DHX58	DHX58
+Myeloid_cells	NLR	NLRP2B	NLRP
+Mast_Cell	FcεRI	FCER1A	FCER1A
+
+# referene DATA 없는거 체크
+1     TRA TRAV
+2     TRB TRBV
+3     TRG TRGV
+4     TRD TRDV
+10   TASL  TLR
+12 NLRP2B NLRP
+
+cd /BDATA/smkim/KR_allogenomics/04.immune_cell_signal/main_gene
+
+#R 
+df <-read.table("../main_signal_forSelectGene.txt")
+ref <-read.table("../../refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt")
+out <- ref[ref$V3 %in% df$V2,]
+out$Gene <- out$V3
+
+
+tmp <- ref[grep("^TRAV",ref$V3),]
+tmp$Gene <- "TRA"
+out <- rbind(out,tmp)
+
+tmp <- ref[grep("^TRBV",ref$V3),]
+tmp$Gene <- "TRB"
+out <- rbind(out,tmp)
+
+tmp <- ref[grep("^TRGV",ref$V3),]
+tmp$Gene <- "TRG"
+out <- rbind(out,tmp)
+
+tmp <- ref[grep("^TRDV",ref$V3),]
+tmp$Gene <- "TRD"
+out <- rbind(out,tmp)
+
+tmp <- ref[grep("^TLR",ref$V3),]
+tmp$Gene <- "TLR"
+out <- rbind(out,tmp)
+
+tmp <- ref[grep("^NLRP",ref$V3),]
+tmp$Gene <- "NLRP"
+out <- rbind(out,tmp)
+
+
+write.table(out,"main_gene_targetGene.txt",col.names=F,row.names=F, quote=F,sep="\t")
+
+##
+
+python ../02.extract.py ../../00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant main_gene_targetGene_forExtract.txt
+
+ls *raw | xargs -I{} -P 4 bash -c "python3 ./03.score_01.py {} ./"
+
+
+#R - merge SUM
+a <- list.files(pattern = "_ScoreTable_alleleMatching.txt")
+df = read.table(a[1],header = T)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t) 
+}
+
+write.table(df,"../KR.KD.immune.cell.Main_signal_targetGene.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
 
 
+# python3
+
+import os, glob
+
+a = glob.glob("*_ScoreTable_alleleMatching.txt")
+##KR.KD.TMUB1_ScoreTable.txt
+out = open("variant.num.byMainGene.txt","w")
+out.write("gene\tN_snp\n")
+for i in a:
+    tmp = open(i,"r")
+    tmp = tmp.readline().split()
+    gene = i.replace("KR.KD.","").replace("_ScoreTable_alleleMatching.txt","")
+    n_snp = len(tmp) - 3
+    out.write("%s\t%s\n"%(gene,n_snp))
+
+out.close()
 

@@ -57,4 +57,22 @@ echo $in
 docker run -v "/BDATA/smkim/HLA_seq/longread/02.mapped":"/input" -v "/BDATA/smkim/HLA_seq/longread/03.variant_calling":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" google/deepvariant \
 /opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.fasta \
 --reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
---output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 60
+
+
+ls *gvcf.gz > gvcf.list.txt ### /input/
+
+glnexus_cli --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > ../04.joint_calling/HLA.Longread.Seq.trimmed.align.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+
+
+docker run --rm -i -v "/BDATA/smkim/HLA_seq/longread/03.variant_calling":"/input" -v "/BDATA/smkim/HLA_seq/longread/04.joint_calling":"/output" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+
+#DeepVariant_unfiltered
+
+docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling":"/input" ghcr.io/dnanexus-rnd/glnexus:v1.4.1 \
+bash -c 'glnexus_cli \
+--config DeepVariant_unfiltered \
+--list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
