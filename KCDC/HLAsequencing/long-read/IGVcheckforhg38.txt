@@ -1,0 +1,11 @@
+genome@genome103:/BDATA/smkim/HLA_seq/REF/hg38$
+chr6:28477797-33448354
+
+
+samtools faidx resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta chr6:28477797-33448354 chr6_GL000250v2_alt chr6_KI270800v1_alt chr6_KI270799v1_alt  chr6_GL383533v1_alt chr6_KI270801v1_alt  chr6_KI270802v1_alt chr6_KB021644v2_alt chr6_KI270797v1_alt chr6_KI270798v1_alt chr6_GL000251v2_alt chr6_GL000252v2_alt chr6_GL000253v2_alt chr6_GL000254v2_alt chr6_GL000255v2_alt chr6_GL000256v2_alt chr6_KI270758v1_alt > HLA.hg38.test.fasta
+
+
+cd /BDATA/smkim/HLA_seq/longread/01.unmapped
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/HLA.hg38.test.fasta /BDATA/smkim/HLA_seq/longread/01.unmapped/HLA.Longread.Seq.NIH19KT2254.bam ./HLA.Longread.Seq.NIH19KT2254_hg38.bam --sort --preset CCS

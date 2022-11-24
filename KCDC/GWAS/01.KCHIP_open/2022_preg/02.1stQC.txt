@@ -140,3 +140,50 @@ PCA 문제가 있는것 같아서..king 확인
 
 nohup king -b PREG.1stQC_snpolisher_rmLQsample_pruned.bed --related --degree 2 --prefix king/king1 > king/RESULT1.txt &
 nohup king -b PREG.1stQC_snpolisher.bed --related --degree 2 --prefix king/king2 > king/RESULT2.txt &
+
+## 20221124 문제 리스트 확인
+
+plink --bfile PREG.1stQC_snpolisher_rmLQsample --remove mz.rm.list.txt --make-bed --out PREG.1stQC_snpolisher_rmLQsample_rmMZ
+
+
+
+plink --bfile PREG.1stQC_snpolisher_rmLQsample_rmMZ --exclude /BDATA/smkim/JG/03.QC_2nd/INPUTs/chr6_14_rm.txt --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.02 --chr 1-22 --out PREG.1stQC_snpolisher_rmLQsample_rmMZ_pruning
+plink --bfile PREG.1stQC_snpolisher_rmLQsample_rmMZ --extract PREG.1stQC_snpolisher_rmLQsample_rmMZ_pruning.prune.in --make-bed --out PREG.1stQC_snpolisher_rmLQsample_rmMZ_pruned
+
+flashpca_x86-64 --bfile PREG.1stQC_snpolisher_rmLQsample_rmMZ_pruned --outpc PCA_rmMZ.txt
+
+###R
+setwd("/Volumes/DATA/KCHIPQC/PREG/1st/")
+setwd("~/")
+
+pca <- read.table("PCA_rmMZ.txt", header=T)
+
+
+head(pca)
+#dev.off()
+#pdf("./PREG.1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+     #     xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="PREG 1st QC PCA", cex=0.5, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.08, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.8), cex=0.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]
+
+dim(rmList)
+
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+## server
+
+pca <- read.table("PCA_rmMZ.txt", header=T)
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.08 < pca$PC2,]
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+cat rmLQsamples.txt rmPCA.txt mz.rm.list.txt | awk '{print $1}' > 1st.qc.out.txt

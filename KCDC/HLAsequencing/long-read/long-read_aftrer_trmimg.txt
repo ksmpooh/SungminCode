@@ -76,3 +76,7 @@ docker run --rm -i -v "/DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/03.variant.calling
 bash -c 'glnexus_cli \
 --config DeepVariant_unfiltered \
 --list /input/gvcf.list.txt' | bcftools view - | bgzip -c > /DATA/smkim/HLA_seq/MHC_PacBio_Rawdata/04.joint.calling/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c 'gatk HaplotypeCaller -R ../../REF/HLA.target.fasta -I {}.bam -O /BDATA/smkim/HLA_seq/longread/02.variant.call/gatk/{}.GATK_haplotypeCaller_VariantCalling.gvcf.gz --native-pair-hmm-threads 10 -ERC GVCF'

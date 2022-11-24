@@ -299,6 +299,30 @@ bash -c 'glnexus_cli \
 
 
 
+####103 GATK not bqsr
+
+
+
+#docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/GATK":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+#broadinstitute/gatk gatk CombineGVCFs -R /ref/HLA.target.fasta -V /input/gvcf.list.txt -O /output/HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz
+#HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+
+#ls *gvcf.gz > gvcf.list.txt 
+#/BDATA/smkim/HLA_seq/short-read/02.variant.call/gatk
+glnexus_cli --config gatk --list /BDATA/smkim/HLA_seq/short-read/02.variant.call/gatk/gvcf.list.txt | bcftools view - | bgzip - c > /BDATA/smkim/HLA_seq/short-read/03.joint.calling/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling.vcf.gz
+
+
+
+
+
+#gatk_unfiltered
+glnexus_cli --config gatk_unfiltered --list /BDATA/smkim/HLA_seq/short-read/02.variant.call/gatk/gvcf.list.txt | bcftools view - | bgzip - c > /BDATA/smkim/HLA_seq/short-read/03.joint.calling/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+
+
+
+
 
 ls HLA*bam | xargs -I{} -P 12 bash -c "samtools stats {} > {}.stats"
 ls HLA*dedup.bam | xargs -I{} -P 12 bash -c "samtools stats {} > {}.stats"

@@ -338,6 +338,7 @@ ggplot(anno_out,aes(x=type,color=noInHanREF_count)) +
 #setwd("/Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/DV/concordance")
 #setwd("/Volumes/DATA/HLA_seq_2021/forKOGO/chip_short_concordance/inter/")
 setwd("~/Desktop/KCDC/long_read/2022/VCF/Final.VCF/concordance/concordance_result/")
+setwd("~/Desktop/KCDC/long_read/2022/VCF/Final.VCF/concordance/concordance_result/")
 #setwd("~/")
 
 file_list <- list.files(pattern = ".txt")
@@ -498,3 +499,125 @@ a<- df %>% mutate(title = recode(title,"DV_kbalong"="DV : KBA vs Long","DV_kbash
 head(df)
 head(a)
 
+############### 20221122 longDV short GATK hard filtering
+
+
+
+setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result/")
+#setwd("~/")
+
+file_list <- list.files(pattern = ".txt")
+file_list
+data <- read.table(file_list[1],header = T)
+head(data)
+#data <- read.table("QulityMetricx_forKOGO.txt", header = T)
+
+
+data <- cbind(data, TP=(data$REF.REF + data$ALT_1.ALT_1 + data$ALT_2.ALT_2))
+data <- cbind(data, FN=(data$ALT_1.REF + data$ALT_2.REF + data$ALT_2.ALT_1))
+data <- cbind(data, FP=(data$REF.ALT_1 + data$REF.ALT_2 + data$ALT_1.ALT_2))
+
+library(tidyverse)
+data$Sensitivity <- data$TP/(data$TP+data$FN)
+data$Precision <- data$TP/(data$TP+data$FP)
+data$Accuracy <- data$TP/(data$TP+data$FP+data$FN)
+
+
+data %>% #inner_join(maf1) %>% 
+  select(Sensitivity,Precision,Accuracy) %>% 
+  pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>%
+  ggplot(aes(x=type,y=Val,fill=type)) +
+  geom_boxplot()
+
+data %>% #inner_join(maf1) %>% 
+  select(Sensitivity,Precision,Accuracy) %>% 
+  pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>% 
+  mutate(title = "hi")
+
+str_remove(str_remove(file_list[1],".txt"),"QulityMetrix_")
+
+
+data %>% #inner_join(maf1) %>%  
+  select(Sensitivity,Precision,Accuracy) %>% #head()
+  summarise(Sensitivity=mean(Sensitivity))
+
+#pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>% head()
+group_by(type) %>%
+  summarise(mean=mean(Val))
+
+
+df <- data %>% #inner_join(maf1) %>% 
+  select(pos,Sensitivity,Precision,Accuracy) %>% 
+  pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>% 
+  mutate(title = str_remove(str_remove(file_list[1],".txt"),"QulityMetrix_"))
+head(df)
+file_list[-1]
+
+for (i in file_list[-1]) {
+  data <- read.table(i,header = T)
+  data <- cbind(data, TP=(data$REF.REF + data$ALT_1.ALT_1 + data$ALT_2.ALT_2))
+  data <- cbind(data, FN=(data$ALT_1.REF + data$ALT_2.REF + data$ALT_2.ALT_1))
+  data <- cbind(data, FP=(data$REF.ALT_1 + data$REF.ALT_2 + data$ALT_1.ALT_2))
+  
+  data$Sensitivity <- data$TP/(data$TP+data$FN)
+  data$Precision <- data$TP/(data$TP+data$FP)
+  data$Accuracy <- data$TP/(data$TP+data$FP+data$FN)
+  
+  a <- data %>% #inner_join(maf1) %>% 
+    select(pos,Sensitivity,Precision,Accuracy) %>% 
+    pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>% 
+    mutate(title = str_remove(str_remove(i,".txt"),"QulityMetrix_"))
+  df <- rbind(df,a)
+}
+table(df$title)
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATK" ="KBA vs Short",
+                             "LongDV.shortGATK_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATK" = "Long vs Short (ALL)")) %>%
+  ggplot(aes(x=type,y=Val,color=type)) + 
+  geom_boxplot(outlier.size = 0.1) + 
+  facet_wrap(~title,ncol=4) + 
+  labs(x= NULL,y=NULL,colour=NULL,title="Concordance Test Result by SNP") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+a<-df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATK" ="KBA vs Short",
+                             "LongDV.shortGATK_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATK" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>%
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean)
+a
+head(df)
+table(df$title)/3
+table(df$title)
+head(df)
+summary(df$Val)
+
+hla <- read.table("~/Desktop/KCDC/long_read/ncbiRefSeq.sorted_onlyForHLA.txt") %>% 
+  filter(V13 %in% c("HLA-A","HLA-B","HLA-C","HLA-DRB1","HLA-DPA1","HLA-DPB1","HLA-DQA1","HLA-DQB1")) %>% 
+  select(V3,V4,V6,V7,V13) %>% #head()
+  mutate(mid = (V6+V7)/2)
+head(hla)
+
+df %>% filter(title == "LongDV.shortGATK") %>% 
+  ggplot(aes(x=pos,y=Val,color=type)) +
+  geom_point() +
+  ylab(element_blank()) + xlab("Position") +
+  geom_vline(xintercept=hla$mid, linetype = 'dotted', color='black', size = 2) +
+  #annotate(geom="text", label=hla$V13, x=hla$mid, y=0.5, vjust=-1) + 
+  facet_wrap(~type,ncol=1)
+
+
+hla %>% select(V13,mid) %>% arrange(mid)
+#Chr6 : 28477797-33448354 (hg19, 약 5Mb)
+library(gggenes)
+head(example_genes)
+hla <- read.table("~/Desktop/KCDC/long_read/ncbiRefSeq.sorted_onlyForHLA.txt")
+hla %>% filter(V13 %in% c("HLA-A","HLA-B","HLA-C","HLA-DRB1","HLA-DPA1","HLA-DPB1","HLA-DQA1","HLA-DQB1")) %>% 
+  select(V3,V4,V6,V7,V13) %>% #head()
+  ggplot(aes(xmin=V6,xmax=V7,y=V3,fill=V13,label=V13)) +
+  geom_gene_arrow() + 
+  scale_x_continuous(limits = c(28477797,33448354)) +
+  geom_text(aes(label=V13,x=V6),size=2)
+  #geom_segment(aes(x=28477797,xend=28477797,y=V6,yend=V7))
+  

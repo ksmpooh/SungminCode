@@ -213,3 +213,150 @@ ggbarplot(gg_data, x = "count", y = "sample", fill = "len") +
         axis.text.x.bottom=element_text(colour="Brown",face="bold",size=12))
 
 
+###### trimmed
+
+setwd("~/Desktop/KCDC/long_read/2022/long-read/01.bam.stats/")
+library(tidyverse)
+
+
+
+ls_Q20 <- system("ls | grep Q20.bam.coverage", intern = T)
+ls_noQ <- system("ls | grep mapped.bam.coverage", intern = T)
+head(ls_Q20)
+
+df_Q20 = data.frame()
+header = c("rname","startpos","endpos","numreads","covbases","coverage","meandepth","meanbaseq","meanmapq")
+for (i in ls_Q20) {
+  tmp <- read.table(paste0(i))
+  colnames(tmp)<-header
+  tmp$ID <- str_replace(i,".coverage","")
+  df_Q20 <- rbind(df_Q20,tmp)
+}
+
+
+head(df_Q20)
+
+df_noQ = data.frame()
+header = c("rname","startpos","endpos","numreads","covbases","coverage","meandepth","meanbaseq","meanmapq")
+for (i in ls_noQ) {
+  tmp <- read.table(paste0(i))
+  colnames(tmp)<-header
+  tmp$ID <- str_replace(i,".coverage","")
+  df_noQ <- rbind(df_noQ,tmp)
+}
+
+
+setwd("~/Desktop/KCDC/HLA_seq/02.bam.stats/long-read/trimmed/")
+ls_trimmed <- system("ls | grep bam.coverage", intern = T)
+df = data.frame()
+header = c("rname","startpos","endpos","numreads","covbases","coverage","meandepth","meanbaseq","meanmapq")
+for (i in ls_trimmed) {
+  tmp <- read.table(paste0(i))
+  colnames(tmp)<-header
+  tmp$ID <- str_replace(i,".coverage","")
+  df <- rbind(df,tmp)
+}
+df_trimmed <- df
+
+setwd("~/Desktop/KCDC/HLA_seq/02.bam.stats/long-read/trimmed.Q20/")
+ls_trimmed_Q20 <- system("ls | grep bam.coverage", intern = T)
+df = data.frame()
+header = c("rname","startpos","endpos","numreads","covbases","coverage","meandepth","meanbaseq","meanmapq")
+for (i in ls_trimmed_Q20) {
+  tmp <- read.table(paste0(i))
+  colnames(tmp)<-header
+  tmp$ID <- str_replace(i,".coverage","")
+  df <- rbind(df,tmp)
+}
+df_trimmed_Q20 <- df
+
+
+df_Q20$type <- 'Q20'
+df_noQ$type <- "Original"
+df_trimmed$type <- 'Trimmed'
+df_trimmed_Q20$type <- "Trimmed_Q20"
+
+
+
+df <- rbind(df_noQ,df_Q20)
+df <- rbind(df,df_trimmed)
+df <- rbind(df,df_trimmed_Q20)
+head(df)
+
+
+g1 <- ggplot(df,aes(y=numreads,x=type,fill=type)) + 
+  geom_boxplot() +
+  xlab("Number Reads aligned") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")
+
+
+g2<-ggplot(df,aes(y=meandepth,x=type,fill=type)) + 
+  xlab("Mean depth of coverage") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")+
+  geom_boxplot()
+
+g3<-ggplot(df,aes(y=covbases,x=type,fill=type)) + 
+  xlab("Number of covered bases with depth") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")+
+  geom_boxplot()
+
+g4<-ggplot(df,aes(y=coverage,x=type,fill=type)) + 
+  xlab("Percentage of covered bases") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")+
+  geom_boxplot()
+
+g5<-ggplot(df,aes(y=meanbaseq,x=type,fill=type)) + 
+  xlab("Mean baseQ in covered region") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")+
+  geom_boxplot()
+
+g6<-ggplot(df,aes(y=meanmapq,x=type,fill=type)) + 
+  xlab("Mean mapQ of selected reads") + 
+  theme(axis.title.y = element_blank()) +
+  theme(axis.text.x = element_blank()) + 
+  theme(legend.position = "none")+
+  geom_boxplot()
+
+
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+legend <- get_legend(ggplot(df,aes(y=meandepth,x=type,fill=type)) + 
+                       geom_boxplot() +  theme(legend.position = "top") + 
+                       theme(legend.title = element_blank()) + 
+                       theme(legend.key = element_rect(fill = "white")))
+
+blankPlot <- ggplot()+geom_blank(aes(1,1)) + 
+  cowplot::theme_nothing()
+head(df)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+
+
+grid.arrange(g1, g2, g3,g4,g5,g6,legend, ncol=3, nrow = 3, 
+             top = textGrob("Long-Read Bam statistics"),
+             layout_matrix = rbind(c(1,2,3), c(4,5 ,6), c(7,7,7)),
+             widths = c(2.7, 2.7,2.7), heights = c(2.5, 2.5,0.3))
+head(df)
+a<-df %>% 
+  pivot_longer(cols = colnames(df)[4:9],values_to = "Value",names_to = "category") %>%
+  group_by(type,category) %>%
+  summarise(mean = mean(Value)) %>%
+  pivot_wider(names_from = category,values_from = mean)
+a  
+df %>% group_by(type)

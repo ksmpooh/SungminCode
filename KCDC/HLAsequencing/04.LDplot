@@ -24,3 +24,8 @@ cp /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/HLA.Longread
 
 
 /Users/ksmpooh/Downloads/LDBlockShow-1.40/bin/LDBlockShow -InVCF /Users/ksmpooh/Desktop/KCDC/long_read/2022/VCF/Final.VCF/onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz -OutPut test -Region chr6:28477797-33448354 -OutPng -SeleVar 1
+
+
+
+
+LDBlockShow -InVCF HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.vcf.gz -OutPut test -Region :6:28477797-33448354

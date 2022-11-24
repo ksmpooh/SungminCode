@@ -1,0 +1,27 @@
+annotation
+
+##/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i KCHIPV1.1_sorted.vcf -o KCHIPV1.1_sorted_VEP.vcf --offline --fork 10 --stats_text --force_overwrite
+
+
+## data 전처리, chrom/pos 변경
+
+#DV
+     21 #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  NIH19KT0247     NIH19KT0248     NIH19KT0249     NIH19K>
+     22 6:28477797-33448354     104     6:28477797-33448354_104_T_C     T       C       13      .       AF=0.008333;AQ=13       GT:DP:>
+     23 6:28477797-33448354     497     6:28477797-33448354_497_T_A     T       A       61      .       AF=0.091667;AQ=61       GT:DP:>
+     24 6:28477797-33448354     1079    6:28477797-33448354_1079_A_AT
+
+To
+
+chr -> 6
+pos -> - 
+
+
+genome@genome101:/DATA/smkim/HLA_seq/VCF$ python vcf.modify.py HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+
+python vcf.modify.py HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+python vcf.modify.py HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.vcf.gz
+
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.vcf.gz -o long_VEP --offline --fork 10 --stats_text --force_overwrite
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.vcf.gz -o short_VEP --offline --fork 10 --stats_text --force_overwrite

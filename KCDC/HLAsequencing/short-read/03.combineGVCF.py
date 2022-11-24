@@ -27,7 +27,7 @@ def CombineGVCFs():
     os.system(cmd)
 
 
-CombineGVCFs()
+#CombineGVCFs()
 
 
 
@@ -40,7 +40,7 @@ def genotypeGVCFs():
     os.system(cmd)
 
 
-genotypeGVCFs()
+#genotypeGVCFs()
 
 
 

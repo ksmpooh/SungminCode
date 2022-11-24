@@ -151,3 +151,23 @@ DP 값 SUM 값 비교
 bcftools query -f "%POS\t%REF\t%ALT\t[%DP\t]\n" 0002.vcf >  GATK.DP.txt
 bcftools query -f "%POS\t%REF\t%ALT\t%DP\n" 0002.vcf >  GATK.DPv2.txt
 bcftools query -f "%POS\t%REF\t%ALT\t[%DP\t]\n" 0003.vcf >  DV.DP.txt
+
+
+
+
+
+
+
+### HLA B 지역 확인
+
+
+	GRCh37		-1M	+1M	28477797	
+gene	start	end	start	end		
+A	29910309	29913647	28910309	30913647	1432512	1435850
+B	31321652	31324956	30321652	32324956	2843855	2847159
+DRB1	32546552	32557625	31546552	33557625	4068755	4079828
+
+B 2843854 2847159 2844462 2847138
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' HLA.Longread.Seq.NIH19KT2254_mapped.Q20.GATK_haplotypeCaller_VariantCalling.gvcf.gz | awk '$2>=2843855 && $2<= 2847159 {print $0}' |less -NS
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz | awk '$2>=2843855{print $0}' |less -NS
