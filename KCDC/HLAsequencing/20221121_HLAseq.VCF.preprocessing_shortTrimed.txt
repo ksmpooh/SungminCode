@@ -1,0 +1,307 @@
+short-read trimed
+
+cd /DATA/smkim/HLA_seq/VCF/01.VCF.raw
+
+
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.Deepvariant_VariantCalling.GLnexus_Jointcalling.vcf.gz
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling.vcf.gz
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.vcf.gz
+
+
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+
+
+Longread_GATK  Shortread_GATK  Shortread_trimed_BQSR_GATK  Shortread_trimed_GATK
+
+
+
+## set-id
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' ./01.raw/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz | bgzip -c >  ./02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' ./01.raw/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz | bgzip -c >  ./02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz
+
+
+## short-read trimed
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz \
+    -select-type SNP \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz \
+    -select-type INDEL \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL.vcf.gz
+
+## short-read trimed with BQSR
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz \
+    -select-type SNP \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.update/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID.vcf.gz \
+    -select-type INDEL \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL.vcf.gz
+
+
+## 2. hard filtering
+
+## short-read trimed
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "SOR > 3.0" --filter-name "SOR3" \
+    -filter "FS > 60.0" --filter-name "FS60" \
+    -filter "MQ < 40.0" --filter-name "MQ40" \
+    -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+    -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP_hardfilter.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "FS > 200.0" --filter-name "FS200" \
+    -filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL_hardfilter.vcf.gz
+
+## short-read trimmed with bqsr
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "SOR > 3.0" --filter-name "SOR3" \
+    -filter "FS > 60.0" --filter-name "FS60" \
+    -filter "MQ < 40.0" --filter-name "MQ40" \
+    -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+    -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP_hardfilter.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "FS > 200.0" --filter-name "FS200" \
+    -filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL_hardfilter.vcf.gz
+
+
+## 3. vcf merge
+
+
+
+gatk --java-options '-Xmx64g' MergeVcfs \
+-I /workspace/germline/WGS_Norm_HC_calls.snps.filtered.vcf \
+-I /workspace/germline/WGS_Norm_HC_calls.indels.filtered.vcf \
+-O /workspace/germline/WGS_Norm_HC_calls.filtered.vcf
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP_hardfilter.vcf.gz \
+    -I /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL_hardfilter.vcf.gz \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/VCF/01.VCF.raw":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectSNP_hardfilter.vcf.gz \
+    -I /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_selectINDEL_hardfilter.vcf.gz \
+    -O /input/02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+
+
+02-1.GATK.hardfiltering/Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+02-1.GATK.hardfiltering/Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+
+
+
+## SNP ID change (chr,pos)
+
+cd /DATA/smkim/HLA_seq/VCF/01.VCF.raw/02-1.GATK.hardfiltering/
+
+
+Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz
+
+
+
+cd /DATA/smkim/HLA_seq/VCF/01.VCF.raw/02-1.GATK.hardfiltering
+bcftools view -f PASS Shortread_trimed_BQSR_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz| bgzip -c > HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.vcf.gz 
+bcftools view -f PASS Shortread_trimed_GATK/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.vcf.gz | bgzip -c > HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.vcf.gz
+
+
+cd /DATA/smkim/HLA_seq/VCF
+
+ls 01.VCF.raw/02-1.GATK.hardfiltering/HLA.*.PASS*gz | xargs -I {} -P 2 bash -c "python vcf.modify.py {}"
+mv 01.VCF.raw/02-1.GATK.hardfiltering/*update* /DATA/smkim/HLA_seq/VCF/02.updateID/
+
+
+## stats
+cd /DATA/smkim/HLA_seq/VCF/02.updateID
+ls *gz | xargs -I {} -P 4 bash -c "bcftools stats {} > {}.stats"
+
+
+## 4. onlySNP
+
+bcftools view --max-alleles 2 --exclude-types indels %s -o ./onlySNP/%s
+
+ls *trim*gz |sed 's/.vcf.gz//g' | xargs -I {} -P 2 bash -c "bcftools view --max-allele 2 --exclude-type indels {}.vcf.gz | bgzip -c > ../03.onlySNP/{}.onlySNP.vcf.gz"
+
+ls *trim*gz |xargs -I{} -P 4 bash -c "tabix -f -p vcf {}"
+
+
+## 5.kchip
+103
+cd /DATA/smkim/JG/08.HLAseq/DATA/v2_20221122
+
+
+awk '{print $1"\t"$4"_"$5"_"$10"_"$11}' /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.txt > change.snp.ID.txt
+plink --bfile JG.QCed.forHLAseq_rmdup --update-name change.snp.ID.txt --make-bed --out JG.QCed.forHLAseq_rmdup_updatesnp
+
+
+plink --bfile JG.QCed.forHLAseq_rmdup_updatesnp --a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out JG.QCed.forHLAseq_rmdup_updatesnp_convert
+
+
+
+bcftools query -l JG.QCed.forHLAseq_rmdup_updatesnp_convert.vcf > sample.v0.txt
+awk '{split($1,a,"_"); print $1,a[1]}' sample.v0.txt > sample.v1.txt
+
+header change
+
+bcftools reheader -s sample.v1.txt JG.QCed.forHLAseq_rmdup_updatesnp_convert.vcf -o JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf
+
+
+
+
+
+## 6. intersect and concordacne
+
+103
+HLAseq : /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221122_VCF
+
+cd /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221122_VCF
+
+bcftools isec -p LongDV_shortGATK HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+## with KCHIP (long,short,kchip)
+
+#HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+
+bcftools isec --nfiles 6 -p withKCHIP_LongDV_shortGATKhardfilter_all \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools isec --nfiles 5 -p LongDV_shortGATKhardfilter_all \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz
+withKCHIP_LongDV_shortGATKhardfilter_all/0001.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+withKCHIP_LongDV_shortGATKhardfilter_all/0002.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+withKCHIP_LongDV_shortGATKhardfilter_all/0003.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+withKCHIP_LongDV_shortGATKhardfilter_all/0004.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf	for stripped	../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+
+LongDV_shortGATKhardfilter_all/0000.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz
+LongDV_shortGATKhardfilter_all/0001.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+LongDV_shortGATKhardfilter_all/0002.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+LongDV_shortGATKhardfilter_all/0003.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+LongDV_shortGATKhardfilter_all/0004.vcf	for stripped	../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf > ./concordance_result/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0001.vcf > ./concordance_result/QulityMetrix_KBA.shortDV.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0002.vcf > ./concordance_result/QulityMetrix_KBA.shortGATK.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0003.vcf > ./concordance_result/QulityMetrix_KBA.shortGATKtrimbqsr.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0005.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0004.vcf > ./concordance_result/QulityMetrix_KBA.shortGATKtrim.txt
+
+
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0001.vcf > ./concordance_result/QulityMetrix_LongDV.shortDV_onlyKBAintersect.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0002.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATK_onlyKBAintersect.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0003.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATKtrimbqsr_onlyKBAintersect.txt
+SnpSift concordance -v withKCHIP_LongDV_shortGATKhardfilter_all/0000.vcf withKCHIP_LongDV_shortGATKhardfilter_all/0004.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATKtrim_onlyKBAintersect.txt
+
+
+SnpSift concordance -v LongDV_shortGATKhardfilter_all/0000.vcf LongDV_shortGATKhardfilter_all/0001.vcf > ./concordance_result/QulityMetrix_LongDV.shortDV.txt
+SnpSift concordance -v LongDV_shortGATKhardfilter_all/0000.vcf LongDV_shortGATKhardfilter_all/0002.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATK.txt
+SnpSift concordance -v LongDV_shortGATKhardfilter_all/0000.vcf LongDV_shortGATKhardfilter_all/0003.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATKtrimbqsr.txt
+SnpSift concordance -v LongDV_shortGATKhardfilter_all/0000.vcf LongDV_shortGATKhardfilter_all/0004.vcf > ./concordance_result/QulityMetrix_LongDV.shortGATKtrim.txt
+
+
+#### target region 만 추출
+
+cd /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221122_VCF/target
+
+
+bcftools view -R /DATA/smkim/JG/08.HLAseq/REF/HLA.caputer.target.bed
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 4 bash -c  'bcftools view -R /DATA/smkim/JG/08.HLAseq/REF/HLA.caputer.target.bed {}.vcf.gz -o ./target/{}_target.vcf.gz'
+ls *gz | xargs -I{} -P 3 bash -c "tabix -f -p vcf {}"
+
+ 
+
+
+#### trim vs KBA vs vs long vs short
+
+## with KCHIP (long,short,kchip)
+
+
+bcftools isec --nfiles 3 -p withKCHIP_LongDV_shortGATKtrimhardfilter \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+
+0000.vcf  0001.vcf  0002.vcf
+
+
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKtrimhardfilter/0000.vcf ./withKCHIP_LongDV_shortGATKtrimhardfilter/0001.vcf >./concordance_result_longDVshortGATKtrim/QulityMetrix_LongDV.shortGATKtrim_onlyKBAintersect.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKtrimhardfilter/0002.vcf ./withKCHIP_LongDV_shortGATKtrimhardfilter/0000.vcf >./concordance_result_longDVshortGATKtrim/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKtrimhardfilter/0002.vcf ./withKCHIP_LongDV_shortGATKtrimhardfilter/0001.vcf >./concordance_result_longDVshortGATKtrim/QulityMetrix_KBA.shortGATKtrim.txt
+
+
+
+
+bcftools isec --nfiles 2 -p LongDV_shortGATKtrimhardfilter \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+SnpSift concordance -v ./LongDV_shortGATKtrimhardfilter/0000.vcf ./LongDV_shortGATKtrimhardfilter/0001.vcf >./concordance_result_longDVshortGATKtrim/QulityMetrix_LongDV.shortGATKtrim.txt
+
+
+

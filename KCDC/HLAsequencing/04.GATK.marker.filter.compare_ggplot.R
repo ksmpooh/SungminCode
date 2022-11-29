@@ -72,14 +72,14 @@ p1<-df %>% #replace_na(list("0")) %>%
   ggplot(aes(x=QD,fill =type)) + 
   theme(legend.position = "none")+
   geom_vline(xintercept=2, linetype = 'dotted', color='red', size = 1) + 
-  annotate("text", x=7, y=20000, label="QD<2.0") + 
+  annotate("text", x=10, y=25000, label="QD<2.0") + 
   geom_histogram(position="dodge")
 p1
 p2<-df %>% #replace_na(list("0")) %>%
     filter(Seq == "short") %>%
   ggplot(aes(x=QUAL,fill =type)) + 
   theme(legend.position = "none")+
-  #xlim(0, 2000000) +
+#  xlim(0, 2000000) +
   geom_vline(xintercept=30, linetype = 'dotted', color='red', size = 1) + 
   annotate("text", x=2000000, y=100000, label="QUAL<30.0") + 
   geom_histogram(position="dodge")
@@ -98,7 +98,7 @@ p4<-df %>% #replace_na(list("0")) %>%
   ggplot(aes(x=FS,fill =type)) + 
   theme(legend.position = "none")+
   geom_vline(xintercept=60, linetype = 'dotted', color='red', size = 1) + 
-  annotate("text", x=100, y=75000, label="FS>60.0") + 
+  annotate("text", x=200, y=75000, label="FS>60.0") + 
   geom_histogram(position="dodge")
 p4
 
@@ -115,7 +115,7 @@ p6<-df %>% #replace_na(list("0")) %>%
   ggplot(aes(x=MQRankSum,fill =type)) + 
   theme(legend.position = "none")+
   geom_vline(xintercept=-12.5, linetype = 'dotted', color='red', size = 1) + 
-  annotate("text", x=-20, y=30000, label="MQRankSum < -12.5") +
+  annotate("text", x=0, y=60000, label="MQRankSum < -12.5") +
   geom_histogram(position="dodge")
 
 p7<-df %>% #replace_na(list("0")) %>%
@@ -123,7 +123,7 @@ p7<-df %>% #replace_na(list("0")) %>%
   ggplot(aes(x=ReadPosRankSum,fill =type)) + 
   theme(legend.position = "none")+
   geom_vline(xintercept=-8, linetype = 'dotted', color='red', size = 1) + 
-  annotate("text", x=-10, y=30000, label="ReadPosRankSum < -4.0") + 
+  annotate("text", x=0, y=60000, label="ReadPosRankSum < -4.0") + 
   geom_histogram(position="dodge")
 
 legend <- cowplot::get_legend(df %>% #replace_na(list("0")) %>%

@@ -1,4 +1,4 @@
-### short vs han Ïù¥Í±∞ Íº≠ Ï†ÄÏû•Ìï¥ÏïºÌï®!!!1 KOGO Ïö©
+### short vs han ??¥Í±∞ Íº? ?????•Ì?¥Ï?ºÌ??!!!1 KOGO ???
 
 ##### HLA seqeuncing
 library(ggplot2)
@@ -404,13 +404,13 @@ for (i in file_list[-1]) {
     mutate(title = str_remove(str_remove(i,".txt"),"QulityMetricx_"))
   df <- rbind(df,a)
 }
-df %>% mutate(title = recode(title,"DV_kbalong"="DV : KBA vs Long","DV_kbashort" ="DV : KBA vs Short",
-                        "DV_longshort" = "DV : Long vs Short",
-                        "GATK_kbalong" = "GATK : KBA vs Long",
-                        "GATK_kbashort" = "GATK : KBA vs Short",
-                        "GATK_longshort" = "GATK : Long vs Short",
-                        "longread" = "Longread : DV vs GATK",
-                        "shortread" = "Shortread : DV vs GATK")) %>%
+df %>% mutate(title = recode(title,"DV_kbalong"="KBA vs Long (DV)","DV_kbashort" ="KBA vs Short (DV)",
+                        "DV_longshort" = "Long (DV) vs Short (DV)",
+                        "GATK_kbalong" = "KBA vs Long (GATK)",
+                        "GATK_kbashort" = "KBA vs Short (GATK)",
+                        "GATK_longshort" = "Long (GATK) vs Short (GATK)",
+                        "longread" = "Long (DV) vs Long (GATK)",
+                        "shortread" = "Short (DV) vs Short (GATK)")) %>%
   ggplot(aes(x=type,y=Val,color=type)) + 
   geom_boxplot(outlier.size = 0.1) + 
   facet_wrap(~title,ncol=4) + 
@@ -503,7 +503,8 @@ head(a)
 
 
 
-setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_20221122/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_longDVshortGATKtrim/")
 #setwd("~/")
 
 file_list <- list.files(pattern = ".txt")
@@ -570,6 +571,7 @@ for (i in file_list[-1]) {
   df <- rbind(df,a)
 }
 table(df$title)
+
 df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATK" ="KBA vs Short",
                              "LongDV.shortGATK_onlyKBAintersect" = "Long vs Short",
                              "LongDV.shortGATK" = "Long vs Short (ALL)")) %>%
@@ -586,7 +588,8 @@ a<-df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATK"
   na.omit() %>%
   summarise(mean=mean(Val)) %>% #head()
   pivot_wider(names_from = type,values_from = mean)
-a
+
+head(a)
 head(df)
 table(df$title)/3
 table(df$title)
@@ -598,18 +601,29 @@ hla <- read.table("~/Desktop/KCDC/long_read/ncbiRefSeq.sorted_onlyForHLA.txt") %
   select(V3,V4,V6,V7,V13) %>% #head()
   mutate(mid = (V6+V7)/2)
 head(hla)
+table(df$title)
+df %>% filter(title == "LongDV.shortGATKtrim") %>% 
+  ggplot(aes(x=pos,y=Val,color=type)) +
+  geom_point() +
+  ylab(element_blank()) + xlab("Position") +
+  geom_vline(xintercept=hla$mid, linetype = 'dotted', color='black', size = 2) +
+  labs(title = "Concordance Test Result") + 
+  #annotate(geom="text", label=hla$V13, x=hla$mid, y=0.5, vjust=-1) + 
+  facet_wrap(~type,ncol=1)
 
-df %>% filter(title == "LongDV.shortGATK") %>% 
+df %>% filter(title == "LongDV.shortGATKtrim") %>%  filter(pos %in% target$V1) %>%
   ggplot(aes(x=pos,y=Val,color=type)) +
   geom_point() +
   ylab(element_blank()) + xlab("Position") +
   geom_vline(xintercept=hla$mid, linetype = 'dotted', color='black', size = 2) +
   #annotate(geom="text", label=hla$V13, x=hla$mid, y=0.5, vjust=-1) + 
+  labs(title = "Concordance Test Result (on Target)") + 
   facet_wrap(~type,ncol=1)
 
 
+
 hla %>% select(V13,mid) %>% arrange(mid)
-#Chr6 : 28477797-33448354 (hg19, ÏïΩ 5Mb)
+#Chr6 : 28477797-33448354 (hg19, ??? 5Mb)
 library(gggenes)
 head(example_genes)
 hla <- read.table("~/Desktop/KCDC/long_read/ncbiRefSeq.sorted_onlyForHLA.txt")
@@ -620,4 +634,73 @@ hla %>% filter(V13 %in% c("HLA-A","HLA-B","HLA-C","HLA-DRB1","HLA-DPA1","HLA-DPB
   scale_x_continuous(limits = c(28477797,33448354)) +
   geom_text(aes(label=V13,x=V6),size=2)
   #geom_segment(aes(x=28477797,xend=28477797,y=V6,yend=V7))
-  
+
+### target bed
+#setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_20221122/")
+target <- read.table("~/Desktop/KCDC/????????????????????????????????????/??????????????????????????????/HLAseq/HLAseq.target.allPOS.txt")
+head(target)
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                                "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                                "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result\nHLA Seq. vs KBA : 5,374\nLong-read vs Short-read : 54,485") + 
+  xlab(element_blank()) + ylab(element_blank())-> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+table(df$title)
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a1 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a1
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result (on Target) \nHLA Seq. vs KBA : 5,087\nLong-read vs Short-read : 43,081") + 
+  xlab(element_blank()) + ylab(element_blank()) -> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a2
+a1
+ggarrange(a1,a2,ncol = 2,nrow = 1,widths = c(5,5))
