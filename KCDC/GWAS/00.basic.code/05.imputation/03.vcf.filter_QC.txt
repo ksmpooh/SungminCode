@@ -30,7 +30,7 @@ bcftools reheader -h [new_header.txt] -o [output.vcf.gz] [input.vcf.gz]
 mkdir marker
 bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2\n' KKY.7th.imputation_MINIMAC4.chr9_INFO0.8.filter.vcf.gz 
 
-ls *.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c  "bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2\n' {}.vcf.gz > ./marker/{}_marker.txt"
+ls *.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 6 bash -c  "bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%MAF\t%R2\n' {}.vcf.gz > ./marker/{}_marker.txt"
 
 ## marker
 #### marker count

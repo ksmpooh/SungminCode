@@ -10,6 +10,7 @@ library(dplyr)
 setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_20221129/")
 setwd("~/")
 
+
 file_list <- list.files(pattern = ".txt")
 file_list
 data <- read.table(file_list[1],header = T)
@@ -105,6 +106,13 @@ ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
 "LongDV.shortGATKtrim_onlyKBAintersect"     "LongDV.shortGATKtrim"                      "LongDV.shortGATKtrimbqsr_onlyKBAintersect"
 "LongDV.shortGATKtrimbqsr"   
 '
+target <- read.table("~/Desktop/KCDC/????????????????????????????????????/??????????????????????????????/HLAseq/HLAseq.target.allPOS_PM50.txt")
+head(target)
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+
+
+
 df %>% filter(grepl("onlyKBA",title)) %>% select(pos) %>% unique()#head()
 
 df %>% na.omit() %>% filter(grepl("onlyKBA",title)) %>% #select(pos) %>% unique()#head()
@@ -134,6 +142,7 @@ ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
 
 
 ##### long vs short
+target <- read.table("~/Desktop/KCDC/????????????????????????????????????/??????????????????????????????/HLAseq/HLAseq.target.allPOS_PM50.txt")
 df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% unique()#head()
 
 df %>% na.omit() %>% filter(!grepl("KBA",title)) %>% #select(pos) %>% unique()#head()
@@ -143,6 +152,7 @@ df %>% na.omit() %>% filter(!grepl("KBA",title)) %>% #select(pos) %>% unique()#h
   ggplot(aes(x=type,y=mean,color=title,group=title)) +
   geom_point() + geom_line() +
   guides(color = guide_legend(ncol = 2,byrow = TRUE)) + 
+  scale_y_continuous(limits=c(0.94, 1)) + 
   theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
   #theme(legend.margin=margin()) %>%
   labs(title = "Long-read vs Short-read Concordance Test\n (# of SNP : 35,754)") + 
@@ -168,8 +178,9 @@ df %>% na.omit() %>% filter(!grepl("KBA",title)) %>% #select(pos) %>% unique()#h
   geom_point() + geom_line() +
   guides(color = guide_legend(ncol = 2,byrow = TRUE)) + 
   theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  scale_y_continuous(limits=c(0.94, 1)) + 
   #theme(legend.margin=margin()) %>%
-  labs(title = "Long-read vs Short-read Concordance Test (on Target)\n (# of SNP : 29,874)") + 
+  labs(title = "Long-read vs Short-read Concordance Test (on Target ¡¾ 50)\n (# of SNP : 31,758)") + 
   xlab(element_blank()) + ylab(element_blank()) -> p1
 
 #guides(fill=guide_legend(ncol=3)) #-> p1
@@ -186,3 +197,72 @@ a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
 
 ggarrange(a1,a2,ncol = 2,nrow = 1)
 
+#####################################
+target <- read.table("~/Desktop/KCDC/????????????????????????????????????/??????????????????????????????/HLAseq/HLAseq.target.allPOS_PM50.txt")
+head(target)
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result\nHLA Seq. vs KBA : 5,374\nLong-read vs Short-read : 54,485") + 
+  xlab(element_blank()) + ylab(element_blank())-> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+table(df$title)
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a1 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a1
+df
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result (on Target  ¡¾ 50) \nHLA Seq. vs KBA : 4,870\nLong-read vs Short-read : 43,081") + 
+  xlab(element_blank()) + ylab(element_blank()) -> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
+                             "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
+                             "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a2
+a1
+ggarrange(a1,a2,ncol = 2,nrow = 1,widths = c(5,5))

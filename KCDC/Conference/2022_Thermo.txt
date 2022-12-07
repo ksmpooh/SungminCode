@@ -1,0 +1,249 @@
+/DATA/smkim/thermo/01
+
+#################################
+######### 한국인칩 정도관리 #########
+################################
+
+
+01/01_QC/         ### 정도관리 폴더
+01/02_IMPUTATION/ ### 임퓨테이션 폴더
+
+
+########### 샘플 정도관리 #############
+######## 1.SNPolisher를 이용한 저품질변이 제거 ########
+
+
+###제거 마커 리스트 확인
+
+### 정도관리 대상 데이터 확인
+wc -l Input/KOGO.bim
+wc -l Input/KOGO.fam
+
+head Input/low.Quality.SNPs.txt
+wc -l Input/low.Quality.SNPs.txt
+
+
+### Plink 파일에서 마커 제거
+plink --bfile Input/KOGO \
+--exclude Input/low.Quality.SNPs.txt \
+--make-bed --out Output/KOGO.rmLQSNP
+
+
+### 제거 후 파일 생성여부 확인
+ls -alhtr Output
+
+
+### 마커 숫자로 제거여부 확인
+wc -l Output/*.bim
+
+
+### 제거대상 마커 리스트에 있는 것이 삭제 후 plink 파일에서 제거되었는지 확인
+head Input/low.Quality.SNPs.txt
+grep SNP-3918306 Input/KOGO.bim
+grep SNP-3918306 Output/KOGO.rmLQSNP.bim
+
+
+
+######## 2.저품질 샘플 제거 ########
+
+plink --bfile Input/KOGO.rmLQSNP --missing --out Output/KOGO.rmLQSNP_MISS
+plink --bfile Input/KOGO.rmLQSNP --het --out Output/KOGO.rmLQSNP_HET
+
+ls -alhtr Output/
+head Output/KOGO.rmLQSNP_MISS.imiss
+head Output/KOGO.rmLQSNP_HET.het
+
+
+##R scripts
+
+### R을 활용하여 missing vs. het plotting (제거대상 샘플 선정)
+R
+
+miss <- read.table("Output/KOGO.rmLQSNP_MISS.imiss", header = T)
+het <- read.table("Output/KOGO.rmLQSNP_HET.het", header = T)
+
+
+head(miss)
+head(het)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+head(miss)
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+head(het)
+
+lowSample <- merge(miss, het, by="FID")
+head(lowSample)
+
+
+pdf("R/KOGO.rmLQSample.pdf", height = 7, width = 10)
+plot(lowSample$HET, lowSample$F_MISS, xlim=c(25, 40), ylim=c(0,0.05), xlab="heterozygosity rate",
+     ylab="missing rate", main="Missing vs. heterozygosity", col=rgb(0,0,1,0.3), cex=1.5, pch=16)
+abline(v=30, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(v=33.8, col=rgb(1,0,0,1), lty=3, lwd=2)
+abline(h=0.03, col=rgb(1,0,0,1), lty=3, lwd=2)
+points(lowSample[lowSample$HET < 30 | 33.8 < lowSample$HET | 0.3 < lowSample$F_MISS,]$HET,
+       lowSample[lowSample$HET < 30 | 33.8 < lowSample$HET | 0.3 < lowSample$F_MISS,]$F_MISS,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- lowSample[0.03 < lowSample$F_MISS | lowSample$HET < 30 | 33.8 < lowSample$HET,]
+dim(rmList)
+head(rmList)
+head(rmList[,c(1:2)])
+
+write.table(rmList[,c(1:2)], "R/rmLQSample.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+q()
+
+
+ls -alhtr R
+wc -l R/rmLQSample.txt
+
+plink --bfile Input/KOGO.rmLQSNP \
+--remove R/rmLQSample.txt \
+--make-bed --out Output/KOGO.rmLQSNP.rmLQSample
+
+wc -l */*.fam
+
+
+######## 3-1.PCA (flashPCA) ########
+### SNP pruning
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample --maf 0.1 --geno 0.01 --hwe 0.001 \
+--indep-pairwise 50 5 0.5 --out Output/KOGO.rmLQSNP.rmLQSample
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample --extract Output/KOGO.rmLQSNP.rmLQSample.prune.in \
+--make-bed --out Output/KOGO.rmLQSNP.rmLQSample.Pruned
+
+ls -alhtr Output
+wc -l Output/KOGO.rmLQSNP.rmLQSample.prune.in
+head Output/KOGO.rmLQSNP.rmLQSample.prune.in
+wc -l Output/*.bim
+
+
+### PCA 10s
+flashpca --bfile Output/KOGO.rmLQSNP.rmLQSample.Pruned \
+--outpc flashpca/KOGO.rmLQSNP.rmLQSample.Pruned.PCA.txt
+
+ls -alhtr flashpca
+less -NS flashpca/KOGO.rmLQSNP.rmLQSample.Pruned.PCA.txt
+
+
+### R을 PCA 결과 plotting (제거대상 샘플 선정)
+R
+
+pca <- read.table("flashpca/KOGO.rmLQSNP.rmLQSample.Pruned.PCA.txt", header=T)
+head(pca)
+
+pdf("R/KOGO.rmPCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.3), xlim=c(-0.3, 1.1), ylim=c(-0.3,0.3),
+       xlab="PC1", ylab="PC2", main="PCA", cex=1.5, pch=16)
+abline(v=-0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.21, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+points(pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.3), cex=1.5, pch=16)
+dev.off()
+
+rmList <- pca[pca$PC1 < -0.21 | 0.21 < pca$PC1 | pca$PC2 < -0.21 | 0.21 < pca$PC2,]
+dim(rmList)
+head(rmList)
+head(rmList[,c(1:2)])
+
+write.table(rmList[,c(1:2)], "R/rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+q()
+
+ls -alhtr R
+head R/rmPCA.txt
+wc -l R/rmPCA.txt
+
+
+
+######## 3-2.친인척(king, sample 관계 추출) ########
+king -b Input/KOGO.rmLQSNP.rmLQSample.bed --related --degree 2 \
+--prefix king/KOGO.rmLQSNP.rmLQSample --cpu 20
+
+### 제거대상 샘플 선정
+awk '0.354<=$10{print $1}' king/KOGO.rmLQSNP.rmLQSample.kin0 | uniq | \
+tail -n+2 | awk '{print $1"\t"$1}' | sort -k 1 | uniq > king/rmKING.txt
+
+### 결과 확인
+head king/rmKING.txt
+wc -l king/rmKING.txt
+
+
+### PCA 저품질 샘플 제거
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample \
+--remove R/rmPCA.txt \
+--make-bed --out Output/KOGO.rmLQSNP.rmLQSample.rmPCA
+
+
+### KING 저품질 샘플 제거
+plink --bfile Output/KOGO.rmLQSNP.rmLQSample.rmPCA \
+--remove king/rmKING.txt \
+--make-bed --out Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING
+
+ls -alhtr Output
+wc -l Output/*.fam ## 결과 확인
+
+
+
+######## 4.성별 불일치 제거 ########
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING \
+--check-sex --out Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING
+
+ls -alhtr
+head Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKINGsexcheck
+grep OK Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.sexcheck | head
+grep PROBLEM Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.sexcheck | head
+
+
+### 성별불일치 샘플 선정
+grep PROBLEM Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.sexcheck | \
+awk '{print $1"\t"$2}' > Output/rmSEX.txt
+
+
+### 성별불일치 샘플 제거
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING \
+--remove Output/rmSEX.txt --make-bed \
+--out Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.rmSEX
+
+ls -alhtr Output
+wc -l Output/*.fam
+
+
+
+
+########### 마커정도관리 #############
+######## 1.저품질변이제거########
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.rmSEX \
+--geno 0.05 --make-bed \
+--out Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.rmSEX.rmLQSNP
+
+ls -alhtr Output
+wc -l */*.bim
+
+
+######## 2.HWE ########
+plink --bfile Input/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.rmSEX.rmLQSNP \
+--hwe 1e-6 --make-bed \
+--out Output/KOGO.rmLQSNP.rmLQSample.rmPCA.rmKING.rmSEX.rmLQSNP.rmHWE
+
+ls -alhtr Output
+wc -l */*.bim
+
+
+
+
+plink2 --vcf Input/KOGO.vcf.gz \
+--glm --ci 0.95 \
+--pheno Input/KOGO.Phenotype.txt --covar Input/KOGO.Phenotype.txt \
+--pheno-name HDL --covar-name AGE, SEX \
+--out Output/KOGO.CHR16.asso
+--threads 40
+
+
+
+genome@genome103:/DATA/smkim/thermo/01$

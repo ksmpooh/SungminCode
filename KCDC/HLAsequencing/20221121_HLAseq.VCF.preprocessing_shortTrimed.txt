@@ -305,3 +305,117 @@ SnpSift concordance -v ./LongDV_shortGATKtrimhardfilter/0000.vcf ./LongDV_shortG
 
 
 
+
+##### VQSR vs hardfilter vs DV  vs KBA
+
+AF=0.025;AQ=68  GT:DP:AD:GQ:PL:RNC
+                GT:AD:DP:GQ:PL
+
+HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.setID.updateID.onlySNP.vcf.gz
+HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+HLA.Shortread.Seq.GATK.recal.pass.setID.updateID.onlySNP.vcf.gz
+
+
+../DATA/onlySNP/20221122_VCF/
+
+bcftools isec --nfiles 7 -p withKCHIP_DV.VQSR.Hard.all \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.GATK.recal.pass.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0000.vcf > ./concordance_result/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0001.vcf >./concordance_result/QulityMetrix_KBA.LongGATKVQSR.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0002.vcf >./concordance_result/QulityMetrix_KBA.LongGATKhardfilter.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0003.vcf >./concordance_result/QulityMetrix_KBA.ShortDV.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0004.vcf >./concordance_result/QulityMetrix_KBA.ShortGATKVQSR.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0006.vcf ./withKCHIP_DV.VQSR.Hard.all/0005.vcf >./concordance_result/QulityMetrix_KBA.ShortGATKhardfilter.txt
+
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0003.vcf ./withKCHIP_DV.VQSR.Hard.all/0000.vcf >./concordance_result/QulityMetrix_ShortDV.LongDV_onlyKBAintersect.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0004.vcf ./withKCHIP_DV.VQSR.Hard.all/0001.vcf >./concordance_result/QulityMetrix_ShortGATKVQSR.LongGATKVQSR_onlyKBAintersect.txt
+SnpSift concordance -v ./withKCHIP_DV.VQSR.Hard.all/0005.vcf ./withKCHIP_DV.VQSR.Hard.all/0002.vcf >./concordance_result/QulityMetrix_ShortGATKhardfilter.LongGATKhardfilter_onlyKBAintersect.txt
+
+
+bcftools isec --nfiles 6 -p DV.VQSR.Hard.all \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.GATK.recal.pass.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+SnpSift concordance -v ./DV.VQSR.Hard.all/0003.vcf ./DV.VQSR.Hard.all/0000.vcf >./concordance_result/QulityMetrix_ShortDV.LongDV.txt
+SnpSift concordance -v ./DV.VQSR.Hard.all/0004.vcf ./DV.VQSR.Hard.all/0001.vcf >./concordance_result/QulityMetrix_ShortGATKVQSR.LongGATKVQSR.txt
+SnpSift concordance -v ./DV.VQSR.Hard.all/0005.vcf ./DV.VQSR.Hard.all/0002.vcf >./concordance_result/QulityMetrix_ShortGATKhardfilter.LongGATKhardfilter.txt
+
+
+
+bcftools isec --nfiles 3 -p withKCHIP_LongDV_shortGATKhardfilter \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools isec --nfiles 2 -p LongDV_shortGATKhardfilter \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0002.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0000.vcf >./concordance_result_3/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0002.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0001.vcf >./concordance_result_3/QulityMetrix_KBA.ShortGATKhardfilter.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0001.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0000.vcf >./concordance_result_3/QulityMetrix_ShortGATKhardfilter.LongDV_onlyKBAintersect.txt
+SnpSift concordance -v ./LongDV_shortGATKhardfilter/0001.vcf ./LongDV_shortGATKhardfilter/0000.vcf >./concordance_result_3/QulityMetrix_ShortGATKhardfilter.LongDV.txt
+
+
+### basic
+/DATA/smkim/JG/08.HLAseq/basic
+
+bcftools isec --nfiles 3 -p withKCHIP_DV \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools isec --nfiles 3 -p withKCHIP_VQSR \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.GATK.recal.pass.setID.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools isec --nfiles 3 -p withKCHIP_Hard \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+
+bcftools isec --nfiles 2 -p DV \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+
+bcftools isec --nfiles 2 -p VQSR \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.GATK.recal.pass.sampleIDcheck.setID.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.GATK.recal.pass.setID.updateID.onlySNP.vcf.gz
+
+bcftools isec --nfiles 2 -p Hard \
+../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz \
+../DATA/onlySNP/20221122_VCF/HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.onlySNP.vcf.gz
+
+
+SnpSift concordance -v ./withKCHIP_DV/0002.vcf ./withKCHIP_DV/0000.vcf >./concordance_Result_basic/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_DV/0002.vcf ./withKCHIP_DV/0001.vcf >./concordance_Result_basic/QulityMetrix_KBA.ShortDV.txt
+SnpSift concordance -v ./withKCHIP_DV/0001.vcf ./withKCHIP_DV/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortDV.LongDV_onlyKBAintersect.txt
+
+SnpSift concordance -v ./withKCHIP_VQSR/0002.vcf ./withKCHIP_VQSR/0000.vcf >./concordance_Result_basic/QulityMetrix_KBA.LongGATKVQSR.txt
+SnpSift concordance -v ./withKCHIP_VQSR/0002.vcf ./withKCHIP_VQSR/0001.vcf >./concordance_Result_basic/QulityMetrix_KBA.ShortGATKVQSR.txt
+SnpSift concordance -v ./withKCHIP_VQSR/0001.vcf ./withKCHIP_VQSR/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortGATKVQSR.LongGATKVQSR_onlyKBAintersect.txt
+
+SnpSift concordance -v ./withKCHIP_Hard/0002.vcf ./withKCHIP_Hard/0000.vcf >./concordance_Result_basic/QulityMetrix_KBA.LongGATKhardfilter.txt
+SnpSift concordance -v ./withKCHIP_Hard/0002.vcf ./withKCHIP_Hard/0001.vcf >./concordance_Result_basic/QulityMetrix_KBA.ShortGATKhardfilter.txt
+SnpSift concordance -v ./withKCHIP_Hard/0001.vcf ./withKCHIP_Hard/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortGATKhardfilter.LongGATKhardfilter_onlyKBAintersect.txt
+
+SnpSift concordance -v ./DV/0001.vcf ./DV/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortDV.LongDV.txt
+SnpSift concordance -v ./VQSR/0001.vcf ./VQSR/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortGATKVQSR.LongGATKVQSR.txt
+SnpSift concordance -v ./Hard/0001.vcf ./Hard/0000.vcf >./concordance_Result_basic/QulityMetrix_ShortGATKhardfilter.LongGATKhardfilter.txt

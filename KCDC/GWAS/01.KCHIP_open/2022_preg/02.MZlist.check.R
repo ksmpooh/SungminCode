@@ -1,7 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(stringr)
-setwd("~/Desktop/KCDC/KCHIP_open/ì„ì‹ í•©ë³‘ì¦/")
+setwd("~/Desktop/KCDC/KCHIP_open/ÀÓ½ÅÇÕº´Áõ/")
 
 df <- read.table("check.MZ.sample.imiss",header = T)
 head(df)
@@ -12,18 +12,56 @@ ref1 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 1)
 ref2 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 2)
 head(ref1)
 head(ref2)
-rm1 <- ref1 %>% rbind(ref2) %>% select(ID1,`ë°”ì´ì˜¤ë±…í¬ê³¼ ë° ì—­í•™ê³¼ í™•ì¸`,í›„ì†ì¡°ì¹˜) %>% rename("ID" = ID1)
-rm2 <- ref1 %>% rbind(ref2) %>% select(ID2,`ë°”ì´ì˜¤ë±…í¬ê³¼ ë° ì—­í•™ê³¼ í™•ì¸`,í›„ì†ì¡°ì¹˜) %>% rename("ID" = ID2)
+rm1 <- ref1 %>% rbind(ref2) %>% select(ID1,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% rename("ID" = ID1)
+rm2 <- ref1 %>% rbind(ref2) %>% select(ID2,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% rename("ID" = ID2)
 rmall <- rbind(rm1,rm2)
 rmall
 head(df)
 
 ref3 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 3)
 ref4 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 4)
-ref3 %>% rbind(ref4) %>% select(ID1,ID2,`ë°”ì´ì˜¤ë±…í¬ê³¼ ë° ì—­í•™ê³¼ í™•ì¸`,í›„ì†ì¡°ì¹˜) %>% #rename("ID" = ID1) %>%
+ref3 %>% rbind(ref4) %>% select(ID1,ID2,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% #rename("ID" = ID1) %>%
   left_join(df %>% select(ID,F_MISS) %>% rename("ID1" = ID),by='ID1') %>% rename("ID1_MISS" = F_MISS) %>%
   left_join(df %>% select(ID,F_MISS) %>% rename("ID2" = ID),by='ID2') %>% rename("ID2_MISS" = F_MISS) %>% #mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1)) ->t
-  mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1)) %>% select(ID,`ë°”ì´ì˜¤ë±…í¬ê³¼ ë° ì—­í•™ê³¼ í™•ì¸`,í›„ì†ì¡°ì¹˜) -> rmselect
+  mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1)) %>% select(ID,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) -> rmselect
+
+head(rmselect)
+head(df)
+rmall %>% rbind(rmselect) %>% na.omit() %>% inner_join(df %>% select(ID,FID),by='ID') -> rmlist
+rmlist
+
+write.table(na.omit(rmlist),"rmlist.MZlistafterBioBankcheck_20221124.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+writexl::write_xlsx(na.omit(rmlist),"rmlist.MZlistafterBioBankcheck_20221124.xlsx")
+
+na.omit(rmlist) %>% count(`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`)
+
+
+library(readxl)
+library(tidyverse)
+library(stringr)
+setwd("~/Desktop/KCDC/KCHIP_open/ÀÓ½ÅÇÕº´Áõ/")
+
+df <- read.table("check.MZ.sample.imiss",header = T)
+head(df)
+#str_replace_all(df$FID,".CEL","")
+df$ID <- str_split_fixed(str_replace_all(df$FID,".CEL",""),"_",6)[,6]
+
+ref1 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 1)
+ref2 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 2)
+head(ref1)
+head(ref2)
+rm1 <- ref1 %>% rbind(ref2) %>% select(ID1,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% rename("ID" = ID1)
+rm2 <- ref1 %>% rbind(ref2) %>% select(ID2,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% rename("ID" = ID2)a
+rmall <- rbind(rm1,rm2)
+rmall
+head(df)
+
+ref3 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 3)
+ref4 <- read_excel("@preg_MZforQC.check.xlsx",sheet = 4)
+ref3 %>% rbind(ref4) %>% select(ID1,ID2,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>% #rename("ID" = ID1) %>%
+  left_join(df %>% select(ID,F_MISS) %>% rename("ID1" = ID),by='ID1') %>% rename("ID1_MISS" = F_MISS) %>%
+  left_join(df %>% select(ID,F_MISS) %>% rename("ID2" = ID),by='ID2') %>% rename("ID2_MISS" = F_MISS) %>% #mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1)) ->t
+  mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1)) %>% select(ID,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) -> rmselect
 
 head(rmselect)
 head(df)
@@ -32,4 +70,27 @@ rmlist
 write.table(na.omit(rmlist),"rmlist.MZlistafterBioBankcheck_20221124.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 writexl::write_xlsx(na.omit(rmlist),"rmlist.MZlistafterBioBankcheck_20221124.xlsx")
 
-na.omit(rmlist) %>% count(`ë°”ì´ì˜¤ë±…í¬ê³¼ ë° ì—­í•™ê³¼ í™•ì¸`)
+na.omit(rmlist) %>% count(`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`)
+head(rmlist)
+head(rmselect)
+
+rmselect %>% filter(!(ID %in% rmlist$ID))
+
+q %>% dim()
+#writexl::write_xlsx(rmselect,"µÑÁßÇÏ³ªÁ¦¿Ü¸®½ºÆ®_rmlist.MZlistafterBioBankcheck_20221202.xlsx")
+
+head(df)
+head(ref4)
+df[!df$ID %in% rmselect$ID),]
+
+ref4 %>% select(ID1,ID2,`¹ÙÀÌ¿À¹ğÅ©°ú ¹× ¿ªÇĞ°ú È®ÀÎ`,ÈÄ¼ÓÁ¶Ä¡) %>%
+  left_join(df %>% select(ID,F_MISS) %>% rename("ID1" = ID),by='ID1') %>% rename("ID1_MISS" = F_MISS) %>%
+  left_join(df %>% select(ID,F_MISS) %>% rename("ID2" = ID),by='ID2') %>% rename("ID2_MISS" = F_MISS) %>% 
+  mutate(ID = ifelse(ID1_MISS >= ID2_MISS,ID2,ID1))  -> a
+
+head(a)
+head(df)
+
+a[!(a$ID %in% df$ID),]
+
+ref4

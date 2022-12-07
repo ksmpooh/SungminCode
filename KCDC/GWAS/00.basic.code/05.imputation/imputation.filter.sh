@@ -13,6 +13,7 @@ ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'INFO >= 0
 
 
 ls *gz | cut -d"." -f1-5 | xargs -I{} -P 15  bash -c "bcftools view -i 'R2 >= 0.8' {}.dose.vcf.gz -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.does.vcf.gz"
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'R2 >= 0.8' {}.vcf.gz -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.vcf.gz"
 
 ls *gz | xargs -I{} -P 4 bash -c 'tabix -f -p vcf {}'
 ls *gz | xargs -I{} -P 22 bash -c 'tabix -f -p vcf {}'
