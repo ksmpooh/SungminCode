@@ -38,7 +38,8 @@ out
 
 #############################################################################
 
-setwd("c:/Users/user/Desktop/KCDC/HLAimputation/HAN.ref/")
+#setwd("c:/Users/user/Desktop/KCDC/HLAimputation/HAN.ref/")
+setwd("~/Desktop/KCDC/HLAimputation/HAN.ref/")
 df <- read.table("HAN.hlatype.raw",header = T)
 head(df)
 
@@ -183,14 +184,14 @@ table(A_fd$HLAtype_A.3)
 td <- out
 #head(out)
 
-out <- merge(A_fd[,c('IID','HLAtype_A.1','HLAtype_A.2')],B_td[,c('IID','HLAtype_B.1','HLAtype_B.2')],by = 'IID')
+out <- merge(A_fd[,c('IID','HLAtype_A.1','HLAtype_A.2')],B_fd[,c('IID','HLAtype_B.1','HLAtype_B.2')],by = 'IID')
 out <- merge(out,C_fd[,c('IID','HLAtype_C.1','HLAtype_C.2')],by = 'IID')
 out <- merge(out,DRB1_fd[,c('IID','HLAtype_DRB1.1','HLAtype_DRB1.2')],by = 'IID')
 out <- merge(out,DPA1_fd[,c('IID','HLAtype_DPA1.1','HLAtype_DPA1.2')],by = 'IID')
 out <- merge(out,DPB1_fd[,c('IID','HLAtype_DPB1.1','HLAtype_DPB1.2')],by = 'IID')
 out <- merge(out,DQA1_fd[,c('IID','HLAtype_DQA1.1','HLAtype_DQA1.2')],by = 'IID')
 out <- merge(out,DQB1_fd[,c('IID','HLAtype_DQB1.1','HLAtype_DQB1.2')],by = 'IID')
-#fd <- out
+fd <- out
 
 
 head(td)

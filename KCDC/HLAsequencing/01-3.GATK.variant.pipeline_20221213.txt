@@ -1,0 +1,406 @@
+## left aling 등 추가 작업 진행
+
+
+cd /DATA/smkim/HLA_seq/20221213_VCF
+
+HLA.Shortread.Seq.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz
+
+/DATA/smkim/HLA_seq/20221213_VCF/01.VQSR
+/DATA/smkim/HLA_seq/20221213_VCF/00.raw
+
+
+##### VQSR 진행 후 QC 
+
+/DATA/smkim/HLA_seq/20221213_VCF/01.VQSR_QC
+
+## SNP INDEL 나누기
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/00.raw/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type SNP \
+    -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/00.raw/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz \
+    -select-type INDEL \
+    -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectINDEL.vcf.gz
+
+
+
+## 3. VQRS 수행 : Variant recalibration
+
+
+### 3.1 Calculate VQSLOD tranches for SNPs using VariantRecalibrator
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources_forHLA/HLA.hapmap_3.3.b37.updateID.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources_forHLA/HLA.1000G_omni2.5.b37.updateID.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+     -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.snps.recal \
+     --tranches-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.snps.tranches \
+     --rscript-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.snps.plots.R
+
+
+### 3.2 Filter SNPs on VQSLOD using ApplyVQSR
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+     -R /ref/HLA.target.fasta \
+     -V /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectSNP.vcf.gz \
+    --recal-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.snps.recal \
+    --tranches-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.recalSNP.vcf.gz
+
+
+### 3.3 Calculate VQSLOD tranches for indels using VariantRecalibrator
+
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectINDEL.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /ref/gatk_resources_forHLA/HLA.Mills_and_1000G_gold_standard.indels.b37.updateID.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+     -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.indels.recal \
+     --tranches-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.indels.tranches \
+     --rscript-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.indels.plots.R
+     
+
+
+### 3.4 Filter indels on VQSLOD using ApplyVQSR
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" ApplyVQSR \
+     -V /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF_selectINDEL.vcf.gz \
+    --recal-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.indels.recal \
+    --tranches-file /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.indels.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.recalINDEL.vcf.gz
+
+
+#### 3.5 merge
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.recalSNP.vcf.gz \
+    -I /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.recalINDEL.vcf.gz \
+    -O /input/01.VQSR_QC/HLA.Shortread.Seq.trimmed.GATK.recal.vcf.gz
+
+#### LCR
+
+bcftools view -f PASS HLA.Shortread.Seq.trimmed.GATK.recal.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.recal.PASS.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.recal.PASS.vcf.gz
+
+
+bcftools view -R /DATA/smkim/HLA_seq/REF/target/HLA_1104_capture_targets_forIGV.bed HLA.Shortread.Seq.trimmed.GATK.recal.PASS.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.vcf.gz
+
+bcftools view -T ^/DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.rmLCR.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.rmLCR.vcf.gz
+
+
+bcftools view --max-allele 4 HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.rmLCR.vcf.gz |bcftools norm -m -any -f /DATA/smkim/HLA_seq/REF/HLA.target.fasta -c x | bgzip -c > HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.rmLCR.normQC.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.recal.PASS.onTarget.rmLCR.normQC.vcf.gz
+
+
+
+######################################################################################################################################################
+### QC 진행 후 VQSR
+QC : LCR, On-target, multi >3 지우기, Left-align, VQSR
+
+# LCR 사전 작업 : to bed
+cd /DATA/smkim/HLA_seq/REF
+awk '{print "6:28477797-33448354\t"$7-28477797"\t"$8-28477797}' HLA.LCR.NCBI.txt > HLA.LCR.NCBI_forTarget.txt
+
+# QC ; on Target
+
+cd /DATA/smkim/HLA_seq/20221213_VCF/01.QC
+
+bcftools view -R /DATA/smkim/HLA_seq/REF/target/HLA_1104_capture_targets_forIGV.bed ../00.raw/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.onTarget.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.onTarget.vcf.gz
+
+
+# QC : rm LCR
+
+bcftools view -T ^/DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.onTarget.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz
+
+
+bcftools view -R /DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.onTarget.vcf.gz |less -NS
+bcftools view -T /DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.onTarget.vcf.gz |less -NS
+
+bcftools view -R /DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz |less -NS
+bcftools view -T /DATA/smkim/HLA_seq/REF/HLA.LCR.NCBI_forTarget.txt HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz |less -NS
+
+45 6:28477797-33448354     4010942 .       TTACCTACCAAATACAATAGGGAATTCTTAGAGCAGTAATTATAATTGGGCAATAAATAGGTCAAGATAATTCAAAAGAATTCCAA>
+46 6:28477797-33448354     4011023 .       TCCAA   T,*     141.49  .       AC=2,20;AF=0.038,0.385;AN=52;BaseQRankSum=0;DP=2622;Ex>
+47 6:28477797-33448354     4047077 .
+
+
+## norm left align
+
+bcftools view --max-allele 4 HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz |less -NS
+bcftools view --max-allele 4 HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz |bcftools norm -m -any |less -NS
+
+bcftools view --max-allele 4 HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR.vcf.gz |bcftools norm -m -any -f /DATA/smkim/HLA_seq/REF/HLA.target.fasta -c x | bgzip -c > HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz
+
+
+
+## VQSR
+01.QC/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz
+HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz
+
+
+
+
+## SNP INDEL 나누기
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/01.QC/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz \
+    -select-type SNP \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /ref/HLA.target.fasta \
+    -V /input/01.QC/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.vcf.gz \
+    -select-type INDEL \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.vcf.gz
+
+
+
+## 3. VQRS 수행 : Variant recalibration
+
+
+### 3.1 Calculate VQSLOD tranches for SNPs using VariantRecalibrator
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode SNP \
+     --max-gaussians 6 \
+     --max-negative-gaussians 2 \
+     --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /ref/gatk_resources_forHLA/HLA.hapmap_3.3.b37.updateID.vcf.gz \
+     --resource:omni,known=false,training=true,truth=false,prior=12.0 /ref/gatk_resources_forHLA/HLA.1000G_omni2.5.b37.updateID.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+     -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.snps.recal \
+     --tranches-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.snps.tranches \
+     --rscript-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.snps.plots.R
+
+
+### 3.2 Filter SNPs on VQSLOD using ApplyVQSR
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+     -R /ref/HLA.target.fasta \
+     -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.vcf.gz \
+    --recal-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.snps.recal \
+    --tranches-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.recalSNP.vcf.gz
+
+
+### 3.3 Calculate VQSLOD tranches for indels using VariantRecalibrator
+
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /ref/HLA.target.fasta \
+     -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /ref/gatk_resources_forHLA/HLA.Mills_and_1000G_gold_standard.indels.b37.updateID.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /ref/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /ref/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+     -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.indels.recal \
+     --tranches-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.indels.tranches \
+     --rscript-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.indels.plots.R
+     
+
+
+### 3.4 Filter indels on VQSLOD using ApplyVQSR
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+gatk --java-options "-Xmx32g -Xms32g" ApplyVQSR \
+     -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.vcf.gz \
+    --recal-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.indels.recal \
+    --tranches-file /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.indels.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.recalINDEL.vcf.gz
+
+
+#### 3.5 merge
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.recalSNP_hardfilter.vcf.gz \
+    -I /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.recalINDEL_hardfilter.vcf.gz \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.vcf.gz
+
+bcftools view -f PASS HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.vcf.gz
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.recalSNP.vcf.gz \
+    -I /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.recalINDEL.vcf.gz \
+    -O /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.vcf.gz
+
+
+
+bcftools view -f PASS HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.vcf.gz
+
+
+## hard filtering
+
+## short-read
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "SOR > 3.0" --filter-name "SOR3" \
+    -filter "FS > 60.0" --filter-name "FS60" \
+    -filter "MQ < 40.0" --filter-name "MQ40" \
+    -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+    -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+    -O /input/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.hardfilter.vcf.gz
+
+
+#ReadPosRankSum
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /ref/HLA.target.fasta \
+    -V /input/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "FS > 200.0" --filter-name "FS200" \
+    -filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
+    -O /input/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.hardfilter.vcf.gz
+
+
+docker run -v "/DATA/smkim/HLA_seq/20221213_VCF":"/input" -v "/DATA/smkim/HLA_seq/REF":"/ref" -it broadinstitute/gatk \
+    gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I /input/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectSNP.hardfilter.vcf.gz \
+    -I /input/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC_selectINDEL.hardfilter.vcf.gz \
+    -O /input/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.vcf.gz
+
+
+bcftools view -f PASS HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.vcf.gz -Oz -o HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz
+tabix -f -p vcf HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz
+
+
+/DATA/smkim/HLA_seq/20221213_VCF/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz
+/DATA/smkim/HLA_seq/20221213_VCF/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.vcf.gz
+
+
+cd /DATA/smkim/HLA_seq/20221213_VCF/04.concordance
+rsync -avhP /DATA/smkim/HLA_seq/20221213_VCF/03.hardfilter/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz* ./
+rsync -avhP /DATA/smkim/HLA_seq/20221213_VCF/02.VQSR/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.vcf.gz* ./
+
+
+HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz
+HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.vcf.gz
+
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.vcf.gz | bgzip -c >  HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.setID.vcf.gz
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.vcf.gz | bgzip -c >  HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.setID.vcf.gz
+
+
+
+ls *setID*gz | xargs -I {} -P 2 bash -c "python /DATA/smkim/HLA_seq/VCF/vcf.modify.py {}"
+
+
+### long left align
+
+cd /DATA/smkim/HLA_seq/VCF
+/DATA/smkim/HLA_seq/VCF/01.VCF.raw/02.update/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.vcf.gz
+
+bcftools view --max-allele 4 /DATA/smkim/HLA_seq/VCF/01.VCF.raw/02.update/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.vcf.gz |bcftools norm -m -any -f /DATA/smkim/HLA_seq/REF/HLA.target.fasta -c x | bgzip -c > ./03.leftalign/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.vcf.gz
+
+python /DATA/smkim/HLA_seq/VCF/vcf.modify.py ./03.leftalign/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.vcf.gz
+
+
+ls *gz |sed 's/.vcf.gz//g' | xargs -I {} -P 3 bash -c "bcftools view --exclude-type indels {}.vcf.gz | bgzip -c > {}.onlySNP.vcf.gz"
+
+ls *only*gz |xargs -I{} -P 4 bash -c "tabix -f -p vcf {}"
+
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.vcf.gz |bgzip -c > HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.setID.vcf.gz
+tabix -f -p vcf HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.setID.vcf.gz
+
+####################
+###concordance 103
+
+cd /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF
+
+../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.setID.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.setID.updateID.onlySNP.vcf.gz
+../DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.vcf.gz
+
+
+cd /DATA/smkim/JG/08.HLAseq/20221216_GATKaddQC
+
+
+## with KCHIP (long,short,kchip)
+
+bcftools isec --nfiles 3 -p withKCHIP_LongDV_shortGATKhardfilter ../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.setID.updateID.onlySNP.vcf.gz
+bcftools isec --nfiles 2 -p withKCHIP_LongDV_shortGATKhardfilter/LongShort ../DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.hardfilter.PASS.setID.updateID.onlySNP.vcf.gz
+
+bcftools isec --nfiles 3 -p withKCHIP_LongDV_shortGATKVQSR ../DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.setID.updateID.onlySNP.vcf.gz
+bcftools isec --nfiles 2 -p withKCHIP_LongDV_shortGATKVQSR/LongShort ../DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.vcf.gz ../DATA/onlySNP/20221216_VCF/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal.PASS.setID.updateID.onlySNP.vcf.gz
+
+0000.vcf  0001.vcf  0002.vcf
+
+
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0002.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0001.vcf >./concordance_result/QulityMetrix_shortGATKhardfilter.LongDV_onlyKBAintersect.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0000.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0001.vcf >./concordance_result/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/0000.vcf ./withKCHIP_LongDV_shortGATKhardfilter/0002.vcf >./concordance_result/QulityMetrix_KBA.shortGATKhardfilter.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKhardfilter/LongShort/0000.vcf ./withKCHIP_LongDV_shortGATKhardfilter/LongShort/0001.vcf >./concordance_result/QulityMetrix_shortGATKhardfilter.LongDV.txt
+                        
+
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKVQSR/0002.vcf ./withKCHIP_LongDV_shortGATKVQSR/0001.vcf >./concordance_result/QulityMetrix_shortGATKVQSR.LongDV_onlyKBAintersect.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKVQSR/0000.vcf ./withKCHIP_LongDV_shortGATKVQSR/0001.vcf >./concordance_result/QulityMetrix_KBA.LongDV.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKVQSR/0000.vcf ./withKCHIP_LongDV_shortGATKVQSR/0002.vcf >./concordance_result/QulityMetrix_KBA.shortGATKVQSR.txt
+SnpSift concordance -v ./withKCHIP_LongDV_shortGATKVQSR/LongShort/0000.vcf ./withKCHIP_LongDV_shortGATKVQSR/LongShort/0001.vcf >./concordance_result/QulityMetrix_shortGATKVQSR.LongDV.txt 
+                         

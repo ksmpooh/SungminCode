@@ -4,6 +4,8 @@
 library(ggplot2)
 library(ggbreak)
 library(tidyverse) 
+library(ggpmisc)
+library(ggpubr)
 
 setwd("~/Desktop/KCDC/long_read/2022/VCF/onlySNP/DV/")
 setwd("~/")
@@ -505,6 +507,11 @@ head(a)
 
 setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_20221122/")
 setwd("/Volumes/DATA/HLA_seq/05.concordance/concordance_result_longDVshortGATKtrim/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/20221206_DV.VQSR.hard/concordance_result/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/basic/concordance_Result_basic/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/20221206_DV.VQSR.hard/concordance_result_3/")
+setwd("/Volumes/DATA/HLA_seq/05.concordance/20221216_GATKaddQC/concordance_result/")
+#setwd("/Volumes/DATA/HLA_seq/05.concordance/20221206_DV.VQSR.hard/concordance_result/")
 #setwd("~/")
 
 file_list <- list.files(pattern = ".txt")
@@ -552,6 +559,7 @@ df <- data %>% #inner_join(maf1) %>%
   pivot_longer(cols = c(Sensitivity,Precision,Accuracy),names_to = 'type',values_to = "Val") %>% 
   mutate(title = str_remove(str_remove(file_list[1],".txt"),"QulityMetrix_"))
 head(df)
+table(df$title)
 file_list[-1]
 
 for (i in file_list[-1]) {
@@ -673,7 +681,7 @@ a1 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
 a1
 df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
 df %>% filter(grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
-
+table(df$title)
 df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKtrim" ="KBA vs Short",
                              "LongDV.shortGATKtrim_onlyKBAintersect" = "Long vs Short",
                              "LongDV.shortGATKtrim" = "Long vs Short (ALL)")) %>%
@@ -705,3 +713,285 @@ a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
 a2
 a1
 ggarrange(a1,a2,ncol = 2,nrow = 1,widths = c(5,5))
+###################################################################
+
+#20221207 for meeting
+head(df)
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+df %>% filter(grepl("KBA.",title)) %>% count(title)
+df %>% filter(grepl("KBA.",title)) %>% #count(title)
+  mutate(theme=ifelse(grepl("DV",title),"DV",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.LongGATKhardfilter" ="KBA vs Long","KBA.LongGATKVQSR"="KBA vs Long",
+                        "KBA.ShortDV"="KBA vs Short","KBA.ShortGATKhardfilter"="KBA vs Short","KBA.ShortGATKVQSR"="KBA vs Short",
+                        "ShortDV.LongDV_onlyKBAintersect"="Short vs Long","ShortGATKhardfilter.LongGATKhardfilter_onlyKBAintersect"="Short vs Long","ShortGATKVQSR.LongGATKVQSR_onlyKBAintersect"="Short vs Long")) %>%
+  group_by(theme,title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>% #head()
+  summarise(mean=mean(Val)) %>% # head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  facet_grid(~theme) +
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  xlab(element_blank()) + ylab(element_blank()) #-> p1
+
+head(df)
+table(df$title)/3
+
+df %>%# filter(!grepl("KBA.",title)) %>% count(title)
+  mutate(theme=ifelse(grepl("DV",title),"Deepvariant-GLnexus",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.LongGATKhardfilter" ="KBA vs Long","KBA.LongGATKVQSR"="KBA vs Long",
+  "KBA.ShortDV"="KBA vs Short","KBA.ShortGATKhardfilter"="KBA vs Short","KBA.ShortGATKVQSR"="KBA vs Short",
+  "ShortDV.LongDV_onlyKBAintersect"="Short vs Long","ShortGATKhardfilter.LongGATKhardfilter_onlyKBAintersect"="Short vs Long","ShortGATKVQSR.LongGATKVQSR_onlyKBAintersect"="Short vs Long",
+  "ShortDV.LongDV" = "Short vs Long (ALL)","ShortGATKhardfilter.LongGATKhardfilter" = "Short vs Long (ALL)","ShortGATKVQSR.LongGATKVQSR" = "Short vs Long (ALL)")) %>%
+  group_by(theme,title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>% #head()
+  summarise(mean=mean(Val)) %>%#->a#%>% # head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  facet_grid(~theme) +
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #guides(color=guide_legend(title="Group 1 vs Group 2\n(#")) + 
+  xlab(element_blank()) + ylab(element_blank()) #-> p1
+
+
+#5329
+
+#45043
+
+###################################################################
+## basic
+table(df$title)/3
+df %>%# filter(!grepl("KBA.",title)) %>% count(title)
+  mutate(theme=ifelse(grepl("DV",title),"Deepvariant-GLnexus",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.LongGATKhardfilter" ="KBA vs Long","KBA.LongGATKVQSR"="KBA vs Long",
+                        "KBA.ShortDV"="KBA vs Short","KBA.ShortGATKhardfilter"="KBA vs Short","KBA.ShortGATKVQSR"="KBA vs Short",
+                        "ShortDV.LongDV_onlyKBAintersect"="Short vs Long","ShortGATKhardfilter.LongGATKhardfilter_onlyKBAintersect"="Short vs Long","ShortGATKVQSR.LongGATKVQSR_onlyKBAintersect"="Short vs Long",
+                        "ShortDV.LongDV" = "Short vs Long (ALL)","ShortGATKhardfilter.LongGATKhardfilter" = "Short vs Long (ALL)","ShortGATKVQSR.LongGATKVQSR" = "Short vs Long (ALL)")) %>%
+  group_by(theme,title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>% #head()
+  summarise(mean=mean(Val)) %>%#->a#%>% # head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  facet_grid(~theme) +
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #guides(color=guide_legend(title="Group 1 vs Group 2\n(#")) + 
+  xlab(element_blank()) + ylab(element_blank()) #-> p1
+
+
+
+head(df)
+table(df$title)
+ 
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% unique()#head()
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% #count()#filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result\nHLA Seq. vs KBA : 5,376\nLong-read vs Short-read : 54,656") + 
+  xlab(element_blank()) + ylab(element_blank())#-> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+table(df$title)
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a1 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a1
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+df %>% filter(grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+head(target)
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result (on Target  ¡¾ 50) \nHLA Seq. vs KBA : 5,261\nLong-read vs Short-read : 46,555") + 
+  xlab(element_blank()) + ylab(element_blank()) -> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #count()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a2
+a1
+ggarrange(a1,a2,ncol = 2,nrow = 1,widths = c(5,5))
+
+## add QC hardfilter
+table(df$title)
+df  %>% filter(pos %in% target$V1) %>% count(title) %>% mutate(n2 = n/3)#head()
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result \nHLA Seq. vs KBA : 5,088\nLong-read vs Short-read : 43,153") + 
+  xlab(element_blank()) + ylab(element_blank()) # -> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+
+df %>% mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.ShortGATKhardfilter" ="KBA vs Short",
+                             "ShortGATKhardfilter.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "ShortGATKhardfilter.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% filter(pos %in% target$V1) %>% #count()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+
+a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+
+
+table(df$title)/3
+df %>% filter(!grepl("hard.",title)) %>% count(title) %>% mutate(n2 = n/3)
+df %>% filter(!grepl("hard.",title)) %>% #count(title)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKVQSR" ="KBA vs Short",
+                             "shortGATKVQSR.LongDV_onlyKBAintersect" = "Short vs Long",
+                             "shortGATKVQSR.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  scale_y_continuous(limits=c(0.91, 1)) + 
+  guides(color = guide_legend(ncol = 4,byrow = TRUE)) + 
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  #theme(legend.margin=margin()) %>%
+  labs(title = "Concordance Test Result\nHLA Seq. vs KBA : 5,153\nLong-read vs Short-read : 46,990") + 
+  xlab(element_blank()) + ylab(element_blank()) -> p1
+
+
+#guides(fill=guide_legend(ncol=3)) #-> p1
+
+df %>% filter(!grepl("hard.",title)) %>% #count(title)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long","KBA.shortGATKVQSR" ="KBA vs Short",
+                        "shortGATKVQSR.LongDV_onlyKBAintersect" = "Short vs Long",
+                        "shortGATKVQSR.LongDV" = "Short vs Long (ALL)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #count()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% mutate(mean = round(mean,3)) %>%
+  pivot_wider(names_from = type,values_from = mean) %>% # head()
+  ggtexttable() -> p2
+
+p1
+ggarrange(p1,p2,ncol = 2,nrow = 1,widths  = c(5,5))
+a3 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+a3
+
+ggarrange(a2,a3,ncol = 2,nrow = 1,widths = c(5,5))
+
+
+
+
+################## add QC and VQSR, Hardfilter
+
+#20221207 for meeting
+head(df)
+table(df$title)/3
+df %>% filter(!grepl("KBA",title)) %>% select(pos) %>% filter(pos %in% target$V1) %>% unique()#head()
+df %>% filter(grepl("KBA.",title)) %>% count(title)
+df %>% filter(grepl("^KBA.",title)) %>% #count(title)
+  #mutate(theme=ifelse(grepl("DV",title),"DV",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long",
+                        "KBA.shortGATKhardfilter"="KBA vs Short (Hardfilter)",
+                        "KBA.shortGATKVQSR"="KBA vs Short (VQSR)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+  na.omit() %>% #head()
+  summarise(mean=mean(Val)) %>% # head()
+  ggplot(aes(x=type,y=mean,color=title,group=title)) +
+  geom_point() + geom_line() +
+  #facet_grid(~theme) +
+  theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+  scale_y_continuous(limits=c(0.90, 1)) + 
+  xlab(element_blank()) + ylab(element_blank()) -> p1
+
+df %>% filter(grepl("^KBA.",title)) %>% #count(title)
+  #mutate(theme=ifelse(grepl("DV",title),"DV",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,"KBA.LongDV"="KBA vs Long (DV)",
+                        "KBA.shortGATKhardfilter"="KBA vs Short (Hardfilter)",
+                        "KBA.shortGATKVQSR"="KBA vs Short (VQSR)")) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #count()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+a1 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(8,3))
+
+df %>% filter(!grepl("^KBA.",title)) %>% #count(title)
+  #mutate(theme=ifelse(grepl("DV",title),"DV",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,
+                        "shortGATKhardfilter.LongDV_onlyKBAintersect" = "Short (Hardfilter) vs Long (DV): with KBA" ,
+                        "shortGATKVQSR.LongDV_onlyKBAintersect" = "Short (VQSR) vs Long (DV): with KBA",
+                        "shortGATKhardfilter.LongDV" = "Short (Hardfilter) vs Long (DV): ALL" ,
+                        "shortGATKVQSR.LongDV" = "Short (VQSR) vs Long (DV): ALL" )) %>%
+    group_by(title,type) %>% #filter(pos %in% target$V1) %>% #dim()#head()
+    na.omit() %>% #head()
+    summarise(mean=mean(Val)) %>% # head()
+    ggplot(aes(x=type,y=mean,color=title,group=title)) +
+    geom_point() + geom_line() +
+    #facet_grid(~theme) +
+    theme(legend.title = element_blank(),plot.title = element_text(hjust = 0.5),legend.position="bottom") +
+    guides(col = guide_legend(ncol = 2)) +
+    scale_y_continuous(limits=c(0.90, 1)) + 
+    xlab(element_blank()) + ylab(element_blank()) -> p1
+  
+df %>% filter(!grepl("^KBA.",title)) %>% #count(title)
+  #mutate(theme=ifelse(grepl("DV",title),"DV",ifelse(grepl("GATKhardfilter",title),"GATK (hardfilter)","GATK (VQSR)"))) %>% #count(theme)
+  mutate(title = recode(title,
+                        "shortGATKhardfilter.LongDV_onlyKBAintersect" = "(with KBA)Short (Hardfilter) vs Long (DV)" ,
+                        "shortGATKVQSR.LongDV_onlyKBAintersect" = "(with KBA)Short (VQSR) vs Long (DV)",
+                        "shortGATKhardfilter.LongDV" = "Short (Hardfilter) vs Long (DV)" ,
+                        "shortGATKVQSR.LongDV" = "Short (VQSR) vs Long (DV)" )) %>%
+  group_by(title,type) %>% #filter(pos %in% target$V1) %>% #count()#head()
+  na.omit() %>%
+  summarise(mean=mean(Val)) %>% #head()
+  pivot_wider(names_from = type,values_from = mean) %>%
+  ggtexttable() -> p2
+a2 <- ggarrange(p1,p2,ncol = 1,nrow = 2,heights = c(7,2))
+
+
+ggarrange(a1,a2,ncol = 2,nrow = 1,widths = c(5,5))
+
+head(df)
+table(df$title)/3
+

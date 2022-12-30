@@ -116,3 +116,84 @@ plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0002.vcf --update-ids /DATA/smkim/J
 plink --vcf /DATA/smkim/JG/08.HLAseq/DATA/DV/0003.vcf --make-bed --out HLA.shortreadseq.long_intersect --allow-extra-chr --vcf-half-call m
 
 plink --bfile HLA.longreadseq.short_intersect --bmerge HLA.shortreadseq.long_intersect --merge-mode 7 --out concordance_longshortintersect --allow-extra-chr
+
+
+###### 2023 winter kogo. 
+
+
+
+cd /DATA/smkim/JG/08.HLAseq/KOGOwinter_2023
+
+
+JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools isec --nfiles 2 -p ./longDV_kchip ../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz ../DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+0000.vcf  0001.vcf  0002.vcf
+SnpSift concordance -v ./longDV_kchip/0001.vcf ./longDV_kchip/0000.vcf > ./concordance_result/QulityMetrix_LongDV.KBA.txt
+
+
+
+bcftools isec --nfiles 2 -p ./longDVnorm_kchip /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.setID.vcf.gz ../DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+SnpSift concordance -v ./longDVnorm_kchip/0001.vcf ./longDVnorm_kchip/0000.vcf > ./concordance_result/QulityMetrix_LongDVnorm.KBA.txt
+
+
+
+
+
+/DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz ../DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz > test.conr.txt
+
+SnpSift concordance -v /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz ../DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz > test.conr.txt
+
+### marker check
+/DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.setID.vcf.gz
+/DATA/smkim/JG/08.HLAseq/DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+/DATA/smkim/JG/08.HLAseq/DATA/v2_20221122/JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+bcftools view -T ../inter.snpID.v3.txt /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.setID.vcf.gz -o long.vcf
+bcftools view -T ../inter.snpID.v3.txt /DATA/smkim/JG/08.HLAseq/DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz -o kchip.vcf
+
+SnpSift concordance -v
+
+## VEP
+
+
+/BDATA/smkim/HLAseq/annotation/2023_KOGOwinter
+longDV_noinHanREF.vari.INFO.forAnno.vcf
+longDV.vari.INFO.forAnno.vcf
+
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i ./longDV_noinHanREF.vari.INFO.forAnno.vcf -o longDV_noinHanREF.vari.INFO.forAnno_VEP.vcf --offline --fork 20 --stats_text --force_overwrite
+/BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/vep --dir_cache /BDATA/jeonginhae/KBA_Upgrade/Tool/ensembl-vep/cache/ -i ./longDV.vari.INFO.forAnno.vcf -o longDV.vari.INFO.forAnno_VEP.vcf --offline --fork 20 --stats_text --force_overwrite
+
+
+
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'
+
+
+
+## kchip QC
+--a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+awk '{split($2,a,"_"); print $2,a[3]}' change.snp.ID.txt > change.snp.ID_refallele.txt
+awk '{print $0}' change.snp.ID_refallele.txt |sort |uniq -c | awk '{print $2,$3}' > change.snp.ID_refallele.v2.txt
+
+plink --bfile JG.QCed.forHLAseq_noMAFrmdup_updatesnp --a2-allele change.snp.ID_refallele.v2.txt --recode vcf --out JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert
+bcftools reheader -s sample.v1.txt JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert.vcf | bgzip -c > JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+tabix -f -p vcf JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+
+plink --bfile JG.QCed.forHLAseq_rmdup_updatesnp --a2-allele change.snp.ID_refallele.v2.txt --recode vcf --out JG.QCed.forHLAseq_rmdup_updatesnp_convert
+bcftools reheader -s sample.v1.txt JG.QCed.forHLAseq_rmdup_updatesnp_convert.vcf | bgzip -c > JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+tabix -f -p vcf JG.QCed.forHLAseq_rmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+## check
+
+/DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.setID.vcf.gz
+/DATA/smkim/JG/08.HLAseq/DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+
+
+bcftools query -f "%ID\t%REF\t%ALT\n" /DATA/smkim/JG/08.HLAseq/DATA/onlySNP/20221216_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck_normQC.updateID.onlySNP.setID.vcf.gz > long.txt
+bcftools query -f "%ID\t%REF\t%ALT\n" /DATA/smkim/JG/08.HLAseq/DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz > kchip.txt
+
+awk '{split($1,a,"_"); print a[3],$2}' kchip.txt | awk '$1 != $2{print $0}' |wc -l
+
+awk '{split($1,a,"_"); print a[3],$2}' kchip.txt | awk '$1 != $2{print $0}'

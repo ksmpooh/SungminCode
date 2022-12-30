@@ -112,3 +112,167 @@ end = time.time()
 print("spark time : %s"%(str(end-start)))
 
 
+
+
+
+
+~/spark-3.1.2/sbin/start-master.sh
+~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+
+~/spark-3.1.2/sbin/stop-master.sh
+~/spark-3.1.2/sbin/stop-worker.sh
+
+hl.init(master='spark://genome101:7077',tmp_dir='~/tmp/')
+Signature:
+hl.init(
+    sc=None,
+    app_name=None,
+    master=None,
+    local='local[*]',
+    log=None,
+    quiet=False,
+    append=False,
+    min_block_size=0,
+    branching_factor=50,
+    tmp_dir=None,
+    default_reference='GRCh37',
+    idempotent=False,
+    global_seed=6348563392232659379,
+    spark_conf=None,
+    skip_logging_configuration=False,
+    local_tmpdir=None,
+    _optimizer_iterations=None,
+    *,
+    backend=None,
+    driver_cores=None,
+    driver_memory=None,
+    worker_cores=None,
+    worker_memory=None,
+)
+
+
+#default_reference='GRCh38'
+hl.import_vcf("./YJTEST/KBA.KOTRY.KR.discovery.IMPUTE4_IMPUTED.filterMAF0.01_INFO0.08.vcf.bgz").write("test.local.mt",overwrite=True)
+import hail as hl
+hl.init_local()
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+gwas.order_by(gwas.p_value).show(25)
+gwas.export('~/test.tsv')
+
+
+
+
+## spark 101번만 사용
+~/spark-3.1.2/sbin/start-master.sh
+~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+
+#메모리나 코어 수 조정할 때는 : ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077 -m 512M -c 1
+#근데 한 서버에서만 돌릴때는 필요없음, 사용가능한 모든 자원 사용
+
+#jps로 확인
+76872 Worker
+81546 Jps
+76746 Master
+
+
+python
+import hail as hl
+hl.init(master='spark://genome101:7077',log="test123.log")  
+mt = hl.balding_nichols_model(n_populations=3,
+                              n_samples=500,
+                              n_variants=500_000,
+                              n_partitions=32)
+mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
+gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
+                                 x=mt.GT.n_alt_alleles(),
+                                 covariates=[1.0])
+gwas.order_by(gwas.p_value).show(25)
+gwas.export('~/test.tsv')
+exit()
+
+# 사용후
+
+~/spark-3.1.2/sbin/stop-master.sh
+~/spark-3.1.2/sbin/stop-worker.sh
+
+
+
+
+
+#### 사전작업
+spark hadoop 다 켜져 있어야함!!! # 경헌샘이 다 켜두었음
+
+jps 로 확인
+
+## hdfs data 확인
+hdfs dfs -ls /
+hdfs dfs -mkdir /user # user 폴더 만들기
+hdfs dfs -ls /user/
+
+hdfs dfs -mkdir /test # tset 폴더 만들기
+hdfs dfs -ls /test/ # 이곳에 데이터 업로드 함
+
+## 데이터 업로드 방법 (local to hdfs)
+hdfs dfs -put local파일이름 [hdfs파일 경로]
+hdfs dfs -put local파일이름 /test/
+
+## 업로드 된 데이터 확인
+hdfs dfs -ls /test/ ##제가 장기이식 데이터 업드로 하였습니다.
+
+
+
+# python 실햄 , hail 작업
+
+import hail as hl
+import time
+hl.init(master='spark://genome101:7077',tmp_dir = "hdfs://genome101:9000/user/")
+
+# vcf file to hail matirix, 한번만 해두면 할필요 없음.처음에 시간이 좀 걸립니다. 백그라운드에서 돌려야함, 해당데이터는 제가 해두어서 할 필요 없음
+hl.import_vcf("hdfs://genome101:9000/test/KBA.KOTRY.KR.discovery.IMPUTE4_IMPUTED.filterMAF0.01_INFO0.08.vcf.bgz").write("hdfs://genome101:9000/test/test.local.mt",overwrite=True) 
+
+# hail matrix 일기
+# n_partition 분산 정도 설정, 나중에 분석할 때 나눠서 분석함. 옵션설정안하면 알아서 파일 크기에 맞게 분산 정도 설정함
+mt = hl.read_matrix_table("hdfs://genome101:9000/test/test.local.mt",_n_partitions = 120) 
+
+#mt가 어떠 내용이 있는지 확인
+mt.describe()
+mt.show(5)
+
+#phenotype 파일 읽기 # phenotype 파일 hdfs 에 업로드 해야함 : hdfs hfs -put phenotye.txt /test/ 
+table = (hl.import_table("hdfs://genome101:9000:/tset/[phenotype 경로]",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID")) #phenotype 파일 읽기
+table.describe()
+
+#시간 체크
+start = time.time()
+
+# phenotype 파일 vcf 파일에 annotation
+mt = mt.annotate_cols(pheno = table[mt.s])
+
+# MT에 annotation 확인
+mt.describe()
+
+# gwas 분석
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="score")
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0],test="score")
+
+# export time # 이것 까지 해야 gwas 분석이 완료됨, spark 특성상 위에 명령어 (gwas)에 시간이 금방되는것처럼 보이는데, 스파크는 실질적으로 해당 분석 결과에 대하여 작업할때(시각화나 export, show) 분석이 진행됨  
+gwas.export("hdfs://genome101:9000:/test/output.tsv")
+
+
+end = time.time()
+print("spark time : %s"%(str(end-start)))
+
+exit()
+
+# 파이썬 종료 후 결과데이터 local로 옮기기
+hdfs dfs -get /test/output.tsv [local 위치]
+
+
+
