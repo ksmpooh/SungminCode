@@ -1,0 +1,257 @@
+/BDATA/smkim/HLA_seq/test
+
+## extract hifhi : 되어 있어서 안해도 됨
+extracthifi HLA_Pac_set5.NIH22D3023517.bc1004--bc1004.bam test.bam
+
+##
+
+/BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta
+
+##pbaa
+pbaa cluster /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA_Pac_set5.NIH22D3023517.bc1004--bc1004.fastq tes_pbaa
+
+pbaa cluster /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA_Pac_set5.NIH22D3023517.bc1004--bc1004.fasta test_fasta_pbaa
+
+HLA_Pac_set5.NIH22D3023517.bc1004--bc1004.bam
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA_Pac_set5.NIH22D3023517.bc1004--bc1004.bam test.bam --sort --preset CCS --rg '@RG\tID:test11\tSM:test11'
+
+
+
+sudo docker run -v "/BDATA/smkim/HLA_seq/test":"/input" -v "/BDATA/smkim/HLA_seq/test":"/output" -v "/BDATA/smkim/HLA_seq/REF/HLA_guide/main":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/guides.fasta \
+--reads /input/test.bam --output_gvcf /output/test_variant.calling.gvcf.gz \
+--output_vcf /output/test_variant.calling.vcf.gz --num_shards 20
+
+
+#### new DATa test
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest
+
+247_S99_L002_R1_001_paired.fastq.gz    248_S100_L002_R1_001_paired.fastq.gz    HLA.Longread.Seq.NIH19KT0247.bam        HLA.Longread.Seq.NIH19KT0248.bam
+247_S99_L002_R1_001_unpaired.fastq.gz  248_S100_L002_R1_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.bam.pbi    HLA.Longread.Seq.NIH19KT0248.bam.pbi
+247_S99_L002_R2_001_paired.fastq.gz    248_S100_L002_R2_001_paired.fastq.gz    HLA.Longread.Seq.NIH19KT0247.fastq      HLA.Longread.Seq.NIH19KT0248.fastq
+247_S99_L002_R2_001_unpaired.fastq.gz  248_S100_L002_R2_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.fastq.fai  HLA.Longread.Seq.NIH19KT0248.fastq.fai
+
+
+/BDATA/smkim/HLA_seq/pacbio_20230110
+
+pbaa cluster /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq HLA.Longread.Seq.NIH19KT0247.pbaa
+pbaa cluster -j 20 /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248.pbaa
+--log-file pbaa.log --log-level INFO
+pbaa cluster -j 20 --log-file pbaa.log --log-level INFO /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248.pbaa
+
+
+## only HLA-A
+pbaa cluster -j 20 --log-file pbaa.log --log-level INFO /BDATA/smkim/HLA_seq/REF/HLA_guide/HLA_A/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_A.pbaa
+pbaa bampaint -j 20 --log-file pbaa_bampaint.log --log-level INFO HLA.Longread.Seq.NIH19KT0248_A.pbaa_read_info.txt /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam HLA.Longread.Seq.NIH19KT0248_bampaint.bam
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA.Longread.Seq.NIH19KT0248_bampaint.bam test_bampint.bam --sort --preset CCS
+
+
+
+
+
+###### guide HLA reference genome
+
+
+        >HLA:HLA00499 DPA1*01:03:01:01 9775 bp
+
+      1 >HLA00499_DPA1_01_03_01_01_9775_bp|HLA-D
+      2 >HLA27261_DPA1_02_01_01_17_9790_bp|HLA-D
+      3 >HLA17104_DPB1_02_01_02_13_11544_bp|HLA-D
+      4 >HLA33853_DPB1_15_01_01_05_11475_bp|HLA-D
+      5 >HLA00559_DPB1_40_01_01_01_11525_bp|HLA-D
+      6 >HLA35957_DPB1_1398_01N_11538_bp|HLA-D
+      7 >HLA17305_DQA1_01_01_01_05_6493_bp|HLA-D
+      8 >HLA00607_DQA1_02_01_01_01_6403_bp|HLA-D
+      9 >HLA00608_DQA1_03_01_01_01_6437_bp|HLA-D
+     10 >HLA17311_DQA1_04_01_01_02_6561_bp|HLA-D
+     11 >HLA06614_DQA1_05_05_01_02_6597_bp|HLA-D
+     12 >HLA00638_DQB1_05_01_01_01_7090_bp|HLA-D
+
+     sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3/;s/[*: ]/_/g' filtered.fasta
+     
+
+cat *_gen.fasta > combined.fasta
+cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3/;s/[*: ]/_/g' filtered.fasta > guides.fasta
+
+subGene
+
+cat A_gen.fasta B_gen.fasta C_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3/;s/[*: ]/_/g' filtered.fasta > ../subGene/HLA_classsI_guides.fasta
+
+
+cat DRB1_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3RB1/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DRB1_guides.fasta
+
+
+cat DP*_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3P/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DP_guides.fasta
+
+
+cat DQ*_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3Q/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DQ_guides.fasta
+
+===
+cat DPA1_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3PA1/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DPA1_guides.fasta
+
+cat DPB1_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3PB1/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DPB1_guides.fasta
+
+
+cat DQA1_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3QA1/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DQA1_guides.fasta
+
+cat DQB1_gen.fasta > combined.fasta
+/BDATA/smkim/TOOLs/cdhit/cd-hit-est -c 0.9 -i combined.fasta -o filtered.fasta
+sed -E 's/>([^:]*):([^ ]*) ([^\*])(.*)/>\2 \3\4|\1-\3QB1/;s/[*: ]/_/g' filtered.fasta > ../Gene/HLA_classsII_DQB1_guides.fasta
+===
+cat HLA_classsI_guides.fasta HLA_classsII_DP_guides.fasta HLA_classsII_DQ_guides.fasta HLA_classsII_DRB1_guides.fasta > HLA_8Gene_guides.fasta
+
+cd /BDATA/smkim/HLA_seq/REF/HLA_guide/subGene
+ls * | xargs -I {} -P 2 bash -c "samtools faidx {}"
+
+/BDATA/smkim/HLA_seq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta
+/BDATA/smkim/HLA_seq/REF/HLA_guide/subGene/HLA_classsII_guides.fasta
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta
+
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DRB1_guides.fasta
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DP_guides.fasta
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DQ_guides.fasta
+
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta
+
+##### pbaa
+
+pbaa cluster -j 20 --log-file pbaa_1.classI.log --log-level INFO \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa
+
+pbaa cluster -j 20 --log-file pbaa_1.DRB1.log --log-level INFO \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DRB1_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classII_DRB1.pbaa
+
+pbaa cluster -j 20 --log-file pbaa_1.DP.log --log-level INFO \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DP_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classII_DP.pbaa
+
+pbaa cluster -j 20 --log-file pbaa_1.DQ.log --log-level INFO \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DQ_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classII_DQ.pbaa
+
+
+###### mapping
+## no pbaa 
+# 8 Gene target
+cd /BDATA/smkim/HLA_seq/test
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam \
+HLA.Longread.Seq.NIH19KT0247.mapped_HLA_8Gene_guideREF.bam \
+--sort --preset CCS
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam \
+HLA.Longread.Seq.NIH19KT0248.mapped_HLA_8Gene_guideREF.bam \
+--sort --preset CCS
+
+# HLA target hg19
+/BDATA/smkim/HLA_seq/REF/HLA.target.fasta
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam \
+HLA.Longread.Seq.NIH19KT0247.mapped_HLA_target.bam \
+--sort --preset CCS
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam \
+HLA.Longread.Seq.NIH19KT0248.mapped_HLA_target.bam \
+--sort --preset CCS
+
+
+# hg38
+
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam \
+HLA.Longread.Seq.NIH19KT0247.mapped_hg38_all.bam \
+--sort --preset CCS
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam \
+HLA.Longread.Seq.NIH19KT0248.mapped_hg38_all.bam \
+--sort --preset CCS
+
+
+
+
+### short-read
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz  
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz  
+
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz
+
+
+### bwa-mem use guide HLA gene
+#~/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:733\tPL:ILLUMINA\tLB:Novaseq7000" ./HLA.target.fasta ../733_S56_L002_R2_001.fastq.gz ../733_S56_L002_R1_001.fastq.gz >test_align.sam
+#samtools sort test_align.sam -o test_align_sorted.bam
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0247\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz |\
+samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_HLA_8Gene_guideREF.sored.bam
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0248\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_8Gene_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz \
+| samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_HLA_8Gene_guideREF.sored.bam
+
+### bwa-mem use HLA target
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0247\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/HLA.target.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz |\
+samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_HLA_target.sored.bam
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0248\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/HLA.target.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz \
+| samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_HLA_target.sored.bam
+
+
+### bwa-mem use hg38 all
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0247\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz |\
+samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0248\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz \
+| samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_hg38_all.sored.bam
+
+
+

@@ -1,0 +1,34 @@
+## HLA mapper
+
+/BDATA/smkim/TOOLs/hla_mapper/bin/linux/hla-mapper
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2
+
+db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA
+bwa=/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2
+samtools=samtools
+
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest
+
+247_S99_L002_R1_001_paired.fastq.gz    248_S100_L002_R1_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.fastq         HLA.Longread.Seq.NIH19KT0248.bam        HLA.Longread.Seq.NIH19KT0248.fastq.gz.fai
+247_S99_L002_R1_001_unpaired.fastq.gz  248_S100_L002_R2_001_paired.fastq.gz    HLA.Longread.Seq.NIH19KT0247.fastq.fai     HLA.Longread.Seq.NIH19KT0248.bam.pbi    HLA.Longread.Seq.NIH19KT0248.fastq.gz.gzi
+247_S99_L002_R2_001_paired.fastq.gz    248_S100_L002_R2_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.fastq.gz      HLA.Longread.Seq.NIH19KT0248.fastq
+247_S99_L002_R2_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.bam        HLA.Longread.Seq.NIH19KT0247.fastq.gz.fai  HLA.Longread.Seq.NIH19KT0248.fastq.fai
+248_S100_L002_R1_001_paired.fastq.gz   HLA.Longread.Seq.NIH19KT0247.bam.pbi    HLA.Longread.Seq.NIH19KT0247.fastq.gz.gzi  HLA.Longread.Seq.NIH19KT0248.fastq.gz
+
+
+cd /BDATA/smkim/HLA_seq/Tool_test/hla_mapper
+
+
+/BDATA/smkim/TOOLs/hla_mapper/bin/linux/hla-mapper dna \
+r1=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+r2=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz \
+sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/
+
+
+
+
+/BDATA/smkim/TOOLs/hla_mapper/bin/linux/hla-mapper dna \
+r0=HLA.Longread.Seq.NIH19KT0247.fastq.gz \
+output=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/hla-mapper/longread/ \
+sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/

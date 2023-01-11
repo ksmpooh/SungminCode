@@ -1,0 +1,115 @@
+================================= HLAscan_v2.1 manual =============================
+1. Commands
+  (1) HLA typing (input : bam file)
+     ./hla_scan_v5.0 -b [bam] -d [IMGT/HLA DB] -v [version(37 or 38)]
+  (2) HLA typing (input : fastq files)
+     ./hla_scan_v5.0 -l [fastq] (-r [fastq2]) -d [IMGT/HLA DB]
+
+2. Options
+   (1) Gene List			-g 	[string], default=HLA-A
+      	  HLA-A, HLA-B, HLA-C, HLA-E, HLA-F, HLA-G, MICA, MICB,
+	  HLA-DMA, HLA-DMB, HLA-DOA, HLA-DOB, HLA-DPA1, HLA-DPB1, HLA-DQA1,
+ 	  HLA-DQB1, HLA-DRA, HLA-DRB1, HLA-DRB5, TAP1, TAP2
+   (2) Score Cutoff			-s 	[int], default=50
+   (3) Constant using ScoreFunc	-c	[int], default=30
+   (4) # of threads			-t 	[int], default=1
+   (5) Length of reads Cutoff	-f	[int], default=90
+
+
+   /BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4
+
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest
+
+247_S99_L002_R1_001_paired.fastq.gz    248_S100_L002_R1_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.fastq         HLA.Longread.Seq.NIH19KT0248.bam        HLA.Longread.Seq.NIH19KT0248.fastq.gz.fai
+247_S99_L002_R1_001_unpaired.fastq.gz  248_S100_L002_R2_001_paired.fastq.gz    HLA.Longread.Seq.NIH19KT0247.fastq.fai     HLA.Longread.Seq.NIH19KT0248.bam.pbi    HLA.Longread.Seq.NIH19KT0248.fastq.gz.gzi
+247_S99_L002_R2_001_paired.fastq.gz    248_S100_L002_R2_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.fastq.gz      HLA.Longread.Seq.NIH19KT0248.fastq
+247_S99_L002_R2_001_unpaired.fastq.gz  HLA.Longread.Seq.NIH19KT0247.bam        HLA.Longread.Seq.NIH19KT0247.fastq.gz.fai  HLA.Longread.Seq.NIH19KT0248.fastq.fai
+248_S100_L002_R1_001_paired.fastq.gz   HLA.Longread.Seq.NIH19KT0247.bam.pbi    HLA.Longread.Seq.NIH19KT0247.fastq.gz.gzi  HLA.Longread.Seq.NIH19KT0248.fastq.gz
+
+HLA.Longread.Seq.NIH19KT0247.mapped_hg38_all.bam
+HLA.Longread.Seq.NIH19KT0247.mapped_HLA_target.bam
+HLA.Longread.Seq.NIH19KT0248.mapped_HLA_8Gene_guideREF.bam
+HLA.Longread.Seq.NIH19KT0247.mapped_HLA_8Gene_guideREF.bam
+HLA.Longread.Seq.NIH19KT0248.mapped_hg38_all.bam
+HLA.Longread.Seq.NIH19KT0248.mapped_HLA_target.bam
+HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam
+
+cd /BDATA/smkim/HLA_seq/Tool_test/hla_scan
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-l /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq.gz \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38 \
+-g HLA-B
+
+
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/test/HLA.Longread.Seq.NIH19KT0247.mapped_hg38_all.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38
+
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-l /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+-r /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38
+
+
+
+247
+
+A: 110101	330301	 11:01:01:01  33:03:23 
+B: 150101	440301  15:01:01:03 44:03:01	
+C: 40101	140301	04:01:01:04 14:03
+DRB1: 40601	130201  13:02:01	04:06:01
+DRB3: 30101	x
+DQA1: 10201	30101	01:02:01:04 03:01:01  
+DQB1: 30201	60401	06:04:01    03:02:01
+DPA1: 10301	20202	01:03:01:02  02:02:02 
+DPB1: 20201	40201   02:02  04:02:01:02
+## test 중 성공
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/test/HLA.Shortread.Seq.NIH19KT0247.mapped_HLA_target.sored.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 37 \
+-g HLA-A
+
+
+## test 중 
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/test/HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38 \
+-g HLA-B,HLA-DRB1
+
+
+## test 중 core dump
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/test/HLA.Longread.Seq.NIH19KT0247.mapped_hg38_all.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38
+
+$$$$$
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/test/HLA.Longread.Seq.NIH19KT0247.mapped_HLA_target.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 37
+
+
+### after HLA-mapper
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/hla-mapper/NIH19KT0247.adjusted.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38 \
+-g HLA-DPA1
+
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-b /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/hla-mapper/NIH19KT0247.unique.bam \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38 \
+-g HLA-DPA1
+### after HLA-mapper longread
