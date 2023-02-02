@@ -1,0 +1,43 @@
+hg19 chr6:28477797-33448354
+hg38 chr6:28510020-33480577
+
+
+zcat < ncbiRefSeq.txt.gz|  grep alt  |grep chr6 > ncbiRefSeq_chr6_altseq.txt
+
+zcat < ncbiRefSeq.txt.gz|  grep chr6 | awk '$5>=28510020 && $6 <= 33480577' > ncbiRefSeq_chr6_HLAregion.txt
+
+
+# R
+
+setwd("/Users/ksmpooh/Desktop/KCDC/long_read/IGV/hg38")
+library(tidyverse)
+df <- read.table("ncbiRefSeq_chr6_altseq.txt")
+ref <- c("chr6_GL000250v2_alt",
+"chr6_GL000251v2_alt",
+"chr6_GL000252v2_alt",
+"chr6_GL000253v2_alt",
+"chr6_GL000254v2_alt",
+"chr6_GL000255v2_alt",
+"chr6_GL000256v2_alt",
+"chr6_KI270758v1_alt")
+
+
+head(df)
+df %>% filter(V3 %in% ref) %>% write.table("ncbiRefSeq_chr6_altseq_forHLAregion.txt",col.names = F,row.names = F,quote = F,sep = "\t")
+
+##python 돌려서 positon 정리 
+
+cat ncbiRefSeq_chr6_altseq_forHLAregion.txt ncbiRefSeq_chr6_HLAregion_processing.txt > ncbiRefSeq_chr6_HLAregion_forIGV.txt
+
+
+
+    typing              short                   long
+A: 110101	330301	 11:01:01:01  33:03:23 
+B: 150101	440301  15:01:01:03 44:03:01	
+C: 40101	140301	04:01:01:04 14:03
+DRB1: 40601	130201  13:02:01	04:06:01
+DRB3: 30101	x
+DQA1: 10201	30101	01:02:01:04 03:01:01  
+DQB1: 30201	60401	06:04:01    03:02:01
+DPA1: 10301	20202	01:03:01:02  02:02:02 
+DPB1: 20201	40201   02:02  04:02:01:02

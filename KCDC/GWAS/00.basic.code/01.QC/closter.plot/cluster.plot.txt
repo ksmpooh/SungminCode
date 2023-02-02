@@ -1,0 +1,229 @@
+# for cluster plot
+genome@genome109:/BDATA/smkim/JG/99.cluster.plot$
+8:118184855_T/A
+#1 select maker
+
+# python python.script.py [summary] [SNP INFO] [number col]
+
+## SNP INFO,  col 6
+ID CHROM POS REF ALT Probe_Set_ID
+1:110882103_A/G 1 110882103 A G AX-82917779
+1:112269669_T/C 1 112269669 T C AX-112972922
+1:154408569_T/C 1 154408569 T C AX-112939685
+1:154517371_A/G 1 154517371 A G AX-113496613
+
+python extract.py AxiomGT1.summary.txt targeted_snp.v2.txt 5
+
+#2 data transposon t(df)
+
+R
+
+df <- read.table("targeted_snp.v2withAxiom.summary.txt",header=T)
+df <- as.data.frame(df)
+df2 <- as.data.frame(t(df))
+colnames(df2) <- df$probeset_id
+head(df2[2:nrow(df2),1:2])
+df2 <- df2[2:nrow(df2),]
+head(df2[2:nrow(df2),1:2])
+head(df2)
+
+write.table(df2,"targeted_snp.v2withAxiom.summary_transposon.txt",col.names=T,row.names=T,quote=F)
+
+q()
+
+row 하나 추가 (CEL)
+
+# data preprocessing
+
+python
+
+
+import math
+
+df = open("targeted_snp.v2withAxiom.summary_transposon.txt","r")
+out = open("targeted_snp.v2withAxiom.summary_transposon_forplot.txt","w")
+
+
+#Original signal intensity에서 transformed signal intensity로 변환할 수 있는 공식
+#x축: Contrast = log2(SNP-A / SNP-B)
+#y축: Size = (log2(SNP-A) + log2(SNP-B))/2
+#ref <- io
+def main():
+    col= df.readline().replace("-A","-contrast").replace("-B","-size")  
+    ncol = len(col.replace("\n","").split())
+    out.write(col)
+    #print(col)   
+    while True:
+        line = df.readline()
+        if not line:
+            break
+        #for i in range(1,int((ncol-1)/2)):
+        lines = line.replace("\n","").split()
+        out.write("%s"%lines.pop(0))
+        while len(lines) !=0:
+            a = float(lines.pop(0))
+            b = float(lines.pop(0))
+            contrast = math.log2(a/b)
+            size = (math.log2(a) + math.log2(a))/2
+            out.write(" %s %s"%(str(contrast),str(size)))
+        out.write("\n")
+
+
+main()
+
+
+### AA AB BB color를 위한 작업
+
+
+awk '{print $6}' targeted_snp.v2.txt > snp.list
+plink --bfile /LaCie2/KOTRY/03.QC/NODAT/JG.KR.2nd_snpolisher_rmPCA_rmaffy --extract snp.list --make-bed --out KR.QCed.AB.snp.list
+awk '{print $2,"A"}' KR.QCed.AB.snp.list.bim > SNP.A.txt
+plink --bfile KR.QCed.AB.snp.list --a1-allele SNP.A.txt --recodeA --out KR.QCed.AB.snp.list_raw
+
+#
+plot
+R
+
+
+#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
+#x異?: Contrast = log2(SNP-A / SNP-B)
+#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
+
+library(stringr)
+library(tidyverse)
+#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
+setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
+setwd("~/")
+
+
+#### cluster plot
+
+
+
+#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
+#x異?: Contrast = log2(SNP-A / SNP-B)
+#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
+
+library(stringr)
+library(tidyverse)
+#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
+setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
+setwd("~/")
+
+
+#### cluster plot
+
+#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
+#x異?: Contrast = log2(SNP-A / SNP-B)
+#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
+
+library(stringr)
+library(tidyverse)
+#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
+setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
+setwd("~/")
+
+
+#### cluster plot
+
+#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
+#x異?: Contrast = log2(SNP-A / SNP-B)
+#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
+
+library(stringr)
+library(tidyverse)
+#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
+setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
+setwd("~/")
+
+
+#### cluster plot
+
+df <- read.table("targeted_snp.v2withAxiom.summary_transposon_forplot.txt",header = T)
+markerID <- read.table("targeted_snp.v2.txt",header = T)
+ref <- read.table("KR.QCed.AB.snp.list_raw.raw",header = T)
+fam <- read.table("~/Desktop/KCDC/transplantation/job/cluster_plot/JG.KR.2nd_snpolisher_rmPCA_rmaffy_convert_indel_flip_rmdup_rmscreenfailure_forOPEN.fam")
+head(df)
+head(fam)
+
+df[grepl("_2",df$CEL),]$ID
+df[grepl("_2",df$CEL),]
+head(ref)[1:10]
+colnames(df) <- str_replace_all(colnames(df),"AX.","AX-")
+
+colnames(ref) <- str_replace_all(colnames(ref),"_A","")
+colnames(ref) <- str_replace_all(colnames(ref),"AX.","AX-")
+
+head(df)[1:3]
+df$ID <- str_sub(str_split_fixed(df$CEL,"_",6)[,6],1,-5)
+df$ID <- str_replace_all(df$ID,"_2","")
+
+df<- df[df$ID %in% fam$V1,]
+
+#df <- df[df$ID %in% ref$FID,]
+row.names(df)<-df$ID
+head(df)
+head(ref)[1:10]
+target <- "AX-82917779"
+head(markerID)
+rownames(markerID) <- markerID$Probe_Set_ID
+markerID$title <- paste0(markerID$ID," : ",markerID$Probe_Set_ID)
+markerID[target,]$ID
+markerID[target,]$title
+markerID$filename <- str_replace_all(markerID$ID,":","_")
+markerID$filename <- str_replace_all(markerID$filename,"/","_")
+head(markerID)
+target
+
+head(df)
+max(df)
+for (i in 7:ncol(ref)) {
+  #for (i in 7:10) {
+  target = colnames(ref)[i]
+  png(paste0("/Users/ksmpooh/Desktop/KCDC/transplantation/job/cluster_plot/plot/",markerID[target,]$filename,".png"),height = 600,width = 600)
+  plot(df[,paste0(target,".contrast")],df[,paste0(target,'.size')], cex=0.5, pch=0,col=rgb(1,1,1,0.5),
+       xlim = c(-5,5),
+       xlab = "Contrast = log2(SNP-A / SNP-B)",ylab = "Size = (log2(SNP-A) + log2(SNP-B))/2",
+       main= markerID[target,]$title)
+  #dev.off()
+  #plot(xlab = "Contrast = log2(SNP-A / SNP-B)",ylab = "Size = (log2(SNP-A) + log2(SNP-B))/2")
+  points(df[ref[ref[,target] == 0,]$FID,paste0(target,'.contrast')],
+         df[ref[ref[,target] == 0,]$FID,paste0(target,'.size')],
+         cex=1, pch=16,col=rgb(1,0,0,0.8))
+  points(df[ref[ref[,target] == 1,]$FID,paste0(target,'.contrast')],
+         df[ref[ref[,target] == 1,]$FID,paste0(target,'.size')],
+         cex=1, pch=16,col=rgb(0,0,1,0.8))
+  points(df[ref[ref[,target] == 2,]$FID,paste0(target,'.contrast')],
+         df[ref[ref[,target] == 2,]$FID,paste0(target,'.size')],
+         cex=1, pch=16,col=rgb(0,1,0,0.8))
+  points(df[ref[is.na(ref[,target]),]$FID,paste0(target,'.contrast')],
+         df[ref[is.na(ref[,target]),]$FID,paste0(target,'.size')],
+         cex=1, pch="x",col=rgb(0,0,0,0.8))
+  legend('bottomright',legend=c(paste0("BB (",table(ref[,target])["0"],")"),paste0("AB (",table(ref[,target])["1"],")"),paste0("AA (",table(ref[,target])["2"],")"),paste0("NA (",sum(is.na(ref[,target])),")")),
+         col = c("red","blue","green","grey"),
+         #lty = c(16,16,16,NA),
+         pch = c(16,16,16,4),cex = 1,
+         title = "Allele(# of sample)"
+  )
+  
+  dev.off()
+}
+
+table(ref[,target])
+
+table(ref[,target])["0"]
+
+table(ref[,target])[3]
+
+table(ref[,target])[1]
+markerID
+table(ref[,"AX-113535440"])
+
+table(ref[,"AX-113535440"])["0"]
+table(ref[,"AX-113535440"])["1"]
+table(ref[,"AX-113535440"])["2"]
+
+
+
+
+\

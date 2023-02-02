@@ -136,6 +136,11 @@ pbaa cluster -j 20 --log-file pbaa_1.classI.log --log-level INFO \
 /BDATA/smkim/HLA_seq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta \
 /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa
 
+pbaa cluster -j 20 --log-file pbaa_2.classI.log --log-level INFO \
+/BDATA/smkim/HLA_seq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq HLA.Longread.Seq.NIH19KT0247_HLA_classI.pbaa
+
+
 pbaa cluster -j 20 --log-file pbaa_1.DRB1.log --log-level INFO \
 /BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DRB1_guides.fasta \
 /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classII_DRB1.pbaa
@@ -147,6 +152,22 @@ pbaa cluster -j 20 --log-file pbaa_1.DP.log --log-level INFO \
 pbaa cluster -j 20 --log-file pbaa_1.DQ.log --log-level INFO \
 /BDATA/smkim/HLA_seq/REF/HLA_guide/Gene/HLA_classsII_DQ_guides.fasta \
 /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248_HLA_classII_DQ.pbaa
+
+
+pbaa bampaint -j 20 --log-file pbaa_bampaint.log --log-level INFO HLA.Longread.Seq.NIH19KT0247_HLA_classI.pbaa_read_info.txt /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam HLA.Longread.Seq.NIH19KT0247_HLA_classI.pbaa.bampaint.bam
+pbaa bampaint -j 20 --log-file pbaa_bampaint.log --log-level INFO HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa_read_info.txt /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa.bampaint.bam
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA.Longread.Seq.NIH19KT0247_HLA_classI.pbaa.bampaint.bam HLA.Longread.Seq.NIH19KT0247_HLA_classI.pbaa.bampaint.mapped.bam --sort --preset CCS
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa.bampaint.bam HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa.bampaint.mapped.bam --sort --preset CCS
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA.Longread.Seq.NIH19KT0248_HLA_classI.pbaa.bampaint.bam test_bampint.bam --sort --preset CCS
+
+pbaa bampaint -j 20 --log-file pbaa_bampaint.log --log-level INFO HLA.Longread.Seq.NIH19KT0248_A.pbaa_read_info.txt /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam HLA.Longread.Seq.NIH19KT0248_bampaint.bam
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta HLA.Longread.Seq.NIH19KT0248_bampaint.bam test_bampint.bam --sort --preset CCS
+
 
 
 ###### mapping
@@ -196,6 +217,37 @@ pbmm2 align \
 HLA.Longread.Seq.NIH19KT0248.mapped_hg38_all.bam \
 --sort --preset CCS
 
+## hg38  HLA
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLAregion_alt_HLAtype.fasta
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLA_alt.fasta \
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLA_alt.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam \
+HLA.Longread.Seq.NIH19KT0247.mapped_hg38_HLAregion_alt_HLAtype.bam \
+--sort --preset CCS
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLA_alt.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam \
+HLA.Longread.Seq.NIH19KT0248.mapped_hg38_HLAregion_alt_HLAtype.bam \
+--sort --preset CCS
+
+
+## hg38 HLA region with alt
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.bam \
+HLA.Longread.Seq.NIH19KT0247.mapped_hg38_HLAregion_alt.bam \
+--sort --preset CCS
+
+pbmm2 align \
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.bam \
+HLA.Longread.Seq.NIH19KT0248.mapped_hg38_HLAregion_alt.bam \
+--sort --preset CCS
 
 
 
@@ -254,4 +306,33 @@ samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam
 | samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_hg38_all.sored.bam
 
 
+### bwa-mem use hg38 alt
 
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0247\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLA_alt.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz |\
+samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_alt_HLAtype.sored.bam
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0248\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_HLA_alt.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz \
+| samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_hg38_alt_HLAtype.sored.bam
+
+### bwa-mem use hg38 HLA region alt
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta \
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0247\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz |\
+samtools sort -o HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_HLAregion_alt.sored.bam
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 16 -R "@RG\tID:HWI\tSM:NIH19KT0248\tPL:ILLUMINA\tLB:Novaseq7000" \
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.fasta \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R1_001_paired.fastq.gz \
+/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/248_S100_L002_R2_001_paired.fastq.gz \
+| samtools sort -o HLA.Shortread.Seq.NIH19KT0248.mapped_hg38_HLAregion_alt.sored.bam

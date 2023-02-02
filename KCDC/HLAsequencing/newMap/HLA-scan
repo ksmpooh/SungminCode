@@ -40,7 +40,14 @@ cd /BDATA/smkim/HLA_seq/Tool_test/hla_scan
 -l /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq.gz \
 -d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
 -v 38 \
--g HLA-B
+-g HLA-DPA2
+
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-l NIH19KT0247_selected.R0.fastq \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-v 38 \
+-g HLA-DPA1
 
 
 
@@ -59,7 +66,7 @@ cd /BDATA/smkim/HLA_seq/Tool_test/hla_scan
 
 
 247
-
+    typing              short                   long
 A: 110101	330301	 11:01:01:01  33:03:23 
 B: 150101	440301  15:01:01:03 44:03:01	
 C: 40101	140301	04:01:01:04 14:03
@@ -113,3 +120,22 @@ $$$$$
 -v 38 \
 -g HLA-DPA1
 ### after HLA-mapper longread
+
+
+
+#20230131 test
+python hla.scan.py /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/hla-mapper/NIH19KT0247.unique.bam
+
+
+/BDATA/smkim/TOOLs/hla_scan/hla_scan_r_v2.1.4 \
+-l /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+-r /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz \
+-d /BDATA/smkim/TOOLs/hla_scan/db/HLA-ALL.IMGT \
+-t 32
+
+
+###
+NIH19KT1006.unique.bam/NIH19KT1006.unique.bam
+
+ls -h | grep NIH | xargs -I {} -P 1 bash -c "python hla.scan_name.py ./{}/{}.unique.bam {}"
+

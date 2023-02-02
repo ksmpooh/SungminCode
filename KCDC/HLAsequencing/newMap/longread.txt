@@ -1,0 +1,73 @@
+## longread
+# mapping
+# ID change
+/BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change
+ls *ba
+# mapping
+
+#ls *bam | cut -d"." -f"1-3" |xargs -I{} -P 1 bash -c 'pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta {}.bam ../02.mapping/{}_mapped.bam --sort --preset CCS'
+ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" |xargs -I{} -P 1 bash -c 'pbmm2 align /DATA/smkim/pacbio/INPUTs/HLA.target.fasta {}.bam ../02.mapping/{}_mapped.bam --sort --preset CCS'
+
+
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.v2.fasta
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.v2.fasta
+/BDATA/smkim/HLA_seq/REF/HLA.target.fasta
+
+# hg38 target HLA region mapping
+
+
+## long read
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
+
+ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.v2.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion/{}.hg38_HLAregion_mapped.bam --sort --preset CCS'
+
+
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
+ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.HLA.region.target.withALT.v2.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT/{}.hg38_HLAregion_withALT_mapped.bam --sort --preset CCS'
+
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg19/{}.hg19_HLAregion_mapped.bam --sort --preset CCS'
+
+
+
+# Q20
+01.mapped_hg19  01.mapped_hg38_HLAregion  01.mapped_hg38_HLAregion_withALT
+
+mkdir 01-1.mapped_Q20_hg19
+mkdir 01-1.mapped_Q20_hg38_HLAregion
+mkdir 01-1.mapped_Q20_hg38_HLAregion_withALT
+
+
+ls HLA*bam | cut -d"." -f"1-5" | xargs -I{} -P 12 bash -c "samtools view -h -q 20 {}.bam -o ../02.mapped_Q20/{}.Q20.bam"
+
+ls HLA*bam | xargs -I{} -P 12 bash -c "samtools index {}"
+ls HLA*bam | cut -d"." -f"1-4" | xargs -I{} -P 12 bash -c "samtools index ../02.mapping/{}_mapped.Q20.bam"
+
+hg19  hg38_HLAregion  hg38_HLAregion_withALT
+python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
+python coverage.HLA.region.py hg38 /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg38_HLAregion
+python coverage.HLA.region.py hg38_alt /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg38_HLAregion_withALT
+
+
+
+## short-read
+python
+
+
+##coverage
+python coverage.HLA.region.py hg38 /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
+python coverage.HLA.region.py hg38_alt /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
+python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+
+
+
+(smkim) genome@genome103:/BDATA/smkim/HLA_seq/SCRIPTs/coverage$ ls /BDATA/smkim/HLA_seq/shortread/
+01.mapping_hg19  01.mapping_hg38_HLAregion  01.mapping_hg38_HLAregion_withALT  02.variant.call  SCRIPTs
+
+python coverage.HLA.region.py hg38 /BDATA/smkim/HLA_seq/shortread/01.mapping_hg38_HLAregion
+python coverage.HLA.region.py hg38_alt /BDATA/smkim/HLA_seq/shortread/01.mapping_hg38_HLAregion_withALT
+python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19
+
+
+
+## short-read dup

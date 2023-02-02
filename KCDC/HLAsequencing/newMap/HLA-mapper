@@ -32,3 +32,19 @@ sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/
 r0=HLA.Longread.Seq.NIH19KT0247.fastq.gz \
 output=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/hla-mapper/longread/ \
 sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/
+
+
+
+/BDATA/smkim/TOOLs/hla_mapper/bin/linux/hla-mapper dna \
+bam=HLA.Longread.Seq.NIH19KT0247.mapped_hg38_all.bam \
+output=/BDATA/smkim/HLA_seq/test/Long_hg38/ \
+sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/
+
+
+
+/BDATA/smkim/TOOLs/hla_mapper/bin/linux/hla-mapper dna \
+r1=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz \
+r2=/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz \
+output=/BDATA/smkim/HLA_seq/Tool_test/hla_mapper/shortread/test/ \
+sample=NIH19KT0247 db=/BDATA/smkim/TOOLs/hla_mapper/hla-mapper_db_004.1_HLA/ \
+threads=32
