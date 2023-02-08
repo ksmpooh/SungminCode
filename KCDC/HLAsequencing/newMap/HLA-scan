@@ -139,3 +139,6 @@ NIH19KT1006.unique.bam/NIH19KT1006.unique.bam
 
 ls -h | grep NIH | xargs -I {} -P 1 bash -c "python hla.scan_name.py ./{}/{}.unique.bam {}"
 
+### HLA scan python 실행
+python HLA-scan.processing.py NIH19KT0248 HLA.scan.NIH19KT0248.txt
+

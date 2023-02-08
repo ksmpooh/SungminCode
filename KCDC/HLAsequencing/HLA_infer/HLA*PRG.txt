@@ -1,0 +1,93 @@
+make all BOOST_PATH=/BDATA/smkim/TOOLs/boost_1_81_0 BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
+make all BOOST_PATH=/home/genome/Downloads/boost_1_59_0 BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
+
+BOOST_INCLUDE=/my/boost/include BOOST_LIB=/my/boost/lib
+
+
+make all BOOST_PATH=/BDATA/smkim/TOOLs/boost_1_81_0/boost BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
+
+'''
+sudo docker run -v "/BDATA/smkim/HLA_seq/test":"/input" -v "/BDATA/smkim/HLA_seq/test":"/output" -v "/BDATA/smkim/HLA_seq/REF/HLA_guide/main":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/guides.fasta \
+--reads /input/test.bam --output_gvcf /output/test_variant.calling.gvcf.gz \
+--output_vcf /output/test_variant.calling.vcf.gz --num_shards 20
+'''
+```
+docker build -t hla_prg_la .
+docker run -it --rm hla_prg_la
+```
+
+## HLA PRG LA docker
+bojiutk/hla_prg_la
+
+/app/HLA-PRG-LA/bin/HLA-PRG-LA
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+bojiutk/hla_prg_la /app/HLA-PRG-LA/bin/HLA-PRG-LA 
+docker run bojiutk/hla_prg_la /app/HLA-PRG-LA/bin/HLA-PRG-LA --action testBinary
+
+../bin/HLA-LA --action prepareGraph --PRG_graph_dir ../graphs/PRG_MHC_GRCh38_withIMGT
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+bojiutk/hla_prg_la /app/HLA-PRG-LA/bin/HLA-PRG-LA \
+--action prepareGraph --PRG_graph_dir /ref/PRG_MHC_GRCh38_withIMGT
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+quay.io/biocontainers/hla-la:1.0.3--hd03093a_1 HLA-LA.pl --action testBinary
+
+docker run -it quay.io/biocontainers/hla-la:1.0.3--hd03093a_1
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+-it quay.io/biocontainers/hla-la:1.0.3--hd03093a_1
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+quay.io/biocontainers/hla-la:1.0.3--hd03093a_1 HLA-LA.pl --workingDir /wdir --sampleID 1003 \
+--action prepareGraph --PRG_graph_dir /ref/PRG_MHC_GRCh38_withIMGT
+
+./HLA-LA.pl --BAM /path/to/indexed.bam --graph PRG_MHC_GRCh38_withIMGT --sampleID $mySampleID --maxThreads 7
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+quay.io/biocontainers/hla-la:1.0.3--hd03093a_1 HLA-LA.pl --workingDir /wdir --sampleID 1003 \
+--BAM /wdir/HLA.Shortread.Seq.NIH19KT3824.trimmed.hg38_HLAregion_align.sorted.dedup.bam \
+--graph /ref/PRG_MHC_GRCh38_withIMGT \
+--maxThreads 8
+
+
+'''
+Please specify a working directory via --workingDir.
+
+Output for sample with ID $sampleID will go a correspondingly named sub-directory of the working directory.
+
+For example, if --workingDir is /path/working, and --sampleID is mySample, then the output will go into directory /path/working/mySample.
+'''
+
+../bin/HLA-LA --action prepareGraph --PRG_graph_dir ../graphs/PRG_MHC_GRCh38_withIMGT
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+quay.io/biocontainers/hla-la:1.0.3--hd03093a_1 HLA-LA.pl --action prepareGraph \
+--PRG_graph_dir /ref/PRG_MHC_GRCh38_withIMGT
+
+######### docker container
+
+
+docker run -it -d --name hla -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+-v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+bojiutk/hla_prg_la:latest
+
+docker exec -it hla /bin/bash
+
+
+
+### 오 된다.............
+/usr/local/bin/HLA-LA/bin/HLA-LA
+
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+zlskidmore/hla-la /usr/local/bin/HLA-LA/bin/HLA-LA \
+--action testBinary
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+zlskidmore/hla-la /usr/local/bin/HLA-LA/bin/HLA-LA \
+--action prepareGraph --PRG_graph_dir /ref/PRG_MHC_GRCh38_withIMGT
+
+
+
+
