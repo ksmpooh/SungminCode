@@ -1,9 +1,28 @@
 make all BOOST_PATH=/BDATA/smkim/TOOLs/boost_1_81_0 BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
 make all BOOST_PATH=/home/genome/Downloads/boost_1_59_0 BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
 
+
+make all BOOST_PATH=~/miniconda3/envs/HLA-LA/include/boost BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
+
 BOOST_INCLUDE=/my/boost/include BOOST_LIB=/my/boost/lib
 
 
+BOOST_PATH ?= /BDATA/smkim/TOOLs/boost_1_81_0
+BAMTOOLS_PATH ?= /BDATA/smkim/TOOLs/bamtools
+BOOST_INCLUDE = /BDATA/smkim/TOOLs/boost_1_81_0/boost
+BOOST_LIB = /BDATA/smkim/TOOLs/boost_1_81_0/libs
+#/BDATA/smkim/TOOLs/boost_1_81_0/stage/lib
+BAMTOOLS_INCLUDE = $(BAMTOOLS_PATH)/include/bamtools
+BAMTOOLS_SRC = $(BAMTOOLS_PATH)/src
+BAMTOOLS_LIB = $(BAMTOOLS_PATH)/lib64
+
+
+
+
+
+
+/BDATA/smkim/TOOLs/boost_1_62_0
+make all BOOST_PATH=/BDATA/smkim/TOOLs/boost_1_62_0 BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
 make all BOOST_PATH=/BDATA/smkim/TOOLs/boost_1_81_0/boost BAMTOOLS_PATH=/BDATA/smkim/TOOLs/bamtools
 
 '''
@@ -76,8 +95,21 @@ docker exec -it hla /bin/bash
 
 
 
+docker run -it -d --name hla -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+-v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+zlskidmore/hla-la:latest
+
+
+
+
 ### 오 된다.............
+docker run -it zlskidmore/hla-la
+
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+
 /usr/local/bin/HLA-LA/bin/HLA-LA
+/usr/local/bin/HLA-LA/src/HLA-LA.pl
 
 
 docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
@@ -89,5 +121,188 @@ zlskidmore/hla-la /usr/local/bin/HLA-LA/bin/HLA-LA \
 --action prepareGraph --PRG_graph_dir /ref/PRG_MHC_GRCh38_withIMGT
 
 
+#./HLA-LA.pl --BAM /path/to/indexed.bam --graph PRG_MHC_GRCh38_withIMGT --sampleID $mySampleID --maxThreads 7
 
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+zlskidmore/hla-la /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Shortread.Seq.NIH19KT3824.trimmed.hg38_HLAregion_align.sorted.dedup.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT3824 --maxThreads 32
+
+
+docker exec -it hla /bin/bash
+
+HLA-LA.pl \
+--BAM /wdir/HLA.Shortread.Seq.NIH19KT3824.trimmed.hg38_HLAregion_align.sorted.dedup.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT3824 --maxThreads 32
+
+
+HLA-LA.pl \
+--BAM /wdir/HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247 --maxThreads 32
+
+
+
+docker exec -v "/BDATA/smkim/HLA_seq/test1":"/test" -it hla /bin/bash
+
+
+chr6_28510020_33480577
+
+chr6:28510020-33480577
+
+chr6
+chr6_GL000250v2_alt
+chr6_GL000251v2_alt
+chr6_GL000252v2_alt
+chr6_GL000253v2_alt
+chr6_GL000254v2_alt
+chr6_GL000255v2_alt
+chr6_GL000256v2_alt
+chr6_KI270758v1_alt
+
+
+
+
+
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/output" \
+hlala_withdb /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247 --maxThreads 32
+
+
+
+### long read mapping for HLA*LA
+
+cd /BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long
+
+/BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam
+
+/BDATA/smkim/HLA_seq/REF/hg19/hg19.fa
+/BDATA/smkim/HLA_seq/REF/hg19/hg19.chr6.fa
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.chr6_withALT.fasta
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg19/hg19.fa /BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam  HLA.Longread.Seq.NIH19KT0247.hg19_ALL_mapped.bam --preset CCS --sort
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg19/hg19.chr6.fa /BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam HLA.Longread.Seq.NIH19KT0247.hg19_chr6_mapped.bam --preset CCS --sort
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta /BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam HLA.Longread.Seq.NIH19KT0247.hg38_ALL_mapped.bam --preset CCS --sort
+pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.chr6_withALT.fasta /BDATA/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam HLA.Longread.Seq.NIH19KT0247.hg38_chr6_mapped.bam --preset CCS --sort
+
+# 안됨
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/wdir" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/output" \
+hlala_withdb /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Longread.Seq.NIH19KT0247.hg38_chr6_withALT_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247 --maxThreads 32 \
+--longReads pacbio
+
+HLA.Longread.Seq.NIH19KT0247.hg38_chr6_withALT_mapped.bam
+
+HLA.Longread.Seq.NIH19KT0247.hg19_ALL_mapped.bam
+HLA.Longread.Seq.NIH19KT0247.hg38_chr6_mapped.bam
+HLA.Longread.Seq.NIH19KT0247.hg19_chr6_mapped.bam
+HLA.Longread.Seq.NIH19KT0247.hg38_ALL_mapped.bam
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/wdir" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/output" \
+hlala_withdb /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Longread.Seq.NIH19KT0247.hg19_ALL_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247hg19ALL --maxThreads 32 \
+--longReads pacbio
+
+# 안됨
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/wdir" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/output" \
+hlala_withdb /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Longread.Seq.NIH19KT0247.hg19_chr6_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247hg19chr6 --maxThreads 32 \
+--longReads pacbio
+
+
+docker run -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/wdir" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test/long":"/output" \
+hlala_withdb /usr/local/bin/HLA-LA/src/HLA-LA.pl \
+--BAM /wdir/HLA.Longread.Seq.NIH19KT0247.hg38_ALL_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247hg38all --maxThreads 32 \
+--longReads pacbio
+
+
+###/ 109 conda
+
+
+HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA \
+--BAM HLA.Shortread.Seq.NIH19KT0247.mapped_hg38_all.sored.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247_short --maxThreads 32
+
+Graph directory /home/genome/miniconda3/envs/hla-la/opt/hla-la/src/../graphs/PRG_MHC_GRCh38_withIMGT not found - valid graph names are subdirectories of the graphs directory in the HLA-LA root at /home/genome/miniconda3/envs/hla-la/bin/HLA-LA.pl line 198
+
+
+HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA/wgs \
+--BAM NICU19-1.cram \
+--samtools_T /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NICU19_1_wgs --maxThreads 32
+
+
+samtools view --input-fmt cram,decode_md=0 -o NICU19-1.new.bam NICU19-1.cram
+samtools view --input-fmt cram,decode_md=0 -o aln.new.bam aln.cram
+
+
+samtools view -b  -T <refgenome.fa> -o <file.bam> <file.cram>
+samtools view -b cram,decode_md=0 -o NICU19-1.new.bam NICU19-1.cram
+samtools view -b  -T /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa -o NICU19-1.new.bam NICU19-1.cram
+
+
+############### complie
+./HLA-LA --action prepareGraph --PRG_graph_dir ../graphs/PRG_MHC_GRCh38_withIMGT
+
+samtools index NA12878.mini.cram
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/hla_infer/hla-la/test
+--BAM NA12878.mini.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NA12878 --maxThreads 7
+
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA \
+--BAM HLA.Longread.Seq.NIH19KT0247.hg19_chr6_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--longReads pacbio \
+--sampleID NIH19KT0247_hg19_chr6_long --maxThreads 32
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA \
+--BAM HLA.Longread.Seq.NIH19KT3809.hg19_HLAregion_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--longReads pacbio \
+--sampleID NIH19KT0247_hg19_chr6_long --maxThreads 32
+
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA \
+--BAM HLA.Longread.Seq.NIH19KT3809.hg19_HLAregion_mapped.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--longReads pacbio \
+--sampleID NIH19KT0247_hg19_chr6_long --maxThreads 32
+
+
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA/wgs \
+--BAM NICU19-1.cram \
+--samtools_T /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NICU19_1_wgs --maxThreads 32
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA \
+--BAM ./HLA.Shortread.Seq.NIH19KT3824.trimmed.hg38_HLAregion_align.sorted.dedup.bam \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NIH19KT0247_hg38_HLAregion_short --maxThreads 32
 

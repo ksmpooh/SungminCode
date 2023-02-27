@@ -80,3 +80,30 @@ bash -c 'glnexus_cli \
 
 
 ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c 'gatk HaplotypeCaller -R ../../REF/HLA.target.fasta -I {}.bam -O /BDATA/smkim/HLA_seq/longread/02.variant.call/gatk/{}.GATK_haplotypeCaller_VariantCalling.gvcf.gz --native-pair-hmm-threads 10 -ERC GVCF'
+
+
+
+
+######### hifiAdapter fli 20230214 new timming
+그게그거임 테스트 해보았는디
+
+
+
+export PATH=$PATH:[PATH TO HiFiAdapterFilt]
+export PATH=$PATH:[PATH TO HiFiAdapterFilt]/DB
+
+export PATH=$PATH:/BDATA/smkim/TOOLs/HiFiAdapterFilt
+export PATH=$PATH:/BDATA/smkim/TOOLs/HiFiAdapterFilt/DB
+
+
+bash pbadapterfilt.sh [ -p file Prefix ] [ -l minimum Length of adapter match to remove. Default=44 ] 
+[ -m minimum percent Match of adapter to remove. Default=97 ] [ -t Number of threads for blastn. Default=8 ] 
+[ -o outdirectory prefix Default=. ]
+bash /BDATA/smkim/TOOLs/HiFiAdapterFilt/hifiadapterfilt.sh
+
+bash /BDATA/smkim/TOOLs/HiFiAdapterFilt/pbadapterfilt.sh \
+-p ./HLA.Longread.Seq.NIH19KT0247.bam \
+-t 32
+
+
+# 

@@ -24,6 +24,9 @@ def main():
     ref = [s.replace("\n","").split() for s in ref]
     #{ID1 : [ID2,relative]}
     ref_dic = {s[0]:[s[1],s[2]] for s in ref}
+    for s in ref:
+        ref_dic[s[1]] =  [s[0],s[2]]
+    
 
     out = open(sys.argv[1].replace(".kin0","_reuslt.txt"),"w")
 

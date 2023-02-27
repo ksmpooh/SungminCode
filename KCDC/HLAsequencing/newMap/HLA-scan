@@ -142,3 +142,18 @@ ls -h | grep NIH | xargs -I {} -P 1 bash -c "python hla.scan_name.py ./{}/{}.uni
 ### HLA scan python 실행
 python HLA-scan.processing.py NIH19KT0248 HLA.scan.NIH19KT0248.txt
 
+
+
+
+R 
+a <- list.files("./","HLA")
+df <- read.table(a[1],header=T,sep="\t")
+for (i in a[2:length(a)]) {
+  tmp <- read.table(i,header=T,sep="\t")
+  df <- rbind(df,tmp)
+}
+write.table(df,"merge.df.pro.txt",col.names=T,row.names=F,quote=F,sep="\t")
+q()
+
+
+sed "s/HLA./HLA-/g" merge.df.pro.txt > merge.df.txt

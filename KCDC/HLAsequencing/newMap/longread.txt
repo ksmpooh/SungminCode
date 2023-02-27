@@ -28,6 +28,15 @@ ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'p
 out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
 ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg19/{}.hg19_HLAregion_mapped.bam --sort --preset CCS'
 
+out : 
+/BDATA/smkim/HLA_seq/REF/hg38/hg38.chr6_withALT.fasta
+
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_chr6_withALT
+ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.chr6_withALT.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_chr6_withALT/{}.hg38_chr6_withALT_mapped.bam --sort --preset CCS'
+
+
+
+
 
 
 # Q20
@@ -49,6 +58,12 @@ python coverage.HLA.region.py hg38 /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/h
 python coverage.HLA.region.py hg38_alt /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg38_HLAregion_withALT
 
 
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
+python coverage.HLA.region.v2.py hg38 /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg38_HLAregion
+python coverage.HLA.region.v2.py hg38_alt /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg38_HLAregion_withALT
+
+ls *exon1.sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"
 
 ## short-read
 python
@@ -58,6 +73,13 @@ python
 python coverage.HLA.region.py hg38 /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
 python coverage.HLA.region.py hg38_alt /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
 python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+
+python coverage.HLA.region.v2.py hg38 /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
+python coverage.HLA.region.v2.py hg38_alt /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+
+ls *exon1.sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"
 
 
 
@@ -71,3 +93,33 @@ python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/shortread/01.mapping_hg1
 
 
 ## short-read dup
+
+python coverage.HLA.region.v2.py hg38 /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
+python coverage.HLA.region.v2.py hg38_alt /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+
+python coverage.HLA.region.v2.py hg38 /BDATA/smkim/HLA_seq/shortread/01.mapping_hg38_HLAregion
+python coverage.HLA.region.v2.py hg38_alt /BDATA/smkim/HLA_seq/shortread/01.mapping_hg38_HLAregion_withALT
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19
+
+ls *exon1.sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+
+
+
+### long 5M coverage
+
+mkdir coverage_hg19_whole
+ls *bam |xargs -I{} -P 8 bash -c "samtools coverage {} > ./coverage_hg19_whole/{}.coverage"
+
+mkdir coverage_hg38_whole
+ls *bam |xargs -I{} -P 8 bash -c "samtools coverage {} > ./coverage_hg38_whole/{}.coverage"
+
+
+### short 5M coverage
+
+mkdir coverage_hg19_whole
+ls *.bam |xargs -I{} -P 14 bash -c "samtools coverage {} > ./coverage_hg19_whole/{}.coverage"
+
+mkdir coverage_hg38_whole
+ls *bam |xargs -I{} -P 14 bash -c "samtools coverage {} > ./coverage_hg38_whole/{}.coverage"

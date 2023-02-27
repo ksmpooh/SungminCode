@@ -85,44 +85,6 @@ plot
 R
 
 
-#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
-#x異?: Contrast = log2(SNP-A / SNP-B)
-#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
-
-library(stringr)
-library(tidyverse)
-#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
-setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
-setwd("~/")
-
-
-#### cluster plot
-
-
-
-#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
-#x異?: Contrast = log2(SNP-A / SNP-B)
-#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
-
-library(stringr)
-library(tidyverse)
-#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
-setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
-setwd("~/")
-
-
-#### cluster plot
-
-#Original signal intensity?????? transformed signal intensity濡? 蹂??????? ??? ?????? 怨듭??
-#x異?: Contrast = log2(SNP-A / SNP-B)
-#y異?: Size = (log2(SNP-A) + log2(SNP-B))/2
-
-library(stringr)
-library(tidyverse)
-#setwd("~/Desktop/KCDC/KKY/01.1stQC_clusterplot/")
-setwd("/Volumes/DATA/JG/ESRD/cluster.plot/")
-setwd("~/")
-
 
 #### cluster plot
 

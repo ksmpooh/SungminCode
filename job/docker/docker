@@ -1,0 +1,29 @@
+# container
+
+## contrainer 실행
+
+docker run -it -d --name hla -v "/BDATA/smkim/TOOLs/HLA-LA/graphs":"/ref" \
+-v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_LA/test":"/wdir" \
+bojiutk/hla_prg_la:latest
+
+docker run -it -d --name hla \
+zlskidmore/hla-la:latest
+
+
+docker exec -it hla /bin/bash
+
+## container 이미지 저장
+
+docker stop [container name]
+docker commit [container name] [output.image name]
+
+
+## container 데이터 복사
+
+docker cp [contrainer name]:경로/데이터 [로컬경로]
+docker cp ~/data/test.md tmp_container:/root/data/
+
+
+## container cpu 할당
+
+https://kimjingo.tistory.com/60
