@@ -1,0 +1,626 @@
+### HLA-papas
+
+
+1. HLA nomenclean
+
+python -m NomenCleaner \
+    --hped NomenCleaner/example/g1k_subset.ped \
+    --out NomenCleaner/example/g1k_subset \
+    --4field
+
+
+
+
+2. reference het_rmPCA_rmaffy_indel_flip_rmdup
+ 
+ 
+ python -m MakeReference \
+    --variants  DATA/00.rawDATA/KBA/JG.QCed.HLA \
+    --chped DATA/01.nomenclean/HLA.nomenclean.chped \
+    --hg 19 \
+    --out DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 32g \
+    --nthreads 20
+
+ 
+ python -m MakeReference \
+    --variants  DATA/00.rawDATA/KBA/JG.QCed.HLA_onlyHLAtypingSample \
+    --chped DATA/01.nomenclean/HLA.nomenclean.chped \
+    --hg 19 \
+    --out DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 32g \
+    --nthreads 20
+
+ 
+ 
+ 
+ 
+ 
+ python -m MakeReference \
+    --variants  MakeReference/example/g1k_subset_snps\
+    --chped MakeReference/example/g1k_subset.chped \
+    --hg 19 \
+    --out MakeReference/example/g1k_subset.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing
+
+
+
+3. HLA imputation
+
+python -m SNP2HLA \
+  --target DATA/00.rawDATA/KBA/toy_ID.change \
+  --reference DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+  --out DATA/03.SNP2HLA/IMPUTED.1958BC_usnigKBAref \
+  --nthreads 20 \
+  --mem 64g
+
+
+python -m SNP2HLA \
+  --target SNP2HLA/example/1958BC \
+  --reference DATA/02.MakeReference/HLAref.withKBA.test.bglv4 \
+  --out DATA/03.SNP2HLA/IMPUTED.1958BC_usnigKBAref_test \
+  --nthreads 20 \
+  --mem 64g
+
+
+$ python -m SNP2HLA \
+    --target SNP2HLA/example/1958BC \
+    --reference resources/1000G.bglv4 \
+    --out MySNP2HLA/IMPUTED.1958BC \
+    --nthreads 2 \
+    --mem 4g
+
+
+###20230307
+
+1. NomenCleaner
+usage: NomenCleaner [-h] --hped HPED [--hat HAT] --out OUT [--leave-NotFound]
+                    [--1field | --2field | --3field | --4field | --Ggroup | --Pgroup] [--NoCaption]
+NomenCleaner: error: the following arguments are required: --hped, --out/-o
+
+## Pass
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged.4digit_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.4digit.529sample.nomenclean \
+    --2field
+
+## Pass
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged.4digit_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.Ggroup.529sample.nomenclean \
+    --Ggroup
+
+##ped : NA -> 0으로 변경하니 가능 돌어감
+## pass
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.using8digit.8digit.529sample.nomenclean \
+    --4field
+
+
+## pass
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.using8digit.4digit.529sample.nomenclean \
+    --2field
+
+
+## fail
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.8digit.529sample.nomenclean \
+    --Ggroup
+
+## 8 digit
+python -m NomenCleaner \
+    --hped ./DATA/00.rawDATA/HLA.type.result.8genes.merged_529sample_forMAKEreference.ped \
+    --out ./DATA/01.nomenclean/HLA.using8digit.8digit.529sample.nomenclean \
+    --4field
+
+
+#######
+Imputation 후 작업
+
+grep HLA test.bim |awk '{print $2"\tT"}' > a1.allele.txt
+plink --bfile test --extract a1.allele.txt --a1-allele a1.allele.txt --recodeA --out test_re
+
+
+######
+
+Pan-Kor test
+
+python -m SNP2HLA --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g1_HLAimputation_test.MHCref.28477797_33448354 \
+--reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/PanKor/Merge_panel \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/HLAimputation.Pankor_ref.KBA520sample \
+--nthreads 32 --mem 64g
+
+
+plink --bfile Merge_panel --recode beagle --out test
+
+
+
+###### 520 sample make reference
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000
+/BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/01.nomenclean/HLA.4digit.520sample.nomenclean.chped
+
+python -m MakeReference \
+    --variants  /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000 \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/01.nomenclean/HLA.4digit.520sample.nomenclean.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/KMHCreferencepanel.520.withKBA.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 32
+
+
+
+#### han hap to vcf
+
+bcftools convert --haplegendsample2vcf Han --output test.vcf.gz --output-type z
+
+
+  --legend <filename> <chr code> :
+    Specify .haps [+ .legend] file(s) to import.
+    * When --legend is specified, it's assumed that the --haps file doesn't
+    (actually, only A, AD, Av, bcf, bgen-1.x, haps, hapslegend, ind-major-bed,
+    * 'haps', 'hapslegend': Oxford-format .haps + .sample[ + .legend].  All
+
+awk '{print $1,$3}' Han.legend > a1.allele.txt
+
+plink2 --haps Han.hap --legend Han.legend 6 --sample Han.samples --export vcf --out test
+plink2 --haps Han.hap --legend Han.legend 6  --export vcf --out test
+
+plink2 --haps Han.hap --legend Han.legend 6 --a2-allele a1.allele.txt --export vcf --out test
+
+
+## python 변경
+
+4 digit allele check
+HLA_A*11:110 -> HLA_A*11:110 x
+HLA_C*03:100 ->  C*03:100 x
+HLA_B*15:220 -> B*15:220 x
+
+HLA_DRB1*14:141 -> DRB1*14:141 x
+
+DQB1*03:100 -> DQB1*03:100 x
+
+DPB1*10:401 -> DPB1*104:01 o
+DPB1*10:501 -> DPB1*105:01 o
+DPB1*10:601 -> DPB1*106:01 o
+DPB1*10:701 -> DPB1*107:01 o
+
+DPB1*13:501 -> DPB1*135:01 o
+DPB1*13:801 -> DPB1*138:01 o
+
+python 05.maek.referencepanel.forHan.py
+
+bgzip -c test_convert.vcf > Han.hg19.haplegendtovcf.modify.vcf.gz
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han
+
+cp /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/IMPUTE4/Han/Han.hg19.haplegendtovcf.modify.vcf.gz ./
+cp Han.hg19.haplegendtovcf.modify.vcf.gz Han.hg19.haplegendtovcf.modify.bglv4.bgl.phased.vcf.gz
+
+
+HLAref.withKBA.test.bglv4.fam
+HLAref.withKBA.test.bglv4.bed
+HLAref.withKBA.test.bglv4.bim
+HLAref.withKBA.test.bglv4.FRQ.frq
+HLAref.withKBA.test.bglv4.markers
+HLAref.withKBA.test.bglv4.ATtrick.nosex
+HLAref.withKBA.test.bglv4.bgl.phased.vcf.log
+HLAref.withKBA.test.bglv4.bgl.phased.vcf.gz
+
+bcftools query -f '%ID\t%POS\t%REF\t%ALT' Han.hg19.haplegendtovcf.modify.bglv4.bgl.phased.vcf.gz > Han.hg19.haplegendtovcf.modify.bglv4.markers
+plink --vcf Han.hg19.haplegendtovcf.modify.bglv4.bgl.phased.vcf.gz --make-bed --out Han.hg19.haplegendtovcf.modify.bglv4
+plink --bfile Han.hg19.haplegendtovcf.modify.bglv4 --freq --out Han.hg19.haplegendtovcf.modify.bglv4.FRQ
+mv Han.hg19.haplegendtovcf.modify.bglv4.FRQ.nosex Han.hg19.haplegendtovcf.modify.bglv4.ATtrick.nosex
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.bglv4
+
+6	HLA_A*01	0	29911991	T	A
+6	HLA_A*01	0	29910247	p	a
+
+cp Han.hg19.haplegendtovcf.modify.bglv4.bim_ori Han.hg19.haplegendtovcf.modify.bglv4.bim
+
+python
+import glob,os
+file_name = glob.glob("*bim")
+t = file_name.pop()
+i = t.replace(".bim",".bim_ori")
+os.system("cp %s %s"%(t,i))
+
+datain = open(i,"r")
+dataout = open(t,"w")
+while 1:
+    line = datain.readline()
+    if not line:break
+    if "HLA_" in line:
+        line = line.replace("\tT\t","\tp\t").replace("\tA\n","\ta\n")
+    elif "SNP_" in line:
+        if line.split("\t")[1].count("_") == 3 and "\tT\t" in line:
+            line = line.replace("\tT\t","\tp\t").replace("\tA\n","\ta\n")
+        elif line.split("\t")[1].count("_") == 3 and "\tA\t" in line:
+            line = line.replace("\tA\t","\ta\t").replace("\tT\n","\tp\n")
+        else:
+            line=line
+    elif "AA_" in line:
+        if line.split("\t")[1].count("_") == 4 and "\tT\t" in line:
+            line = line.replace("\tT\t","\tp\t").replace("\tA\n","\ta\n")
+        elif line.split("\t")[1].count("_") == 4 and "\tA\t" in line:
+            line = line.replace("\tA\t","\ta\t").replace("\tT\n","\tp\n")
+        else:
+            line=line
+    else:
+        line = line
+    dataout.write(line)
+
+
+
+
+#SNP2HLA test
+
+python -m SNP2HLA \
+  --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+  --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.bglv4 \
+  --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/HLAimputation.SNP2HLA_HanRef.KBA \
+  --nthreads 32 \
+  --mem 128g
+
+
+
+####### HLA type 뽑고.. 변이 추출
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han
+python extract.py Han.hg19.haplegendtovcf.modify.vcf.gz Han.hg19.haplegendtovcf.modify.hlatype.txt
+
+python
+
+df = open("Han.hg19.haplegendtovcf.modify.hlatype_fd.txt","r")
+out = open("Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean.txt","w")
+df = df.readlines()
+
+for i in df[1:]:
+    tmp = i.split()
+    newid = tmp[0] + "\t" + tmp[0] + "\t0\t0\t0\t0"
+    i = i.replace(tmp[0],newid)
+    out.write(i)
+
+out.close()
+    
+
+grep "6_" Han.hg19.haplegendtovcf.modify.bglv4.bim |grep -v AA_ |grep -v SNPS_ > Han.variant.list.txt
+
+plink --bfile Han.hg19.haplegendtovcf.modify.bglv4 --extract Han.variant.list.txt --make-bed --out Han.hg19.onlyvariant
+
+
+
+### nomen cleaner
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han
+
+
+###### 2 field
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_2field \
+--2field
+
+###### G field
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_Ggroup \
+--Ggroup
+
+###### 4 field
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_4field \
+--4field
+
+
+###### 2field
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.onlyvariant \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --nthreads 32 \
+    --mem 64g
+
+
+###### group
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.onlyvariant \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_Ggroup.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference_Ggroup.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --nthreads 64 \
+    --mem 128g
+
+###### 4field
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.onlyvariant \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.haplegendtovcf.modify.hlatype_fornomenclean_4field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference_4field.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --nthreads 64 \
+    --mem 64g
+
+
+
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/KBA_5CV
+
+python -m SNP2HLA \
+  --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+  --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+  --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/HLAimputation.SNP2HLA_HanRef.KBA \
+  --nthreads 32 \
+  --mem 128g
+
+
+
+
+
+
+############# Pan + Kor
+#cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/IMPUTE4/PanKor
+
+bcftools convert --haplegendsample2vcf Pan --output PanKor.vcf.gz --output-type z
+
+
+  --legend <filename> <chr code> :
+    Specify .haps [+ .legend] file(s) to import.
+    * When --legend is specified, it's assumed that the --haps file doesn't
+    (actually, only A, AD, Av, bcf, bgen-1.x, haps, hapslegend, ind-major-bed,
+    * 'haps', 'hapslegend': Oxford-format .haps + .sample[ + .legend].  All
+
+awk '{print $1,$3}' Pan.legend > a1.allele.txt
+
+
+plink2 --haps Pan.hap --legend Pan.legend 6  --a2-allele a1.allele.txt --export vcf --out test
+
+
+
+## python 변경
+
+4 digit allele check
+HLA_DPB1_10001 -> DPB1*100:01
+
+python 05.maek.referencepanel.forHan.py
+
+bgzip -c test_convert.vcf > PanKor_merged.hg19.haplegendtovcf.modify.vcf.gz
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor
+
+cp /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/IMPUTE4/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.vcf.gz ./
+
+
+####### HLA type 뽑고.. 변이 추출
+
+
+python extract.py PanKor_merged.hg19.haplegendtovcf.modify.vcf.gz PanKor_merged.hg19.haplegendtovcf.modify.hlatype.txt
+
+    
+plink --vcf PanKor_merged.hg19.haplegendtovcf.modify.vcf.gz --make-bed --out PanKor_merged.hg19.haplegendtovcf.modify
+
+
+grep rs PanKor_merged.hg19.haplegendtovcf.modify.bim  > Pan.variant.list.txt
+
+plink --bfile PanKor_merged.hg19.haplegendtovcf.modify --extract Pan.variant.list.txt --make-bed --out PanKor_merged.hg19.onlyvariant
+
+sed "s/per/PanKor1/g" PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.txt > PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange.txt
+
+cp PanKor_merged.hg19.onlyvariant.fam PanKor_merged.hg19.onlyvariant.fam_ori
+sed "s/per/PanKor1/g" PanKor_merged.hg19.onlyvariant.fam_ori > PanKor_merged.hg19.onlyvariant.fam
+awk '{split($2,a,"_"); print $2"\t"a[1]"_"$4"_"a[3]"_"a[4]}' PanKor_merged.hg19.onlyvariant.bim > snpid.change.txt
+plink --bfile PanKor_merged.hg19.onlyvariant --update-name snpid.change.txt --make-bed --out PanKor_merged.hg19.onlyvariant_updatesnps
+
+
+#cp PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange.txt PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt
+
+python
+
+df = open("PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange.txt","r")
+out = open("PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt","w")
+df = df.readlines()
+
+for i in df[1:]:
+    tmp = i.split()
+    newid = tmp[0] + "\t" + tmp[0] + "\t0\t0\t0\t0"
+    i = i.replace(tmp[0],newid)
+    out.write(i)
+
+out.close()
+
+
+
+### nomen cleaner
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_2field \
+--2field
+
+
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.onlyvariant_updatesnps \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --nthreads 32 \
+    --mem 64g
+
+
+
+
+## nomen data check
+
+df <-read.table("HLA_ALLELE_TABLE.imgt3320.hat",header=T)
+out <- df[df$OLD != "0",]
+
+out[out$AlleleID %in% c("HLA00001","HLA03777","HLA04770","HLA02048","HLA02050"),]
+HLA00001
+HLA03777
+HLA04770
+HLA02048
+HLA02050
+
+
+
+
+#### AA SNP ㅈㅓㅇ보 없어서 테스트
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' g1k_subset.bglv4.bgl.phased.vcf.gz > marker.list
+grep -v HLA marker.list | grep -v AA_ |grep -v SNP | awk '{print $5"\t"$1"_"$2"_"$3"_"$4}' > change.marker
+
+plink --bfile g1k_subset_snps --update-name change.marker --make-bed --out g1k_subset_snps_change
+
+python -m MakeReference \
+    --variants  MakeReference/example/g1k_subset_snps_change \
+    --chped MakeReference/example/g1k_subset.chped \
+    --hg 19 \
+    --out MakeReference/example/g1k_subset_change.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 32g \
+    --nthreads 32
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_4field \
+--4field
+
+
+
+
+python -m MakeReference \
+    --variants  /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.onlyvariant_updatesnps \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_4field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 64
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/520sample_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g1_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/g1_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g2_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/g2_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g3_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/g3_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g4_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/g4_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g5_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged_8digit.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+
+
+###### 20230427   IMGT3320으로 재 분석
+cd /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320
+
+df <-read.table("HLA.typing.Final.result_529sample_IMGT3320convert.txt",header=T)
+df$FID <- df$ID
+df$IID <- df$ID
+df$pID <- 0
+df$mID <- 0
+df$SEX <- 0
+df$PHENO <- 0
+df <- df[,c("FID","IID","pID","mID","SEX","PHENO","NGS_A.1","NGS_A.2","NGS_B.1","NGS_B.2","NGS_C.1","NGS_C.2","NGS_DPA1.1","NGS_DPA1.2","NGS_DPB1.1","NGS_DPB1.2","NGS_DQA1.1","NGS_DQA1.2","NGS_DQB1.1","NGS_DQB1.2","NGS_DRB1.1","NGS_DRB1.2")] 
+
+ref <-read.table("/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/Final_520sample.index.txt",header=T)
+df <- df[df$FID %in% ref$KBAID,]
+
+write.table(df,"HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped",col.names=F,row.names=F,quote=F,sep="\t")
+
+
+
+
+cd /BDATA/smkim/JG.HLAimputation/HLA-TAPAS
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped \
+--out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field \
+--4field
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped \
+--out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field \
+--2field
+
+genome@genome109:/BDATA/smkim/JG.HLAimputation$ python test.py
+genome@genome109:/BDATA/smkim/JG.HLAimputation/HLA-TAPAS$ ls *sh |xargs -I{} -P 2 bash -c "sh {}"
+
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchang
+
+'''
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing
+'''

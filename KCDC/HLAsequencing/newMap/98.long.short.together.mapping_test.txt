@@ -1,0 +1,80 @@
+### long, short mapping together
+
+#bwa mem /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz | gzip -3 > test.3.long.short.sam.gz
+#bwa mem /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz | gzip -3 > test.3.long.short.sam.gz
+
+#https://ucdavis-bioinformatics-training.github.io/2017-August-Variant-Analysis-Workshop/wednesday/alignment.html
+
+'''
+bwa mem -t 4 -R "@RG\tID:A8100\tSM:A8100" ../ref/chr18.fa A8100.chr18.R1.sickle.fastq A8100.chr18.R2.sickle.fastq > A8100.chr18.paired.sam
+bwa mem -t 4 -R "@RG\tID:A8100\tSM:A8100" ../ref/chr18.fa A8100.chr18.singles.fastq > A8100.chr18.singles.sam
+
+
+bwa mem -t 32 -R "@RG\tID:test_paired\tSM:test_paired" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz > 247_test_short.paired.sam
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_paired\tSM:test_paired" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz > 247_test_short.paired.sam
+
+bwa mem -t 32 -R "@RG\tID:test_longshort\tSM:test_longshort" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta > A8100.chr18.singles.sam
+
+
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz > 247_test_long.R1paired.sam
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz > 247_test_long.R1R2paired.sam
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test\tSM:test" HLA.Longread.Seq.NIH19KT0247.fastq.gz 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz > 247_short_longref.sam
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.fastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz > 247_test_long.R1R2paired.sam
+
+
+#masurca -i paired_ends_fwd.fastq.gz,paired_ends_rev.fastq.gz -r nanopore.fa.gz -t 32
+
+/BDATA/smkim/TOOLs/MaSuRCA-4.1.0/bin/masurca -i /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz,/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz -r /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq.gz -t 32
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/merge/0247_de_ref/scaffolds.ref.fa /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R1_001_paired.fastq.gz /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/247_S99_L002_R2_001_paired.fastq.gz > 247_test_longDeREF.R1R2paired.sam
+
+/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta ./primary.genome.scf.fasta > HLA.target.ref.denovo_contig_247.sam
+
+bwa mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta ./primary.genome.scf.fasta > HLA.target.ref.denovo_contig_247.sam 
+
+minimap2 -ax map-ont -t 8 -C short_reads_to_short_reads_ref.sorted.bam hg19.fa long_reads.fq > long_reads_to_hg19.sam
+
+/BDATA/smkim/TOOLs/minimap2/minimap2 -ax map-pb -t 32 -C ./shortread/01.mapping_hg19/HLA.Shortread.Seq.NIH19KT0247.trimmed.hg19_align.sorted.bam /BDATA/smkim/HLA_seq/REF/HLA.target.fasta ../00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq > long_shortRef.sam
+
+
+##### /BDATA/smkim/HLA_seq/merge/v3
+
+cd /BDATA/smkim/HLA_seq/merge/v3
+이 경우, reference-guided de novo assembly를 수행하기 위해 다음과 같은 단계를 수행할 수 있습니다.
+
+Reference genome 준비: 분석을 위해 사용할 reference genome을 선택하고 준비합니다. 이 경우, 관련된 종의 genome reference sequence를 선택합니다.
+Read QC 및 필터링: Paired-end 데이터와 PacBio Hifi 데이터 모두에서 low-quality reads 및 adapter 등을 제거합니다. 이를 위해 필요한 소프트웨어는 Trimmomatic 등입니다.
+Paired-end read mapping: Paired-end 데이터를 선택한 reference genome에 매핑합니다. 이를 위해 필요한 소프트웨어는 BWA, Bowtie 등이 있습니다.
+
+PacBio Hifi reads polishing: PacBio Hifi reads를 사용하여 de novo assembly를 진행합니다. 이를 위해 MaSuRCA, Flye, Canu 등의 소프트웨어를 사용할 수 있습니다.
+
+Reference-guided scaffolding: Paired-end read mapping 결과를 사용하여 PacBio Hifi reads를 기반으로 reference-guided de novo assembly를 수행합니다. 이를 위해 SSPACE-LongRead, LRScaf 등의 소프트웨어를 사용할 수 있습니다.
+
+Assembly evaluation: 생성된 assembly를 평가합니다. 이를 위해 BUSCO, QUAST 등의 도구를 사용할 수 있습니다.
+
+
+cd /BDATA/smkim/HLA_seq/merge/v3
+
+/BDATA/smkim/TOOLs/MaSuRCA-4.1.0/bin/masurca -r /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq.gz -t 32
+1. short-read mapping
+2. short-read + long assembly
+3. reference guide scafoolding
+## sspace_longread
+#perl format_scaffolds.pl <CONTIG-sequences> > <CONTIG-sequences>_format.fa
+#run blasr alsvolgt;
+#/opt/smrtanalysis/analysis/bin/blasr ../pacbio_reads.fasta <format-contigs> -minMatch 10 -minPctIdentity 70 -bestn 10 -noSplitSubreads -advanceExactMatches 1 -nCandidates 1 -maxAnchorsPerPosition 1 -nproc 8 -out <BLASR-output>
+# perl pacbio_scaffolder.pl <BLASR-output> <CONTIG-sequences>_format.fa
+
+ 
+v4 merge 한 후 mapping
+cd /BDATA/smkim/HLA_seq/merge/v4
+
+zcat 247_S99_L002_R1_001_paired.fastq.gz 247_S99_L002_R2_001_paired.qfastq.gz HLA.Longread.Seq.NIH19KT0247.fastq.gz | bgzip -c > 247_merge.fastq.gz
+bwa-mem2 mem -t 32 -R "@RG\tID:test_shortlong\tSM:test_shortlong" /BDATA/smkim/HLA_seq/REF/HLA.target.fasta ../.././primary.genome.scf.fasta > HLA.target.ref.denovo_contig_247.sam
+'''
+
+
+V1

@@ -184,3 +184,60 @@ for i in a:
 
 out.close()
 
+
+
+####### 20230323 immune_cel signal pair 만들고 분석
+위에 분석한 데이터에서 찾기
+co-signal 
+Receptor-Ligand 
+Receptor-Ligand + cel signal
+
+### allogenomics ene pari list
+library(tidyverse)
+library(stringr)
+setwd("~/Desktop/KCDC/transplantation/allogenomic/immune/20230323/")
+
+
+df1 <- readxl::read_xlsx("Immune.signal.Genelist_20221222_check1.xlsx",sheet = 5)
+df2 <- readxl::read_xlsx("Immune.signal.Genelist_20221222_check1.xlsx",sheet = 3)
+#df1 <- readxl::read_xlsx("Immune.signal.Genelist_20221222_check1.xlsx",sheet = 4) %>%
+#  select(`Cell type`,`Signal 1`,`Co-signals`,`Receptor(OGS)`,`Ligand(OGS)`,`Intracellular signaling(OGS)`)
+head(df1)
+head(df2)
+colnames(df1)
+
+df1 %>% mutate("RLpair" = paste0(Receptor,",",Ligand)) %>%
+  mutate("RLIpair" = paste0(Receptor,",",Ligand,",",Intracellular_signaling)) -> df
+  #write.table("co-signal_pairtable.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+df1 %>% mutate("RLpair" = paste0(Receptor,",",Ligand)) %>%
+  mutate("RLIpair" = paste0(Receptor,",",Ligand,",",Intracellular_signaling)) %>%
+  write.table("co-signal_pairtable.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+head(df)
+df %>% mutate("RLpair_index"=paste0("RLpair_",rownames(df))) %>% #select(RLpair_index)
+    mutate("RLIpair_index"=paste0("RLIpair_",rownames(df))) %>% #-> df
+    select(Signal1,RLpair,RLpair_index,RLIpair,RLIpair_index) %>%
+    #write.table("co-signal_pairtable_withINDEX.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+    writexl::write_xlsx("co-signal_pairtable_withINDEX.xlsx")
+  
+
+head(df)
+
+ref <- read.table("KR.KD.immune.cell.co-signal_targetGene.alleleMatching01.Score_Sum.txt",header = T)
+head(ref)
+grepl("Score",colnames(ref))
+colnames(ref)[grepl("Score",colnames(ref))] <- str_replace_all(colnames(ref)[grepl("Score",colnames(ref))],"_Score_SUM","")
+ref %>% 
+for (i in df[7:8]) {
+  print(i)
+}
+
+ref %>% filter()
+for (i in 1:nrow(ref)) {
+ tmp <- ref %>% 
+}
+
+##########3
+20220323_pair_missmatch.score 수행

@@ -65,3 +65,134 @@ python CookHLA.py \
     -ae ./JG.map.aver.erate \
     -mem 10g \
     -mp 8
+
+
+### KR-KD HLA imputation 20230420
+
+#KCHIP QC 
+/BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge
+
+plink --bfile JG.KR.KD.merge_updateID --chr 6 --make-bed --out HLA/JG.KR.KD.merge_updateID_chr6
+
+cd /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA
+
+plink --bfile JG.KR.KD.merge_updateID_chr6 --chr 6 --from-bp 28000000 --to-bp 34000000 --make-bed --out JG.KR.KD.merge_updateID_chr6_28Mto34M
+awk '{print $4}' JG.KR.KD.merge_updateID_chr6_28Mto34M.bim > JG.HLA.pos.hg19.txt
+
+cp JG.KR.KD.merge_updateID_chr6_28Mto34M.bim JG.KR.KD.merge_updateID_chr6_28Mto34M.bim_ori
+
+R
+
+df <-read.table("JG.KR.KD.merge_updateID_chr6_28Mto34M.bim_ori")
+ref <-read.table("hglft_genome_158e1_9b770.bed")
+colnames(ref) <- c("chr","hg18","hg18")
+out <- cbind(df,ref)
+out$ID <- paste0(out$V1,"_",out$hg18)
+write.table(out,"tmp.txt",col.names=F,row.names=F,quote=F,sep="\t")
+
+
+awk '{print $1,$10,$3,$9,$5,$6}' tmp.txt > JG.KR.KD.merge_updateID_chr6_28Mto34M.bim
+awk '{print $1,$2,$3,$9,$5,$6}' tmp.txt > JG.KR.KD.merge_updateID_chr6_28Mto34M.bim
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py JG.KR.KD.merge_updateID_chr6_28Mto34M
+plink --bfile JG.KR.KD.merge_updateID_chr6_28Mto34M --exclude case_duplicateSNPID.txt --make-bed --out JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup
+
+
+/BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup
+
+/BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/Han.hg18/HAN
+
+python -m MakeGeneticMap \
+    -i /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup \
+    -hg 18 \
+    -ref /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/Han.hg18/HAN \
+    -o KRKD/KRKD_HANhg18
+
+
+python CookHLA.py \
+    -i /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup \
+    -hg 18 \
+    -o KRKD/KRKD.HLAimp_cookHLA.HANref.hg18 \
+    -ref /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/Han.hg18/HAN \
+    -gm KRKD/KRKD_HANhg18.mach_step.avg.clpsB \
+    -ae KRKD/KRKD_HANhg18.aver.erate \
+    -mem 64g \
+    -mp 8
+    # -mp 2   # The number of available cores for Multiprocessing.
+    # -bgl4   # If you want to use Beagle4 instead of Beagle5.
+
+
+
+python -m NomenCleaner \
+--hped TEST/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT.hped \
+--out TEST/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT \
+--2field
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/CookHLA/KRKD/KRKD.HLAimp_cookHLA.HANref.hg18.MHC.HLA_IMPUTATION_OUT.hped \
+--out TEST/KRKD.HLAimp_cookHLA.HANref.hg18.MHC.HLA_IMPUTATION_OUT.Nomencleaner \
+--2field
+
+/BDATA/smkim/CookHLA/KRKD/KRKD.HLAimp_cookHLA.HANref.hg18.MHC.HLA_IMPUTATION_OUT.hped
+
+
+
+HLAimp + add header 
+/BDATA/smkim/TOOLs/HLA-TAPAS/TEST/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT.chped
+/BDATA/smkim/TOOLs/HLA-TAPAS/TEST/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT_withheader.chped
+
+
+python 03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped \
+02.processing/KBA.g1_5CV.michiganHLAimp_fd.txt 4 test.txt
+
+python 03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped \
+cookHLA_han/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT_withheader_511sample_fd.txt 4 cookHLA_han/acc/
+
+
+python 03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped \
+cookHLA_han/JG.Han.HG18.HLAimp.MHC.HLA_IMPUTATION_OUT_withheader_511sample_fd.txt 2 cookHLA_han/acc
+
+
+### 520 sample
+
+awk '{print $1,$2,$3,$9,$5,$6}' tmp.txt > JG.forHLAtyping.MHCref.28477797_33448354.bim
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/hg18/JG.forHLAtyping.MHCref.28477797_33448354
+
+
+
+python -m MakeGeneticMap \
+    -i /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/hg18/JG.forHLAtyping.MHCref.28477797_33448354 \
+    -hg 18 \
+    -ref /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/Han.hg18/HAN \
+    -o KRKD/520/KRKD_HANhg18_520sample
+
+python CookHLA.py \
+    -i /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/hg18/JG.forHLAtyping.MHCref.28477797_33448354 \
+    -hg 18 \
+    -o KRKD/520/KRKD.HLAimp_cookHLA.HANref.hg18.520sample \
+    -ref /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/cookHLA/Han.hg18/HAN \
+    -gm KRKD/520/KRKD_HANhg18_520sample.mach_step.avg.clpsB \
+    -ae KRKD/520/KRKD_HANhg18_520sample.aver.erate \
+    -mem 64g \
+    -mp 8
+
+
+python -m NomenCleaner \
+--hped TEST/KRKD.HLAimp_cookHLA.HANref.hg18.520sample.MHC.HLA_IMPUTATION_OUT.hped \
+--out TEST/KRKD.HLAimp_cookHLA.HANref.hg18.520sample.MHC.HLA_IMPUTATION_OUT \
+--2field
+
+
+python 03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped \
+cookHLA_han/KRKD.HLAimp_cookHLA.HANref.hg18.520sample.MHC.HLA_IMPUTATION_OUT_withheader.txt 4 cookHLA_han/520/
+
+
+python 03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped \
+cookHLA_han/KRKD.HLAimp_cookHLA.HANref.hg18.520sample.MHC.HLA_IMPUTATION_OUT_withheader.txt 2 cookHLA_han/520/

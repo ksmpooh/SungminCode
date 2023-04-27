@@ -82,3 +82,17 @@ ls KBA.KNHANES*gz | xargs -I{} -P 32 bash -c 'tabix -f -p vcf {}'
 awk '{split($2,a,".");split(a[1],b,"_"); print $2,b[6]}' CAD.QCed.list.txt > CAD.open.list.txt
 
 awk '{split($3,c,"/"); split(c[8],a,".");split(a[1],b,"_"); print c[8],b[6]}' rsync.sh
+
+
+### 20230410 6기 open 데이터 정리
+KKY.6th.imputation_MINIMAC4.chr8.filter.vcf.gz
+KBA.KNHANES.8th.Imputed_MINIMAC4.chr14.filter_INFO0.8.vcf.gz
+KKY.7th.imputation_MINIMAC4.chr22_INFO0.8.filter.vcf.gz
+
+ls *gz | cut -d"." -f 4 | xargs -I{} -P 22 bash -c "bcftools reheader -s sample.change.txt KKY.6th.imputation_MINIMAC4.{}.filter.vcf.gz -o ./99.forOpen/KKY.6th.imputation_MINIMAC4.{}_INFO0.8.filter.vcf.gz"
+
+
+99.forOpen
+ls *gz | cut -d"." -f 4 | xargs -I{} -P 22 bash -c "bcftools reheader -s sample.change.txt KKY.6th.imputation_MINIMAC4.{}.filter.vcf.gz -o ./99.forOpen/KBA.KNHANES.6th.Imputed_MINIMAC4.{}.filter_INFO0.8.vcf.gz"
+
+

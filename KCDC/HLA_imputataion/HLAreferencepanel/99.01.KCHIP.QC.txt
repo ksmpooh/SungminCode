@@ -1,0 +1,221 @@
+#JG KCHIP QC
+#1차 QC 완료 후, HLA typing 샘플 수 와 맞추기 위해서
+#QC 진행
+
+년도 : 계약 생산량, 실제 생산량, KCHIP QC out, 추가 out
+2019 : 260, 265, 10, 1 (CDC015)
+2020 : 260, 265, 0, 
+
+#제거된 샘플
+(CDC015) : NIH19KT0015 : HLA typing에 문제 있어서 지운 샘플
+screen failure : NIH19KT6197 : KCHIP screen failure (KR)
+
+# 2019 KCHIP QC out 10개 중 QC 결과 좋은 1샘플 선정 예정
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031128_B01_NIH19KT0002.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031135_H02_NIH19KT0976.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031137_C07_NIH19KT1203.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031137_C08_NIH19KT1211.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031146_E09_NIH19KT2499.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031157_F03_NIH19KT3988.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031170_H06_NIH19KT5934.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031171_G06_NIH19KT6029.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031172_C11_NIH19KT6161.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031181_D03_NIH19KT2546.CEL
+
+NIH19KT0002
+NIH19KT0976
+NIH19KT1203
+NIH19KT1211
+NIH19KT2499
+NIH19KT3988
+NIH19KT5934
+NIH19KT6029
+NIH19KT6161
+NIH19KT2546
+
+
+# 최종 목표 : 255(2019), 265 (2020) : 520 셋트 만들기
+# 문제발견.... Kchip에 6샘플 없음..다시해야함..하하하하핳
+          KBA_ID           TubeID   OriID type
+3287 NIH19KT0727 41620891DNA01102 LR01172   LR
+3313 NIH19KT0997 41380888DNA01102 KR01541   KR
+3326 NIH19KT1010 41782562DNA01102 KR01567   KR
+4074 NIH19KT2258 41632407DNA01102 LR01647   LR
+6130 NIH19KT5859 02478160DNA01102 KR00343   KR
+6278 NIH19KT6178 02908452DNA01102 KR00525   KR
+                                    cel_files     info      state HLAtyping
+3287 Axiom_KORV1_1_031134_G07_NIH19KT0727.CEL      PCA 1st.remove      2020
+3313 Axiom_KORV1_1_031135_E05_NIH19KT0997.CEL      PCA 1st.remove      2020
+3326 Axiom_KORV1_1_031135_B07_NIH19KT1010.CEL      PCA 1st.remove      2020
+4074 Axiom_KORV1_1_031144_B07_NIH19KT2258.CEL      PCA 1st.remove      2020
+6130 Axiom_KORV1_1_031169_E09_NIH19KT5859.CEL miss-het 1st.remove      2020
+6278 Axiom_KORV1_1_031173_D01_NIH19KT6178.CEL      PCA 1st.remove      2020
+
+NIH19KT0727
+NIH19KT0997
+NIH19KT1010
+NIH19KT2258
+NIH19KT5859
+NIH19KT6178
+
+# 2020 샘플 추가 후 다시 콜링
+
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031134_G07_NIH19KT0727.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031135_E05_NIH19KT0997.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031135_B07_NIH19KT1010.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031144_B07_NIH19KT2258.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031169_E09_NIH19KT5859.CEL
+/LaCie2/KOTRY/01.CEL/2019/Axiom_KORV1_1_031173_D01_NIH19KT6178.CEL
+
+
+
+
+
+cd /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/01.genocall_for529/plink
+
+plink --file Axiom_KBAv1.1 --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out ../../02.plink_for529/JG.forHLAtyping.v2023
+
+
+cd /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink_for529
+plink --bfile JG.forHLAtyping.v2023 --extract ../01.genocall_for529/classification/Recommended.ps --make-bed --out JG.forHLAtyping.v2023_snpolisher
+plink --bfile JG.forHLAtyping.v2023_snpolisher --exclude  /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy
+
+
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/indel/indelChange.py /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KORV1_1.na35.annot.extract.onlyINDEL.txt JG.forHLAtyping.v2023_snpolisher_rmaffy JG.forHLAtyping.v2023_snpolisher_rmaffy_indel
+
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel --flip /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip
+
+python2 /LaCie2/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip --exclude case_duplicateSNPID.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup
+
+awk '{split($1,a,"_");split(a[6],b,".");print $1,$1,b[1],b[1]}' JG.forHLAtyping.v2023.fam > sample.ID.change.txt
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup --update-ids sample.ID.change.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange
+
+# 추가 샘플 QC : 기존에 제거한것 - (NIH19KT3818 : 살려두기.. 2020 typing)
+#QCout.list.txt
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange --remove QCout.list.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout --maf 0.01 --geno 0.05 --hwe 1e-6 --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC
+
+
+## missing sample 선택
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC --chr 6 --from-bp 25000000 --to-bp 35000000 --missing --out MISS
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC --chr 6 --from-bp 25000000 --to-bp 35000000 --het --out HET
+
+R
+ref1<-read.table("2019.HLAtying.out10smaple.txt")
+ref2<-read.table("2020.HLAtying.out10smaple.txt")
+ref1$g <- "2019"
+ref2$g <- "2020"
+ref <- rbind(ref1,ref2)
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+df <- merge(miss, het, by="FID")
+
+out <- df[df$FID %in% ref$V1,]
+out <- merge(df,ref,by.x="FID",by.y="V1")
+summary(out$HET)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+ 0.08201 24.59871 27.44696 26.97898 29.98364 38.07866
+
+out[,c("FID","N_MISS","CR","HET","g")]
+
+           FID N_MISS       CR         HET    g
+1  NIH19KT0002    257 97.37500 27.20310533 2019 
+2  NIH19KT0727     48 99.50970 28.97033159 2020
+3  NIH19KT0976     69 99.29510 19.26954733 2019 
+4  NIH19KT0997     50 99.48920 29.96200842 2020
+5  NIH19KT1010     26 99.73440 19.81972754 2020 
+6  NIH19KT1203     17 99.82630 28.81702824 2019 4
+7  NIH19KT1211      9 99.90806 25.17382413 2019 1
+8  NIH19KT2258    133 98.64100 22.26594863 2020 
+9  NIH19KT2499     31 99.68330 30.01639680 2019
+10 NIH19KT2546    210 97.85500 26.40150329 2019 
+11 NIH19KT3988     26 99.73440 31.55792277 2019 6
+12 NIH19KT5859    343 96.49600 30.33029854 2020 x
+13 NIH19KT5934     15 99.84680 28.67812564 2019 3
+14 NIH19KT6029     36 99.63220  0.08202604 2019 7
+15 NIH19KT6161     10 99.89780 29.02137233 2019 2
+16 NIH19KT6178     14 99.85700 23.84654731 2020 5
+
+#NIH19KT1211 선택!!!
+7개 선택 : 2019 : 6개, 2020 : 1개
+=> 총 2019: 260, 2020: 260
+
+NIH19KT1211 NIH19KT1211 2019
+NIH19KT3988 NIH19KT3988 2019
+NIH19KT6161 NIH19KT6161 2019
+NIH19KT1203 NIH19KT1203 2019
+NIH19KT5934 NIH19KT5934 2019
+NIH19KT6029 NIH19KT6029 2019
+NIH19KT6178 NIH19KT6178 2020
+
+cat sample.ID.529sample.txt 2019.HLAtying.out10smaple.txt 2020.HLAtying.out10smaple.txt | awk '{print $1}' |sort |uniq -c | awk '$1==1{print $2,$2}' > HLAtyping.520sample.txt
+
+# NIH19KT1211 추가 
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC --chr 6 --keep HLAtyping.520sample.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC_chr6
+
+
+
+--bfile JG.sampledQC.regenocall_snpolisher_indel_flip
+  --chr 6
+  --from-bp 28477797
+  --geno 0.05
+  --hwe 1e-6
+  --make-bed
+  --out JG.QCed.forHLAseq
+  --to-bp 33448354
+  --update-ids cel_toNID.txt
+
+  cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData
+
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC_chr6 --chr 6 --from-bp 28477797 --to-bp 33448354 --make-bed --out JG.forHLAtyping.MHCref.28477797_33448354
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC_chr6 --chr 6 --from-bp 25000000 --to-bp 35000000 --make-bed --out JG.forHLAtyping.MHCref.25000000_35000000
+
+
+#2020 out list
+
+NIH19KT0727     48 99.50970 28.97033159 2020
+NIH19KT0997     50 99.48920 29.96200842 2020
+NIH19KT1010     26 99.73440 19.81972754 2020 
+NIH19KT2258    133 98.64100 22.26594863 2020 
+NIH19KT5859    343 96.49600 30.33029854 2020
+
+
+
+## plink to vcf
+plink --bfile g1_HLAimputation_test.MHCref.25000000_35000000 \
+--a2-allele /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt \
+--recode vcf \
+--out g1_test
+
+bcftools query -f '%ID %REF\n' g1_test.vcf > ref_test.txt
+
+df <-read.table("ref_test.txt")
+ref <- read.table("/LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt")
+out <- merge(df,ref,by.x='V1',by.y='V1',all.x=T)
+
+
+ls *vcf | cut 's/.vcf//g' | xargs -I{} -P 5 bash -c "plink --bfile {} --a2-allele /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out {}_convert"
+
+
+
+plink --bfile JG.forHLAtyping.MHCref.25000000_35000000 --a2-allele /LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out JG.forHLAtyping.MHCref.25000000_35000000_convert
+
+
+bcftools query -f '%ID\t%CHROM_%POS_%ALT\n' JG.forHLAtyping.MHCref.25000000_35000000_convert.vcf.gz |less -NS
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\n' JG.forHLAtyping.MHCref.25000000_35000000_convert.vcf.gz |less -NS
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\n' JG.forHLAtyping.MHCref.25000000_35000000_convert.vcf.gz |awk '{print $1"\t"$2"_"$3"_"$4"_"$5}' > id.change.forHan.txt
+
+plink --bfile JG.forHLAtyping.MHCref.25000000_35000000 --update-name id.change.forHan.txt --make-bed --out JG.forHLAtyping.MHCref.25000000_35000000_idchange
+

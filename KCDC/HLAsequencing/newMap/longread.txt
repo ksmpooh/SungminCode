@@ -123,3 +123,14 @@ ls *.bam |xargs -I{} -P 14 bash -c "samtools coverage {} > ./coverage_hg19_whole
 
 mkdir coverage_hg38_whole
 ls *bam |xargs -I{} -P 14 bash -c "samtools coverage {} > ./coverage_hg38_whole/{}.coverage"
+
+
+
+
+
+
+##### KoGES produce by 2023 
+/BDATA/smkim/HLA_seq/00.rawDATA/HLAseq_2022Longread_KoGES_36samples
+
+ls *bam | cut -d'.' -f1-3 | xargs -I{} -P
+2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta {}.bam ./01.mapping/{}_mapped.bam --sort --preset CCS'

@@ -1,0 +1,204 @@
+#####
+# theme 1 # 109
+# 따로 mapping 후 merge
+
+/BDATA/smkim/HLA_seq/merge/01_theme
+long :  /BDATA/smkim/HLA_seq/longread/01.mapped_hg19/
+
+
+short : /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19/
+HLA.Shortread.Seq.NIH19KT2302.trimmed.hg19_align.sorted.dedup.bam
+HLA.Longread.Seq.NIH19KT0739.hg19_HLAregion_mapped.bam
+
+samtools merge -f 0247_merge.bam ../longread/01.mapped_hg19/HL
+
+### python
+import glob,os
+
+wDir = "/BDATA/smkim/HLA_seq/merge/01_theme/"
+long_dir = "/BDATA/smkim/HLA_seq/longread/01.mapped_hg19/"
+short_dir = "/BDATA/smkim/HLA_seq/shortread/01.mapping_hg19/"
+
+long_df = glob.glob(long_dir + "*bam")
+shDir = wDir + "SCRIPTs/"
+
+def main():
+    for long in long_df:
+        id = long.replace(long_dir,"").split(".")[3]
+        print(id)
+        short= glob.glob(short_dir + "*%s*.bam"%id)[0]
+        out_bam = "HLA.%s.Seq.Merged_afterMapping.long_pbmm2.short_trimmed_bwamem2_sort_dedup.hg19_HLAregion.bam"%id
+        shout = open(shDir + "%s.sh"%id,"w")
+        shout.write("samtools merge -f %s%s %s %s"%(wDir,out_bam,long,short))
+        shout.close()
+
+main()
+
+####
+ls *sh |xargs -I{} -P 15 bash -c "sh {}"
+
+ls *bam | xargs -I{} -P 20 bash -c "samtools index {}"
+ls *bam | xargs -I{} -P 20 bash -c "samtools coverage {} > {}.coverage"
+
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/merge/01_theme/
+
+ls *exon1.sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+
+coverage
+coverage_hg19_exon
+coverage_hg19_HLAregion
+coverage_hg19_gene
+
+# theme 2 # 103
+# zcat 3개 fastq merge 후 mapping
+
+/BDATA/smkim/HLA_seq/00.rawDATA
+
+ls 01.ID.change/*bam |cut -d"/" -f 2 | sed 's/bam//g' | xargs -I{} -P 4 bash -c 'samtools fastq --thread 4 ./01.ID.change/{}bam | bgzip -c > ./02.convert_fastq/{}fastq.gz'
+
+/BDATA/smkim/HLA_seq/merge/02_theme
+
+long : /BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq
+HLA.Longread.Seq.NIH19KT1009.fastq.gz
+
+short : /BDATA/smkim/HLA_seq/00.rawDATA/shortread/
+1003_S71_L002_R1_001_paired.fastq.gz
+
+
+####python 
+import os, glob
+
+wDir = "/BDATA/smkim/HLA_seq/merge/02_theme/"
+#long_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/*gz")
+long_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/"
+short_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/shortread/"
+
+short_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/*R1*gz")
+
+shDir = wDir + "SCRIPTs/"
+os.system("mkdir %s"%shDir)
+
+def main():
+    for i in short_df:
+        id = i.replace("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/","").split("_")[0]
+        short_r1 = i
+        short_r2 = i.replace("_R1_","_R2_")
+        long = glob.glob(long_dir + "*%s*"%id)[0]
+        newID = long.replace(long_dir,"").replace("HLA.Longread.Seq.","").replace(".fastq.gz","")
+        print("NewID : %s"%newID)
+        out = open(shDir + "%s_merge.sh"%newID,"w")
+        out.write("zcat %s %s %s | bgzip -c > %sHLA.LongShort_merged.%s.fastq.gz"%(short_r1,short_r2,long,wDir,newID))
+        out.close()
+
+main()
+    
+######
+HLA.LongShort_merged.NIH19KT1006.fastq.gz
+
+#ls *gz | xargs -I {} -P 12 bash -c "samtools fqidx {}"
+ls *gz | sed 's/.fastq.gz//g' | xargs -I{} -P 3 bash -c "/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 18 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta {}.fastq.gz | samtools sort -o ./01.bwamem2_mapped/{}.bwamem2_align.sort.bam"
+ls *gz | sed 's/.fastq.gz//g' | xargs -I{} -P 3 bash -c "/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 18 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta {}.fastq.gz | samtools sort -o ./01.bwamem2_mapped/{}.bwamem2_align.sort.bam"
+ls *gz | sed 's/.fastq.gz//g' | sed 's/HLA.LongShort_merged.//g' | xargs -I{} -P 3 bash -c "bwa-mem2 mem -t 22 -R '@RG\tID:HWI\tSM:{}\tPL:ILLUMINA_Pacbio\tLB:Novaseq6000_SequalII' /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta HLA.LongShort_merged.{}.fastq.gz | samtools sort -o ./01.bwamem2_mapped/HLA.LongShort_merged.{}.bwamem2_align.sort.bam"
+
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/merge/02_theme/01.bwamem2_mapped
+
+ls *exon1.sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+
+coverage
+coverage_hg19_exon
+coverage_hg19_HLAregion
+coverage_hg19_gene
+
+
+## rm dup
+python 01-1.rmdup.py /BDATA/smkim/HLA_seq/merge/02_theme/01.bwamem2_mapped/ /BDATA/smkim/HLA_seq/merge/02_theme/01-1.rmdup/
+
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/merge/02_theme/01-1.rmdup/
+
+
+
+# 03_theme : 
+# (short R1 + Longread) 와 R2와 mapping
+
+cd /BDATA/smkim/HLA_seq/merge/03_theme
+
+long :  /BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/*gz
+short : /BDATA/smkim/HLA_seq/00.rawDATA/shortread/
+
+1003_S71_L002_R1_001_paired.fastq.gz
+1003_S71_L002_R2_001_paired.fastq.gz
+
+## python : R1 + long merged
+import os, glob
+
+wDir = "/BDATA/smkim/HLA_seq/merge/03_theme/"
+#long_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/*gz")
+long_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/"
+short_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/shortread/"
+
+short_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/*R1*gz")
+
+shDir = wDir + "SCRIPTs/"
+os.system("mkdir %s"%shDir)
+
+def main():
+    for i in short_df:
+        id = i.replace("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/","").split("_")[0]
+        short_r1 = i
+        #short_r2 = i.replace("_R1_","_R2_")
+        long = glob.glob(long_dir + "*%s*"%id)[0]
+        newID = long.replace(long_dir,"").replace("HLA.Longread.Seq.","").replace(".fastq.gz","")
+        print("NewID : %s"%newID)
+        out = open(shDir + "%s_merge.sh"%newID,"w")
+        out.write("zcat %s %s | bgzip -c > %sHLA.LongShortR1_merged.%s.fastq.gz"%(short_r1,long,wDir,newID))
+        out.close()
+
+main()
+
+
+## python : (R1 + long merged) + R2 mapping
+import os, glob
+
+wDir = "/BDATA/smkim/HLA_seq/merge/03_theme/"
+#long_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/*gz")
+long_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/longread/02.convert_fastq/"
+short_dir = "/BDATA/smkim/HLA_seq/00.rawDATA/shortread/"
+
+short_df = glob.glob("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/*R2*gz")
+
+shDir = wDir + "SCRIPTs/mapping/"
+os.system("mkdir %s"%shDir)
+
+def main():
+    for i in short_df:
+        id = i.replace("/BDATA/smkim/HLA_seq/00.rawDATA/shortread/","").split("_")[0]
+        short_r1 = i
+        ##short_r2 = i.replace("_R1_","_R2_")
+        long = glob.glob(wDir + "*%s*"%id)[0]
+        #HLA.LongShortR1_merged.NIH19KT0248.fastq.gz
+        newID = long.replace(wDir,"").replace("HLA.LongShortR1_merged.","").replace(".fastq.gz","")
+        print("NewID : %s"%newID)
+        out = open(shDir + "%s_mapping.sh"%newID,"w")
+        out.write("/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 20 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta %s %s | samtools sort -o %s01.bwamem2_mapped/HLA.theme03_merged.%s.bwamem2_align.sort.bam"%(short_r1,long,wDir,newID))
+        out.close()
+
+main()
+
+
+#/BDATA/smkim/TOOLs/bwa-mem2/bwa-mem2 mem -t 18 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta {}.fastq.gz | samtools sort -o ./01.bwamem2_mapped/{}.bwamem2_align.sort.bam
+
+python 01-1.rmdup.py /BDATA/smkim/HLA_seq/merge/03_theme/01.bwamem2_mapped/ /BDATA/smkim/HLA_seq/merge/03_theme/01-1.rmdup/
+
+
+
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/merge/03_theme/01.bwamem2_mapped/
+
+ls *exon1.sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+ls *sh | xargs -I {} -P 60 bash -c "sh {}; rm {}"
+
+python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/merge/03_theme/01-1.rmdup/
+
+
+ls *bam |xargs -I{} -P 60 bash -c "samtools coverage {} > ./coverage_hg19/{}.coverage"

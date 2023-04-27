@@ -6,7 +6,7 @@ python HLA.gene.coverage.py [build] [wDir]
 
 import os,glob,sys
 
-wDir = "/BDATA/smkim/HLA_seq/"
+#wDir = "/BDATA/smkim/HLA_seq/"
 shDir = "/BDATA/smkim/HLA_seq/SCRIPTs/coverage/"
 os.system("mkdir %s"%shDir)
 #chr6_28510020_33480577:1-1000000
@@ -117,8 +117,8 @@ def main():
 
     ref_df = make_target_ref(ref,target_contig)
     bams = glob.glob("%s/*.bam"%wDir)
-    os.system("mkdir %s/coverage"%wDir)
-    outDir = wDir + "/coverage"
+    os.system("mkdir %scoverage_%s_gene"%(wDir,build))
+    outDir = wDir + "coverage_%s_gene/"%build
     #shDir = 
     for bam in bams:
         for line in ref_df:
@@ -154,8 +154,8 @@ def main_exon():
     #ref_df = make_target_ref_forExon(ref,target_contig)
     ref_df = make_target_ref_forExon1(ref,target_contig)
     bams = glob.glob("%s/*.bam"%wDir)
-    os.system("mkdir %s/coverage_exon"%wDir)
-    outDir = wDir + "/coverage_exon"
+    os.system("mkdir %scoverage_%s_exon"%(wDir,build))
+    outDir = wDir + "coverage_%s_exon/"%build
     #shDir = 
     for bam in bams:
         for line in ref_df:
@@ -170,5 +170,5 @@ def main_exon():
             shOut.close()
 
 
-#main()
+main()
 main_exon()
