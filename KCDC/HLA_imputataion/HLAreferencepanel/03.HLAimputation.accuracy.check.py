@@ -5,6 +5,7 @@
 ## digit : 0 : 자동
 ##         2 : td
 #          4 : fd     
+#          42 : fdtotd
 '''
 1) michigan HLA imputation result
 ID      HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2
@@ -86,8 +87,8 @@ digit = sys.argv[3]
 outDir = sys.argv[4]
 fileOut = outDir + "/" + infer_fileName.split("/")[-1].replace(".txt",".cmp_%s.txt"%real_type)
 
-if digit not in ["0","2","4"]:
-    print("Digit Error (0, 2, 4)")
+if digit not in ["0","2","4","42"]:
+    print("Digit Error (0, 2, 4, 42)")
     sys.exit("python python.py [real] [infer] [digit] [output]")
 elif digit == "0":
     if "_td.txt" in infer_fileName:
@@ -96,8 +97,11 @@ elif digit == "0":
     else:
         print("Digit 0 : file name with fd -> digit = 4")
         digit = '4'
-else:
+elif digit == "42":
     fileOut = fileOut.replace(".txt",".fdvstd.txt")
+    digit = "2"
+    print("Digit %s"%(digit))
+else:
     print("Digit %s"%(digit))
 
 

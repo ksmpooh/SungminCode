@@ -624,3 +624,12 @@ python -m MakeReference \
     --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
     --phasing
 '''
+
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing

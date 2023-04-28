@@ -5,6 +5,7 @@ setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/03.allele.ma
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_han/03.allele.matching/")
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/03.allele.matching/")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/5M_28_33/03.allele.matching")
+setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching/")
 #setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/8digit/03.allele.matching/")
 #flist <- list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
 #list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
@@ -13,6 +14,7 @@ setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla
 
 ################
 flist = grep(list.files("./"),pattern = "missINFO.txt", invert=TRUE, value=TRUE)
+
 flist
 
 df <-read.table(flist[1],header = T)
@@ -296,3 +298,84 @@ snp2hla1 %>% rbind(snp2hla2) %>%
   theme(strip.text.x = element_text(size = 13,face = "bold"))
 
 
+#### KMHC IMGT 3220 vs 3370
+
+imgt3320 <- out
+imgt3320$IMGT <- "3320"
+
+imgt3370 <- out
+imgt3370$IMGT <- "3370"
+
+head(imgt3320)
+head(imgt3370)
+
+out <- rbind(imgt3320,imgt3370)
+
+head(out)
+
+
+out %>% filter(digit == 2) %>% #head()
+  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,IMGT) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  filter(Ref != "cmp_RealNGStyping") %>% 
+  mutate('from' = ifelse(Ref == "cmp_Nomencleaner","2digit","4to2digit")) %>%
+  #mutate(Tool=ifelse(Tool=="Minimac4","Michigan(Multi-ethnic) : Minimac4","HLA-TAPAS(KMHC) : SNP2HLA")) %>%
+  filter(CV != "520sample") %>%
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
+  ggplot(aes(x=Gene,y=Accuracy,fill=from))+
+  geom_boxplot() +
+  #facet_grid(~Tool,rows = vars(Tool))
+  facet_wrap(~IMGT, ncol = 2) +  
+  theme(legend.title=element_blank(),
+        legend.text=element_text(size=11),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.title.y = element_text(size = 14,face = "bold"))+
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+#out %>% filter(IMGT == "3320") %>% #head()#count()#count(digit)
+out %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,IMGT) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  filter(Ref != "cmp_RealNGStyping") %>% #head()#count(digit) 
+  filter(!(digit == 2 & Ref != "cmp_Nomencleaner.fdvstd")) %>% #head()#count()
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
+  ggplot(aes(x=Gene,y=Accuracy,fill=IMGT))+
+  geom_boxplot() +
+  #facet_grid(~Tool,rows = vars(Tool))
+  facet_wrap(~digit, ncol = 2) +  
+  theme(#legend.title=element_blank(),
+        legend.text=element_text(size=11),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.title.y = element_text(size = 14,face = "bold"))+
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+out %>% head()
+out %>% select(HLA_A.empty,HLA_B.empty,HLA_C.empty,HLA_DRB1.empty,HLA_DPA1.empty,HLA_DPB1.empty,HLA_DQA1.empty,HLA_DQB1.empty,empty_Sum,CV,Ref,digit,IMGT) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  filter(Ref != "cmp_RealNGStyping") %>% #head()#count(digit) 
+  filter(!(digit == 2 & Ref != "cmp_Nomencleaner.fdvstd")) %>% #head()#count()
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Count') %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
+  mutate(Gene = str_replace_all(Gene,".empty","")) %>% #head()
+  mutate(Gene = ifelse(Gene == "empty_Sum","overall",Gene)) %>%
+  group_by(IMGT,digit,Gene) %>% #head()
+  #count(Count)
+  summarise("NA_count_sum" = sum(Count)) %>%
+  ggplot(aes(x=Gene,y=NA_count_sum,color=IMGT))+
+  #geom_boxplot() +
+  geom_point() +
+  #facet_grid(~Tool,rows = vars(Tool))
+  facet_wrap(~digit, ncol = 2) +  
+  theme(#legend.title=element_blank(),
+    legend.text=element_text(size=11),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    axis.title.y = element_text(size = 14,face = "bold"))+
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+
+
+  
+  

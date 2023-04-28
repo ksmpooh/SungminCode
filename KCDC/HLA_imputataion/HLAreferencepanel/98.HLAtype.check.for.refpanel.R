@@ -157,6 +157,15 @@ han %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
   mutate(Ref = "Han Chinese") %>% select(-ID) ->han_freq
   
+han_freq %>% na.omit() %>%
+  mutate(Gene = str_split_fixed(Gene,"_",2)[,2]) %>%
+  group_by(Ref,Gene) %>%
+  count(type) %>% #head()
+  mutate(Frequency = prop.table(n)) %>% 
+  filter(type %in% c("C*08:41"," DRB1*14:141","DRB1*12:17","DQA1*05:06","DQA1*05:08",
+                     "C*08:01","DRB1*14:03","DRB1*12:01","DQA1*05:03","DQA1*05:05"))
+
+  
 
 pan %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
