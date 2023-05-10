@@ -376,6 +376,8 @@ out %>% select(HLA_A.empty,HLA_B.empty,HLA_C.empty,HLA_DRB1.empty,HLA_DPA1.empty
 
 
 
+head(out)
 
+df <- read
   
   

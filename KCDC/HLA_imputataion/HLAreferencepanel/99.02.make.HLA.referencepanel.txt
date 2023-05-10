@@ -531,6 +531,20 @@ python -m MakeReference \
     --nthreads 64
 
 
+
+python -m MakeReference \
+    --variants  /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.onlyvariant_updatesnps \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_4field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new_230509/PanKor_merged.hg19.HLAtapas_makereference_4field \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 64
+
+
+
 python -m SNP2HLA \
     --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
     --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/new/test_4field \
