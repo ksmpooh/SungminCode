@@ -3,6 +3,7 @@ library(tidyverse)
 library(stringr)
 library(readxl)
 library(readxlsb)
+library(ggrepel)
 
 setwd("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/20230508_epletv2/")
 
@@ -137,6 +138,44 @@ head(c1)
 head(c2)
 
 
+
+#### eplet histogram
+c1 %>% select(RecInfo,DonInfo,All_Eplets,AbVEp,OthEp) %>%
+  pivot_longer(cols = 3:5,names_to = "type",values_to = "score") %>% #head()
+  ggplot(aes(x=score,fill=type))+
+  geom_histogram() +
+  facet_grid(~fct_inorder(type)) +
+  theme(legend.position = 'none',
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+colnames(c2)
+c2 %>% select(RecInfo,DonInfo,28:44) %>% colnames()
+c2 %>% select(RecInfo,DonInfo,28:44) %>% #head()#dim()
+  pivot_longer(cols = 3:4,names_to = "type",values_to = "score") %>% #head()
+  ggplot(aes(x=score,fill=type))+
+  geom_histogram() +
+  facet_grid(~type) +
+  theme(legend.position = 'none',
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+c2 %>% select(RecInfo,DonInfo,28:44) %>%# head()#dim()
+  pivot_longer(cols = c(5,8,11,14,17),names_to = "type",values_to = "score") %>%
+  ggplot(aes(x=score,fill=type))+
+  geom_histogram() +
+  facet_grid(~type) +
+  theme(legend.position = 'none',
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+###################################
+
+
 pheno %>% merge(ref,by.x = "KCHIP_ID",by.y="KBA_ID") %>% 
   merge(c1,by.x="bCODE",by.y="RecInfo") -> c1_data
 
@@ -161,21 +200,60 @@ head(result)
 colnames(result) <- c("ID","Estimate","SE","Z","P")
 c1_result <- result %>% as.data.frame()
 
-write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
-#write.table(result, "CoSig_asso_adj1.txt", col.names=T, row.names=F, sep="\t", quote=F)
+#write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
+
+
+## 253Q --Abv
+## 11AV --other
+c1_result <- read_table("c1_eplet_asso.txt")
 head(c1_result)
 head(c1_data)
-c1_result %>% as.data.frame() %>% mutate('log10P' = log10(as.numeric(P))) %>% filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>%
-  mutate(type= ifelse(grepl("AA",ID),"Amino Acid","Eplet_Count")) %>%
+colnames(c1_result)
+c1_result$ID
+c1_result$ID[71:75]
+str_replace(c1_result$ID,"AA_","AbV_")
+c1_result$ID[6:73] <- str_replace(c1_result$ID[6:73],"AA_","AbV_")
+c1_result$ID[74:nrow(c1_result)] <- str_replace(c1_result$ID[74:nrow(c1_result)],"AA_","Oth_")
+
+
+c1_result %>% as.data.frame() %>% mutate('-log10P' = -log10(as.numeric(P))) %>% 
+  filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>% 
+  mutate(type= ifelse(grepl("AA",ID),"Amino Acid","Eplet_Count")) %>%  #head()
   #mutate_all(funs(str_replace(.,"AA_",""))) %>% head()
   ggplot(aes(x=fct_inorder(ID),y = -log10P,color = type)) +
+  geom_point() + 
+  geom_text_repel(data=subset(fct_inorder(ID),-log10P > 2.0),
+                  aes(label=ID),
+                  size =5, 
+                  box.padding = unit(0.35, "lines"),
+                  point.padding = unit(0.3, "lines")) + 
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "bottom") 
+
+
+c1_result %>% as.data.frame() %>% mutate('log10P' = log10(as.numeric(P))) %>% filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>%
+  mutate(type= ifelse(grepl("AbV_",ID),"Amino Acid (AbV)",ifelse(grepl("Oth_",ID),"Amino Acid (Other)","Eplet_Count"))) -> c1_result
+  #mutate_all(funs(str_replace(.,"AA_",""))) %>% head()
+
+ggplot(c1_result,aes(x=fct_inorder(ID),y = -log10P,color = type)) +
   geom_point() + 
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         legend.title = element_blank(),
         legend.text = element_text(size = 15),
-        legend.position = "bottom")
+        legend.position = "bottom") +
+  geom_text_repel(data=subset(c1_result,-log10P > 2.0),
+                  aes(label=ID),
+                  show.legend = F,
+                  size =5,
+                  box.padding = unit(0.35, "lines"),
+                  point.padding = unit(0.3, "lines"))
 
+
+c1_result %>% filter(log10P < -2.0) -> a
 ###c2
 
 c2 <- read_xlsx("c2_forWAS.xlsx")
@@ -232,7 +310,13 @@ result %>% as.data.frame()
 
 
 c2_result <- result %>% as.data.frame()
+c2_result <- read_table("c2_eplet_asso.txt")
+head(c2_result)
 min(c2_result$P)
+
+c2_result %>% mutate(ID = ifelse(ID=="All_ABV_ClassII","All_AbV",ID)) %>%
+  mutate(ID = ifelse(ID=="Total_eps","All_Eplet",ID)) ->  c2_result
+  
 
 #write.table(c2_result, "c2_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
 head(c2_result)
@@ -250,11 +334,9 @@ c2_result %>% as.data.frame() %>% mutate('log10P' = log10(as.numeric(P))) %>% #m
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank())
 
-c2_p %>% ggplot(aes(y=-log10P,x=type,color=type)) +
-  geom_boxplot()
 c2_result$ID
 
-c2_result %>% filter(ID %in% c("All_ABV_ClassII","Total_eps","All_ABV_ClassII","Total_eps","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
+c2_result %>% filter(ID %in% c("All_Eplet","All_AbV","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
                                "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
                                "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>%
   mutate('log10P' = log10(as.numeric(P))) %>% #max(log10P)
@@ -262,25 +344,59 @@ c2_result %>% filter(ID %in% c("All_ABV_ClassII","Total_eps","All_ABV_ClassII","
   ggplot(aes(x=fct_inorder(ID),y=-log10P,color=type)) +
   geom_point() + 
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1),
-        axis.title = element_blank(),
+        axis.title.x = element_blank(),
         legend.title = element_blank())
         #scale_x_discrete(breaks=arrange(., ID)$id, labels=arrange(., ID)$label))
+
+
 c2_result$ID
-c2_result %>% filter(!ID %in% c("All_ABV_ClassII","Total_eps","All_ABV_ClassII","Total_eps","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
+c2_result %>% filter(!ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
                                "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
                                "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>% #head()
   mutate('log10P' = log10(as.numeric(P))) %>% #max(log10P)
+  filter(log10P > -1.5) %>%
   mutate('Gene' = ifelse(grepl("DR",ID),"DR",ifelse(grepl("DQ",ID) | grepl("QA",ID),"DQ",ifelse(grepl("DP",ID)|grepl("PA",ID),"DP","Total")))) %>% #head()
   mutate('type' = ifelse(grepl("Ab",ID),"Ab",ifelse(grepl("Ot",ID) | grepl("ot",ID) ,"Other","E"))) %>% #count(type)
   #filter(type == "E")
   ggplot(aes(x=fct_inorder(ID),y=-log10P,color=Gene,shape=type)) +
   geom_point(size = 2) + 
   theme(axis.text.x = element_blank(),
-        axis.title = element_blank(),
+        axis.title.x = element_blank(),
         legend.title = element_blank(),
         legend.text = element_text(size = 15),
         legend.position = "bottom")
 
+c2_result %>% filter(!ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
+                                "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
+                                "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>% #head()
+  mutate('log10P' = log10(as.numeric(P))) %>% #max(log10P)
+  filter(log10P > -1.5) %>%
+  mutate('Gene' = ifelse(grepl("DR",ID),"DR",ifelse(grepl("DQ",ID) | grepl("QA",ID),"DQ",ifelse(grepl("DP",ID)|grepl("PA",ID),"DP","Total")))) %>% #head()
+  mutate('type' = ifelse(grepl("Ab",ID),"Ab",ifelse(grepl("Ot",ID) | grepl("ot",ID) ,"Other","E"))) -> c2_result_v2
+
+ggplot(c2_result_v2,aes(x=fct_inorder(ID),y=-log10P,color=Gene,shape=type)) +
+  geom_point(size = 2) + 
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "bottom") + 
+  geom_text_repel(data=subset(c2_result_v2,-log10P > 1.1),
+                  aes(label=ID),
+                  show.legend = F,
+                  size =3,
+                  box.padding = unit(0.35, "lines"),
+                  point.padding = unit(0.3, "lines"))
+
+head(c2_result_v2)
+
+c2_result_v2 %>% filter(P < 0.06) -> a
+
+c2_result %>% filter(ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
+                                "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
+                                "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>% #head()
+  filter(P < 0.1) -> a
+  
   
 c2 %>% count(AbDR_30C)
 

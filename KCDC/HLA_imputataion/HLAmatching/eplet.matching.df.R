@@ -290,8 +290,5 @@ ngs_out %>%
 dataset_names <- list("classI" = c1, "classII" = c2)
 #dataset_names <- list("classI_g1" = c1[1:1000,],"classI_g2" = c1[100], "classII_g1" = c2,"classII_g2" = c2)
 
-
-
-
 writexl::write_xlsx(dataset_names,"test_mtsheet.xlsx")
 
