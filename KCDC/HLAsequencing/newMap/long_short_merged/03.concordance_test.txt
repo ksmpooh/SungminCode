@@ -1,0 +1,80 @@
+##### DATA 정리
+
+mkdir 01.joint.calling
+mkdir 02.QC
+
+# 1. long read
+
+## 00. Longread ID change
+
+#ls ./GATK/HLA.Longread.*gz | sed "s/vcf.gz//g" | sed "s/.\/GATK\///g" | xargs -I {} -P 2 bash -c "bcftools reheader -s ./ID.change.txt ./GATK/{}vcf.gz -o ./Final.VCF/{}sampleIDCheck.vcf.gz"
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/long.ID.change.txt
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/longread
+
+ls 00.before_samplecheck/*gz | sed "s/vcf.gz//g" | sed "s/00.before_samplecheck\///g" | xargs -I {} -P 2 bash -c "bcftools reheader -s /BDATA/smkim/HLA_seq/99.Final.vcf/long.ID.change.txt ./00.before_samplecheck/{}vcf.gz -o ./{}sampleIDCheck.vcf.gz"
+
+ls *gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+#### GATK
+
+53 #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  NIH19KT0247     NIH19KT0248     NIH19KT0249     NIH19K>
+54 6:28477797-33448354     28477895        .       T       C
+
+#### DV
+
+21 #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  NIH19KT0247     NIH19KT0248     NIH19KT0249     NIH19K>
+22 6:28477797-33448354     104     6:28477797-33448354_104_T_C     T       C       13
+
+
+## 01. Longread chr, pos update
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py 
+
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.vcf.gz
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.sampleIDCheck.vcf.gz
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDCheck.vcf.gz
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.vcf.gz
+
+## 02. Longread set ID
+
+#"bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}.vcf.gz | bgzip -c > ./{}_setID.vcf.gz"
+
+ls *gz | sed 's/vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}vcf.gz | bgzip -c > ./{}setID.vcf.gz"
+
+
+# 2. short read
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread
+
+
+01.before_updateID
+02.updateID
+03.setID_befereQC
+04.setID_afterQC
+
+## 01. Short DV
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/DV
+
+01.before_updateID  02.beforeQC  03.afterQC
+
+ls *gz | xargs -I{} -P 4 bash -c "python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py {}"
+
+### 이건 setID 잘되어 있어서 추가 작업 안함 -> 해야함...
+이런 문제 발견!!
+291 6:28477797-33448354     172554  6:28477797-33448354_172556_A_G;6:28477797-33448354_172554_GTA_G GTA     GTG,G
+
+ls *gz | sed 's/vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}vcf.gz | bgzip -c > ./{}setID.vcf.gz"
+##
+
+## 02. Short GATK
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/01.joint.calling
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling.vcf.gz
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+ls *gz | xargs -I{} -P 4 bash -c "python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py {}"
+
+
+ls *gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"

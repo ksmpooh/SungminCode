@@ -193,7 +193,7 @@ for (i in 36:ncol(c1_data)) {
 
 result <- NULL
 for(i in 31:ncol(c1_data)){
-  temp <- glm(paste("rej_tot ~ ",colnames(c1_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf+hla_ms_dr+hla_ms_ab",sep=""), data=c1_data, family="binomial")
+  temp <- glm(paste("rej_tot ~ ",colnames(c1_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data, family="binomial")
   result <- rbind(result, c(colnames(c1_data)[i],as.vector(summary(temp)$coefficients[2,])))
 }
 head(result)
@@ -201,11 +201,13 @@ colnames(result) <- c("ID","Estimate","SE","Z","P")
 c1_result <- result %>% as.data.frame()
 
 #write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(c1_result, "c1_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
 
 
 ## 253Q --Abv
 ## 11AV --other
-c1_result <- read_table("c1_eplet_asso.txt")
+#c1_result <- read_table("c1_eplet_asso.txt")
+c1_result <- read_table("c1_eplet_asso_withouthHLAms.txt")
 head(c1_result)
 head(c1_data)
 colnames(c1_result)
@@ -217,8 +219,8 @@ c1_result$ID[74:nrow(c1_result)] <- str_replace(c1_result$ID[74:nrow(c1_result)]
 
 
 c1_result %>% as.data.frame() %>% mutate('-log10P' = -log10(as.numeric(P))) %>% 
-  filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>% 
-  mutate(type= ifelse(grepl("AA",ID),"Amino Acid","Eplet_Count")) %>%  #head()
+  filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>% #head()
+  mutate(type= ifelse(grepl("AA",ID),"Amino Acid","Eplet_Count")) %>% # head()
   #mutate_all(funs(str_replace(.,"AA_",""))) %>% head()
   ggplot(aes(x=fct_inorder(ID),y = -log10P,color = type)) +
   geom_point() + 
@@ -234,6 +236,7 @@ c1_result %>% as.data.frame() %>% mutate('-log10P' = -log10(as.numeric(P))) %>%
         legend.position = "bottom") 
 
 
+head(c1_result)
 c1_result %>% as.data.frame() %>% mutate('log10P' = log10(as.numeric(P))) %>% filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>%
   mutate(type= ifelse(grepl("AbV_",ID),"Amino Acid (AbV)",ifelse(grepl("Oth_",ID),"Amino Acid (Other)","Eplet_Count"))) -> c1_result
   #mutate_all(funs(str_replace(.,"AA_",""))) %>% head()
@@ -245,7 +248,7 @@ ggplot(c1_result,aes(x=fct_inorder(ID),y = -log10P,color = type)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 15),
         legend.position = "bottom") +
-  geom_text_repel(data=subset(c1_result,-log10P > 2.0),
+  geom_text_repel(data=subset(c1_result,-log10P > 1.75),
                   aes(label=ID),
                   show.legend = F,
                   size =5,
@@ -253,7 +256,8 @@ ggplot(c1_result,aes(x=fct_inorder(ID),y = -log10P,color = type)) +
                   point.padding = unit(0.3, "lines"))
 
 
-c1_result %>% filter(log10P < -2.0) -> a
+c1_result %>% filter(log10P < -1.75) -> a
+head(c1_result) -> a
 ###c2
 
 c2 <- read_xlsx("c2_forWAS.xlsx")
@@ -284,19 +288,21 @@ head(c2_data)
 table(c2_data[,i])
 length(table(c2_data[,i]))
 
-
+head(c2_data[43:45])
+head(c2_data[55:60])
+head(c2_data[59:65])
 
 result <- NULL
-for(i in 43:ncol(c2_data)){
+for(i in 43:59){
   #table(c2_data[,i])
-  temp <- glm(paste("rej_tot ~ ",colnames(c2_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf+hla_ms_dr+hla_ms_ab",sep=""), data=c2_data, family="binomial")
+  temp <- glm(paste("rej_tot ~ ",colnames(c2_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data, family="binomial")
   result <- rbind(result, c(colnames(c2_data)[i],as.vector(summary(temp)$coefficients[2,])))
 }
 
-result <- NULL
-for(i in 43:ncol(c2_data)){
+#result <- NULL
+for(i in 60:ncol(c2_data)){
   if (length(table(c2_data[,i])) == 2 ) {
-    temp <- glm(paste("rej_tot ~ ",colnames(c2_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf+hla_ms_dr+hla_ms_ab",sep=""), data=c2_data, family="binomial")
+    temp <- glm(paste("rej_tot ~ ",colnames(c2_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data, family="binomial")
     result <- rbind(result, c(colnames(c2_data)[i],as.vector(summary(temp)$coefficients[2,])))
   }
 }
@@ -310,15 +316,22 @@ result %>% as.data.frame()
 
 
 c2_result <- result %>% as.data.frame()
-c2_result <- read_table("c2_eplet_asso.txt")
-head(c2_result)
-min(c2_result$P)
+
 
 c2_result %>% mutate(ID = ifelse(ID=="All_ABV_ClassII","All_AbV",ID)) %>%
   mutate(ID = ifelse(ID=="Total_eps","All_Eplet",ID)) ->  c2_result
   
 
 #write.table(c2_result, "c2_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
+#write.table(c2_result, "c2_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
+
+#c2_result <- read_table("c2_eplet_asso.txt")
+c2_result <- read_table("c2_eplet_asso_withouthHLAms.txt")
+head(c2_result)
+min(c2_result$P)
+
+
+
 head(c2_result)
 
 grep("DR",c2_result$ID)
@@ -338,7 +351,7 @@ c2_result$ID
 
 c2_result %>% filter(ID %in% c("All_Eplet","All_AbV","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
                                "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
-                               "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>%
+                               "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>% #head()
   mutate('log10P' = log10(as.numeric(P))) %>% #max(log10P)
   mutate('type' = ifelse(grepl("DR",ID),"DR",ifelse(grepl("DQ",ID),"DQ",ifelse(grepl("DP",ID),"DP","Total")))) %>% 
   ggplot(aes(x=fct_inorder(ID),y=-log10P,color=type)) +
@@ -366,11 +379,12 @@ c2_result %>% filter(!ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr
         legend.text = element_text(size = 15),
         legend.position = "bottom")
 
+
 c2_result %>% filter(!ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
                                 "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
                                 "Nr_allDPA","Nr_AbDPA","Nr_otDPA")) %>% #head()
-  mutate('log10P' = log10(as.numeric(P))) %>% #max(log10P)
-  filter(log10P > -1.5) %>%
+  mutate('log10P' = log10(as.numeric(P))) %>% #head()
+  #filter(log10P > -1.5) %>%
   mutate('Gene' = ifelse(grepl("DR",ID),"DR",ifelse(grepl("DQ",ID) | grepl("QA",ID),"DQ",ifelse(grepl("DP",ID)|grepl("PA",ID),"DP","Total")))) %>% #head()
   mutate('type' = ifelse(grepl("Ab",ID),"Ab",ifelse(grepl("Ot",ID) | grepl("ot",ID) ,"Other","E"))) -> c2_result_v2
 
@@ -381,16 +395,21 @@ ggplot(c2_result_v2,aes(x=fct_inorder(ID),y=-log10P,color=Gene,shape=type)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 15),
         legend.position = "bottom") + 
-  geom_text_repel(data=subset(c2_result_v2,-log10P > 1.1),
+  geom_text_repel(data=subset(c2_result_v2,-log10P > 1.25),
                   aes(label=ID),
                   show.legend = F,
-                  size =3,
+                  size =4,
                   box.padding = unit(0.35, "lines"),
                   point.padding = unit(0.3, "lines"))
 
 head(c2_result_v2)
 
+head(c2_result)
 c2_result_v2 %>% filter(P < 0.06) -> a
+
+c2_result %>% filter(ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_allDQB",
+                               "Nr_allDQA","Nr_allDPB","Nr_allDPA")) -> a
+  ##filter(grepl(c("All","all"),ID))
 
 c2_result %>% filter(ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_otDRB","Nr_allDQB",
                                 "Nr_AbDQB","Nr_otDQB","Nr_allDQA","Nr_AbDQA","Nr_otDQA","Nr_allDPB","Nr_AbDPB","Nr_otDPB",
@@ -401,4 +420,4 @@ c2_result %>% filter(ID %in% c("All_AbV","All_Eplet","Nr_allDRB","Nr_AbDRB","Nr_
 c2 %>% count(AbDR_30C)
 
 c2_result %>% 
-  mutate('log10P' = log10(as.numeric(P))) %>% filter(-log10P > 1.5)
+  mutate('log10P' = log10(as.numeric(P))) %>% filter(-log10P > 1.5) -> a

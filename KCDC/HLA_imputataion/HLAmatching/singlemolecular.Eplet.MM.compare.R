@@ -118,8 +118,9 @@ pheno <- read_table("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.phen
 ref <- read.table("~/Desktop/KCDC/transplantation/00.sampleInfo/JG.IDupdate.NIHtobCODE.txt",header = T)
 
 #c2 <- read_xlsx("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/Association/c2_forWAS.xlsx")
-c2 <- read_table("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/Association/c2_eplet_asso.txt")
-
+#c2 <- read_table("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/Association/c2_eplet_asso.txt")
+c2 <- read_table("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/Association/c2_eplet_asso_withouthHLAms.txt")
+c2_mm_forASO <- read_xlsx("single_molecular_MM/KR.KD.HLAimp.foreplet.v2_bCODE_singleMM_scoreCount.xlsx")
 head(c2_mm_forASO)
 pheno %>% merge(ref,by.x = "KCHIP_ID",by.y="KBA_ID") %>% #head()
   merge(c2_mm_forASO,by.x="bCODE",by.y="RecInfo") -> c2_mm_data
@@ -146,7 +147,7 @@ for (i in 18:ncol(c2_mm_data)) {
 result <- NULL
 for(i in 18:ncol(c2_mm_data)){
   #table(c2_data[,i])
-  temp <- glm(paste("rej_tot ~ ",colnames(c2_mm_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf+hla_ms_dr+hla_ms_ab",sep=""), data=c2_mm_data, family="binomial")
+  temp <- glm(paste("rej_tot ~ ",colnames(c2_mm_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_mm_data, family="binomial")
   result <- rbind(result, c(colnames(c2_mm_data)[i],as.vector(summary(temp)$coefficients[2,])))
 }
 
@@ -162,7 +163,7 @@ c2$theme <- "EMS"
 head(c2)
 head(c2_mm_result)
 
-c2_mm_result %>% rbind(c2[c2$ID %in% c2_mm_result$ID,]) %>% head()
+c2_mm_result %>% rbind(c2[c2$ID %in% c2_mm_result$ID,]) %>% #head()
   pivot_longer(cols = 2:5,names_to = "Stat.",values_to = "Value") %>% #head()
   pivot_wider(names_from = "theme",values_from = "Value") -> tt
 

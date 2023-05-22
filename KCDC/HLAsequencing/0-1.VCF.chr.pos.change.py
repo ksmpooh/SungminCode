@@ -23,7 +23,8 @@ def main():
                     continue
                 pos = line.split("\t")[1]
                 new_pos = str(int(pos)+28477797)
-                new_line = line.replace("6:28477797-33448354","chr6").replace("\t%s\t"%(pos),"\t%s\t"%(new_pos)).replace("_%s_"%(pos),"_%s_"%(new_pos))
+                #new_line = line.replace("6:28477797-33448354","chr6").replace("\t%s\t"%(pos),"\t%s\t"%(new_pos)).replace("_%s_"%(pos),"_%s_"%(new_pos))
+                new_line = line.replace("6:28477797-33448354","6").replace("\t%s\t"%(pos),"\t%s\t"%(new_pos)).replace("_%s_"%(pos),"_%s_"%(new_pos))
                 out.write(new_line)
     
     os.system("bgzip -f %s"%(vcfOut))
@@ -83,6 +84,6 @@ def pos_chagne_gatkbundle():
     os.system("tabix -f -p vcf %s.gz"%vcfOut)
 
 
-pos_chagne_gatkbundle()
+#pos_chagne_gatkbundle()
 
     
