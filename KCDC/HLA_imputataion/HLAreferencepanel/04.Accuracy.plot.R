@@ -48,6 +48,7 @@ out$Tool <- "SNP2HLA"
 
 #michigan <- out
 #snp2hla1 <- out
+snp2hla <- out
 snp2hla2 <- out
 snp2hla_han <- out
 snp2hla_pan <- out
@@ -86,7 +87,7 @@ out <- rbind(michigan,snp2hla)
 #out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan)
 
 ###############################
-
+#head(out)
 out %>% 
   filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>%
   filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #head()

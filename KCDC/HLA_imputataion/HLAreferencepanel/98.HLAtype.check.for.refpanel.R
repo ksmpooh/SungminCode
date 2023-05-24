@@ -355,3 +355,71 @@ fd_count %>% rbind(td_count) %>% group_by(Ref) %>% #head()
         axis.title.y = element_text(size = 14,face = "bold")) +
   facet_grid(~digit) + 
   theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+
+#### Michigan vs KMHC type
+
+library("gridExtra") 
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "A"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "A"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p1
+p1
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "B"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "B"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p2
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "C"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "C"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p3
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DPA1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DPA1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p4
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DPB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DPB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p5
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DQA1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DQA1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p6
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DQB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DQB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p7
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DRB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DRB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p8
+
+library(cowplot)
+
+plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
+          ncol = 3)
+

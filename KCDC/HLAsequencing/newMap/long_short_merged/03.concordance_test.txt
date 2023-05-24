@@ -78,3 +78,13 @@ ls *gz | xargs -I{} -P 4 bash -c "python /BDATA/smkim/HLA_seq/99.Final.vcf/updat
 
 
 ls *gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+
+
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC
+
+ls *gz | xargs -I{} -P 4 bash -c "python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py {}"
+ls *updateID*.gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+ls *updateID*gz | sed 's/vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}vcf.gz | bgzip -c > ./{}setID.vcf.gz"
