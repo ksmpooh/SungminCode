@@ -189,19 +189,34 @@ for (i in 36:ncol(c1_data)) {
   c1_data[,i] <- as.numeric(c1_data[,i])
 }
 
-
-
 result <- NULL
-for(i in 31:ncol(c1_data)){
+for(i in 31:33){
   temp <- glm(paste("rej_tot ~ ",colnames(c1_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data, family="binomial")
   result <- rbind(result, c(colnames(c1_data)[i],as.vector(summary(temp)$coefficients[2,])))
 }
+
+
+#result <- NULL
+for(i in 36:ncol(c1_data)){
+  if (length(table(c1_data[,i])) == 2 ) {
+    temp <- glm(paste("rej_tot ~ ",colnames(c1_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data, family="binomial")
+    result <- rbind(result, c(colnames(c1_data)[i],as.vector(summary(temp)$coefficients[2,])))
+  }
+}
+
+
+
+
+
+
+
+
 head(result)
 colnames(result) <- c("ID","Estimate","SE","Z","P")
 c1_result <- result %>% as.data.frame()
 
 #write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
-write.table(c1_result, "c1_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
+#write.table(c1_result, "c1_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
 
 
 ## 253Q --Abv
@@ -217,6 +232,7 @@ str_replace(c1_result$ID,"AA_","AbV_")
 c1_result$ID[6:73] <- str_replace(c1_result$ID[6:73],"AA_","AbV_")
 c1_result$ID[74:nrow(c1_result)] <- str_replace(c1_result$ID[74:nrow(c1_result)],"AA_","Oth_")
 
+head(c1_result)
 
 c1_result %>% as.data.frame() %>% mutate('-log10P' = -log10(as.numeric(P))) %>% 
   filter(!ID %in% c("AbVer_Eplets","Other_Eplets") ) %>% #head()
@@ -248,7 +264,7 @@ ggplot(c1_result,aes(x=fct_inorder(ID),y = -log10P,color = type)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 15),
         legend.position = "bottom") +
-  geom_text_repel(data=subset(c1_result,-log10P > 1.75),
+  geom_text_repel(data=subset(c1_result,-log10P > 1.5),
                   aes(label=ID),
                   show.legend = F,
                   size =5,
@@ -421,3 +437,138 @@ c2 %>% count(AbDR_30C)
 
 c2_result %>% 
   mutate('log10P' = log10(as.numeric(P))) %>% filter(-log10P > 1.5) -> a
+
+
+#####  EMS eplet weighted sum
+
+c1 <- read.table("../Association/c1_eplet_asso_withouthHLAms.txt",header = T)
+c2 <- read.table("../Association/c2_eplet_asso_withouthHLAms.txt",header = T)
+
+
+head(c1)
+head(c2)
+head(c1_data)
+head(c2_data)
+
+
+
+c1_aa <- c1[4:nrow(c1),]
+c2_aa <- c2[18:nrow(c2),]
+head(c1_aa)
+head(c2_aa)
+
+c1_aa %>% mutate('Effect' = Estimate) %>%
+  mutate('Effect(t1)' = ifelse(P<0.05,Estimate,0)) %>%
+  mutate('Effect(t2)' = ifelse(P<0.01,Estimate,0)) %>% 
+  select(ID,Effect,`Effect(t1)`,`Effect(t2)`)-> c1_aa
+
+c2_aa %>% mutate('Effect' = Estimate) %>%
+  mutate('Effect(t1)' = ifelse(P<0.05,Estimate,0)) %>%
+  mutate('Effect(t2)' = ifelse(P<0.01,Estimate,0)) %>%
+  select(ID,Effect,`Effect(t1)`,`Effect(t2)`)-> c2_aa
+
+head(c1_aa)
+head(c2_aa)
+
+
+c1_data %>% select(bCODE, c1_aa$ID) -> c1_aa_data
+c2_data %>% select(bCODE, c2_aa$ID) -> c2_aa_data
+
+
+
+head(c1_aa)
+head(c2_aa)
+
+head(c1_aa)
+head(c1_aa_data[1:5])
+head(c2_aa_data)
+
+
+result = NULL
+for (i in 1:nrow(c1_aa_data)) {
+  result <- rbind(result,c(c1_aa_data$bCODE[i],sum(c1_aa[,2] * c1_aa_data[i,2:ncol(c1_aa_data)]),sum(c1_aa[,3] * c1_aa_data[i,2:ncol(c1_aa_data)]),sum(c1_aa[,4] * c1_aa_data[i,2:ncol(c1_aa_data)])))
+}
+colnames(result) <- c("bCODE","Effect","Effect_t1","Effect_t2")
+c1_result<- result %>% as.data.frame()
+
+result = NULL
+for (i in 1:nrow(c1_aa_data)) {
+  result <- rbind(result,c(c2_aa_data$bCODE[i],sum(c2_aa[,2] * c2_aa_data[i,2:ncol(c2_aa_data)]),sum(c2_aa[,3] * c2_aa_data[i,2:ncol(c2_aa_data)]),sum(c2_aa[,4] * c2_aa_data[i,2:ncol(c2_aa_data)])))
+}
+colnames(result) <- c("bCODE","Effect","Effect_t1","Effect_t2")
+c2_result<- result %>% as.data.frame()
+
+
+head(c1_result)
+head(c2_result)
+
+#write.table(c1_result,"c1_epletAA_weigthedSum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(c2_result,"c2_epletAA_weigthedSum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+c1_result <- read.table("c1_epletAA_weigthedSum.txt",header = T)
+c2_result <- read.table("c2_epletAA_weigthedSum.txt",header = T)
+
+head(c1_result)
+head(c2_result)
+colnames(c1_result) <- c("bCODE","Effect","Effect1","Effect2")
+colnames(c2_result) <- c("bCODE","Effect","Effect1","Effect2")
+head(pheno)
+pheno %>% merge(ref,by.x = "KCHIP_ID",by.y="KBA_ID") %>% 
+  merge(c1_result) -> c1_data2
+
+pheno %>% merge(ref,by.x = "KCHIP_ID",by.y="KBA_ID") %>% 
+  merge(c2_result) -> c2_data2
+
+head(c1_data2)
+head(c2_data2)
+
+
+result <- NULL
+for(i in c("Effect","Effect1","Effect2")){
+#  print(i)
+  #table(c2_data[,i])
+  temp <- glm(paste("rej_tot ~ ",i, "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data2, family="binomial")
+  result <- rbind(result, c(i,as.vector(summary(temp)$coefficients[2,])))
+}
+
+head(result)
+colnames(result) <- c("ID","Estimate","SE","Z","P")
+c1_result2 <- result %>% as.data.frame()
+head(c1_result2)
+
+result <- NULL
+for(i in c("Effect","Effect1","Effect2")){
+  #table(c2_data[,i])
+  temp <- glm(paste("rej_tot ~ ",i, "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data2, family="binomial")
+  result <- rbind(result, c(i,as.vector(summary(temp)$coefficients[2,])))
+}
+#result <- rbind(result, c(colnames(c2_data)[i],as.vector(summary(temp)$coefficients[2,])))
+colnames(result) <- c("ID","Estimate","SE","Z","P")
+c2_result2 <- result %>% as.data.frame()
+
+head(c1_result2)
+head(c2_result2)
+c1_result2$class <- "classI"
+c2_result2$class <- "classII"
+
+#write.table(rbind(c1_result2,c2_result2),"c1c2_eplet_weigthSum_association.Result.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+head(c1_result)
+head(c1_data)
+head(c1_result)
+
+result <- NULL
+temp <- glm(paste("rej_tot ~ ","Effect", "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data2, family="binomial")
+result <- rbind(result, c(i,as.vector(summary(temp)$coefficients[2,])))
+
+temp <- glm(paste("rej_tot ~ ","Effect1", "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data2, family="binomial")
+result <- rbind(result, c(i,as.vector(summary(temp)$coefficients[2,])))
+
+temp <- glm(paste("rej_tot ~ ","Effect2", "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data2, family="binomial")
+result <- rbind(result, c(i,as.vector(summary(temp)$coefficients[2,])))
+
+result
+
+rbind(c1_result2,c2_result2)
+#writexl::write_xlsx(c1_data,'test.xlsx')

@@ -43,14 +43,14 @@ out %>% mutate(filename = str_replace_all(filename,".txt","")) %>%# head()
   mutate("Ref" = str_split_fixed(filename,"\\.",4)[,4]) -> out
 
 head(out)
-out$Tool <- "Minimac4"
+#out$Tool <- "Minimac4"
 out$Tool <- "SNP2HLA"
 
 #michigan <- out
 #snp2hla1 <- out
-snp2hla <- out
-snp2hla2 <- out
-snp2hla_han <- out
+#snp2hla <- out
+#snp2hla2 <- out
+#snp2hla_han <- out
 snp2hla_pan <- out
 
 snp2hla_pan1 <- out
@@ -78,7 +78,7 @@ snp2hla %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DRB1,HLA_DQA
   summarise(summarise(across(1:9,mean)))
   
 
-
+head(snp2hla_pan)
 
 head(michigan)
 head(snp2hla)
@@ -89,11 +89,11 @@ out <- rbind(michigan,snp2hla)
 ###############################
 #head(out)
 out %>% 
-  filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>%
-  filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #head()
+  filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>% #head()
+  filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #count(Tool,Ref)
   mutate(Test = str_split_fixed(CV,"_",2)[,1]) ->out
   
-
+head(out)
 colnames(out)
 out %>% #filter(digit == 2) %>%# head()
   select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>%
@@ -186,8 +186,8 @@ out2 %>% count(Gene)
 
   #count(filename)3
 out1 %>% rbind(out2) %>% #head()#count(CV)
-  filter(!(Gene %in% c("A","B","DRB1"))) %>%
-  filter(Gene != "Overall") %>%
+  #filter(!(Gene %in% c("A","B","DRB1"))) %>%
+  #filter(Gene != "Overall") %>%
   #filter(Gene %in% c("A","B","DRB1")) %>%
   mutate(digit = paste0(digit,' digit')) %>%
   ggplot(aes(x=Gene,y=Accuracy,fill=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")))) +
@@ -199,7 +199,8 @@ out1 %>% rbind(out2) %>% #head()#count(CV)
         legend.text=element_text(size=11),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 14,face = "bold"))+
-  facet_grid(~digit) +
+  #facet_grid(~digit) +
+  facet_wrap(~digit,ncol = 1)
   theme(strip.text.x = element_text(size = 13,face = "bold"))
 
 out1 %>% rbind(out2) %>% #head()#count(CV)

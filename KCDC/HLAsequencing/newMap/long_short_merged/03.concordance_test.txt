@@ -88,3 +88,74 @@ ls *gz | xargs -I{} -P 4 bash -c "python /BDATA/smkim/HLA_seq/99.Final.vcf/updat
 ls *updateID*.gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
 
 ls *updateID*gz | sed 's/vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}vcf.gz | bgzip -c > ./{}setID.vcf.gz"
+
+
+
+### select final VCF
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC/03.setID/
+bcftools norm -m +any HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.vcf.gz -Oz > HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+
+
+
+HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/DV/04.setID_afterQC
+
+HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC
+HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz
+HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz
+
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF
+
+
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC/03.setID/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC/03.setID/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/DV/04.setID_afterQC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz* ./
+
+
+
+
+bcftools view --max-allele 4 
+--exclude-type indels 
+
+
+bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
+
+
+
+bcftools view --max-alleles 2 --exclude-types indels input.vcf.gz
+bcftools view -m2 -M2 -v snps input.vcf.gz
+
+
+ls *gz | xargs -I{} -P 5 bash -c 'bcftools view -m2 -M2 -v snps {} -Oz > ./onlySNP_rmMS/{}'
+ls *gz | xargs -I{} -P 5 bash -c 'tabix -f -p vcf {}'
+
+
+### KCHIP ID setting
+cd /BDATA/smkim/GWAS/01.QCed_INPUTs
+
+R : 
+df %>% mutate("ID" = ifelse(V2 == Alt_Allele, paste0(Chromosome,"_",Physical_Position,"_",Alt_Allele,"_",Ref_Allele),paste0(Chromosome,"_",Physical_Position,"_",Ref_Allele,"_",Alt_Allele))) -> out
+write.table(out,"KBA.SNP.info.with.V2REF.txt",col.names=T,row.names=F,quote=F,sep="\t")
+
+cd /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink
+
+rm affy -> rm dup -> ID change -> HLA regiom geno 0.05 hwe 1e-6
+
+  --bfile JG.sampledQC.regenocall_snpolisher_indel_flip
+  --chr 6
+  --from-bp 28477797
+  --geno 0.05
+  --hwe 1e-6
+  --make-bed
+  --out JG.QCed.forHLAseq
+  --to-bp 33448354
+  --update-ids cel_toNID.txt
+

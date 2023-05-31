@@ -2,6 +2,10 @@
 ## michigan vs Han vs Pan+korea vs KBA
 library(tidyverse)
 library(stringr)
+library(cowplot)
+library(gridExtra)
+library(ggpubr)
+
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/")
 
 michigan <- read.table("michigan.hla.type.info")
@@ -423,3 +427,221 @@ library(cowplot)
 plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
           ncol = 3)
 
+#### HLA type venn diagram by gene
+
+head(fd)
+table(fd$Ref)
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "A"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "A"),]$type,
+       `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "A"),]$type,
+       `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "A"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p1
+
+p1
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "B"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "B"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "B"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "B"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p2
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "C"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "C"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "C"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "C"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p3
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DPA1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DPA1"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "DPA1"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "DPA1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p4
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DPB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DPB1"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "DPB1"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "DPB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p5
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DQA1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DQA1"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "DQA1"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "DQA1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p6
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DQB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DQB1"),]$type,
+       `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "DQB1"),]$type,
+       `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "DQB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p7
+
+ggvenn::ggvenn(
+  list(KMHC = fd[(fd$Ref == "KMHC") & (fd$Gene == "DRB1"),]$type,
+       `Multi-ethnic` = fd[(fd$Ref == "Multi-ethnic") & (fd$Gene == "DRB1"),]$type,
+  `Han Chinese` = fd[(fd$Ref == "Han Chinese") & (fd$Gene == "DRB1"),]$type,
+  `Pan-Kor` = fd[(fd$Ref == "Pan-Kor") & (fd$Gene == "DRB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p8
+
+library(cowplot)
+
+plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
+          ncol = 2)
+
+plot_grid(p1,p2,labels = c("A","B"),
+          ncol = 2)
+
+plot_grid(p3,p8,labels = c("C","DRB1"),
+          ncol = 2)
+
+plot_grid(p4,p5,labels = c("DPA1","DPB1"),
+          ncol = 2)
+
+plot_grid(p6,p7,labels = c("DQA1","DQB1"),
+          ncol = 2)
+
+
+### vs Park
+#setwd("~/Desktop/KCDC/HLA_seq/")
+park <- readxl::read_xlsx("~/Desktop/KCDC/HLA_seq/HLAtype.freq_park2016.xlsx",sheet = 3)
+park %>% filter(HLAgene != "HLA-DQB1") %>%
+  mutate(type = value,"Park" = Frequency/100) %>% #head()
+  filter(value %in% kmhc_freq$type ) %>%
+  mutate(HLAgene = gsub(x = HLAgene, pattern = "HLA-", replacement = "")) -> park
+
+#kmhc_freq %>% na.omit() %>%
+   #mutate('type' = value) -> kmhc_freq
+head(kmhc_freq)
+head(park)
+park$type = park$value
+ggvenn::ggvenn(
+  list(KMHC = kmhc_freq$type,
+       Park = park$type),
+  text_size = 5,
+  set_name_size = 4
+)
+
+
+
+
+head(park)
+head(kmhc_freq)
+
+kmhc_freq %>% group_by(Gene) %>% 
+  na.omit() %>% #head()
+  count(type) %>%
+  mutate("KMHC" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>% #head()
+  filter(type %in% park$type) -> kmhc_freq1
+
+
+head(park)
+head(kmhc_freq1)
+kmhc_freq1 %>% select(HLAgene,type,KMHC)
+park %>% select(HLAgene,type,Park) %>% #head()
+  inner_join(kmhc_freq1 %>% select(HLAgene,type,KMHC)) %>% #head()
+  ggscatter(.,x='KMHC',y='Park',color='HLAgene',
+            add = "reg.line",
+            conf.int = TRUE, # Add confidence interval
+            cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+            xlab = "KMHC",
+            ylab = "Park (2016)",
+            #cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")) +
+            cor.coeff.args = list(method = "pearson", label.sep = "\n")) + 
+  theme(legend.position = "right")
+
+
+head(kmhc_freq)
+head(han_freq)
+head(pan_freq)
+
+kmhc_freq %>% group_by(Gene) %>% 
+  na.omit() %>% #head()
+  count(type) %>%
+  mutate("KMHC" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>% 
+  select(HLAgene,type,KMHC)-> kmhc_freq1
+
+han_freq %>% group_by(Gene) %>% 
+  na.omit() %>% #head()
+  count(type) %>%
+  mutate("Han Chinese" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>%
+  select(HLAgene,type,`Han Chinese`)-> han_freq1
+
+pan_freq %>% group_by(Gene) %>% 
+  na.omit() %>% #head()
+  count(type) %>%
+  mutate("Pan-Kor" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>% 
+  select(HLAgene,type,`Pan-Kor`)-> pan_freq1
+
+
+head(kmhc_freq1)
+head(han_freq1)
+head(pan_freq1)
+
+
+kmhc_freq1 %>% inner_join(han_freq1) %>%
+  ggscatter(.,x='KMHC',y="Han Chinese",color='HLAgene',
+            add = "reg.line",
+            conf.int = TRUE, # Add confidence interval
+            cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+            xlab = "KMHC",
+            ylab = "Han Chinese",
+            xlim = c(0,0.5),
+            ylim = c(0,0.5),
+            #cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")) +
+            cor.coeff.args = list(method = "pearson", label.sep = "\n")) + 
+  theme(legend.position = "right")
+
+kmhc_freq1 %>% inner_join(han_freq1) %>% #head()
+  correlate()
+
+
+'''
+df %>% mutate("HLAgene" = gsub(x = HLAgene, pattern = "NGS_", replacement = "HLA-")) %>%
+  na.omit() %>% #head()
+  group_by(HLAgene) %>% #head()
+  mutate(Frequency = prop.table(n)) %>% #writexl::write_xlsx("HLAtype.freq.xlsx")
+  mutate(type = "KMHC") %>% select(-n) %>% filter(HLAgene %in% ref2$HLAgene)-> a
+'''
+  
+
+'''
+c2_ngs %>% select(RecInfo,DonInfo,28:44) %>% mutate("type" = "NGS") %>% #head()
+  rbind(c2_imp) %>%
+  pivot_longer(3:19,names_to = "theme",values_to = "count") %>% #head()
+  pivot_wider(names_from = type,values_from = count) %>% 
+  filter(!theme %in% c("Total_eps","All_ABV_ClassII","allDRB","allDQB","allDQA","allDPB","allDPA")) %>% #count(theme)
+  #mutate(theme = factor(theme,levels = c("Total_eps","All_ABV_ClassII","allDRB","allDQB","allDQA","allDPB","allDPA"))) %>%
+  #ggplot(aes(x=NGS,y=HLAimp,color=theme)) + 
+  ggscatter(.,x='NGS',y='HLAimp',color='theme',
+            add = "reg.line",
+            conf.int = TRUE, # Add confidence interval
+            cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+            facet.by = "theme",
+            xlab = "NGS based HLA typing",
+            ylab = "HLA imputation",nrow =2,scales='free',
+            #cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")) +
+            cor.coeff.args = list(method = "pearson", label.sep = "\n")) + 
+  theme(legend.position = "none",
+        strip.text.x = element_text(size = 12,face = "bold"))
+'''

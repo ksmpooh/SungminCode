@@ -290,7 +290,7 @@ han %>% mutate(HLAtype_A.1 = paste0("A*",str_sub(HLAtype_A.1,1,-3),":",str_sub(H
   mutate("HLAgene" = gsub(x = HLAgene, pattern = "\\.1", replacement = "")) %>% #head()
   mutate('value' = str_split_fixed(value,"\\*",2)[,2]) %>% 
   #group_by(HLAgene) %>%  #head()
-  group_by(HLAgene) -> a
+  #group_by(HLAgene) -> a
   count(value) %>% #head()#arrange(-n) -> df
   count(HLAgene) -> hancount #%>%
 
@@ -403,7 +403,7 @@ df %>% mutate("HLAgene" = gsub(x = HLAgene, pattern = "NGS_", replacement = "HLA
   na.omit() %>% #head()
   group_by(HLAgene) %>% #head()
   mutate(Frequency = prop.table(n)) %>% #writexl::write_xlsx("HLAtype.freq.xlsx")
-  mutate(type = "NIH") %>% select(-n) %>% filter(HLAgene %in% ref2$HLAgene)-> a
+  mutate(type = "KMHC") %>% select(-n) %>% filter(HLAgene %in% ref2$HLAgene)-> a
 a
 library(ggplot2)
 library(ggpmisc)
