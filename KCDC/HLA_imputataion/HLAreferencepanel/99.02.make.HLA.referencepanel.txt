@@ -647,3 +647,93 @@ python -m MakeReference \
     --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
     --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
     --phasing
+
+
+### 1000 genome project 20230602
+
+
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit.txt
+
+##plink 
+cd /BDATA/smkim/GWAS/1kgp_HLA
+awk '{print $1"\t6_"$4"_"$5"_"$6}' chr_rsID.chr6.txt > rs_Id.txt
+
+
+awk '{print $3"\t"$9}' rsID.with.ref.alt.newID.txt | sort |uniq -c | awk '{print $2,$3}' > id.change.txt
+
+
+###R
+df <-read.table("chr_rsID.chr6.txt")
+ref <- read.table("/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange.bim")
+
+
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_2field \
+--2field
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit.txt \
+--out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_4field \
+--4field
+
+
+
+
+python -m MakeReference \
+    --variants /BDATA/smkim/GWAS/1kgp_HLA/1kgp.phase3.chr6.MHC.rmAmbg.fil.onlysnp.idchange \
+    --chped /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 64
+
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/520sample_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g1_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g1_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g2_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g2_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g3_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g3_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g4_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV/00.KBA/g5_HLAimputation_test.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g5_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g

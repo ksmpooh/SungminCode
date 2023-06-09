@@ -36,6 +36,8 @@ python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.Q20.Deepv
 python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.sampleIDCheck.vcf.gz
 python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDCheck.vcf.gz
 python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.vcf.gz
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.vcf.gz
+
 
 ## 02. Longread set ID
 
@@ -90,6 +92,14 @@ ls *updateID*.gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
 ls *updateID*gz | sed 's/vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' {}vcf.gz | bgzip -c > ./{}setID.vcf.gz"
 
 
+# 3. long + short merged DATA
+
+cd /BDATA/smkim/HLA_seq/merge/02_theme/04.joint.calling
+
+python /BDATA/smkim/HLA_seq/99.Final.vcf/update.id.py
+
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.vcf.gz | bgzip -c > ./HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
 
 ### select final VCF
 
@@ -115,10 +125,16 @@ cd /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF
 
 rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC/03.setID/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz* ./
 rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/02.QC/03.setID/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/01.joint.calling/04.setID_afterQC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.bqsr.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.setID.vcf.gz* ./
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/GATK/01.joint.calling/04.setID_afterQC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.setID.vcf.gz* ./
+
+
 rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/shortread/DV/04.setID_afterQC/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz* ./
+
+
 rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz* ./
 rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz* ./
-
+rsync -avhP /BDATA/smkim/HLA_seq/99.Final.vcf/longread/04.setID_afterQC/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.setID.vcf.gz* ./
 
 
 
@@ -137,6 +153,9 @@ bcftools view -m2 -M2 -v snps input.vcf.gz
 ls *gz | xargs -I{} -P 5 bash -c 'bcftools view -m2 -M2 -v snps {} -Oz > ./onlySNP_rmMS/{}'
 ls *gz | xargs -I{} -P 5 bash -c 'tabix -f -p vcf {}'
 
+ls *gz | xargs -I{} -P 5 bash -c 'bcftools view --max-alleles 2 --exclude-types indels {} -Oz > ./v2_onlySNP/{}'
+ls *gz | xargs -I{} -P 5 bash -c 'bcftools stats {} > {}.stats'
+
 
 ### KCHIP ID setting
 cd /BDATA/smkim/GWAS/01.QCed_INPUTs
@@ -149,13 +168,172 @@ cd /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink
 
 rm affy -> rm dup -> ID change -> HLA regiom geno 0.05 hwe 1e-6
 
-  --bfile JG.sampledQC.regenocall_snpolisher_indel_flip
-  --chr 6
-  --from-bp 28477797
-  --geno 0.05
-  --hwe 1e-6
-  --make-bed
-  --out JG.QCed.forHLAseq
-  --to-bp 33448354
-  --update-ids cel_toNID.txt
+plink --bfile  JG.sampledQC.regenocall_snpolisher_indel_flip --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy
+plink --bfile JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy --exclude case_duplicateSNPID.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy_rmdup
 
+#plink --bfile JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy_rmdup --update-name /BDATA/smkim/GWAS/01.QCed_INPUTs/KCHIP.ID.change.chr_pos_ref_alt.txt --make-bed --out JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy_rmdup_updateid
+
+plink --bfile JG.sampledQC.regenocall_snpolisher_indel_flip_rmaffy_rmdup --chr 6 --from-bp 28477797 --to-bp 33448354 --geno 0.05 --hwe 1e-6 --update-ids cel_toNID.txt --make-bed JG.QCed.forHLAseq.V2
+  
+plink --bfile JG.QCed.forHLAseq.V2 --maf 0.01 --make-bed --out JG.QCed.forHLAseq.V2.maf0.01
+plink --bfile JG.QCed.forHLAseq.V2.maf0.01 --update-name /BDATA/smkim/GWAS/01.QCed_INPUTs/KCHIP.ID.change.chr_pos_ref_alt.txt --make-bed --out JG.QCed.forHLAseq.V2.maf0.01.updateSNPID
+
+plink --bfile JG.QCed.forHLAseq.V2 --exclude JG.QCed.forHLAseq.V2_rmduplist.0allele.txt --make-bed --out JG.QCed.forHLAseq.V2.rm0allele
+plink --bfile JG.QCed.forHLAseq.V2.rm0allele --update-name /BDATA/smkim/GWAS/01.QCed_INPUTs/KCHIP.ID.change.chr_pos_ref_alt.txt --make-bed --out JG.QCed.forHLAseq.V2.rm0allele.updateSNPID
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP
+
+awk '{print $1"_"$1"\t"$1}' JG.QCed.forHLAseq.V2.maf0.01.updateSNPID.fam > vcf.sampleID.change.txt
+
+plink --bfile JG.QCed.forHLAseq.V2.maf0.01.updateSNPID --recode vcf --a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/KBA.SNP.info.with.V2REF_IDREF.txt --out JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert
+bcftools reheader -s vcf.sampleID.change.txt JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf | bgzip -c > JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+tabix -f -p vcf JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+
+
+plink --bfile JG.QCed.forHLAseq.V2.rm0allele.updateSNPID --recode vcf --a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/KBA.SNP.info.with.V2REF_IDREF.txt --out JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert
+bcftools reheader -s vcf.sampleID.change.txt JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf | bgzip -c > JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+tabix -f -p vcf JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+
+
+
+
+
+### concordance test
+
+
+VCF
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.setID.vcf.gz
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.setID.vcf.gz
+
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
+
+KCHIP
+/BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+
+
+
+cd /BDATA/smkim/HLA_seq/concordance
+
+'''
+bcftools isec -p DV HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID.sampleIDCheck.onlySNP.vcf.gz HLA.Shortread.Seq.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.onlySNP.vcf.gz
+bcftools isec --nfiles 2 -p ./longDV_kchip ../DATA/onlySNP/20221122_VCF/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDcheck.updateID.onlySNP.vcf.gz ../DATA/v2_20221122/JG.QCed.forHLAseq_noMAFrmdup_updatesnp_convert_updateSampleID.vcf.gz
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+'''
+'''rm 0 allele not maf 0.01
+bcftools isec --nfiles 3 -p DV_longshortKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+bcftools isec --nfiles 4 -p DV_longshortKBAmerged /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+bcftools isec --nfiles 3 -p DV_longshortmerged /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+bcftools isec -p DV_longKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+
+bcftools isec --nfiles 3 -p DV_longshortKBA_v2 /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/v2_onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/v2_onlySNP/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+bcftools isec -p DV_longKBA_v2 /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/v2_onlySNP/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz
+
+zcat /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.rm0allele.updateSNPID_convert.vcf.gz | 
+'''
+maf 0.01
+
+bcftools isec --nfiles 3 -p DV_longshortKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+
+bcftools isec --nfiles 4 -p DV_longshortKBAmerged /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
+bcftools isec --nfiles 3 -p DV_longshortmerged /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
+bcftools isec -p DV_longKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+bcftools isec -p DV_shortKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+bcftools isec -p DV_mergedKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+
+bcftools isec -p DV_longshort /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz
+
+
+
+# GATK VQSR
+bcftools isec --nfiles 3 -p GATKvqsr_longshortKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+bcftools isec -p GATKvqsr_longshort /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz
+
+# GATK hard filter
+bcftools isec --nfiles 3 -p GATKhard_longshortKBA /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+
+
+bcftools isec -p GATKhard_longshort /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.mapped.Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.sampleIDcheck.setID_hardfilter.PASS.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.genotypeGVCF.setID_hardfilter.PASS.updateID.setID.vcf.gz
+
+
+
+
+# short GATK VQSR + Hard filter + extra QC
+bcftools isec --nfiles 3 -p KBA_DVlong_GATKshort /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+
+bcftools isec -p DVlong_GATKshort /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+
+bcftools isec --nfiles 3 -p DVlong_GATKshort_merged /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+bcftools isec --nfiles 4 -p KBA_DVlong_GATKshort_merged /BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
+
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.GATK.recal.pass.sampleIDCheck.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.onTarget_rmLCR_normQC.recal_hardfilter.PASS.updateID.setID.nromplus.vcf.gz
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.Shortread.Seq.trimmed.GATK.recal.PASS.updateID.setID.vcf.gz
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/onlySNP_rmMS/HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz
+
+/BDATA/smkim/HLA_seq/99.Final.vcf/KCHIP/JG.QCed.forHLAseq.V2.maf0.01.updateSNPID_convert.vcf.gz
+
+
+### concordance
+
+#SnpSift concordance -v ./longDV_kchip/0001.vcf ./longDV_kchip/0000.vcf > ./concordance_result/QulityMetrix_LongDV.KBA.txt
+
+
+SnpSift concordance -v ./DV_longshortKBA/0002.vcf ./DV_longshortKBA/0000.vcf > ./result/QulityMetrix_DVlongshortKBA_KBAvlong.txt
+SnpSift concordance -v ./DV_longshortKBA/0002.vcf ./DV_longshortKBA/0001.vcf > ./result/QulityMetrix_DVlongshortKBA_KBAvshort.txt
+SnpSift concordance -v ./DV_longshortKBA/0001.vcf ./DV_longshortKBA/0000.vcf > ./result/QulityMetrix_DVlongshortKBA_shortvlong.txt
+SnpSift concordance -v ./DV_longshort/0002.vcf ./DV_longshort/0003.vcf > ./result/QulityMetrix_DVlongshort_shortvlong.txt
+
+GATKhard_longshortKBA
+SnpSift concordance -v ./GATKhard_longshortKBA/0002.vcf ./GATKhard_longshortKBA/0000.vcf > ./result/QulityMetrix_GATKhardlongshortKBA_KBAvlong.txt
+SnpSift concordance -v ./GATKhard_longshortKBA/0002.vcf ./GATKhard_longshortKBA/0001.vcf > ./result/QulityMetrix_GATKhardlongshortKBA_KBAvshort.txt
+SnpSift concordance -v ./GATKhard_longshortKBA/0001.vcf ./GATKhard_longshortKBA/0000.vcf > ./result/QulityMetrix_GATKhardlongshortKBA_shortvlong.txt
+
+GATKhard_longshort
+SnpSift concordance -v ./GATKhard_longshort/0002.vcf ./GATKhard_longshort/0003.vcf > ./result/QulityMetrix_GATKhardlongshort_shortvlong.txt
+
+
+
+
+
+DV_longshortKBAmerged 
+SnpSift concordance -v ./DV_longshortKBAmerged/0002.vcf ./DV_longshortKBAmerged/0000.vcf > ./result/QulityMetrix_DVlongshortKBAmerged_KBAvlong.txt
+SnpSift concordance -v ./DV_longshortKBAmerged/0002.vcf ./DV_longshortKBAmerged/0001.vcf > ./result/QulityMetrix_DVlongshortKBAmerged_KBAvshort.txt
+SnpSift concordance -v ./DV_longshortKBAmerged/0002.vcf ./DV_longshortKBAmerged/0003.vcf > ./result/QulityMetrix_DVlongshortKBAmerged_KBAvmerged.txt
+
+
+DV_longshortmerged
+SnpSift concordance -v ./DV_longshortmerged/0002.vcf ./DV_longshortmerged/0000.vcf > ./result/QulityMetrix_DVlongshortmerged_mergedvlong.txt
+SnpSift concordance -v ./DV_longshortmerged/0002.vcf ./DV_longshortmerged/0002.vcf > ./result/QulityMetrix_DVlongshortmerged_mergedvshort.txt
+
+DVlong_GATKshort_merged (GATKshort + VQSR + long + hard)
+SnpSift concordance -v ./DVlong_GATKshort_merged/0002.vcf ./DVlong_GATKshort_merged/0000.vcf > ./result/QulityMetrix_DVlong.GATKshort.merged_mergedvlong.txt
+SnpSift concordance -v ./DVlong_GATKshort_merged/0002.vcf ./DVlong_GATKshort_merged/0001.vcf > ./result/QulityMetrix_DVlong.GATKshort.merged_mergedvshort.txt
+SnpSift concordance -v ./DVlong_GATKshort_merged/0000.vcf ./DVlong_GATKshort_merged/0001.vcf > ./result/QulityMetrix_DVlong.GATKshort.merged_longvshort.txt
+
+
+KBA_DVlong_GATKshort_merged  (GATKshort + VQSR + long + hard)
+SnpSift concordance -v ./KBA_DVlong_GATKshort_merged/0000.vcf ./KBA_DVlong_GATKshort_merged/0001.vcf > ./result/QulityMetrix_KBA.DVlong.GATKshort.merged_KBAvlong.txt
+SnpSift concordance -v ./KBA_DVlong_GATKshort_merged/0000.vcf ./KBA_DVlong_GATKshort_merged/0002.vcf > ./result/QulityMetrix_KBA.DVlong.GATKshort.merged_KBAvshort.txt
+SnpSift concordance -v ./KBA_DVlong_GATKshort_merged/0000.vcf ./KBA_DVlong_GATKshort_merged/0003.vcf > ./result/QulityMetrix_KBA.DVlong.GATKshort.merged_KBAvmerged.txt
+
+
+DVlong_GATKshort_merged (GATKshort + VQSR + long + hard)
