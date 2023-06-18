@@ -1,0 +1,12 @@
+cd genome@genome103:/BDATA/smkim/HLA_seq/longread$
+
+
+# mapping
+
+# variant calaling
+
+
+
+## DeepVariant
+## GATK
+

@@ -1,0 +1,78 @@
+
+# mapping
+# variant calling
+## DeepVariant (v1.4) - GLnexus (v1.4.5)
+## GATK
+
+### joint name
+HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+HLA.[sequencing type].Seq.[mappingtool_QC].[varianttool_Variantcalling].[joincallingtools_Jointcalling].vcf.gz
+
+
+
+# variant calling
+## DeepVariant
+
+
+##### run.sh
+in=$1
+echo $in
+docker run -v "/BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19":"/input" -v "/BDATA/smkim/HLA_seq/longread/03.variant.calling":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/HLA.target.v2.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+#####
+cd /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
+
+
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 2 bash -c "sh run.sh {}"
+
+
+
+##### joint calling
+cd /BDATA/smkim/HLA_seq/longread/04.joint.calling
+
+
+ls ../03.variant.calling/DV/*gvcf.gz > gvcf.list.txt
+
+glnexus_cli --dir Longread.DV.GL --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Longread.Seq.pbmm2_Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+glnexus_cli --dir Longread.DV.GL_unfiltered --config DeepVariant_unfiltered --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Longread.Seq.pbmm2_Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+## GATK
+#docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/GATK":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+#broadinstitute/gatk gatk CombineGVCFs -R /ref/HLA.target.v2.fasta -V /input/gvcf.list.txt -O /output/HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz
+
+
+
+##### run.sh : docker
+in=$1
+echo $in
+docker run -v "/BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19":"/input" -v "/BDATA/smkim/HLA_seq/longread/03.variant.calling/GATK":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" \
+broadinstitute/gatk gatk HaplotypeCaller -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta -I /input/$in.bam -O /output/$in.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+##### run.sh : conda
+in=$1
+echo $in
+gatk HaplotypeCaller -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta -I /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19/$in.bam -O /BDATA/smkim/HLA_seq/longread/03.variant.calling/GATK/$in.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+cd /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 10 bash -c "sh run.sh {}"
+
+'''
+sudo docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test":"/input" -it broadinstitute/gatk \
+bash -c 'gatk HaplotypeCaller \
+-I /input/test_align_sorted.bam \
+-R /input/HLA.target.fasta \
+-O /input/test_align_sorted.gatk.gvcf.gz \
+-ERC GVCF' \
+'''
+
+
+gatk HaplotypeCaller \
+-I /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19/HLA.Longread.Seq.NIH19KT3814.hg19_HLAregion_mapped.Q20.bam \
+-R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta  \
+-O /BDATA/smkim/HLA_seq/longread/03.variant.calling/GATK/test.gvcf.gz \
+-ERC GVCF

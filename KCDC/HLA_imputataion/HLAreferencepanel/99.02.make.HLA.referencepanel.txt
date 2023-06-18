@@ -608,9 +608,35 @@ df <- df[df$FID %in% ref$KBAID,]
 write.table(df,"HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped",col.names=F,row.names=F,quote=F,sep="\t")
 
 
+#######
+df = open("HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped","r")
+out = open("HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.ped","w")
+while 1:
+    line=df.readline()
+    if not line: 
+        break
+    tmp = line.split()
+    for i in range(6,len(tmp)):
+        if ":" not in tmp[i]:
+            continue
+        a = ':'.join(tmp[i].split(":")[0:2])
+        line = line.replace(tmp[i],a)
+    out.write(line)
+
+out.close()
+########
+
+
+
 
 
 cd /BDATA/smkim/JG.HLAimputation/HLA-TAPAS
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.ped \
+--out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2to4field \
+--4field
+
 
 python -m NomenCleaner \
 --hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference.ped \
@@ -647,6 +673,18 @@ python -m MakeReference \
     --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
     --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
     --phasing
+
+
+###### HLA type nomen 2 to 4 field
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2to4field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320_2to4field.520.withKBA.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --nthreads 32
 
 
 ### 1000 genome project 20230602

@@ -1,0 +1,46 @@
+source:
+● Find process by name
+#!/bin/bash
+
+PROC="impute2"
+NOW=$(date +%Y%m%d)
+STATUS=$(pgrep -f $PROC)
+while [ : ]; do
+    if pgrep -x $PROC > /dev/null
+    then
+        echo $(ps -eo pid,vsz,rss,pmem,pcpu,time,comm | grep $PROC) >> memory_usage_$NOW.log
+    fi
+
+    sleep 1        
+done
+
+● Find process by PID
+```
+#!/bin/bash
+
+
+PROC="pyspark"
+NOW=$(date +%Y%m%d)
+#NOW=$(date +%Y%m%d%H%M%S)
+pid=
+while [ : ]; do
+    pid=$(pgrep -f "$PROC")
+    if [ $pid ];then
+        echo $(ps -p "$pid" -o pid,vsz,rss,pmem,pcpu,time,comm | tail -1) >> memory_usage_$NOW.log
+    fi
+
+
+    sleep 1        
+done
+```
+
+usage:
+● run
+```
+$ sh memory_usage.sh
+```
+
+● kill
+```
+$ kill -9 <process id> or pkill -9 -ef <process name>
+```
