@@ -40,11 +40,19 @@ ref <- read.table('../Final_520sample.index.txt',header = T)
 head(ref)
 kmhc <- read.table("../HLA.type.result.8genes.merged.4digit_529sample_forMAKEreference.txt",header = T) %>%
   select(-IID,-pID,-mID,-SEX,-PHENO) %>% filter(FID %in% ref$KBAID)
+
+#kgp <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/1000genome/HLAtyping.1000genomePhase3.SampleInfo.typeInfo.txt",header = T)
+kgp <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/1000genome/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_2field.chped",header = F) %>%
+  select(-V2,-V3,-V4,-V5,-V6) 
+
+head(kgp)
+
 head(kmhc)
 head(han)
 head(pan)
 colnames(pan) <- colnames(han)
 colnames(kmhc) <- colnames(han)
+colnames(kgp) <- colnames(han)
 #pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
 han %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
@@ -58,16 +66,33 @@ kmhc %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #hea
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
   mutate(Ref = "KMHC") %>% select(-ID) %>% unique() -> kmhc_type
 
+kgp %>% #select(-Region,-Population,-Sample.ID) %>% #head()
+  select(-ID,-HLA_DPA1.1,-HLA_DPA1.2,-HLA_DPB1.1,-HLA_DPB1.2,-HLA_DQA1.1,-HLA_DQA1.2) %>% #head()
+  pivot_longer(1:10,names_to = 'Gene',values_to = 'type') %>% #head()
+  mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
+  mutate(Ref = "1KGP") %>% unique() -> kgp_type
 
+
+head(kgp_type)
 head(han_type)
 table(han_type$Gene)
 michigan %>% filter(digit == 'fd') %>% select(-digit) %>%
   rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% mutate(Gene = str_replace_all(Gene,"HLA_","")) -> fd
 
+michigan %>% filter(digit == 'fd') %>% select(-digit) %>%
+  rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% rbind(kgp_type) %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) -> fd_withkgp
+
+
 head(fd)
 fd %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> td
+fd_withkgp %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> td_withkgp
 fd$digit <- "4 digit"
 td$digit <- "2 digit"
+
+fd_withkgp$digit <- "4 digit"
+td_withkgp$digit <- "2 digit"
+
 
 fd %>% rbind(td) %>%
   count(Gene,Ref,digit) %>% #head()
@@ -83,6 +108,22 @@ fd %>% rbind(td) %>%
   theme(strip.text.x = element_text(size = 20,face = "bold"))
 
 
+fd_withkgp %>% rbind(td_withkgp) %>% 
+  filter(Gene %in% c("A","B","C","DRB1","DQB1")) %>% #dim()
+  count(Gene,Ref,digit) %>% #head()
+  ggplot(aes(x=Gene,y=n,fill = factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor","1KGP")))) +
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  xlab("HLA gene") + ylab("Number of HLA type") + 
+  scale_fill_discrete(name="Ref.Panel") +
+  theme(legend.title=element_text(size=12,face = "bold"),
+        legend.text=element_text(size=10),
+        axis.title.x = element_text(size = 13,face = "bold"),
+        axis.title.y = element_text(size = 13,face = "bold")) +
+  facet_grid(~digit) + 
+  theme(strip.text.x = element_text(size = 20,face = "bold"))
+
+
+
 michigan %>% filter(digit == 'fd') %>% select(-digit) %>%
   rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% head()
 
@@ -93,6 +134,28 @@ ggvenn::ggvenn(
   x,
   stroke_size = 0.5, set_name_size = 4
 )
+
+x <- list(KMHC = kmhc_type$type,`Multi-ethnic` = michigan[michigan$digit =='fd',]$type,`Han Chinese`  = han_type$type,`Pan-Kor` = pan_type$type,`1KGP` = kgp_type$type)
+ggvenn::ggvenn(
+  x,
+  stroke_size = 0.5, set_name_size = 4
+)
+
+head(fd_withkgp)
+table(fd_withkgp$Ref)
+fd_withkgp <- fd_withkgp %>% filter(Gene %in% c("A","B","C","DRB1","DQB1"))
+td_withkgp <- td_withkgp %>% filter(Gene %in% c("A","B","C","DRB1","DQB1"))
+x <- list(KMHC = td_withkgp[td_withkgp$Ref=="KMHC",]$type,`Multi-ethnic` = td_withkgp[td_withkgp$Ref=="Multi-ethnic",]$type,`Han Chinese`  = td_withkgp[td_withkgp$Ref=="Han Chinese",]$type,`Pan-Kor` = td_withkgp[td_withkgp$Ref=="Pan-Kor",]$type,`1KGP` = td_withkgp[td_withkgp$Ref=="1KGP",]$type)
+ggVennDiagram::ggVennDiagram(x) + 
+  ggplot2::scale_fill_gradient(low="white",high = "blue")
+
+
+x <- list(KMHC = fd_withkgp[fd_withkgp$Ref=="KMHC",]$type,`Multi-ethnic` = fd_withkgp[fd_withkgp$Ref=="Multi-ethnic",]$type,`Han Chinese`  = fd_withkgp[fd_withkgp$Ref=="Han Chinese",]$type,`Pan-Kor` = fd_withkgp[fd_withkgp$Ref=="Pan-Kor",]$type,`1KGP` = fd_withkgp[fd_withkgp$Ref=="1KGP",]$type)
+ggVennDiagram::ggVennDiagram(x) + 
+  ggplot2::scale_fill_gradient(low="white",high = "blue")
+
+fd_withkgp %>% count(Ref,Gene)
+
 head(kmhc_type)
 head(michigan)
 df_venn 
@@ -135,7 +198,30 @@ michigan %>% filter(digit == 'td') %>% select(-digit) %>% #head()
   count(Ref,Gene) %>% #head()
   group_by(Ref) %>%
   pivot_wider(names_from = Gene,values_from = n)
-  
+
+michigan %>% filter(digit == 'td') %>% select(-digit) %>% #head()
+  rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% rbind(kgp_type) %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% 
+  mutate(type = str_split_fixed(type,":",2)[,1]) %>% #head()
+  unique() %>%
+  count(Ref,Gene) %>% #head()
+  group_by(Ref) %>%
+  pivot_wider(names_from = Gene,values_from = n)
+
+michigan %>% filter(digit != 'td') %>% select(-digit) %>% #head()
+  rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% rbind(kgp_type) %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% 
+  #mutate(type = str_split_fixed(type,":",2)[,1]) %>% #head()
+  unique() %>%
+  count(Ref,Gene) %>% #head()
+  group_by(Ref) %>%
+  pivot_wider(names_from = Gene,values_from = n)
+
+head(kgp_type)
+kgp_type %>% count(Gene)
+kgp_type %>% dim()
+kgp_type %>% unique %>% dim()
+
 michigan %>% filter(digit == 'td') %>% select(-digit) %>% #head()
   rbind(han_type) %>% rbind(pan_type) %>% rbind(kmhc_type) %>% mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% 
   mutate(type = str_split_fixed(type,":",2)[,1]) %>% #head()
@@ -288,6 +374,8 @@ han_type
 pan_type
 michigan_type
 kmhc_type
+kgp_type
+
 table(kmhc_type$type %in% michigan_type$type)
 
 kmhc_type %>% mutate("count" = 1) %>%
@@ -427,6 +515,58 @@ library(cowplot)
 plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
           ncol = 3)
 
+
+#### 1KGP vs KMHC type
+
+library("gridExtra") 
+head(fd_withkgp)
+table(fd_withkgp$Ref)
+ggvenn::ggvenn(
+  list(KMHC = fd_withkgp[(fd_withkgp$Ref == "KMHC") & (fd_withkgp$Gene == "A"),]$type,
+       `1KGP` = fd_withkgp[(fd_withkgp$Ref == "1KGP") & (fd_withkgp$Gene == "A"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p1
+p1
+ggvenn::ggvenn(
+  list(KMHC = fd_withkgp[(fd_withkgp$Ref == "KMHC") & (fd_withkgp$Gene == "B"),]$type,
+       `1KGP` = fd_withkgp[(fd_withkgp$Ref == "1KGP") & (fd_withkgp$Gene == "B"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p2
+ggvenn::ggvenn(
+  list(KMHC = fd_withkgp[(fd_withkgp$Ref == "KMHC") & (fd_withkgp$Gene == "C"),]$type,
+       `1KGP` = fd_withkgp[(fd_withkgp$Ref == "1KGP") & (fd_withkgp$Gene == "C"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p3
+
+ggvenn::ggvenn(
+  list(KMHC = fd_withkgp[(fd_withkgp$Ref == "KMHC") & (fd_withkgp$Gene == "DRB1"),]$type,
+       `1KGP` = fd_withkgp[(fd_withkgp$Ref == "1KGP") & (fd_withkgp$Gene == "DRB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p4
+
+ggvenn::ggvenn(
+  list(KMHC = fd_withkgp[(fd_withkgp$Ref == "KMHC") & (fd_withkgp$Gene == "DQB1"),]$type,
+       `1KGP` = fd_withkgp[(fd_withkgp$Ref == "1KGP") & (fd_withkgp$Gene == "DQB1"),]$type),
+  text_size = 3,
+  set_name_size = 4
+) -> p5
+
+
+library(cowplot)
+
+plot_grid(p1,p2,p3,p4,p5,labels = c("A","B","C","DRB1","DQB1"),
+          ncol = 2)
+
+table(kgp_type$Gene)
+p1
+p2
+p3
+p4
+p5
 #### HLA type venn diagram by gene
 
 head(fd)

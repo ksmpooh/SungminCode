@@ -1,3 +1,5 @@
+#### 1KGP
+
 library(stringr)
 library(tidyverse)
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan/03.allele.matching/")
@@ -6,7 +8,7 @@ setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_han/03.allel
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/03.allele.matching/")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/5M_28_33/03.allele.matching")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching/")
-#setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_1kgp/03.allele.matching/")
+setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_1kgp/03.allele.matching/")
 #setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/8digit/03.allele.matching/")
 #flist <- list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
 #list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
@@ -20,7 +22,7 @@ flist
 
 df <-read.table(flist[1],header = T)
 a <- df %>% summarise(across(colnames(df)[-1],sum))
-for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
+for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DQB1")) {
   a[,gene] <- a[,paste0(gene,".match")]/(a[,paste0(gene,".match")] + a[,paste0(gene,".wrong")])
 }
 a <- a %>% mutate("overall" = match_Sum/(match_Sum + wrong_Sum),"filename" = flist[1])
@@ -30,7 +32,7 @@ out <- a
 for (i in 2:length(flist)) {
   df <-read.table(flist[i],header = T)
   a <- df %>% summarise(across(colnames(df)[-1],sum))
-  for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
+  for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DQB1")) {
     a[,gene] <- a[,paste0(gene,".match")]/(a[,paste0(gene,".match")] + a[,paste0(gene,".wrong")])
   }
   a <- a %>% mutate("overall" = match_Sum/(match_Sum + wrong_Sum),"filename" = flist[i])
@@ -52,106 +54,59 @@ out$Tool <- "SNP2HLA"
 #snp2hla <- out
 #snp2hla2 <- out
 #snp2hla_han <- out
-snp2hla_pan <- out
-
-snp2hla_pan1 <- out
-snp2hla_pan2 <- out
+#snp2hla_pan <- out
+snp2hla_kgp <- out
+#snp2hla_pan1 <- out
+#snp2hla_pan2 <- out
 
 head(michigan)
-
+head(snp2hla_kgp)
 snp2hla %>% summarise(across(colnames(df)[-1],mean))
 
-snp2hla %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>% #count(Ref)
-  filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>% #head()
-  filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #head()
-  mutate(Test = str_split_fixed(CV,"_",2)[,1]) %>%
-  pivot_longer(1:9,names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = ifelse(grepl("HLA",Gene),str_split_fixed(Gene,"_",2)[,2],'Overall')) %>% #head()
-  ggplot(aes(x=Gene,y=Accuracy,fill=Test)) +
-  geom_bar(position='dodge', stat='identity') + 
-  coord_cartesian(ylim = c(0.7, 1)) +
-  facet_grid(~digit)
-  
-snp2hla %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>% #count(Ref)
-  filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>% #head()
-  filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #head()
-  mutate(Test = str_split_fixed(CV,"_",2)[,1]) %>%#-> a
-  summarise(summarise(across(1:9,mean)))
-  
+
 
 head(snp2hla_pan)
 
 head(michigan)
 head(snp2hla)
-out <- michigan
-out <- rbind(michigan,snp2hla)
-#out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan)
+#out <- michigan
 
+out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan) %>% select(colnames(snp2hla_kgp)) %>% rbind(snp2hla_kgp)
+head(out)
 ###############################
 #head(out)
+snp2hla_kgp$filename
+grep("fdvstd",snp2hla_kgp$filename,)
+
+
+snp2hla_kgp %>% #head()
+  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DQB1,overall,digit,CV,Ref,filename) %>% #head()
+  filter(digit==2) %>% #head()
+  mutate('from' = ifelse(Ref == "cmp_Nomencleaner","2digit","4to2digit")) %>%
+  pivot_longer(1:6,names_to = 'Gene',values_to = 'Accuracy') %>%
+  mutate(Gene = ifelse(grepl("HLA",Gene),str_split_fixed(Gene,"_",2)[,2],'Overall')) %>% #head()
+  filter(CV != "520sample") %>%
+  ggplot(aes(x=Gene,y=Accuracy,fill=from))+
+  geom_boxplot()+
+  #facet_grid(~Tool,rows = vars(Tool))
+  #facet_wrap(~Tool, ncol = 1) +  
+  theme(legend.title=element_blank(),
+        legend.text=element_text(size=11),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.title.y = element_text(size = 14,face = "bold"))+
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+
+
 out %>% 
   filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>% #head()
   filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #count(Tool,Ref)
   mutate(Test = str_split_fixed(CV,"_",2)[,1]) ->out
-  
+
 head(out)
 colnames(out)
-out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>%
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
-  #filter(digit == 2) %>%
-  filter(digit == 4) %>%
-  #group_by(CV) %>%
-  ggplot(aes(x=Gene,y=Accuracy,color=CV,group=CV)) + 
-  geom_point() +
-  geom_line() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) +
-  facet_grid(~Ref)
-
-out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>%
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
-  filter(digit == 4) %>%
-  ggplot(aes(x=Gene,y=Accuracy,color=CV)) + 
-  geom_point() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) +
-  facet_grid(~Ref)
-
-  
-out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref) %>%
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
-  filter(digit == 2) %>%
-  ggplot(aes(x=Gene,y=Accuracy,color=CV)) + 
-  geom_point() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) +
-  facet_grid(~Ref)
-
-
-
-out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>%
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
-  filter(digit == 2) %>%
-  ggplot(aes(y=Accuracy,x=Gene,fill=Tool,color=CV)) + 
-  geom_bar(position='dodge', stat='identity') +
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) +
-  facet_grid(~Ref)
-
-out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>%
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
-  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
-  filter(digit == 2) %>%
-  ggplot(aes(y=Accuracy,x=Gene,color=CV)) + 
-  geom_point() + 
-  geom_line() + 
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) +
-  facet_grid(~Ref)
 
 
 ###
@@ -159,8 +114,8 @@ head(michigan)
 head(out)
 table(out$Ref)
 out %>% #filter(digit == 2) %>%# head()
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>% #count(digit,Tool)#head()#count(CV)
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>% #count(Tool,Ref)#head()
+  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>%
+  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
   filter(Ref != "cmp_RealNGStyping") %>%  #count(Ref)
   filter(!(digit == 2 & Ref == "cmp_Nomencleaner")) %>% #count(Ref)
   mutate(Ref = ifelse(Tool == "Minimac4","Multi-ethnic","KMHC"),CV=str_split_fixed(CV,"_",2)[,1]) %>%
@@ -169,11 +124,13 @@ out %>% #filter(digit == 2) %>%# head()
 
 snp2hla_han$Ref <- "Han Chinese"
 snp2hla_pan$Ref <- "Pan-Kor"
+snp2hla_kgp$Ref <- "1KGP"
 
-snp2hla_han %>% rbind(snp2hla_pan) %>% #head()#count(digit)
+snp2hla_han %>% rbind(snp2hla_pan) %>% select(colnames(snp2hla_kgp)) %>%
+  rbind(snp2hla_kgp) %>% #head()#count(digit)
   filter(!grepl(filename,pattern = "_td")) %>% #count(digit)
-  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>% #count(digit,Tool)#head()#count(CV)
-  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>% #count(Tool,Ref)#head()
+  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DQB1,overall,digit,CV,Ref,Tool) %>%
+  pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
   mutate(CV=str_split_fixed(CV,"_",2)[,1]) %>%
   mutate(Gene = ifelse(grepl("HLA",Gene),str_split_fixed(Gene,"_",2)[,2],'Overall')) %>% #head()
   filter(CV != '520sample') -> out2 # %>% #count(digit,CV,Ref)#head()#count(CV)
@@ -185,13 +142,13 @@ out2 %>% count(digit,Ref,Tool)
 out1 %>% count(Gene)
 out2 %>% count(Gene)
 
-  #count(filename)3
+#count(filename)3
 out1 %>% rbind(out2) %>% #head()#count(CV)
   #filter(!(Gene %in% c("A","B","DRB1"))) %>%
   #filter(Gene != "Overall") %>%
   #filter(Gene %in% c("A","B","DRB1")) %>%
   mutate(digit = paste0(digit,' digit')) %>%
-  ggplot(aes(x=Gene,y=Accuracy,fill=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")))) +
+  ggplot(aes(x=Gene,y=Accuracy,fill=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor","1KGP")))) +
   geom_boxplot() + 
   theme(legend.title = element_blank()) +
   labs(fill = "Reference panel") + 
@@ -202,7 +159,7 @@ out1 %>% rbind(out2) %>% #head()#count(CV)
         axis.title.y = element_text(size = 14,face = "bold"))+
   #facet_grid(~digit) +
   facet_wrap(~digit,ncol = 1)
-  theme(strip.text.x = element_text(size = 13,face = "bold"))
+theme(strip.text.x = element_text(size = 13,face = "bold"))
 
 out1 %>% rbind(out2) %>% #head()#count(CV)
   filter(Gene == "Overall") %>% #head()
@@ -210,7 +167,7 @@ out1 %>% rbind(out2) %>% #head()#count(CV)
   summarise(Accuracy = mean(Accuracy)*100) %>%
   mutate(digit = paste0(digit,' digit')) %>% #head()
   #arrange(Ref  = factor(Ref,levels = c("KMHC","Multi-Ethnic","Han Chinese","Pan-Kor"))) %>%
-  ggplot(aes(x=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")),y=Accuracy,fill=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")))) +
+  ggplot(aes(x=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor","1KGP")),y=Accuracy,fill=factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor","1KGP")))) +
   geom_bar(position="dodge",stat = "identity") + 
   geom_text(size = 4,aes(label = paste(round(Accuracy,2),"%")),hjust = 0.5, vjust = 2, position = "stack") +
   theme(legend.title = element_blank()) +
@@ -246,7 +203,7 @@ snp2hla_han %>% rbind(snp2hla_pan) %>% #head()#count(digit)
   ggplot(aes(x= Gene,y=Accuracy,fill=CV)) +
   geom_bar(position='dodge', stat='identity') +
   facet_grid(~digit)
-  
+
 
 ###### 2 digit : only 2 vs 2 for 4
 head(michigan)
@@ -272,7 +229,7 @@ michigan %>% rbind(snp2hla) %>% filter(digit == 2) %>%
         axis.text.x = element_text(size = 12),
         axis.title.y = element_text(size = 14,face = "bold"))+
   theme(strip.text.x = element_text(size = 13,face = "bold"))
-  
+
 
 ###### KMHC 10M vs 5M
 head(snp2hla1) #5M
@@ -347,10 +304,10 @@ out %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,ov
   #facet_grid(~Tool,rows = vars(Tool))
   facet_wrap(~digit, ncol = 2) +  
   theme(#legend.title=element_blank(),
-        legend.text=element_text(size=11),
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
-        axis.title.y = element_text(size = 14,face = "bold"))+
+    legend.text=element_text(size=11),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    axis.title.y = element_text(size = 14,face = "bold"))+
   theme(strip.text.x = element_text(size = 13,face = "bold"))
 
 
@@ -382,5 +339,4 @@ out %>% select(HLA_A.empty,HLA_B.empty,HLA_C.empty,HLA_DRB1.empty,HLA_DPA1.empty
 head(out)
 
 df <- read
-  
-  
+

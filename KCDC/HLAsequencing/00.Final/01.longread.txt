@@ -61,18 +61,58 @@ gatk HaplotypeCaller -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta -I /BDATA/s
 cd /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
 ls *bam | sed "s/.bam//g" | xargs -I {} -P 10 bash -c "sh run.sh {}"
 
-'''
-sudo docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/Fastq/test":"/input" -it broadinstitute/gatk \
-bash -c 'gatk HaplotypeCaller \
--I /input/test_align_sorted.bam \
--R /input/HLA.target.fasta \
--O /input/test_align_sorted.gatk.gvcf.gz \
--ERC GVCF' \
-'''
+##### joint calling
 
 
-gatk HaplotypeCaller \
--I /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19/HLA.Longread.Seq.NIH19KT3814.hg19_HLAregion_mapped.Q20.bam \
--R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta  \
--O /BDATA/smkim/HLA_seq/longread/03.variant.calling/GATK/test.gvcf.gz \
--ERC GVCF
+## python
+import os,glob
+
+inDir = "/BDATA/smkim/HLA_seq/longread/03.variant.calling/GATK"
+outDir = "/BDATA/smkim/HLA_seq/longread/04.joint.calling"
+refDir = "/BDATA/smkim/HLA_seq/REF"
+
+#HLA.Shortread.Seq.NIH19KT2304.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+
+
+def CombineGVCFs():
+    gvcfs = open("./gvcf.list.txt","r")
+    gvcfs = [s.replace("\n","") for s in gvcfs]
+    cmd = "gatk CombineGVCFs -R %s "%(refDir + "/HLA.target.v2.fasta")
+    for i in gvcfs:
+        cmd = cmd + "--variant %s "%(i)
+    cmd = cmd + "-O %s/HLA.Longread.Seq.pbmm2_Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz"%(outDir)
+    #print(cmd)
+    os.system(cmd)
+
+
+CombineGVCFs()
+
+
+
+def genotypeGVCFs():
+    print("genotypeGVCF")
+    cmd = "gatk GenotypeGVCFs -R %s "%(refDir + "/HLA.target.v2.fasta")
+    cmd = cmd + "-V %s/HLA.Longread.Seq.pbmm2_Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz "%(outDir)
+    cmd = cmd + "-O %s/HLA.Longread.Seq.pbmm2_Q20.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.vcf.gz"%(outDir)
+    print(cmd)
+    os.system(cmd)
+
+
+genotypeGVCFs()
+
+
+
+
+ gatk CombineGVCFs \
+   -R reference.fasta \
+   -V sample1.g.vcf.gz \
+   -V sample2.g.vcf.gz \
+   -O cohort.g.vcf.gz
+
+
+
+gatk --java-options "-Xmx4g" GenotypeGVCFs \
+   -R Homo_sapiens_assembly38.fasta \
+   -V input.g.vcf.gz \
+   -O output.vcf.gz
+ 

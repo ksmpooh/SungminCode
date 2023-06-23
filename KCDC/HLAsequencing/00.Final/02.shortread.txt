@@ -1,0 +1,159 @@
+####### 109
+
+#bwamem2 0.7.17
+#sort
+#markduplicated
+#bqsr
+
+### joint name
+HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+HLA.[sequencing type].Seq.[mappingtool_QC].[varianttool_Variantcalling].[joincallingtools_Jointcalling].vcf.gz
+
+
+
+# markduplicated 완료
+cd /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19
+
+# BQSR 
+
+cd /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 20 bash -c "sh run.sh {}"
+ls *bam | sed "s/.bam//g" |head | xargs -I {} -P 20 bash -c "sh run.sh {}"
+##### run.sh : conda BaseRecalibrator
+in=$1
+echo $in
+gatk BaseRecalibrator \
+-R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+-I /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19/$in.bam \
+--known-sites /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+--known-sites /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+--known-sites /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.Mills_and_1000G_gold_standard.indels.b37.updateID.vcf.gz \
+-O /BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr/$in.BQSR_data.updateID.table
+#####
+
+
+##### run.sh : conda ApplyBQSR
+in=$1
+echo $in
+gatk ApplyBQSR \
+-R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+-I /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19/$in.bam \
+--bqsr-recal-file /BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr/$in.BQSR_data.updateID.table \
+-O /BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr/$in.ApplyBQSR.bam
+#####
+
+
+# variant calling
+## DeepVariant
+
+input
+/BDATA/smkim/HLA_seq/shortread/01.mapping_hg19
+/BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr
+
+output
+/BDATA/smkim/HLA_seq/shortread/03.variant.calling
+
+##### run.sh
+in=$1
+echo $in
+docker run -v "/BDATA/smkim/HLA_seq/shortread/01.mapping_hg19":"/input" -v "/BDATA/smkim/HLA_seq/shortread/03.variant.calling":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/HLA.target.v2.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+
+in=$1
+echo $in
+docker run -v "/BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr":"/input" -v "/BDATA/smkim/HLA_seq/shortread/03.variant.calling":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" google/deepvariant \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/HLA.target.v2.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+
+####
+
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 2 bash -c "sh run.sh {}"
+
+# joint calling
+## DeepVariant 
+
+cd /BDATA/smkim/HLA_seq/shortread/04.joint.calling
+
+
+ls ../03.variant.calling/DV/*gvcf.gz > gvcf.list.txt
+HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+/BDATA/smkim/TOOLs/glnexus_cli --dir Shortread.DV.GL --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+/BDATA/smkim/TOOLs/glnexus_cli --dir Shortread.DV.GL_unfiltered --config DeepVariant_unfiltered --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+
+
+
+## GATK
+#docker run -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/02.variant.call/GATK":"/input" -v "/DATA/smkim/HLA_seq/MHC_Illumina_Rawdata/03.joint.calling":"/output" -v "/DATA/smkim/HLA_seq/REF":"/ref" \
+#broadinstitute/gatk gatk CombineGVCFs -R /ref/HLA.target.v2.fasta -V /input/gvcf.list.txt -O /output/HLA.Shortread.Seq.NIH19KT3814.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz
+
+##### run.sh : conda
+in=$1
+echo $in
+gatk HaplotypeCaller -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+-I /BDATA/smkim/HLA_seq/shortread/01.mapping_hg19/$in.bam \
+-O /BDATA/smkim/HLA_seq/shortread/03.variant.calling/GATK/$in.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+cd /BDATA/smkim/HLA_seq/longread/02.mapped_Q20/hg19
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 12 bash -c "sh run.sh {}"
+
+
+###
+in=$1
+echo $in
+gatk HaplotypeCaller -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+-I $in.bam \
+-O /BDATA/smkim/HLA_seq/shortread/03.variant.calling/GATK/$in.GATK_haplotypeCaller_VariantCalling.gvcf.gz -ERC GVCF
+
+
+cd /BDATA/smkim/HLA_seq/shortread/02.mapping_hg19_bqsr
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 12 bash -c "sh run.sh {}"
+
+
+ls ../03.variant.calling/GATK/*gvcf.gz > gvcf.list.txt
+
+## python
+import os,glob
+
+inDir = "/BDATA/smkim/HLA_seq/shortread/03.variant.calling/GATK"
+outDir = "/BDATA/smkim/HLA_seq/shortread/04.joint.calling"
+refDir = "/BDATA/smkim/HLA_seq/REF"
+
+#HLA.Shortread.Seq.NIH19KT2304.trimmed.align.sorted.dedup.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+#HLA.Shortread.Seq.NIH19KT3832.trimmed.hg19_align.sorted.dedup.ApplyBQSR.GATK_haplotypeCaller_VariantCalling.gvcf.gz
+#HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+def CombineGVCFs():
+    gvcfs = open("./gvcf.list.txt","r")
+    gvcfs = [s.replace("\n","") for s in gvcfs]
+    cmd = "gatk CombineGVCFs -R %s "%(refDir + "/HLA.target.v2.fasta")
+    for i in gvcfs:
+        cmd = cmd + "--variant %s "%(i)
+    cmd = cmd + "-O %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz"%(outDir)
+    #cmd = cmd + "-O %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup_BQSR.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz"%(outDir)
+    #print(cmd)
+    os.system(cmd)
+
+
+#CombineGVCFs()
+
+
+
+def genotypeGVCFs():
+    print("genotypeGVCF")
+    cmd = "gatk GenotypeGVCFs -R %s "%(refDir + "/HLA.target.v2.fasta")
+    cmd = cmd + "-V %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz "%(outDir)
+    #cmd = cmd + "-V %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup_BQSR.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF.gvcf.gz "%(outDir)
+    #cmd = cmd + "-O %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup_BQSR.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.vcf.gz"%(outDir)
+    cmd = cmd + "-O %s/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.vcf.gz"%(outDir)
+    print(cmd)
+    os.system(cmd)
+
+
+genotypeGVCFs()
+

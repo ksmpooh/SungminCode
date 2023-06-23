@@ -84,6 +84,26 @@ ls 02.processing/*txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../../03.
 ls 02.processing/*fd.txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 2 03.allele.matching"
 
 
+
+
+# HLA-TAPAS SNP2HLA 1kgp
+ls *gz | xargs -I{} -P 1 bash -c "tabix -f -p vcf {}"
+mkdir 01.impresult
+mkdir 02.processing
+mkdir 03.allele.matching
+g1_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_1kgp
+
+ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz 02.processing/KBA.{}_5CV.SNP2HLAHLAimp_1KGPREF.txt"
+
+ls 02.processing/*txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 0 03.allele.matching"
+#ls 02.processing/*txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtyping.vs.HLAimp.accuracy.check.NGStyping.DATA.txt 02.processing/{} 0 03.allele.matching"
+ls 02.processing/*fd.txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 2 03.allele.matching"
+ls 02.processing/*fd.txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 4 03.allele.matching"
+ls 02.processing/*fd.txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 42 03.allele.matching"
+
+
 ### 범위 5M KMHC
 cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/5M_28_33
 

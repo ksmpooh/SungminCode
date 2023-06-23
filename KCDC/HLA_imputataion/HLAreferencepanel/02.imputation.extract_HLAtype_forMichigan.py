@@ -36,8 +36,8 @@ out_path = sys.argv[2]
 #out_path = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan/python_test.txt"
 #digit = sys.argv[3]
 
-target_genes = ["HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1"]
-
+#target_genes = ["HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1"]
+target_genes = ["HLA_A","HLA_B","HLA_C","HLA_DQB1","HLA_DRB1"]
 
 
 

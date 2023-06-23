@@ -244,3 +244,4 @@ docker run -v "/BDATA/smkim/HLA_seq/merge/01_theme":"/input" -v "/BDATA/smkim/HL
 cd /BDATA/smkim/HLA_seq/merge/01_theme/04.joint.calling
 ls ../03.variant.calling/*gvcf.gz > gvcf.list.txt 
 /BDATA/smkim/TOOLs/glnexus_cli --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Seq.Merged_afterMapping.long_pbmm2.short_trimmed_bwamem2_sort_dedup.hg19_HLAregion.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+/BDATA/smkim/TOOLs/glnexus_cli --dir ./DeepVariant_unfiltered --config DeepVariant_unfiltered --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Seq.Merged_afterMapping.long_pbmm2.short_trimmed_bwamem2_sort_dedup.hg19_HLAregion.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz

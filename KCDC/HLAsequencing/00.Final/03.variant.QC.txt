@@ -1,0 +1,148 @@
+# GATK VQSR hard filter
+
+/BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta
+/BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/
+
+/BDATA/smkim/HLA_seq/shortread/04.joint.calling/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.vcf.gz
+
+
+## VQSR
+### 3.1 Calculate VQSLOD tranches for SNPs using VariantRecalibrator
+
+cd /BDATA/smkim/HLA_seq/shortread/04.joint.calling
+mkdir VQSR
+
+##### run.sh : conda ApplyVQSR
+mkdir filtred
+mkdir VQSR
+in=$1
+echo $in
+
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V $in.vcf.gz \
+    --trust-all-polymorphic \
+    -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+    -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+    -mode SNP \
+    --max-gaussians 6 \
+    --max-negative-gaussians 2 \
+    --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.hapmap_3.3.b37.updateID.vcf.gz \
+    --resource:omni,known=false,training=true,truth=false,prior=12.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.1000G_omni2.5.b37.updateID.vcf.gz \
+    --resource:1000G,known=false,training=true,truth=false,prior=10.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+    --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+    -O VQSR/$in.snps.recal \
+    --tranches-file VQSR/$in.snps.tranches \
+    --rscript-file VQSR/$in.snps.plots.R
+
+gatk --java-options "-Xmx128g -Xms128g" ApplyVQSR \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V $in.vcf.gz \
+    --recal-file ./VQSR/$in.snps.recal \
+    --tranches-file ./VQSR/$in.snps.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode SNP \
+    -O VQSR/$in.recalSNP.vcf.gz
+
+
+gatk --java-options "-Xmx32g -Xms32g" VariantRecalibrator \
+     -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+     -V VQSR/$in.recalSNP.vcf.gz \
+     --trust-all-polymorphic \
+     -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+     -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP \
+     -mode INDEL \
+     --max-gaussians 2 \
+     --max-negative-gaussians 2 \
+     --resource:mills,known=false,training=true,truth=true,prior=12.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.Mills_and_1000G_gold_standard.indels.b37.updateID.vcf.gz \
+     --resource:1000G,known=false,training=true,truth=false,prior=10.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.1000G_phase1.snps.high_confidence.b37.updateID.vcf.gz \
+     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /BDATA/smkim/HLA_seq/REF/gatk_resources_forHLA/HLA.dbsnp_138.b37.updateID.vcf.gz \
+     -O VQSR/$in.indel.recal \
+     --tranches-file VQSR/$in.indel.tranches \
+     --rscript-file VQSR/$in.indel.plots.R
+
+
+gatk --java-options "-Xmx32g -Xms32g" ApplyVQSR \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V VQSR/$in.recalSNP.vcf.gz \
+    --recal-file ./VQSR/$in.indel.recal \
+    --tranches-file ./VQSR/$in.indel.tranches \
+    --truth-sensitivity-filter-level 99.5 \
+    --create-output-variant-index true \
+    -mode INDEL \
+    -O VQSR/$in.recalSNP.recalINDEL.vcf.gz
+
+#bcftools view -f PASS VQSR/$in.recalSNP.recalINDEL.vcf.gz | bgzip -c > ./filtered/$in.VQSR.vcf.gz
+
+#####
+
+bcftools view -f PASS VQSR/$in.recalSNP.recalINDEL.vcf.gz | bgzip -c > ./filtered/$in.VQSR.vcf.gz
+
+bcftools view -f PASS VQSR/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.recalSNP.recalINDEL.vcf.gz | bgzip -c > ./filtered/HLA.Shortread.Seq.trimmed_bwamem2_sort_dedup.GATK_haplotypeCaller_VariantCalling.GATK_CombineGVCF_GenotypeGVCFs.VQSR.vcf.gz
+
+
+## hardfilter
+
+#ReadPosRankSum
+###run.sh
+
+mkdir hardfilter
+in=$1
+echo $in
+
+gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V $in.vcf.gz \
+    -select-type SNP \
+    -O hardfilter/$in.selectSNP.vcf.gz
+
+
+gatk --java-options "-Xmx32g -Xms32g" SelectVariants \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V $in.vcf.gz \
+    -select-type INDEL \
+    -O hardfilter/$in.selectINDEL.vcf.gz
+
+gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V hardfilter/$in.selectSNP.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "SOR > 3.0" --filter-name "SOR3" \
+    -filter "FS > 60.0" --filter-name "FS60" \
+    -filter "MQ < 40.0" --filter-name "MQ40" \
+    -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+    -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+    -O hardfilter/$in.selectSNP_hardfilter.vcf.gz
+
+
+gatk --java-options "-Xmx32g -Xms32g" VariantFiltration \
+    -R /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+    -V hardfilter/$in.selectINDEL.vcf.gz \
+    -filter "QD < 2.0" --filter-name "QD2" \
+    -filter "QUAL < 30.0" --filter-name "QUAL30" \
+    -filter "FS > 200.0" --filter-name "FS200" \
+    -filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
+    -O hardfilter/$in.selectINDEL_hardfilter.vcf.gz
+
+gatk --java-options "-Xmx64g -Xms64g" MergeVcfs \
+    -I hardfilter/$in.selectSNP_hardfilter.vcf.gz \
+    -I hardfilter/$in.selectINDEL_hardfilter.vcf.gz \
+    -O hardfilter/$in.hardfilter_beforePASS.vcf.gz
+
+conda deactivate
+
+bcftools view -f PASS hardfilter/$in.hardfilter_beforePASS.vcf.gz | bgzip -c > ./filtered/$in.hardfilter.vcf.gz
+
+
+
+17:13:42.204 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.209 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.209 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.209 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.209 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.212 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.218 WARN  IntelInflater - Zero Bytes Written : 0
+17:13:42.221 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum
+17:13:42.221 WARN  JexlEngine - ![0,14]: 'ReadPosRankSum < -20.0;' undefined variable ReadPosRankSum

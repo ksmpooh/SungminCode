@@ -1,0 +1,35 @@
+### 
+### Longread + shortread after VC
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/merging
+
+
+bcftools isec -p ./ ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz ../HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz
+
+ls *vcf |xargs -I{} -P 4 bash -c "bgzip -c {} > {}.gz"
+
+ls *gz |xargs -I {} -P 4 bash -c "tabix -f -p vcf {}"
+
+
+$ bcftools query -l input.vcf | sort > samples.txt
+$ bcftools view -S samples.txt input.vcf > output.vcf
+
+bcftools concat ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz ../HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz | bgzip -c > t1_concat.vcf.gz
+
+
+
+bcftools query -l ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz | sort > samples.txt
+
+bcftools view -S samples.txt ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz | bgzip -c > Long_DV.vcf.gz
+bcftools view -S samples.txt ../HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz | bgzip -c > Short_DV.vcf.gz
+
+bcftools concat Long_DV.vcf.gz Short_DV.vcf.gz -Oz -o long_short_concat.vcf.gz
+
+bcftools stats long_short_concat.vcf.gz > long_short_concat.vcf.gz.stats
+
+
+ls 000*vcf.gz | xargs -I {} -P 4 bash -c "bcftools view -S samples.txt {} | bgzip -c > sampleOrder_{}"
+
+bcftools concat sampleOrder_0000.vcf.gz sampleOrder_0001.vcf.gz sampleOrder_0002.vcf.gz | bgzip -c > concat_sampleOrder_012.vcf.gz
+bcftools concat sampleOrder_0000.vcf.gz sampleOrder_0001.vcf.gz sampleOrder_0003.vcf.gz | bgzip -c > concat_sampleOrder_013.vcf.gz
+
+ls concat* | xargs -I{} -P 2 bash -c "bcftools stats {} > {}.stats"
