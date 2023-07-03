@@ -27,3 +27,8 @@ docker cp ~/data/test.md tmp_container:/root/data/
 ## container cpu 할당
 
 https://kimjingo.tistory.com/60
+
+
+#### docker 강제종료된것 모두다 강제 종류 및 제거
+docker stop $(docker ps -a -q) 
+docker rm $(docker ps -a -q)

@@ -157,3 +157,13 @@ q()
 
 
 sed "s/HLA./HLA-/g" merge.df.pro.txt > merge.df.txt
+sed "s/HLA./HLA_/g" merge.df.pro.txt > merge.df.txt
+
+
+### ㄱㅐ인 컴터 HLA 비교
+
+/Users/ksmpooh/Desktop/KCDC/HLA_seq/HLAinfer/HLA_scan
+
+python /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped \
+merge.df.txt 0 ./

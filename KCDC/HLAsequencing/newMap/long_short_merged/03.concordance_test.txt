@@ -344,6 +344,10 @@ DV_longshortmerged
 SnpSift concordance -v ./DV_longshortmerged/0002.vcf ./DV_longshortmerged/0000.vcf > ./result/QulityMetrix_DVlongshortmerged_mergedvlong.txt
 SnpSift concordance -v ./DV_longshortmerged/0002.vcf ./DV_longshortmerged/0002.vcf > ./result/QulityMetrix_DVlongshortmerged_mergedvshort.txt
 
+SnpSift concordance -v ./DV_longshortmerged1/0002.vcf ./DV_longshortmerged1/0000.vcf > ./result/QulityMetrix_DVlongshortmerged1_mergedvlong.txt
+SnpSift concordance -v ./DV_longshortmerged1/0002.vcf ./DV_longshortmerged1/0002.vcf > ./result/QulityMetrix_DVlongshortmerged1_mergedvshort.txt
+
+
 DVlong_GATKshort_merged (GATKshort + VQSR + long + hard)
 SnpSift concordance -v ./DVlong_GATKshort_merged/0002.vcf ./DVlong_GATKshort_merged/0000.vcf > ./result/QulityMetrix_DVlong.GATKshort.merged_mergedvlong.txt
 SnpSift concordance -v ./DVlong_GATKshort_merged/0002.vcf ./DVlong_GATKshort_merged/0001.vcf > ./result/QulityMetrix_DVlong.GATKshort.merged_mergedvshort.txt

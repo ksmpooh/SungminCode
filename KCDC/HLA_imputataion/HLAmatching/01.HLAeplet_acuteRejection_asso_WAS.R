@@ -4,6 +4,8 @@ library(stringr)
 library(readxl)
 library(readxlsb)
 library(ggrepel)
+library(scales)
+
 
 setwd("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/20230508_epletv2/")
 
@@ -125,6 +127,7 @@ head(c1_forWAS)
 
 ############
 
+
 setwd("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/Association/")
 
 pheno <- read_table("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.pheno/Rejection_phenotype_coded_KID_20230323.txt")
@@ -140,37 +143,48 @@ head(c2)
 
 
 #### eplet histogram
-c1 %>% select(RecInfo,DonInfo,All_Eplets,AbVEp,OthEp) %>%
+
+
+c1 %>% select(RecInfo,DonInfo,All_Eplets,AbVEp,OthEp) %>% 
+  #filter(RecInfo %in% ref[ref$KBA_ID %in% pheno$KCHIP_ID,]$bCODE) %>% #dim()
   pivot_longer(cols = 3:5,names_to = "type",values_to = "score") %>% #head()
   ggplot(aes(x=score,fill=type))+
-  geom_histogram() +
-  facet_grid(~fct_inorder(type)) +
+  geom_histogram(binwidth=1) +
+#  ggtitle("Eplet Score Histogram : CLASS I") +
+  facet_grid(~fct_inorder(type),scales = 'free_x') +
   theme(legend.position = 'none',
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12)) +
-  theme(strip.text.x = element_text(size = 13,face = "bold"))
+  theme(strip.text.x = element_text(size = 13,face = "bold")) + 
+  scale_x_continuous(breaks = pretty_breaks())
+  
 
 colnames(c2)
 c2 %>% select(RecInfo,DonInfo,28:44) %>% colnames()
 c2 %>% select(RecInfo,DonInfo,28:44) %>% #head()#dim()
-  pivot_longer(cols = 3:4,names_to = "type",values_to = "score") %>% #head()
-  ggplot(aes(x=score,fill=type))+
-  geom_histogram() +
-  facet_grid(~type) +
+  filter(RecInfo %in% ref[ref$KBA_ID %in% pheno$KCHIP_ID,]$bCODE) %>% #dim()
+  mutate("All_Other_ClassII" = Total_eps-All_ABV_ClassII) %>%
+  pivot_longer(cols = c("Total_eps","All_ABV_ClassII","All_Other_ClassII"),names_to = "type",values_to = "score") %>% #head()
+  ggplot(aes(x=score,fill=factor(type,level = c("Total_eps","All_ABV_ClassII","All_Other_ClassII"))))+
+  geom_histogram(binwidth=1) +
+  facet_grid(~factor(type,level = c("Total_eps","All_ABV_ClassII","All_Other_ClassII")),scales = 'free_x') +
   theme(legend.position = 'none',
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12)) +
-  theme(strip.text.x = element_text(size = 13,face = "bold"))
+  theme(strip.text.x = element_text(size = 13,face = "bold")) + 
+  scale_x_continuous(breaks = pretty_breaks())
 
 c2 %>% select(RecInfo,DonInfo,28:44) %>%# head()#dim()
+  filter(RecInfo %in% ref[ref$KBA_ID %in% pheno$KCHIP_ID,]$bCODE) %>% #dim()
   pivot_longer(cols = c(5,8,11,14,17),names_to = "type",values_to = "score") %>%
   ggplot(aes(x=score,fill=type))+
-  geom_histogram() +
-  facet_grid(~type) +
+  geom_histogram(binwidth=1) +
+  facet_grid(~type,scales = 'free_x') +
   theme(legend.position = 'none',
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12)) +
-  theme(strip.text.x = element_text(size = 13,face = "bold"))
+  theme(strip.text.x = element_text(size = 13,face = "bold")) + 
+  scale_x_continuous(breaks = pretty_breaks())
 
 
 ###################################
@@ -185,15 +199,52 @@ colnames(c1_data)[30:ncol(c1_data)]
 
 colnames(c1_data)[36:ncol(c1_data)] <- paste0("AA_",colnames(c1_data)[36:ncol(c1_data)])
 
+c1_data_scale <- c1_data
+
+for (i in 31:33) {
+  c1_data_scale[,i] <- scale(as.numeric(c1_data_scale[,i]))
+}
+
+for (i in 36:ncol(c1_data_scale)) {
+  c1_data_scale[,i] <- as.numeric(c1_data_scale[,i])
+}
+
+
+
 for (i in 36:ncol(c1_data)) {
   c1_data[,i] <- as.numeric(c1_data[,i])
 }
+
+
+head(c1_data_scale)
+c1_data_scale %>% select(1,31:33) %>% #head()
+  pivot_longer(2:4,values_to = "value") %>% #head()
+  ggplot(aes(x = value[,1])) +
+  geom_histogram() + 
+  facet_grid(~name)
+
+
+c1_data %>% select(1,31:33) %>% #head()
+  pivot_longer(2:4,values_to = "value") %>% #head()
+  ggplot(aes(x = value,fill=name)) +
+  geom_histogram() + 
+  facet_grid(~name,scales = 'free_x')
+
+
 
 result <- NULL
 for(i in 31:33){
   temp <- glm(paste("rej_tot ~ ",colnames(c1_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data, family="binomial")
   result <- rbind(result, c(colnames(c1_data)[i],as.vector(summary(temp)$coefficients[2,])))
 }
+
+
+result_scale <- NULL
+for(i in 31:33){
+  temp <- glm(paste("rej_tot ~ ",colnames(c1_data_scale)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c1_data_scale, family="binomial")
+  result_scale <- rbind(result_scale, c(colnames(c1_data_scale)[i],as.vector(summary(temp)$coefficients[2,])))
+}
+
 
 
 #result <- NULL
@@ -205,18 +256,31 @@ for(i in 36:ncol(c1_data)){
 }
 
 
+head(result)
+colnames(result) <- c("ID","Estimate","SE","Z","P")
+colnames(result_scale) <- c("ID","Estimate","SE","Z","P")
+c1_result <- result %>% as.data.frame()
+c1_result
+#write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
+#write.table(c1_result, "c1_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(result_scale%>% as.data.frame(), "c1_eplet_asso_withouthHLAms_scale.txt", col.names=T, row.names=F, sep="\t", quote=F)
 
+result <- as.data.frame(result)
+result_scale <- as.data.frame(result_scale)
+result$scale = 'No'
+result_scale$scale = 'Yes'
 
-
-
+#result$scale = 'Scale : X'
+#result_scale$scale = 'Scale : O'
 
 
 head(result)
-colnames(result) <- c("ID","Estimate","SE","Z","P")
-c1_result <- result %>% as.data.frame()
 
-#write.table(c1_result, "c1_eplet_asso.txt", col.names=T, row.names=F, sep="\t", quote=F)
-#write.table(c1_result, "c1_eplet_asso_withouthHLAms.txt", col.names=T, row.names=F, sep="\t", quote=F)
+
+
+
+
+
 
 
 ## 253Q --Abv
@@ -297,14 +361,26 @@ colnames(c2_data)[i]
 str(c2_data)
 str(c1_data)
 
+c2_data_scale <- c2_data
+
+for (i in 43:59) {
+  c2_data_scale[,i] <- scale(as.numeric(c2_data_scale[,i]))
+}
+
+
+
 for (i in 60:ncol(c2_data)) {
   c2_data[,i] <- as.numeric(c2_data[,i])
+  c2_data_scale[,i] <- as.numeric(c2_data_scale[,i])
 }
+
+
 head(c2_data)
 table(c2_data[,i])
 length(table(c2_data[,i]))
 
 head(c2_data[43:45])
+head(c2_data[46])
 head(c2_data[55:60])
 head(c2_data[59:65])
 
@@ -313,6 +389,13 @@ for(i in 43:59){
   #table(c2_data[,i])
   temp <- glm(paste("rej_tot ~ ",colnames(c2_data)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data, family="binomial")
   result <- rbind(result, c(colnames(c2_data)[i],as.vector(summary(temp)$coefficients[2,])))
+}
+
+result_scale <- NULL
+for(i in 43:59){
+  #table(c2_data[,i])
+  temp <- glm(paste("rej_tot ~ ",colnames(c2_data_scale)[i], "+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=c2_data_scale, family="binomial")
+  result_scale <- rbind(result_scale, c(colnames(c2_data_scale)[i],as.vector(summary(temp)$coefficients[2,])))
 }
 
 #result <- NULL
@@ -326,9 +409,12 @@ for(i in 60:ncol(c2_data)){
 
 
 head(result)
+head(result_scale)
 colnames(result) <- c("ID","Estimate","SE","Z","P")
+colnames(result_scale) <- c("ID","Estimate","SE","Z","P")
 
 result %>% as.data.frame()
+result_scale<-result_scale %>% as.data.frame()
 
 
 c2_result <- result %>% as.data.frame()

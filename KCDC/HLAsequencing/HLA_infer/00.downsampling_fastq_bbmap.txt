@@ -1,0 +1,103 @@
+## Downsampling
+
+
+### Downsampling to 10x
+./bbmap/reformat.sh in=$1 out1=$2 in2=$3 out2=$4 samplereadstarget=100000000
+
+/BDATA/smkim/TOOLs/bbmap/reformat.sh 
+
+
+/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R1_001_paired.fastq.gz
+/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R2_001_paired.fastq.gz
+
+/BDATA/smkim/TOOLs/bbmap/reformat.sh \
+in=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R1_001_paired.fastq.gz \
+out1=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R1_001_paired.9941114.fastq.gz \
+in2=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R2_001_paired.fastq.gz \
+out2=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R2_001_paired.9941114.fastq.gz \
+samplereadstarget=9941114 \
+overwrite=true
+
+
+/BDATA/smkim/TOOLs/bbmap/reformat.sh \
+in=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R1_001_paired.fastq.gz \
+out1=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R1_001_paired.13254819.fastq.gz \
+in2=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R2_001_paired.fastq.gz \
+out2=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R2_001_paired.13254819.fastq.gz \
+samplereadstarget=13254819 \
+overwrite=true
+
+9941114 
+13254819 
+
+####
+Set INTERLEAVED to false
+Input is being processed as paired
+Input:                          23798974 reads                  2391467633 bases
+Output:                         23798974 reads (100.00%)        2391467633 bases (100.00%)
+
+Time:                           192.852 seconds.
+Reads Processed:      23798k    123.41k reads/sec
+Bases Processed:       2391m    12.40m bases/sec
+####
+
+/BDATA/smkim/TOOLs/bbmap/reformat.sh \
+in=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R1_001_paired.fastq.gz \
+out1=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R1_001_paired_down.10x.fastq.gz \
+in2=/BDATA/smkim/HLA_seq/00.rawDATA/shortread/1003_S71_L002_R2_001_paired.fastq.gz \
+out2=/BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R2_001_paired_down.10x.fastq.gz \
+samplereadstarget=331370  \
+overwrite=true
+
+#-R '@RG\tID:HWI\tSM:1003\tPL:ILLUMINA_down_10x\tLB:Novaseq6000' \
+bwa-mem2 mem -t 32 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta /BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R1_001_paired_down.10x.fastq.gz /BDATA/smkim/HLA_seq/downsampling/test/1003_S71_L002_R2_001_paired_down.10x.fastq.gz | samtools sort -o 1003.10x.test.bam
+bwa-mem2 mem -t 32 /BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta 1003_S71_L002_R1_001_paired.9941114.fastq.gz 1003_S71_L002_R2_001_paired.9941114.fastq.gz | samtools sort -o 1003.300x.bam
+
+
+samtools coverage 1003.10x.test.bam > 1003.10x.test.bam.coverage
+
+
+## trimmming
+
+join -1 1 -2 1 <(ls *R1*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) <(ls *R2*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) | awk -v pwd="$(pwd)" '{print pwd"/"$2","pwd"/"$3}' > fastqs.list
+mkdir trimmed
+
+###bash run.sh
+#join -1 1 -2 1 <(ls *R1*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) <(ls *R2*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) | awk -v pwd="$(pwd)" '{print pwd"/"$2","pwd"/"$3}' > fastqs.list
+#mkdir trimmed
+
+for i in 10 20 30 50 75 100 150 200 300; do
+	cd ${i}X
+	join -1 1 -2 1 <(ls *R1*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) <(ls *R2*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) | awk -v pwd="$(pwd)" '{print pwd"/"$2","pwd"/"$3}' > fastqs.list
+	cd ..
+#	join -1 1 -2 1 <(ls *R1*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) <(ls *R2*.fastq.gz | awk '{split($1,arr,"_"); print arr[1],$1}' | sort) | awk -v pwd="$(pwd)" '{print pwd"/"$2","pwd"/"$3}' > ${i}X/fastqs.list
+	mkdir ${i}X/trimmed
+done
+#####################
+
+
+
+for i in 10 20 30 50 75 100 150 200 300; do
+    ./trimming.sh -i ../${i}X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/${i}X/trimmed -t 4 -p 15
+done
+
+
+
+
+
+
+
+
+./trimming.sh -i ../10X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/10X/trimmed -t 4 -p 15
+./trimming.sh -i ../20X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/20X/trimmed -t 4 -p 12
+./trimming.sh -i ../30X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/30X/trimmed -t 4 -p 12
+./trimming.sh -i ../75X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/75X/trimmed -t 4 -p 12
+./trimming.sh -i ../300X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/300X/trimmed -t 4 -p 12
+
+
+./trimming.sh -i ../50X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/50X/trimmed -t 4 -p 12
+
+./trimming.sh -i ../300X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/300X/trimmed -t 12 -p 4
+./trimming.sh -i ../100X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/100X/trimmed -t 4 -p 10
+./trimming.sh -i ../150X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/150X/trimmed -t 4 -p 10
+./trimming.sh -i ../200X/fastqs.list -o /BDATA/smkim/HLA_seq/downsampling/200X/trimmed -t 4 -p 10

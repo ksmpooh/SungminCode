@@ -63,7 +63,8 @@ df %>% group_by(title,type) %>% #na.omit() %>%
   ggtexttable()
 
 
-#writexl::write_xlsx(a,"~/Desktop/KCDC/HLA_seq/concordace.result.xlsx")
+##writexl::write_xlsx(a,"~/Desktop/KCDC/HLA_seq/concordace.result.xlsx")
+#writexl::write_xlsx(a,"~/Desktop/KCDC/HLA_seq/concordace.result.test.xlsx")
 
 df <- readxl::read_xlsx("~/Desktop/KCDC/HLA_seq/concordace.result.xlsx",sheet = 2)
 head(df)  
@@ -106,8 +107,44 @@ df %>% filter(Merged =="O") %>% pivot_longer(cols = c("Accuracy","Precision","Se
 df %>% filter(Merged =="O") %>% #pivot_longer(cols = c("Accuracy","Precision","Sensitivity"),values_to = "Value") %>% #head()
   mutate("VS" = str_replace_all(str_split_fixed(title,"_",2)[,2],"v"," VS ")) %>% #head()
   #mutate("title" = paste0(str_split_fixed(title,"_",2)[,1]," (",`count(SNP)`,")")) %>% #head()
-  select(2,3,6,10,7,8,9) %>%
+  select(Tool,KBA,Merged,Merged_type,QC,VS,`count(SNP)`,Accuracy,Precision,Sensitivity) %>%
+  #select(2,3,6,10,7,8,9) %>%
   ggtexttable() -> b
 b
 
 ggarrange(a,b,ncol = 1,nrow = 2,heights = c(2,3))
+
+
+################## merged t1 vs t2
+
+df <- readxl::read_xlsx("~/Desktop/KCDC/HLA_seq/concordace.result.xlsx",sheet = 2)
+
+df %>% filter(Tool == "DV") %>% #head()
+  filter(Merged =="O") %>% pivot_longer(cols = c("Accuracy","Precision","Sensitivity"),values_to = "Value") %>% #head()
+  mutate("VS" = str_replace_all(str_split_fixed(title,"_",2)[,2],"v"," VS ")) %>% #head()
+  mutate("title" = paste0(str_split_fixed(title,"_",2)[,1]," (",`count(SNP)`,")")) %>% #head()
+  #ggplot(aes(x=title,y=Value,color=title)) +
+  ggplot(aes(x=Merged_type,y=Value,color=Merged_type)) +
+  geom_point(aes(shape=VS),size = 3) + 
+  facet_grid(~name) + 
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        axis.title.y = element_blank()) -> a
+a
+df %>% filter(Tool == "DV") %>% #head()
+  filter(Merged =="O") %>% #pivot_longer(cols = c("Accuracy","Precision","Sensitivity"),values_to = "Value") %>% #head()
+  mutate("VS" = str_replace_all(str_split_fixed(title,"_",2)[,2],"v"," VS ")) %>% #head()
+  #mutate("title" = paste0(str_split_fixed(title,"_",2)[,1]," (",`count(SNP)`,")")) %>% #head()
+  #select(2,3,6,10,7,8,9) %>%
+  select(KBA,Merged_type,VS,`count(SNP)`,Accuracy,Precision,Sensitivity) %>%
+  ggtexttable() -> b
+b
+
+ggarrange(a,b,ncol = 1,nrow = 2,heights = c(2,3))
+
+
+
+
+
+

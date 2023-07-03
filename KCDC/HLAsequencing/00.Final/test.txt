@@ -1,0 +1,29 @@
+vcftoolz compare --exclude_ref --exclude_missing --exclude_filtered file1.vcf file2.vcf file3.vcf > summary.txt
+--truth
+
+vcftoolz count file.vcf (x)
+vcftoolz plot --exclude_refs --exclude_missing file.vcf reference.fasta image.png
+
+
+vcftoolz plot
+
+
+vcftoolz compare --exclude_ref --exclude_missing ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz ../HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz > summary.txt
+
+
+vcftoolz plot --exclude_refs --exclude_missing file.vcf reference.fasta image.png
+
+ls ../*gz | xargs -I {} -P 4 bash -c "vcftoolz count {} > {}.txt"
+
+
+
+vcftoolz plot --exclude_refs ../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz \
+/BDATA/smkim/HLA_seq/REF/HLA.target.v2.fasta \
+plot_longDV_test.png
+
+
+vcftoolz compare --exclude_ref \
+../HLA.Longread.Seq.Q20.Deepvariant_Variantcalling.GLnexus_Jointcalling.sampleIDCheck.updateID.setID.vcf.gz \
+../HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz \
+../HLA.Seq.Merged_afterMapping.long_pbmm2.short_trimmed_bwamem2_sort_dedup.hg19_HLAregion.Deepvariant_Variantcalling.GLnexus_Jointcalling.updateID_setID.vcf.gz \
+../HLA.Shortread.Seq.trimmed.align.sorted.dedup.Deepvariant_VariantCalling.GLnexus_Jointcalling.updateID.setID.vcf.gz > longshort_mergedt1_mergedt2.txt

@@ -30,6 +30,32 @@ bcftools stats long_short_concat.vcf.gz > long_short_concat.vcf.gz.stats
 ls 000*vcf.gz | xargs -I {} -P 4 bash -c "bcftools view -S samples.txt {} | bgzip -c > sampleOrder_{}"
 
 bcftools concat sampleOrder_0000.vcf.gz sampleOrder_0001.vcf.gz sampleOrder_0002.vcf.gz | bgzip -c > concat_sampleOrder_012.vcf.gz
-bcftools concat sampleOrder_0000.vcf.gz sampleOrder_0001.vcf.gz sampleOrder_0003.vcf.gz | bgzip -c > concat_sampleOrder_013.vcf.gz
+
 
 ls concat* | xargs -I{} -P 2 bash -c "bcftools stats {} > {}.stats"
+
+
+### divide multi-allelic site and set ID
+
+bcftools norm -m -any concat_sampleOrder_012.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bgzip -c > concat_sampleOrder_012.norm_setID.vcf.gz
+bcftools norm -m -any concat_sampleOrder_013.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bgzip -c > concat_sampleOrder_013.norm_setID.vcf.gz
+bcftools norm -m -any sampleOrder_0002.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bgzip -c > sampleOrder_0002.norm_setID.vcf.gz
+
+bcftools view --types snps concat_sampleOrder_012.norm_setID.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > concat_sampleOrder_012.norm_setID.Variant_SNPS.txt
+bcftools view --types indels concat_sampleOrder_012.norm_setID.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > concat_sampleOrder_012.norm_setID.Variant_INDELS.txt
+
+
+bcftools view --types snps sampleOrder_0002.norm_setID.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > sampleOrder_0002.norm_setID.Variant_SNPS.txt
+bcftools view --types indels sampleOrder_0002.norm_setID.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > sampleOrder_0002.norm_setID.Variant_INDELS.txt
+
+
+
+#### /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF
+
+ls *Deep*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools norm -m -any {}.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bgzip -c > ./norm_set/{}.norm_setID.vcf.gz"
+
+cd /BDATA/smkim/HLA_seq/99.Final.vcf/00.VCF/norm_set
+
+
+ls *Deep*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools view --types snps {}.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > ../variant/{}.Variant_SNPS.txt"
+ls *Deep*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 4 bash -c "bcftools view --types indels {}.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%ID\n' > ../variant/{}.Variant_INDELS.txt"
