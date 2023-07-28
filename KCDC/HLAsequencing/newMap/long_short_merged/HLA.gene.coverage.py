@@ -1,7 +1,7 @@
 '''
 python HLA.gene.coverage.py [build] [wDir]
 
-# build : hg19, hg38, hg38_alt
+# build : hg19, hg38, hg38_alt, hg38_chr6to6 (HLAmapper)
 '''
 
 import os,glob,sys
@@ -108,6 +108,9 @@ def main():
     elif build == "hg38":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577"]
+    elif build == "hg38_chr6to6":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_chr6to6.txt"
+        target_contig = ["6"]    
     else:
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577","chr6_GL000250v2_alt", "chr6_GL000251v2_alt", "chr6_GL000252v2_alt", "chr6_GL000253v2_alt", "chr6_GL000254v2_alt", "chr6_GL000255v2_alt", "chr6_GL000256v2_alt", "chr6_KI270758v1_alt"]
@@ -144,6 +147,9 @@ def main_exon():
     elif build == "hg38":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577"]
+    elif build == "hg38_chr6to6":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_chr6to6.txt"
+        target_contig = ["6"]    
     else:
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577","chr6_GL000250v2_alt", "chr6_GL000251v2_alt", "chr6_GL000252v2_alt", "chr6_GL000253v2_alt", "chr6_GL000254v2_alt", "chr6_GL000255v2_alt", "chr6_GL000256v2_alt", "chr6_KI270758v1_alt"]

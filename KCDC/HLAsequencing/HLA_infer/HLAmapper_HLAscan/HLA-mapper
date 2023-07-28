@@ -58,11 +58,32 @@ cd /BDATA/smkim/HLA_seq/HLA_infer/HLA_mapper/00.HLAmapper_Result
 
 ls *bam | sed "s/.bam//g" | xargs -I {} -P 2 bash -c "sh run.sh {}"
 
+/BDATA/smkim/HLA_seq/REF/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_chr6.fasta
+
 
 ##### run.sh
 in=$1
 echo $in
 docker run -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_mapper/00.HLAmapper_Result":"/input" -v "/BDATA/smkim/HLA_seq/HLA_infer/HLA_mapper/03.variant.calling":"/output" -v "/BDATA/smkim/HLA_seq/REF":"/ref" google/deepvariant \
-/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/hg38/hg38.chr6_withALT.fasta \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/hg38/resources_broad_hg38_v0_Homo_sapiens_assembly38_chr6.fasta \
 --reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
 --output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 32
+
+
+ls *bam | sed "s/.bam//g" | xargs -I {} -P 2 bash -c "sh run.sh {}"
+
+
+ls ../03.variant.calling/*gvcf.gz > gvcf.list.txt
+
+glnexus_cli --dir HLAmapper.DV.GL --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.HLAmapper.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+glnexus_cli --dir HLAmapper.DV.GL_unfiltered --config DeepVariant_unfiltered --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.HLAmapper.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
+
+
+###concordance
+
+
+
+### bam depth
+
+python coverage.HLA.region.v2.py hg38_chr6to6 /BDATA/smkim/HLA_seq/HLA_infer/HLA_mapper/00.HLAmapper_Result/
+ls *sh |xargs -I {} -P 60 bash -c "sh {}"

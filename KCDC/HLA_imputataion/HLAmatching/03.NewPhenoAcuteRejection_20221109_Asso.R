@@ -14,12 +14,15 @@ setwd("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/")
 
 pheno <- read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso.xlsx")
 pheno <- read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2.xlsx")
+colnames(pheno)
 pheno %>% mutate(rej_time_day = date_rej_tot - date_kt) ->pheno
+
 plot(pheno$rej_time_day,pheno$rej_tot)
 table(pheno$rej_tot)
 head(pheno)
 dim(pheno)
 ref <- read.table("~/Desktop/KCDC/transplantation/00.sampleInfo/JG.IDupdate.NIHtobCODE.txt",header = T)
+table(pheno$group)
 
 c1 <-read_xlsx("Association/c1_forWAS.xlsx")
 c2 <-read_xlsx("Association/c2_forWAS.xlsx")
@@ -31,10 +34,14 @@ colnames(c1c2)
 dim(c1c2)
 #c1c2 %>% select(1:28)
 c1_c2_eplet_forAsso <-read_xlsx("Association/new_pheno_cov/c1c2_eplet_forAsso_withSMMS_1147.xlsx") %>% merge(pheno)
-c1_c2_eplet_forAsso %>% filter(theme == "EMS") %>% count(rej_tot)
+c1_c2_eplet_forAsso %>% filter(theme == "EMS") %>% select(-KBA_ID.KR) %>%
+  writexl::write_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2_withEMS.xlsx")
 
 plot(c1_c2_eplet_forAsso$rej_time_day,c1_c2_eplet_forAsso$rej_tot)
 
+
+
+colnames(c1_c2_eplet_forAsso)
 
 head(c1_c2_eplet_forAsso)
 #colnames(pheno)

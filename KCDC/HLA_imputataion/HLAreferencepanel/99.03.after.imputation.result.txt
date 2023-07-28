@@ -160,3 +160,30 @@ ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "p
 
 ls 02.processing/*txt | cut -d"/" -f2 | xargs -I{} -P 1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped 02.processing/{} 0 03.allele.matching"
 
+
+### imgt 3320 4 to 2 5M
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320_2to4_5M
+
+ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}_HLAimputation.SNP2HLA.KBA.MHCref.28477797_33448354_idchange.bgl.phased.vcf.gz 02.processing/KBA.{}_5CV.SNP2HLAHLAimp.txt"
+
+ls 02.processing/*txt | cut -d"/" -f2 | xargs -I {} -P 1 bash -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped ./02.processing/{} 0 03.allele.matching"
+
+
+python
+import os,glob
+
+dfs = glob.glob("02.processing/*txt")
+
+for df in dfs:
+    os.system("python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped %s 0 03.allele.matching"%df)
+
+
+import os,glob
+
+dfs = glob.glob("02.processing/*fd*txt")
+
+for df in dfs:
+    os.system("python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped %s 42 03.allele.matching"%df)
+
+
+

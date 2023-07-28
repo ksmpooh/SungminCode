@@ -1,0 +1,96 @@
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG
+
+#PLINK : KR-KD
+/BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid.bim
+JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid_rmHLAtypesmaple.fam
+
+#ref ref_panel
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+#### basic code
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/520sample_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+############
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid_rmHLAtypesmaple \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.KMHC_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid_rmHLAtypesmaple \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid_rmHLAtypesmaple \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.Han_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/HLA/JG.KR.KD.merge_updateID_chr6_28Mto34M_rmdup_updateid_rmHLAtypesmaple \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/TEST.JG/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_4digit \
+    --nthreads 32 \
+    --mem 64g
+
+
+####
+# HLA-TAPAS SNP2HLA han
+ls *gz | xargs -I{} -P 1 bash -c "tabix -f -p vcf {}"
+mkdir 01.impresult
+mkdir 02.processing
+mkdir 03.allele.matching
+
+
+
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.pheno/KR.Acute.Rejection.HLAtype.2digit.txt
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/TEST.JG
+
+
+
+ls 01.impresult/*gz | cut -d"/" -f2 | sed 's/.bgl.phased.vcf.gz//g' |xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}.bgl.phased.vcf.gz 02.processing/{}.SNP2HLAHLAimp.txt"
+
+
+python ../02.extract.HLA.py 01.impresult/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz 02.processing/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.SNP2HLAHLAimp.txt
+python ../02.extract.HLA.py 01.impresult/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.KMHC_4digit.bgl.phased.vcf.gz 02.processing/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.KMHC_4digit.SNP2HLAHLAimp.txt
+python ../02.extract.HLA.py 01.impresult/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.Han_4digit.bgl.phased.vcf.gz 02.processing/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.Han_4digit.SNP2HLAHLAimp.txt
+python ../02.extract.HLA.py 01.impresult/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_4digit.bgl.phased.vcf.gz 02.processing/KRKD_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_4digit.SNP2HLAHLAimp.txt
+
+
+ls 02.processing/*txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 0 03.allele.matching"
+
+
+ls 02.processing/*td.txt | cut -d"/" -f2 | xargs -I {} -P1 zsh -c "python ../03.matching.check.real.vs.imp.py \
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.pheno/KR.Acute.Rejection.HLAtype.2digit.txt 02.processing/{} 2 03.allele.matching"
+
+
+
+import os,glob
+
+dfs = glob.glob("02.processing_matchingsample/*td*txt")
+
+ref = "~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.pheno/KR.Acute.Rejection.HLAtype.2digit_matchsample_Nomen.txt"
+for df in dfs:
+    os.system("python ../03.matching.check.real.vs.imp.py %s %s 2 03.allele.matching"%(ref,df))
+

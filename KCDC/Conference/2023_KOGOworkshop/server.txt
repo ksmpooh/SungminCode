@@ -1,0 +1,44 @@
+ip 59.26.46.154
+port : 23719
+ssh ksmpooh@223.171.87.36
+
+
+ssh -p 23719 edu001@59.26.46.154
+
+scp -r -P 23719 ./0* edu001@59.26.46.154:/home/edu001/DATA/
+
+scp -r -P 23719 edu001@59.26.46.154:/home/edu001/DATA/
+
+
+sudo apt -y install python3-pip
+sudo apt -y install openjdk-8-jre-headless g++ libopenblas-base liblapack3
+sudo pip install hail
+(헤일설치확인)
+#####
+python3
+import hail as hl
+hl.init() # 오류 없으면 설치 잘된거
+######
+sudo apt -y install bcftools tabix
+sudo apt -y install r-base-core
+sudo apt -y install git
+
+
+# VEP 설치 방법 
+sudo apt -y install libjson-perl # 영진샘이 보낸 메일
+sudo apt install gcc
+sudo apt install g++ 
+sudo apt install make
+sudo apt-get install mysql-server
+sudo apt-get install libmysqlclient-dev
+
+sudo cpan
+install Archive::Zip
+install DBI 
+install DBD::mysql
+install Bio::DB:HTS
+
+# R package
+sudo R
+install.packages("dplyr")
+q()

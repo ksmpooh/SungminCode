@@ -1,0 +1,150 @@
+
+###### QC ######
+
+mkdir 01_QC
+cd 01_QC
+
+rsync -avhP /home/edu001/DATA/01_QC/KBAv2.0A_final.vcf.gz .
+rsync -avhP /home/edu001/DATA/01_QC/KBAv2.0B_final.vcf.gz .
+
+cp KBAv2.0A_final.vcf.gz KBAv2.0A_final.vcf.bgz
+cp KBAv2.0B_final.vcf.gz KBAv2.0B_final.vcf.bgz
+
+python3
+import hail as hl
+hl.init(spark_conf={'spark.driver.memory': '100g'})
+hl.init(spark_conf={'spark.driver.memory': '100g'},tmp_dir = "~/teast/")
+
+
+
+### Data preprocessing ###
+
+# Load VCF and make Matrix 
+hl.import_vcf("KBAv2.0A_final.vcf.bgz").write("KBAv2.0A_final.mt", overwrite=True) # 1min
+hl.import_vcf("KBAv2.0B_final.vcf.bgz").write("KBAv2.0B_final.mt", overwrite=True) # 1min
+
+# Load Matrix
+mtA = hl.read_matrix_table("KBAv2.0A_final.mt")
+mtB = hl.read_matrix_table("KBAv2.0B_final.mt")
+mtA.count() # (706409, 505)
+mtB.count() # (419813, 505)
+
+mtA.describe()
+mtA.show(5)
+mtA.GT.show(5)
+mtA.summarize()
+mtA.GT.summarize()
+
+
+# multi allele normalization
+mtB_bi = mtB.filter_rows(hl.len(mtB.alleles) == 2)
+mtB_bi = mtB_bi.annotate_rows(a_index=1, was_split=False)
+mtB_multi = mtB.filter_rows(hl.len(mtB.alleles) > 2)
+mtB_split = hl.split_multi_hts(mtB_multi)
+mtB_split = mtB_split.union_rows(mtB_bi)
+mtB_split = mtB_split.drop("a_index", "was_split")
+mtB_split.count() # (419823, 505)
+#hl.export_vcf(mtB_split, 'mtB_split.vcf.bgz')
+
+# A+B merge 
+mt_union = mtA.union_rows(mtB_split)
+mt_union.count() # (1126232, 505)
+#hl.export_vcf(mt_union, 'mt_union.vcf.gz')
+
+# remove intersection of variants A and B
+mt_distinct = mt_union.distinct_by_row()
+mt_distinct.count() # (1116884, 505)
+#hl.export_vcf(mt_distinct, 'mt_distinct.vcf.bgz')
+
+
+
+### Sample QC ###
+
+mt_sampleQC = hl.sample_qc(mt_distinct, name='sample_qc')
+
+mt_sampleQC.describe()
+mt_sampleQC.sample_qc.show(5)
+
+# Call rate & Heterozygosity 
+
+from bokeh.plotting import output_file, save
+p = hl.plot.scatter(x=mt_sampleQC.sample_qc.n_het/mt_sampleQC.sample_qc.n_called*100, y=mt_sampleQC.sample_qc.call_rate, xlabel="Heterozygosity", ylabel='Call Rate', hover_fields={'ID': mt_sampleQC.s}, size=8)
+output_file("KBAv2.0_sampleQC.html")
+save(p)
+
+## Call rate
+mt_cr = mt_sampleQC.filter_cols(mt_sampleQC.sample_qc.call_rate >= 0.8)
+mt_cr.count() # (1116884, 504)
+
+## heterozygosity
+mt_het = mt_cr.filter_cols((mt_cr.sample_qc.n_het/mt_cr.sample_qc.n_called*100 >= 17) & (mt_cr.sample_qc.n_het/mt_cr.sample_qc.n_called*100 <= 20))
+mt_het.count() # (1116884, 501)
+
+
+## PCA
+### pruning
+mt_variantQC = hl.variant_qc(mt_het, name='variant_qc')
+mt_bi = mt_variantQC.filter_rows(hl.len(mt_variantQC.alleles) == 2)
+
+mt_rmCHR = mt_bi.filter_rows((mt_bi.locus.contig !='6') & (mt_bi.locus.contig != '14') & (mt_bi.locus.contig != 'X'))
+filtered_variant = mt_rmCHR.filter_rows(mt_rmCHR.variant_qc.call_rate >= 0.99)
+filtered_variant = filtered_variant.filter_rows((filtered_variant.variant_qc.p_value_hwe >= 0.001) & (hl.min(filtered_variant.variant_qc.AF) > 0.01))
+filtered_variant.count() # (784599, 501)
+
+pruned_variant = hl.ld_prune(filtered_variant.GT, r2=0.2, bp_window_size=500000) # 10min
+#pruned_variant.write("pruned_variant.mt")
+mt_prune = filtered_variant.filter_rows(hl.is_defined(pruned_variant[filtered_variant.row_key]))
+mt_prune.count() # (271404, 501)
+
+### HWEPCA
+eigenvalues, scores, _ = hl.hwe_normalized_pca(mt_prune.GT, k=10) # 3min
+mt_prune_pca = mt_prune.annotate_cols(pca = scores[mt_prune.s])
+p = hl.plot.scatter(x=mt_prune_pca.pca.scores[0], y=mt_prune_pca.pca.scores[1], xlabel='PC1', ylabel='PC2', hover_fields={'ID': mt_prune_pca.s}, size=8)
+output_file("KBAv2.0_PCA.html") 
+save(p)
+
+mt_variantQC = mt_variantQC.key_cols_by('s')
+mt_prune_pca = mt_prune_pca.key_cols_by('s')
+mt_prune_pca_sample = mt_prune_pca.filter_cols((mt_prune_pca.pca.scores[1] > -0.1) & (mt_prune_pca.pca.scores[1] < 0.2)).cols()
+
+mt_pca = mt_het.filter_cols(hl.is_defined(mt_prune_pca_sample[mt_het.s]))
+mt_pca.count() # (1116884, 441)
+
+
+## singleton 실습X
+#mt_singleton = mt_pca.filter_cols(mt_pca.sample_qc.n_singleton < 100)
+#mt_singleton.count()
+
+
+## Gender 실습X
+#imputed_sex = hl.impute_sex(mt_pca.GT)
+#mt_sex = mt_pca.filter_cols(imputed_sex[mt_pca.s].is_female != mt_pca.pheno.is_female, keep=False)
+
+
+
+### variant QC ### 
+mt_variantQC = hl.variant_qc(mt_pca, name='variant_qc')
+mt_variantQC.describe()
+mt_variantQC.sample_qc.show(5)
+
+
+## Call rate & HWE
+mt_varQC = mt_variantQC.filter_rows((mt_variantQC.variant_qc.call_rate >= 0.95) & (mt_variantQC.variant_qc.p_value_hwe >= 1e-6))
+mt_varQC.count() # (1096106, 441)
+
+#hl.export_vcf(mt_varQC, 'KBAv2.0_QC.vcf.gz') # for 02.Imputation
+
+
+### relationship inference ### 
+
+rel = hl.pc_relate(mt_varQC.GT, 0.01, k=10, statistics='kin', min_kinship=0.15) # 16min
+rel.count() # 0
+
+#dup = rel.filter(rel.kin > 0.354) # 0촌 제거
+#dup = rel.filter(rel.kin > 0.177) # 0촌, 1촌 제거
+
+#dup_id = dup.aggregate(hl.agg.collect_as_set(dup.i.s).union(hl.agg.collect_as_set(dup.j.s)))
+
+#mt_rel = mt_varQC.filter_cols(~hl.literal(dup_id).contains(mt_varQC.s))
+
+

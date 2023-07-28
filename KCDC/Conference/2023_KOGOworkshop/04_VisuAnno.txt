@@ -1,0 +1,90 @@
+##### Visualization & Annotation #####
+
+mkdir 04_VisuAnno
+cd 04_VisuAnno
+
+rsync -avhP ../03_Analysis/linear.tbl .
+# rsync -avhP /home/edu001/DATA/04_VisuAnno/linear.tbl .
+rsync -avhP /home/edu001/DATA/04_VisuAnno/vep_tbl.tbl .
+rsync -avhP /home/edu001/DATA/04_VisuAnno/vep_mt.mt .
+
+
+python3
+import hail as hl
+hl.init(spark_conf={'spark.driver.memory': '100g'})
+from bokeh.plotting import output_file, save
+
+
+mt = hl.read_table('linear.tbl')
+
+## Manhattan plot
+p = hl.plot.manhattan(mt.p_value)
+output_file('HDL_linear_manhanttan.html')
+save(p) # '/home/edu001/minjin/04_VisuAnno/HDL_linear_manhanttan.html'
+
+
+## QQ plot
+p = hl.plot.qq(mt.p_value)
+output_file('HDL_linear_qq.html')
+save(p) # '/home/edu001/minjin/04_VisuAnno/HDL_linear_qq.html'
+
+
+## locuszoom plot
+locuszoom = mt.select(Marker=hl.variant_str(mt.locus, mt.alleles), Pvalue=mt.p_value)
+locuszoom = locuszoom.key_by(locuszoom.Marker)
+locuszoom = locuszoom.select(locuszoom.Pvalue)
+locuszoom.export('locuszoom.tsv', header=True)
+
+
+## FUMA
+fuma = mt.select(Marker=hl.variant_str(mt.locus, gwas.alleles), CHROM=mt.locus.contig, POS=mt.locus.position, Pvalue=mt.p_value)  # error
+fuma = fuma.key_by(fuma.Marker)
+fuma = fuma.select(fuma.CHROM, fuma.POS, fuma.Pvalue)
+ ㅁㅁfuma.export('fuma.tsv', header=True)
+
+## VEP annotation
+
+#mt_vep = hl.vep(mt, 'vep.json')
+
+vep_tbl = hl.read_table('vep_tbl.tbl')
+type(vep_tbl) # table
+
+unique_set = vep_tbl.aggregate(hl.agg.collect_as_set(vep_tbl.vep.most_severe_consequence))
+unique_list = list(unique_set)
+print(unique_list)
+
+unique_set = vep_tbl.aggregate(hl.agg.collect_as_set(vep_tbl.vep.transcript_consequences.sift_prediction[0]))
+unique_list = list(unique_set)
+print(unique_list)
+
+mt_filter = vep_tbl.filter( \
+    ((vep_tbl.vep.most_severe_consequence == 'missense_variant') & (vep_tbl.vep.transcript_consequences.sift_prediction[0] == 'deleterious')) | \
+    ((vep_tbl.vep.most_severe_consequence == 'stop_lost') & (vep_tbl.vep.transcript_consequences.sift_prediction[0] == 'deleterious')))
+mt_filter.count()
+
+result = mt_filter.select(Marker=hl.variant_str(mt_filter.locus, mt_filter.alleles), VariantType=mt_filter.vep.most_severe_consequence, SIFT=mt_filter.vep.transcript_consequences.sift_prediction[0])
+result = result.key_by(result.Marker)
+result = result.select(result.VariantType, result.SIFT)
+result.export('result.tsv', header=True)
+
+
+vep_mt = hl.read_matrix_table('vep_mt.mt')
+type(vep_mt) # matrix table
+
+unique_set = vep_mt.aggregate_rows(hl.agg.collect_as_set(vep_mt.vep.colocated_variants.clin_sig[0][0]))
+unique_list = list(unique_set)
+print(unique_list)
+
+vep_mt = hl.variant_qc(vep_mt)
+mt_filter = vep_mt.filter_rows( \
+    ((vep_mt.vep.colocated_variants.clin_sig[0][0] == 'pathogenic') & (hl.min(vep_mt.variant_qc.AF) < 0.01)) | \
+    ((vep_mt.vep.colocated_variants.clin_sig[0][0] == 'likely_pathogenic') & (hl.min(vep_mt.variant_qc.AF) < 0.01)))
+mt_filter.count()
+
+result = mt_filter.annotate_rows(info=mt_filter.info.annotate( \
+    AF=mt_filter.variant_qc.AF, \
+    CLNSIG=mt_filter.vep.colocated_variants.clin_sig[0][0]))
+
+hl.export_vcf(result, 'result.vcf.bgz')
+
+

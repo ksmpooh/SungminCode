@@ -26,13 +26,12 @@ str_split_fixed(a[1],"\\.",7)
 
 
 ## long hg19
+
 wDir <- "longread/coverage_hg19/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+df <- NULL
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -43,14 +42,14 @@ head(df)
 df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,4],'type'=str_split_fixed(filename,"\\.",7)[,5],'HLAgene'=str_split_fixed(filename,"_HLA-",2)[,2]) %>%
   mutate("contig"=str_split_fixed(str_split_fixed(filename,"_HLA-",2)[,1],".coverage_",2)[,2]) %>% select(-filename) -> long_hg19
 
+dim(long_hg19)
+
 ## long hg38
 wDir <- "longread/coverage_hg38_HLAregion/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -65,11 +64,9 @@ df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,4],'type'=str_split_fixed(
 ## long hg38 with alt
 wDir <- "longread/coverage_hg38_HLAregion_withALT/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -120,12 +117,11 @@ wDir <- "shortread/coverage_hg19/"
 a <- list.files(wDir)
 #a <- a[grepl("dedup",a)]
 a <- a[grepl("sorted.bam",a)]
-a
-df <- read.table(paste0(wDir,a[1]))
+
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -140,17 +136,11 @@ df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,4],'type'=str_split_fixed(
 ## long hg38
 wDir <- "shortread/coverage_hg38_HLAregion/"
 a <- list.files(wDir)
-
-
-
 #a <- a[grepl("dedup",a)]
 a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
-#rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+df <- NULL
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -171,11 +161,11 @@ a <- list.files(wDir)
 #a <- a[grepl("dedup",a)]
 a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+
+
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -210,11 +200,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -233,11 +221,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -258,11 +244,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -328,11 +312,9 @@ setwd("~/Desktop/KCDC/HLA_seq/02.bam.stat_HLAgene/")
 #long 19 exon
 wDir <- "longread/coverage_hg19_exon/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -348,10 +330,8 @@ df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,4],'type'=str_split_fixed(
 ## long hg38
 wDir <- "longread/coverage_hg38_HLAregion_exon/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
 for (i in a[2:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
@@ -375,11 +355,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -401,10 +379,8 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
-#rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
+df <- NULL#rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
+
 for (i in a[2:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
@@ -482,11 +458,9 @@ setwd("~/Desktop/KCDC/HLA_seq/02.bam.stat_HLAgene/")
 
 wDir <- "longread/coverage_hg38_whole/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -502,11 +476,9 @@ head(long_hg38_whole)
 wDir <- "longread/coverage_hg19_whole/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -523,11 +495,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -542,11 +512,9 @@ a <- list.files(wDir)
 a <- a[grepl("dedup",a)]
 #a <- a[grepl("sorted.bam",a)]
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -817,11 +785,9 @@ str_split_fixed(a[1],"\\.",7)
 ## merged gene theme1
 wDir <- "01_theme/coverage_hg19_gene/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -838,11 +804,9 @@ head(theme1_hg19_gene)
 wDir <- "02_theme/coverage_hg19_gene/"
 #wDir <- "02_theme_dedup/coverage_hg19_gene/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -856,11 +820,9 @@ head(theme2_hg19_gene)
 
 wDir <- "02_theme_dedup/coverage_hg19_gene/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -875,11 +837,10 @@ head(theme2_dedup_hg19_gene)
 ### 03 theme gene
 wDir <- "03_theme/coverage_hg19_gene/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
+
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -893,11 +854,9 @@ head(theme3_hg19_gene)
 
 wDir <- "03_theme_dedup/coverage_hg19_gene/"
 a <- list.files(wDir)
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -914,11 +873,9 @@ head(theme3_dedup_hg19_gene)
 wDir <- "01_theme/coverage_hg19_exon/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -938,11 +895,9 @@ wDir <- "02_theme/coverage_hg19_exon/"
 #wDir <- "02_theme_dedup/coverage_hg19_exon/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -960,11 +915,9 @@ head(theme2_hg19_exon)
 wDir <- "02_theme_dedup/coverage_hg19_exon/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -984,11 +937,9 @@ wDir <- "03_theme/coverage_hg19_exon/"
 #wDir <- "02_theme_dedup/coverage_hg19_exon/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1006,11 +957,9 @@ head(theme3_hg19_exon)
 wDir <- "03_theme_dedup/coverage_hg19_exon/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1031,11 +980,9 @@ head(theme3_dedup_hg19_exon)
 wDir <- "01_theme/coverage_hg19_HLAregion/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1052,11 +999,9 @@ wDir <- "02_theme/coverage_hg19_HLAregion/"
 #wDir <- "02_theme_dedup/coverage_hg19_HLAregion/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1071,17 +1016,16 @@ head(theme2_hg19)
 wDir <- "02_theme_dedup/coverage_hg19_HLAregion/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
   #print(i)
   df <- rbind(df,tmp)
 }
+
 df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,3],'type'='Theme 2 (dedup)') %>% 
   select(-filename) -> theme2_dedup_hg19
 
@@ -1092,11 +1036,9 @@ wDir <- "03_theme/coverage_hg19_HLAregion/"
 #wDir <- "02_theme_dedup/coverage_hg19_HLAregion/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1108,14 +1050,13 @@ df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,3],'type'='Theme 3') %>%
 
 head(theme3_hg19)
 
+
 wDir <- "03_theme_dedup/coverage_hg19_HLAregion/"
 a <- list.files(wDir)
 a
-df <- read.table(paste0(wDir,a[1]))
+df <- NULL
 #rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
-colnames(df) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
-df$filename <- a[1] 
-for (i in a[2:length(a)]) {
+for (i in a[1:length(a)]) {
   tmp <- read.table(paste0(wDir,i))
   colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
   tmp$filename <- i
@@ -1126,6 +1067,46 @@ df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,3],'type'='Theme 3 (dedup)
   select(-filename) -> theme3_dedup_hg19
 
 head(theme3_dedup_hg19)
+
+###HLA mapper 20230711
+wDir <- "~/Desktop/KCDC/HLA_seq/HLAinfer/HLAmapper/bam.stat/coverage_hg38_chr6to6_gene/"
+a <- list.files(wDir)
+a
+df <- NULL
+#rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
+for (i in a[1:length(a)]) {
+  tmp <- read.table(paste0(wDir,i))
+  colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
+  tmp$filename <- i
+  #print(i)
+  df <- rbind(df,tmp)
+}
+df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,1],'type'='HLAmapper (hg38)','HLAgene'=str_split_fixed(filename,"_HLA-",2)[,2]) %>% #head()
+  select(-filename) -> hlampper_gene
+
+head(hlampper_gene)
+
+wDir <- "~/Desktop/KCDC/HLA_seq/HLAinfer/HLAmapper/bam.stat/coverage_hg38_chr6to6_exon/"
+#wDir <- "02_theme_dedup/coverage_hg19_exon/"
+a <- list.files(wDir)
+a
+df <- NULL
+#rname	startpos	endpos	numreads	covbases	coverage	meandepth	meanbaseq	meanmapq
+for (i in a[1:length(a)]) {
+  tmp <- read.table(paste0(wDir,i))
+  colnames(tmp) <- c('rname','startpos','endpos','numreads','covbases','coverage','meandepth','meanbaseq','meanmapq')
+  tmp$filename <- i
+  #print(i)
+  df <- rbind(df,tmp)
+}
+head(df)
+
+df %>% mutate('ID'=str_split_fixed(filename,"\\.",7)[,1],'type'="HLAmapper (hg38)",'HLAgene'=str_split_fixed(str_split_fixed(filename,"_HLA-",2)[,2],"_exon",2)[,1]) %>%
+  mutate('exon'=str_split_fixed(str_split_fixed(filename,"_HLA-",2)[,2],"_exon",2)[,2]) %>%
+  mutate("contig"=str_split_fixed(str_split_fixed(filename,"_HLA-",2)[,1],".coverage_",2)[,2]) %>% 
+  select(-filename) -> hlampper_gene_exon
+head(hlampper_gene_exon)
+
 
 
 
@@ -1436,5 +1417,77 @@ merge_hg19_all %>%
         axis.title.x = element_blank(),
         legend.title = element_blank(),
         legend.position = "bottom")
+
+#### vs hla mapper
+long_hg38 %>% head()
+short_hg38 %>% head()
+short_hg38_dedup %>% head()
+short_hg19_exon %>% head()
+hlampper_gene %>% head()
+hlampper_gene$contig <- "6"
+
+
+short_hg38_dedup$type <- "Shortread"
+hlampper_gene$type <- "Shortread (HLAmapper)"
+
+hlampper_gene %>% rbind(short_hg38_dedup) %>%  #count(HLAgene)
+  select(-contig) %>% #head()
+  select(meandepth,numreads,coverage,ID,HLAgene,type) %>% #head()
+  ggplot(aes(x=type,y=meandepth,fill=type)) +
+  geom_boxplot() +
+  facet_wrap(~HLAgene,nrow = 1) + 
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") -> p1
+p1
+
+hlampper_gene %>% rbind(short_hg38_dedup) %>%  #count(HLAgene)  select(-contig) %>% #head()
+  select(meandepth,numreads,coverage,ID,HLAgene,type) %>% #head()
+  ggplot(aes(x=type,y=numreads,fill=type)) +
+  geom_boxplot() +
+  facet_wrap(~HLAgene,nrow = 1) + 
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") -> p2
+p2
+
+hlampper_gene %>% rbind(short_hg38_dedup) %>%  #count(HLAgene)  select(-contig) %>% #head()
+  select(meandepth,numreads,coverage,ID,HLAgene,type) %>% #head()
+  ggplot(aes(x=type,y=coverage,fill=type)) +
+  geom_boxplot() +
+  facet_wrap(~HLAgene,nrow = 1) + 
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") -> p3
+p3
+
+hlampper_gene %>% rbind(short_hg38_dedup) %>%  #count(HLAgene)  select(-contig) %>% #head()
+  select(meandepth,numreads,coverage,ID,HLAgene,type) %>% #head()
+  ggplot(aes(x=type,y=coverage,fill=type)) +
+  geom_boxplot() +
+  facet_wrap(~HLAgene,nrow = 1) + 
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "bottom") -> p4
+
+#coverage
+
+p4 <- get_legend(p4)
+p4
+
+plot_grid(
+  p1,p2,p3,p4,nrow=4,
+  rel_heights = c(4, 4,4,0.5)
+)
+
+
 
 

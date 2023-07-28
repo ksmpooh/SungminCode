@@ -22,6 +22,8 @@ head(pheno)
 colnames(pheno)
 colnames(pheno)[grep("group",colnames(pheno))]
 
+colnames(pheno)[grep("hla",colnames(pheno))]
+
 pheno %>% count(group...11 == group...10268)
 pheno %>% count(group...11 == group...10374)
 pheno %>% count(cvd == CVD)
@@ -39,7 +41,7 @@ new_pheno %>% filter(RecInfo %in% pair$bCODE) -> a
 head(a)
 colnames(a)["dm"]3
 table(a[,colnames(a)[i]])
-
+dim(a)
 '''
 Y값: rej_tot
 Time값: date_rej_tot - date_kt => month 수치로 변환 필요
@@ -68,12 +70,17 @@ new_pheno %>% filter(RecInfo %in% pair$bCODE) %>% #head() #count(rej_tot)
   mutate(SEX = ifelse(SEX == "Male",0,1)) %>%
   mutate(D_SEX = ifelse(D_SEX == "Male",0,1)) %>% #select(SEX)
   merge(pair,by.x = "RecInfo",by.y="bCODE") %>%
+  #writexl::write_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso.xlsx")
   writexl::write_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso.xlsx")
   
-df <- read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso.xlsx")  
+df <- read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2.xlsx")  
+df <- read_xlsx("20221109_KOTRY_selectFeature_forAuteRejectionAsso_v3.xlsx")
 head(df)  
 dim(df)
-  
+
+colnames(df)
+df %>% mutate('rej_time_day' = date_rej_tot - date_kt) %>% #select(rej_time_day) %>% #count(rej_time_day)
+  writexl::write_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2.xlsx")
 #  glm(paste("rej_tot ~ group+AGE+SEX+dm+cvd+cmv_igg_reci+hbsag_reci+hcv_ab_reci+ind_atg+D_AGE+D_SEX+dgf",sep=""), data=., family="binomial") -> a
   
 ## sample check

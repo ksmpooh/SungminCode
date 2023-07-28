@@ -1,0 +1,90 @@
+##### Analysis #####
+
+mkdir 03_Analysis
+cd 03_Analysis
+
+rsync -avhP /home/edu001/DATA/03_Analysis/KBAv2.0_QC_IMP.vcf.gz .
+rsync -avhP /home/edu001/DATA/03_Analysis/KBAv2.0_phenotype.txt .
+rsync -avhP /home/edu001/DATA/03_Analysis/vep.json .
+rsync -avhP /home/edu001/DATA/03_Analysis/GWASsummary_HDLC_Japanese_SakaueKanai2020.auto.txt .
+
+cp KBAv2.0_QC_IMP.vcf.gz KBAv2.0_QC_IMP.vcf.bgz
+
+python3
+import hail as hl
+hl.init(spark_conf={'spark.driver.memory': '100g'})
+
+
+hl.import_vcf('KBAv2.0_QC_IMP.vcf.bgz').write('KBAv2.0_QC_IMP.mt') # 4min
+mt = hl.read_matrix_table('KBAv2.0_QC_IMP.mt')
+
+phenotype = (hl.import_table('KBAv2.0_phenotype.txt', types={'Sample':hl.tstr, 'HDL':hl.tfloat32, 'CASE':hl.tint32, 'AGE':hl.tint32, }).key_by('Sample'))
+phenotype.describe()
+phenotype.show(5)
+
+mt_pheno = mt.annotate_cols(pheno = phenotype[mt.s])
+
+## single variant - logisitic
+logistic = hl.logistic_regression_rows(x=mt_pheno.DS, y=mt_pheno.pheno.CASE, covariates=[1.0, mt_pheno.pheno.AGE], test='wald') # 1min
+logistic.export("HDL_logistic.tsv") # 2min
+
+
+## single variant - linear
+linear = hl.linear_regression_rows(x=mt_pheno.DS, y=mt_pheno.pheno.HDL, covariates=[1.0,  mt_pheno.pheno.AGE])
+linear.export("HDL_linear.tsv")
+linear.write('linear.tbl', overwrite=True)
+
+## burden test
+mt_vep = hl.vep(mt_pheno, 'vep.json') # 1h
+mt_vep_rs = mt_vep.annotate_rows(info=mt_vep.info.annotate(rsID=mt_vep.vep.colocated_variants.id[0]))
+hl.export_vcf(mt_vep_rs, 'mt_vep.vcf.bgz') # 10min
+
+## burden test - logistic
+skat_logistic = hl.skat(key_expr=mt_vep.vep.transcript_consequences.gene_symbol, weight_expr = 1.0, x=mt_vep.GT.n_alt_alleles(), y=mt_vep.pheno.CASE,  covariates=[1.0, mt_vep.pheno.AGE], logistic = True) # 1min
+skat_logistic.export("HDL_skat_logistic.tsv")
+
+## burden test - linear
+skat_linear = hl.skat(key_expr=mt_vep.vep.transcript_consequences.gene_symbol, weight_expr = 1.0, x=mt_vep.GT.n_alt_alleles(), y=mt_vep.pheno.HDL, covariates=[1.0, mt_vep.pheno.AGE], logistic = False) # 1min
+skat_linear.export("HDL_skat_linear.tsv")
+
+
+## significant SNP
+
+logistic_sig = logistic.filter(logistic.p_value<=5e-8)
+logistic_sig.count() # 2
+
+linear_top = linear.filter(linear.p_value<=5e-8)
+linear_top.count() # 36
+
+skat_logistic_sig = skat_logistic.filter(skat_logistic.p_value<=5e-8)
+skat_logistic_sig.count() # 227
+
+skat_linear_sig = skat_linear.filter(skat_linear.p_value<=5e-8)
+skat_linear_sig.count() # 240
+
+
+### Top signal SNP (clumping)
+
+gwas = linear.select(SNP=hl.variant_str(linear.locus, linear.alleles), P=linear.p_value)
+gwas = gwas.key_by(gwas.SNP)
+gwas = gwas.select(gwas.P)
+gwas.export('HDL_linear_sumstat.tsv', header=True)
+
+hl.export_plink(mt, 'KBAv2.0_QC_IMP', fam_id=mt.s, ind_id=mt.s)
+
+
+$ /home/edu001/TOOL/plink/plink --bfile KBAv2.0_QC_IMP --clump HDL_linear_sumstat.tsv --clump-best --clump-p1 5e-8 --clump-p2 5e-8 --clump-r2 0.5 --clump-kb 500 --out KBAv2.0_QC_IMP
+$ wc -l KBAv2.0_QC_IMP.clumped  # 39
+
+
+
+### PRS ###
+
+bcftools query -f '%ID\t%rsID\n' mt_vep.vcf.bgz | grep 'rs' > rsID.txt
+plink --bfile KBAv2.0_QC_IMP --update-name rsID.txt --make-bed --out KBAv2.0_QC_IMP_rsID # error
+
+awk '{print $2"\t"$6"\t"$7"\t"$12"\t"$11}' GWASsummary_HDLC_Japanese_SakaueKanai2020.auto.txt  | sed 's/ALLELE1/A1/' | sed 's/ALLELE0/A2/' | sed 's/P_LINREG/P/' > BBJ_HDLC_GWASsumstats.auto.txt
+
+python3 /home/edu001/TOOL/PRScs/PRScs.py --ref_dir=/home/edu001/TOOL/PRScs/ref/ldblk_1kg_eas --bim_prefix=KBAv2.0_QC_IMP_rsID --sst_file=BBJ_HDLC_GWASsumstats.auto.txt --n_gwas=74970 --out_dir=. --chrom=11  # error
+
+                                                   

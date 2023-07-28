@@ -7,6 +7,8 @@ setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/03.allel
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/5M_28_33/03.allele.matching")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching/")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320_2to4/03.allele.matching/")
+setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320_2to4_5M/03.allele.matching/")
+setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/TEST.JG/03.allele.matching/")
 #setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_1kgp/03.allele.matching/")
 #setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan/8digit/03.allele.matching/")
 #flist <- list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
@@ -22,6 +24,7 @@ head(df)
 head(a)
 df <-read.table(flist[1],header = T)
 a <- df %>% summarise(across(colnames(df)[-1],sum))
+#for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
 for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
   a[,gene] <- a[,paste0(gene,".match")]/(a[,paste0(gene,".match")] + a[,paste0(gene,".wrong")])
 }
@@ -51,8 +54,9 @@ out$Tool <- "SNP2HLA"
 
 #michigan <- out
 #snp2hla1 <- out
-snp2hla <- out
-snp2hla2 <- out
+#snp2hla <- out
+#snp2hla2 <- out
+snp2hla3 <- out
 #snp2hla2 <- out
 #snp2hla_han <- out
 snp2hla_pan <- out
@@ -61,6 +65,13 @@ snp2hla_pan1 <- out
 snp2hla_pan2 <- out
 
 head(michigan)
+
+
+
+
+snp2hla <- out
+snp2hla <- out
+snp2hla <- out
 
 snp2hla %>% summarise(across(colnames(df)[-1],mean))
 
@@ -89,11 +100,12 @@ head(snp2hla)
 out <- michigan
 out <- rbind(michigan,snp2hla)
 out <- rbind(snp2hla,snp2hla2)
+out <- rbind(snp2hla,snp2hla2,snp2hla3)
 #out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan)
 head(snp2hla)
 head(snp2hla2)
 ###############################
-#head(out)
+head(out)
 out %>% 
   filter(Ref %in% c("cmp_Nomencleaner.fdvstd","cmp_Nomencleaner")) %>% #head()
   filter(!(digit == "2" & Ref == "cmp_Nomencleaner")) %>% #count(Tool,Ref)
@@ -415,4 +427,73 @@ snp2hla %>% rbind(snp2hla2) %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_D
 df <-read.table("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320_2to4/01.impresult/test.txt")
 head(f)
   
-  
+
+#####
+head(snp2hla)
+head(snp2hla2)
+
+snp2hla$type = "IMGT3320_original"
+snp2hla2$type = "IMGT3320_modify_10M"
+snp2hla3$type = "IMGT3320_modify_5M"
+
+
+snp2hla %>% rbind(snp2hla2) %>% rbind(snp2hla3) %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,type) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  filter(Ref != "cmp_RealNGStyping") %>% #head()#count(digit) 
+  filter(!(digit == 2 & Ref != "cmp_Nomencleaner.fdvstd")) %>% #head()#count()
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>%
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>%
+  ggplot(aes(x=Gene,y=Accuracy,fill=type))+
+  geom_boxplot() +
+  #facet_grid(~Tool,rows = vars(Tool))
+  facet_wrap(~digit, ncol = 2) +  
+  theme(#legend.title=element_blank(),
+    legend.text=element_text(size=11),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    axis.title.y = element_text(size = 14,face = "bold"))+
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+
+#### VS JG 2digit
+
+flist = grep(list.files("./"),pattern = "missINFO.txt", invert=TRUE, value=TRUE)
+flist
+df <-read.table(flist[1],header = T)
+a <- df %>% summarise(across(colnames(df)[-1],sum))
+for (gene in c("HLA_A","HLA_B","HLA_DRB1")) {
+  a[,gene] <- a[,paste0(gene,".match")]/(a[,paste0(gene,".match")] + a[,paste0(gene,".wrong")])
+}
+a <- a %>% mutate("overall" = match_Sum/(match_Sum + wrong_Sum),"filename" = flist[1])
+#str_split_fixed(str_split_fixed(flist[1],'\\.',5)[,3],"_",2)[,2]
+out <- a
+head(out)
+for (i in 2:length(flist)) {
+  df <-read.table(flist[i],header = T)
+  a <- df %>% summarise(across(colnames(df)[-1],sum))
+  for (gene in c("HLA_A","HLA_B","HLA_DRB1")) {
+    a[,gene] <- a[,paste0(gene,".match")]/(a[,paste0(gene,".match")] + a[,paste0(gene,".wrong")])
+  }
+  a <- a %>% mutate("overall" = match_Sum/(match_Sum + wrong_Sum),"filename" = flist[i])
+  out <- merge(out,a,all=T)
+}
+head(out)
+a <- out
+
+out <- a
+out %>% mutate(filename = str_replace_all(filename,".txt","")) %>%# head()
+  mutate('digit' = ifelse(grepl(pattern = "fd",filename),"4to2","2")) %>%
+  mutate("CV" = str_split_fixed(filename,"\\.",3)[,2]) %>% #head()
+  #mutate("digit" = ifelse(grepl("fd"str_split_fixed(filename,"\\.",8)[,8]))),"2","4to2")  %>%
+  mutate("Ref" = str_split_fixed(filename,"\\.",8)[,5]) -> out
+
+head(out)
+
+
+out %>% select(HLA_A,HLA_B,HLA_DRB1,overall,Ref,digit) %>% #head()
+  filter(digit == "4to2") %>%
+  pivot_longer(1:4) %>% mutate(Ref=str_split_fixed(Ref,"_",2)[,1]) %>% #head()
+  ggplot(aes(x=name,y=value,color=Ref)) + 
+  geom_point()
+  #facet_grid(~digit)
+
+
