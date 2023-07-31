@@ -94,3 +94,22 @@ ref = "~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/00.pheno/KR.Acute.Rej
 for df in dfs:
     os.system("python ../03.matching.check.real.vs.imp.py %s %s 2 03.allele.matching"%(ref,df))
 
+
+
+
+### check allele
+B*17
+B*60
+B*61
+B*62
+B*64
+B*71
+B*75
+DRB1*02
+DRB1*05
+DRB1*06
+DRB1*17
+DRB1*51
+
+
+hla_a1_reci	hla_a2_reci	hla_b1_reci	hla_b2_reci	hla_dr1_reci	hla_dr2_reci	ABD1_B	ABD2_B	BBD1_B	BBD2_B	DRBD1_B	DRBD2_B

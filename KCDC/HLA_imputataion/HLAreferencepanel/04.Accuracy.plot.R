@@ -49,14 +49,14 @@ out %>% mutate(filename = str_replace_all(filename,".txt","")) %>%# head()
   mutate("Ref" = str_split_fixed(filename,"\\.",4)[,4]) -> out
 
 head(out)
-#out$Tool <- "Minimac4"
-out$Tool <- "SNP2HLA"
+out$Tool <- "Minimac4"
+#out$Tool <- "SNP2HLA"
 
-#michigan <- out
+michigan <- out
 #snp2hla1 <- out
 #snp2hla <- out
 #snp2hla2 <- out
-snp2hla3 <- out
+#snp2hla3 <- out
 #snp2hla2 <- out
 #snp2hla_han <- out
 snp2hla_pan <- out
@@ -101,7 +101,7 @@ out <- michigan
 out <- rbind(michigan,snp2hla)
 out <- rbind(snp2hla,snp2hla2)
 out <- rbind(snp2hla,snp2hla2,snp2hla3)
-#out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan)
+out <- rbind(michigan,snp2hla,snp2hla_han,snp2hla_pan)
 head(snp2hla)
 head(snp2hla2)
 ###############################
@@ -265,6 +265,33 @@ snp2hla_han %>% rbind(snp2hla_pan) %>% #head()#count(digit)
   facet_grid(~digit)
   
 
+head(out)
+out %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,filename,digit,CV,Ref,Tool,Test) %>%
+  mutate(panel = str_split_fixed(filename,"\\.",5)[,3]) %>% 
+  mutate(panel = ifelse(panel == "michiganHLAimp_fd","Multi-ethnic",ifelse(panel=="SNP2HLAHLAimp_fd","KMHC",ifelse(panel=="SNP2HLAHLAimp_HanREF_fd","Han Chinese","Pan-Kor")))) %>%
+  filter(Test != "520sample") %>% 
+  select(-filename,-Ref,-CV,-Tool) %>% 
+  pivot_longer(1:8) %>% #head()
+  group_by(digit,panel,name) %>% 
+  mutate(name = str_split_fixed(name,"_",2)[,2]) %>%
+  filter(!name %in% c("A","B","DRB1")) %>%
+  summarise(mean = mean(value)) %>%
+  ggplot(aes(x=name,y=mean,fill=factor(panel,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")))) +
+  geom_bar(position="dodge",stat = "identity") + 
+  theme(legend.title = element_blank()) +
+  labs(fill = "Reference panel") + 
+  ylab("Accuracy (%)") +
+  theme(legend.position = "bottom") + 
+  theme(legend.title=element_text(size=13,face = "bold"),
+        legend.text=element_text(size=11),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14,face = "bold"))+
+  facet_grid(~digit) +
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
+
+  facet_grid(~digit)
+
+  
 ###### 2 digit : only 2 vs 2 for 4
 head(michigan)
 head(snp2hla)
