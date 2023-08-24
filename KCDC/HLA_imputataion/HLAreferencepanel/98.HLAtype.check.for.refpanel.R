@@ -18,16 +18,19 @@ michigan %>% mutate("Ref" ="Multi-ethnic","Gene" = str_split_fixed(michigan$V1,"
 #michigan$Gene <- str_split_fixed(michigan$V1,"\\*",2)[,1]
 #michigan$type <- str_split_fixed(michigan$V1,"_",2)[,2]
 michigan %>% head()
+'
+michigan %>% filter(digit=="fd") %>% select(type) %>%
+  rename("michigan" = type) %>% #head()
+  write.table("other_panel/hlatype/michigan.Nomen.2field.txt",col.names = T,row.names = F,quote = F)
+'
 
-
-
-'''
+'
            Ref  Gene     type digit
 1 Multi-ethnic HLA_A     A*01    td
 2 Multi-ethnic HLA_A  A*01:01    fd
 3 Multi-ethnic HLA_A  A*01:02    fd
 
-'''
+'
 table(michigan$Gene)
 han <- read.table("Han.hg19.haplegendtovcf.modify.hlatype_fd.txt",header = T)
 pan <- read.table("PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt",header = F) %>%

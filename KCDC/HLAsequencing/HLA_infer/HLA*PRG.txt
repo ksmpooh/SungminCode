@@ -259,6 +259,22 @@ samtools view -b cram,decode_md=0 -o NICU19-1.new.bam NICU19-1.cram
 samtools view -b  -T /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa -o NICU19-1.new.bam NICU19-1.cram
 
 
+HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA/test \
+--BAM NA12878.mini.cram \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NA12878 --maxThreads 64
+
+
+HLA-LA.pl \
+--workingDir /BDATA/smkim/HLA_seq/test/HLA-LA/test \
+--BAM NA12878.mini.cram \
+--samtools_T /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa \
+--graph PRG_MHC_GRCh38_withIMGT \
+--sampleID NA12878_T --maxThreads 64
+
+
+
 ############### complie
 ./HLA-LA --action prepareGraph --PRG_graph_dir ../graphs/PRG_MHC_GRCh38_withIMGT
 
@@ -306,3 +322,70 @@ samtools index NA12878.mini.cram
 --graph PRG_MHC_GRCh38_withIMGT \
 --sampleID NIH19KT0247_hg38_HLAregion_short --maxThreads 32
 
+\
+
+#### 106 test
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/test \
+--BAM NA12878.mini.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NA12878 --maxThreads 32
+
+
+cd  /BDATA/smkim/HLAinfer/00.rawDATA
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/00.rawDATA \
+--BAM NIH21D7475275.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NIH21D7475275 --maxThreads 60
+
+
+하나만.. 
+60core
+real    18m45.293s
+user    30m33.857s
+sys     1m44.841s
+
+20 core
+
+real    22m22.790s
+user    30m25.186s
+sys     1m59.238s
+
+10 core
+real    22m43.914s
+user    29m51.818s
+sys     1m59.655s
+
+1 core
+real    56m29.604s
+user    54m28.235s
+sys     2m30.444s
+
+time /BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/00.rawDATA \
+--samtools_T /BDATA/ramdisk/reference/Homo_sapiens_assembly38.fasta \
+--BAM NIH21D7475275.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NIH21D7475275 --maxThreads 20
+
+
+time /BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/00.rawDATA \
+--samtools_T /BDATA/ramdisk/reference/Homo_sapiens_assembly38.fasta \
+--BAM NIH21D7493772.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NIH21D7493772 --maxThreads 20
+
+time /BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/00.rawDATA \
+--samtools_T /BDATA/ramdisk/reference/Homo_sapiens_assembly38.fasta \
+--BAM NIH21D7580134.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NIH21D7580134 --maxThreads 20
+
+
+3개 한번에 돌릴때 (20 core씩)
+real    22m20.083s
+user    30m39.234s
+sys     1m43.504s
+
+real    21m43.290s
+user    30m36.481s
+sys     2m1.807s
+
+real    20m31.620s
+user    28m52.688s
+sys     2m1.141s

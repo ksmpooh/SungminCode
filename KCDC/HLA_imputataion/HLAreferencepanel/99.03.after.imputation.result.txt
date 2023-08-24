@@ -55,6 +55,7 @@ ls *gz | xargs -I{} -P 1 bash -c "tabix -f -p vcf {}"
 mkdir 01.impresult
 mkdir 02.processing
 mkdir 03.allele.matching
+mkdir 03.allele.matcing_rmnotinref
 
 
 cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_han
@@ -91,6 +92,9 @@ ls *gz | xargs -I{} -P 1 bash -c "tabix -f -p vcf {}"
 mkdir 01.impresult
 mkdir 02.processing
 mkdir 03.allele.matching
+mkdir 03.allele.matcing_rmnotinref
+
+
 g1_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
 
 cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_1kgp
@@ -187,3 +191,63 @@ for df in dfs:
 
 
 
+### check
+
+ls 02.processing/*fd.txt | cut -d"/" -f2 | xargs -I{} -P1 bash -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped 02.processing/{} 2 03.allele.matching"
+
+
+python test.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped KBA.g1_5CV.SNP2HLAHLAimp_fd.txt 4 ./
+
+
+python test_other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped KBA.g1_5CV.SNP2HLAHLAimp_HanREF_fd.txt 4 ./ /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field
+python test_other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped KBA.g1_5CV.SNP2HLAHLAimp_HanREF_td.txt 2 ./ /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field
+python test_other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped KBA.g1_5CV.SNP2HLAHLAimp_HanREF_fd.txt 42 ./ /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field
+
+
+
+
+
+### remove HLA type excluded train reference panel
+mkdir 03.allele.matcing_rmnotinref
+
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped 
+
+03.matching.check.real.vs.imp_notinref.other.py
+03.matching.check.real.vs.imp_notinref.py #5CV 
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test
+
+python test.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped KBA.g1_5CV.SNP2HLAHLAimp_fd.txt 4 ./rmnotincludetype/
+
+ls ./snp2hla_imgt3320/02.processing/KBA.g*fd* | xargs -I{} -P1 zsh -c "python 03.matching.check.real.vs.imp_notinref.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped {} 4 ./rmnotincludetype"
+
+
+
+### python
+import os,glob
+
+def main(dfs):
+    for df in dfs:
+        os.system("python 03.matching.check.real.vs.imp_notinref.v2.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 4 ./rmnotincludetype"%df)
+        os.system("python 03.matching.check.real.vs.imp_notinref.v2.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 42 ./rmnotincludetype"%df)
+        #os.system("python 03.matching.check.real.vs.imp_notinref.v2.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 2 ./rmnotincludetype"%df)
+
+
+def main_other(dfs,ref):
+    for df in dfs:
+        #os.system("python 03.matching.check.real.vs.imp_notinref.other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 4 ./rmnotincludetype %s"%(df,ref))
+        #os.system("python 03.matching.check.real.vs.imp_notinref.other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 42 ./rmnotincludetype %s"%(df,ref)
+        os.system("python 03.matching.check.real.vs.imp_notinref.other.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped %s 2 ./rmnotincludetype %s"%(df,ref))
+
+
+
+main(glob.glob("./snp2hla_imgt3320/02.processing/KBA.g*fd*"))
+#main_other(glob.glob("./michigan/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/michigan.Nomen.2field.txt")
+#main_other(glob.glob("./snp2hla_han/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field")
+#main_other(glob.glob("./snp2hla_pan/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/PanKor.Nomen.2field")
+
+
+main(glob.glob("./snp2hla_imgt3320/02.processing/KBA.g*td*"))
+main_other(glob.glob("./michigan/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/michigan.Nomen.2field.txt")
+main_other(glob.glob("./snp2hla_han/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field")
+main_other(glob.glob("./snp2hla_pan/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/PanKor.Nomen.2field")

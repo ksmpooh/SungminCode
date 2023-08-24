@@ -110,7 +110,7 @@ else:
 miss_matching_fileName = fileOut.replace(".txt","_missINFO.txt")
 
 
-
+'''
 def digit_split(hlatype,digit):
     #print(hlatype)
     if hlatype == "NA" or hlatype == "0":
@@ -123,9 +123,27 @@ def digit_split(hlatype,digit):
             return tmp[0] + ":" + tmp[1]
         else:
             return "NA"
-
+'''
 ### not panel remove
 
+def digit_split(hlatype,digit,panel_type):
+    #print(hlatype)
+    if hlatype == "NA" or hlatype == "0":
+        return "NA"
+    else:
+        tmp = hlatype.split(":")
+        if digit == "2":
+            if tmp[0] not in panel_type:
+                return "NA"
+            else:
+                return tmp[0]
+        elif digit == "4":
+            if tmp[0] + ":" + tmp[1] not in panel_type:
+                return "NA"
+            else:
+                return tmp[0] + ":" + tmp[1]
+        else:
+            return "NA"
 ###
 
 
@@ -135,7 +153,7 @@ def digit_split(hlatype,digit):
  ...
  }
 '''
-def mk_dic_forMatching(df,genes,digit):
+def mk_dic_forMatching(df,genes,digit,panel_type):
     print("mk_dic...")
     new_dic = {}
     header = df.pop(0)
@@ -150,9 +168,9 @@ def mk_dic_forMatching(df,genes,digit):
             new_dic[i[0]][gene] = []
             #print(i[header.index[gene+"_1"]])
             #new_dic[i[0]][gene].append(i[header.index[gene+"_1"]])
-            new_dic[i[0]][gene].append(digit_split(i[header.index(gene+".1")],digit))
+            new_dic[i[0]][gene].append(digit_split(i[header.index(gene+".1")],digit,panel_type))
             #new_dic[i[0]][gene].append(i[header.index[gene+"_2"]])
-            new_dic[i[0]][gene].append(digit_split(i[header.index(gene+".2")],digit))
+            new_dic[i[0]][gene].append(digit_split(i[header.index(gene+".2")],digit,panel_type))
     return new_dic
 
 
@@ -238,6 +256,53 @@ def main():
     real_df = real_df.readlines()
     infer_df = infer_df.readlines()
 
+    ##### real_df에 없는 type 지우기 위한 체크리스트
+    infer_sample_id = []
+    for i in infer_df[1:]:
+        tmp = i.split()
+        infer_sample_id.append(tmp[0])
+
+    #real_df_tmp = real_df
+    #real_df = []
+    #real_df.append(real_df_tmp.pop(0))
+    panel_type = []
+    target_type = []
+
+    for i in real_df[1:]:
+        tmp = i.strip().split()
+        if tmp[0] in infer_sample_id: 
+            ## imp에만 있는 type 추출
+            for j in tmp[2:]:
+                if j in ["0","NA"]:
+                    pass
+                else:
+                    target_type.append(j)
+        else:
+            ## panel에만 있는 type 추출
+            for j in tmp[2:]:
+                if j in ["0","NA"]:
+                    pass
+                else:
+                    panel_type.append(j)
+
+    panel_type = list(set(panel_type)) # 중복제거
+    target_type = list(set(target_type)) # 중복제거
+
+    panel_type = [s for s in panel_type if s in target_type]
+
+
+    #print(panel_type)
+
+    if digit == "2":
+        panel_type = [a.split(":")[0] for a in panel_type]
+        panel_type = list(set(panel_type)) # 중복제거
+    else:
+        panel_type = [a.split(":")[0] + ":" + a.split(":")[1] for a in panel_type]
+        panel_type = list(set(panel_type)) # 중복제거
+
+    print(panel_type)
+    print(len(panel_type))
+    #####
 
     genes = ["HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1"]
     genes = genes
@@ -251,8 +316,10 @@ def main():
             pass
     genes = new_genes
 
-    read_dic = mk_dic_forMatching(real_df,genes,digit)
-    infer_dic = mk_dic_forMatching(infer_df,genes,digit)
+    read_dic = mk_dic_forMatching(real_df,genes,digit,panel_type)
+    print(read_dic)
+    infer_dic = mk_dic_forMatching(infer_df,genes,digit,panel_type)
+    print(infer_dic)
 
     #print(read_dic)
     #print(infer_dic)
