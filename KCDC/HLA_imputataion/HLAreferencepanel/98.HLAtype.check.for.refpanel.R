@@ -36,7 +36,10 @@ han <- read.table("Han.hg19.haplegendtovcf.modify.hlatype_fd.txt",header = T)
 pan <- read.table("PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean.txt",header = F) %>%
   select(-V2,-V3,-V4,-V5,-V6)
 
-kmhc <- read.table("HLA.4digit.520sample.nomenclean.chped") %>%
+#tmp <- readxl::read_xlsx("HLAtype.compare.IMGT3320_check.xlsx",sheet = 2)
+#head(tmp)
+#kmhc <- read.table("HLA.4digit.520sample.nomenclean.chped") %>%
+kmhc <- read.table("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped") %>%
   select(-V2,-V3,-V4,-V5,-V6)
 
 ref <- read.table('../Final_520sample.index.txt',header = T)
@@ -410,7 +413,7 @@ kmhc_type %>%  mutate("count" = 1) %>%
   mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% 
   mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
   mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> kmhc_type_count
-
+#head(kmhc_type_count)
 michigan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> michigan_type
 michigan_type %>%  mutate("count" = 1) %>%
   mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
@@ -718,19 +721,19 @@ head(kmhc_freq)
 head(han_freq)
 head(pan_freq)
 
-kmhc_freq %>% group_by(Gene) %>% 
+kmhc_freq %>% group_by(Gene) %>% filter(type != 0) %>%
   na.omit() %>% #head()
   count(type) %>%
   mutate("KMHC" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>% 
   select(HLAgene,type,KMHC)-> kmhc_freq1
 
-han_freq %>% group_by(Gene) %>% 
+han_freq %>% group_by(Gene) %>% filter(type != 0) %>%
   na.omit() %>% #head()
   count(type) %>%
   mutate("Han Chinese" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>%
   select(HLAgene,type,`Han Chinese`)-> han_freq1
 
-pan_freq %>% group_by(Gene) %>% 
+pan_freq %>% group_by(Gene) %>% filter(type != 0) %>%
   na.omit() %>% #head()
   count(type) %>%
   mutate("Pan-Kor" = prop.table(n),"HLAgene" = gsub(x = Gene, pattern = "HLA_", replacement = "")) %>% 
@@ -741,6 +744,54 @@ head(kmhc_freq1)
 head(han_freq1)
 head(pan_freq1)
 
+kmhc_freq1 %>% group_by() %>% 
+  mutate(common = ifelse(KMHC >= 0.05,"common",ifelse(KMHC < 0.01,"rare","less_common"))) %>%
+  count(common)
+
+head()
+head(michigan)
+head(kmhc_type)
+head(kgp_type)
+kmhc_type %>% rbind(han_type) %>% rbind(pan_type) %>% rbind(michigan %>% filter(digit == "fd") %>% select(-digit)) %>% 
+  rbind(kgp_type) %>%
+  group_by(Ref) %>% filter(type != "0") %>%
+  count(Gene) %>% #head()
+  pivot_wider(names_from = Gene,values_from = n) -> fd_type
+
+head(fd_withkgp)
+head(td_withkgp)
+
+head(fd)
+fd %>% count(Ref,Gene) %>%
+  pivot_wider(names_from = Gene,values_from = n)
+
+fd_type
+head(han_type)
+han_type %>% filter(type == "0")
+kmhc_type %>% filter(type == "0")
+
+kmhc_type %>% rbind(han_type) %>% rbind(pan_type) %>% rbind(michigan %>% filter(digit == "fd") %>% select(-digit)) %>% 
+  rbind(kgp_type) %>%
+  group_by(Ref) %>% filter(type != "0") %>%
+  count(Gene) %>% #head()
+  pivot_wider(names_from = Gene,values_from = n) -> fd_type
+
+kmhc_type %>% rbind(han_type) %>% rbind(pan_type) %>% rbind(michigan %>% filter(digit == "fd") %>% select(-digit)) %>% 
+  rbind(kgp_type) %>% #head()
+  mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() %>%
+  group_by(Ref) %>% filter(type != "0") %>%
+  count(Gene) %>% 
+  pivot_wider(names_from = Gene,values_from = n) -> td_type
+  
+fd_type$digit <- "4"
+td_type$digit <- "2"
+
+fd_type %>% rbind(td_type) %>% select(Ref,HLA_A,HLA_B,HLA_C,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,HLA_DRB1,digit) %>%
+  writexl::write_xlsx("HLAtype.compareRef.IMGT3320.xlsx")
+  #=CONCATENATE(B7,"/",B2)
+
+kmhc_type %>% group_by(Gene) %>%
+  count(Gene) #%>% sum(n)
 
 kmhc_freq1 %>% inner_join(han_freq1) %>%
   ggscatter(.,x='KMHC',y="Han Chinese",color='HLAgene',

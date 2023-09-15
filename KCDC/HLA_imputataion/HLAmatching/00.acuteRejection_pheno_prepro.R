@@ -1,4 +1,7 @@
 ### acute rejection new pheno  20230705
+### acute rejection AMS + eplit data merged 20230831
+
+
 library(tidyverse)
 library(stringr)
 library(readxl)
@@ -95,4 +98,40 @@ head(new_pheno)
 sampleInfo %>% merge(ref) %>% 
   merge(new_pheno,by.x="bCODE",by.y = 'RecInfo',all.y = T) %>% #head( )
   count(type,Prod)
+
+##### data merge : AMS + EPLET
+
+setwd("~/Desktop/KCDC/HLAimputation/02.HLAepitope_matching/")
+df <- read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2_withEMS_20230728.xlsx")
+read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2_withEMS_20230728.xlsx") %>% colnames()
+read_xlsx("00.pheno/20221109_KOTRY_selectFeature_forAuteRejectionAsso_v2_withEMS_20230710.xlsx") %>% colnames()
+read_xlsx("20221109_KOTRY_selectFeature_forAuteRejectionAsso_v3.xlsx") %>% colnames()
+head(ref)
+head(df)
+dim(df)
+
+df %>% merge(ref,by.x = "RecInfo",by.y="bCODE") %>% rename(KBA_ID.KR = KBA_ID) %>% 
+  merge(ref,by.x = "DonInfo",by.y="bCODE") %>% rename(KBA_ID.KD = KBA_ID) -> df
+
+head(df)
+colnames(df)
+head(df)
+
+
+ams_main <- read.table("00.pheno/02.KR.KD.immune.cell.Main_signal_targetGene.alleleMatching01.Score_Sum.txt",header = T)
+ams_co <- read.table("00.pheno/02.KR.KD.immune.cell.co-signal_targetGene.alleleMatching01.Score_Sum.txt",header = T)
+
+ams_RLpair <- read.table("00.pheno/KR.KD.immune.cell.co-signal_targetGene_RLpair.alleleMatching01.Score_Sum.txt",header = T)
+head(ams_main)
+
+ams_main %>% mutate(ams_main_Score_SUM = rowSums(.[3:ncol(ams_main)])) %>% 
+  select(1,2,TRAV16_Score_SUM,NLRP11_Score_SUM,NLRP2_Score_SUM,TLR5_Score_SUM,TRBV29.1_Score_SUM,ams_main_Score_SUM) -> ams_main
+ams_co %>% mutate(ams_co_Score_SUM = rowSums(.[3:ncol(ams_co)])) %>% 
+  select(1,2,AKT1_Score_SUM,KLRB1_Score_SUM,MICA_Score_SUM,ams_co_Score_SUM) -> ams_co
+
+dim(ams_co)
+
+df %>% merge(ams_main)%>% merge(ams_co) %>% 
+  writexl::write_xlsx("00.pheno/AcuteRejection.KR.KD.phenoMerge.withEMS.AMS_significant.xlsx")
+
 

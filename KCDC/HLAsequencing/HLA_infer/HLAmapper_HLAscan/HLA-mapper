@@ -78,7 +78,7 @@ ls ../03.variant.calling/*gvcf.gz > gvcf.list.txt
 glnexus_cli --dir HLAmapper.DV.GL --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.HLAmapper.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
 glnexus_cli --dir HLAmapper.DV.GL_unfiltered --config DeepVariant_unfiltered --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.Shortread.Seq.HLAmapper.Deepvariant_Variantcalling.GLnexus_Jointcalling_unfiltered.vcf.gz
 
-
+ 
 ###concordance
 
 

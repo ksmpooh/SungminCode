@@ -775,3 +775,62 @@ python -m SNP2HLA \
     --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/g5_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit \
     --nthreads 32 \
     --mem 64g
+
+
+
+### IMGT 3320 / 
+#### merge
+#### 1. (4 field) variant + a.a + exon + intron 
+#### 2. (2 field) HLA type
+
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320
+
+KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz
+KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+
+bcftools query -f "%ID\n" KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.vcf.gz |grep -v HLA > ./merge/4field_withoutHLA.variant.txt
+bcftools query -f "%ID\n" KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz |grep HLA > ./merge/2field_withHLA.variant.txt
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/merge
+
+
+bcftools view --include ID==@4field_withoutHLA.variant.txt ../KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.vcf.gz -Oz -o KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.withoutHLAtype.vcf.gz
+bcftools view --include ID==@2field_withHLA.variant.txt ../KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz -Oz -o KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.withHLAtype.vcf.gz
+
+bcftools concat *gz |bcftools sort | bgzip -c > KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.vcf.gz
+
+- fill tag AN AC
+fill-tags -O z -o KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.fill.vcf.gz -- KMHCreferencepanel.imgt3320_4field.520.withKBA.bglv4.bgl.phased.vcf.gz -t AF,AC,AN
+bcftools plugin fill-tags -O z -o KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.vcf.gz -- KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.vcf.gz -t AF,AC,AN 
+
+
+mkdir bcfs legends m3vcfs map
+ 
+
+-	Create bcf files
+bcftools view KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.vcf.gz -O b -o ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf
+bcftools index ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf
+
+-	Create m3vcf files
+Minimac3 --refHaps [input].vcf.gz --processReference --prefix m3vcfs/[output] --rsid
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.vcf.gz --processReference --prefix ./minimac4_format/m3vcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill --rsid
+
+- make header
+nano header
+id position a0 a1 all.aaf
+
+-	Create legend files
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+
+
+
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' |  bgzip > ./minimac4_format/legends/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.legend.gz 
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > ./minimac4_format/legends/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.legend.gz 
+
+
+
