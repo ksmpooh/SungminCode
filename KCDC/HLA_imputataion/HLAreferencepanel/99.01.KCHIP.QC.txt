@@ -219,3 +219,13 @@ bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\n' JG.forHLAtyping.MHCref.25000
 
 plink --bfile JG.forHLAtyping.MHCref.25000000_35000000 --update-name id.change.forHan.txt --make-bed --out JG.forHLAtyping.MHCref.25000000_35000000_idchange
 
+
+
+
+ls *test*.bim | sed 's/.bim//g' | xargs -I{} -P 5 bash -c "plink --bfile {} --a2-allele /RDATA8/LaCie2/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out {}_convert"
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+## pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta test.bam test1.bam --sort --preset CCS
+
+
+ref : /RDATA80/smkim/HLA_seq/REF/T2T/chm13v2.0.fa
+
+outDir : /BDATA/smkim/HLA_seq/longread/01.mapped_CHM13
+inDir : /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change
+
+### longread
+HLA.Longread.Seq.NIH19KT0247.bam
+--num-threads
+
+pbmm2 align /RDATA80/smkim/HLA_seq/REF/T2T/chm13v2.0.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0247.bam HLA.Longread.Seq.NIH19KT0247.T2T_CHM13_align.bam --sort --preset CCS
+pbmm2 align /RDATA80/smkim/HLA_seq/REF/T2T/chm13v2.0.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/HLA.Longread.Seq.NIH19KT0248.bam HLA.Longread.Seq.NIH19KT0248.T2T_CHM13_align.bam --sort --preset CCS
+
+
+T2T_CHM13_align.bam
+
+# longread in 103
+ls /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/*bam |rev | cut -d'/' -f1 | rev | sed 's/.bam//' | xargs -I{} -P 6 bash -c "pbmm2 align /RDATA80/smkim/HLA_seq/REF/T2T/chm13v2.0.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/{}.bam {}.T2T_CHM13_align.bam --sort --preset CCS"
+ls *bam | sed 's/.bam//' | xargs -I{} -P 12 bash -c "samtools view {}.bam -h -q 30 -o ../02.mapped_Q30/{}.Q30.bam"
+
+# shortread in 109

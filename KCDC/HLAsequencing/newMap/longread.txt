@@ -35,6 +35,10 @@ out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_chr6_withALT
 ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.chr6_withALT.fasta {}.bam /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_chr6_withALT/{}.hg38_chr6_withALT_mapped.bam --sort --preset CCS'
 
 
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg19_whole
+ls /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/*bam |rev | cut -d'/' -f1 | rev | sed 's/.bam//' | xargs -I{} -P 2 bash -c "pbmm2 align /BDATA/smkim/HLA_seq/REF/hg19/hg19.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/{}.bam {}.hg19_whole_mapped.bam --sort --preset CCS"
+
+# Q30
 
 
 

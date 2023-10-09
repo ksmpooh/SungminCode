@@ -20,14 +20,17 @@ shDir = shortread_Dir + "SCRIPTs/"
 refDir = "/BDATA/smkim/HLA_seq/REF/"
 
 #theme = "hg19"
-theme = "hg38_HLAregion"
+#theme = "hg38_HLAregion"
 #theme = "hg38_HLAregion_withALT"
+theme = "CHM13"
 if theme == "hg38_HLAregion_withALT":
     ref = refDir + "hg38/hg38.HLA.region.target.withALT.fasta"
 elif theme == "hg38_HLAregion":
     ref = refDir + "hg38/hg38.HLA.region.target.fasta"
+elif theme == "CHM13":
+    ref = "/RDATA80/smkim/HLA_seq/REF/T2T/chm13v2.0.fa"
 else:
-    ref = refDir + "HLA.target.fasta"
+    ref = refDir + "HLA.target.v2.fasta"
 
 
 

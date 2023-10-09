@@ -119,3 +119,104 @@ python -m SNP2HLA \
 
 ##### 1KGP
 
+
+
+
+########## 20230921 after SNP maf 0.01
+
+### HLA-TATA SNP2HLA
+
+####KBA target
+## 5CV
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g2_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC
+## ALL
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000_idchange
+
+ls *test*bim | sed "s/.bim//g" | xargs -I
+
+
+##### Pan-Kor
+ref : 
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4
+###output
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g1_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g1_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g1_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g2_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g2_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g3_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g3_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g4_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g4_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g5_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/KBA_MAF0.01/g5_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz \
+    --nthreads 32 \
+    --mem 64g
+
+
+
+##### Han
+ref : 
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4
+###output
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/
+
+g5_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000.bgl.phased.vcf.gz
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g1_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/g1_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g2_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/g2_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g3_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/g3_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g4_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/g4_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han \
+    --nthreads 32 \
+    --mem 64g
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320_MAF0.01/00.KBA/g5_HLAimputation_test.MHCref.25000000_35000000_idchange.snpQC \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA_MAF0.01/g5_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han \
+    --nthreads 32 \
+    --mem 64g

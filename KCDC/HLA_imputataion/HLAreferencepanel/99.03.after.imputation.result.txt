@@ -251,3 +251,75 @@ main(glob.glob("./snp2hla_imgt3320/02.processing/KBA.g*td*"))
 main_other(glob.glob("./michigan/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/michigan.Nomen.2field.txt")
 main_other(glob.glob("./snp2hla_han/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field")
 main_other(glob.glob("./snp2hla_pan/02.processing/KBA.g*td*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/PanKor.Nomen.2field")
+
+
+#### 20230922 rm MAF 0.01 SNP
+
+ls *gz | xargs -I{} -P 1 bash -c "tabix -f -p vcf {}"
+mkdir 01.impresult
+mkdir 02.processing
+mkdir 03.allele.matching
+#mkdir 03.allele.matcing_rmnotinref
+mv *gz* 01.impresult
+
+
+ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.snpQC.bgl.phased.vcf.gz 02.processing/KBA.{}_5CV.SNP2HLAHLAimp.txt"
+
+ls *fd*txt | xargs -I{} -P 1 zsh -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped {} 4 ../03.allele.matching"
+ls *fd*txt | xargs -I{} -P 1 zsh -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped {} 42 ../03.allele.matching"
+
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_han_maf
+
+ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.Han.bgl.phased.vcf.gz 02.processing/KBA.{}_5CV.SNP2HLAHLAimp_HanREF.txt"
+
+
+python
+import os,glob
+dfs = glob.glob("02.processing/*txt")
+for df in dfs:
+    os.system("python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped %s 0 03.allele.matching"%df)
+
+dfs = glob.glob("02.processing/*fd*txt")
+for df in dfs:
+    os.system("python ../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped %s 42 03.allele.matching"%df)
+
+
+
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_pan_maf
+
+ls 01.impresult/*gz | cut -d"/" -f2 | cut -d"_" -f1 | xargs -I {} -P1 bash -c "python ../02.extract.HLA.py 01.impresult/{}_HLAimputation.SNP2HLA.KBA_snpQC.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz 02.processing/KBA.{}_5CV.SNP2HLAHLAimp_PanREF.txt"
+
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan_maf
+
+ls g*/*vcf.gz | cut -d"/" -f1 | xargs -I {} -P1 bash -c "python 02.extract.HLA.py {}/chr6.dose.vcf.gz 02.processing/KBA.{}_5CV.michiganHLAimp.txt"
+
+
+#
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_withheader.chped
+
+## python
+import os,glob
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_withheader.chped"
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        os.system("python 03.matching.check.real.vs.imp_notinref.v2.py %s %s 4 ./rmnotincludetype"%(ngs,df))
+        os.system("python 03.matching.check.real.vs.imp_notinref.v2.py %s %s 42 ./rmnotincludetype"%(ngs,df))
+        #os.system("python 03.matching.check.real.vs.imp_notinref.v2.py %s %s 4 ./rmnotincludetype"%(ngs,df))
+
+
+def main_other(dfs,ref):
+    for df in dfs:
+        os.system("python 03.matching.check.real.vs.imp_notinref.other.py %s %s 4 ./rmnotincludetype %s"%(ngs,df,ref))
+        os.system("python 03.matching.check.real.vs.imp_notinref.other.py %s %s 42 ./rmnotincludetype %s"%(ngs,df,ref))
+        #os.system("python 03.matching.check.real.vs.imp_notinref.other.py %s %s 2 ./rmnotincludetype %s"%(ngs,df,ref))
+
+main(glob.glob("./snp2hla_imgt3320/02.processing/KBA.g*fd*"))
+main_other(glob.glob("./michigan_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/michigan.Nomen.2field.txt")
+main_other(glob.glob("./snp2hla_han_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field")
+main_other(glob.glob("./snp2hla_pan_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/PanKor.Nomen.2field")
+

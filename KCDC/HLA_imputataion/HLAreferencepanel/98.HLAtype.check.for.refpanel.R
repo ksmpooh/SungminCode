@@ -47,9 +47,13 @@ head(ref)
 kmhc <- read.table("../HLA.type.result.8genes.merged.4digit_529sample_forMAKEreference.txt",header = T) %>%
   select(-IID,-pID,-mID,-SEX,-PHENO) %>% filter(FID %in% ref$KBAID)
 
+kmhc <- read.table("~/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped") %>%
+  select(-V2,-V3,-V4,-V5,-V6)
+head(kmhc)
+
 #kgp <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/1000genome/HLAtyping.1000genomePhase3.SampleInfo.typeInfo.txt",header = T)
 kgp <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/1000genome/HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_2field.chped",header = F) %>%
-  select(-V2,-V3,-V4,-V5,-V6) 
+  select(-V2,-V3,-V4,-V5,-V6)  
 
 head(kgp)
 
@@ -62,21 +66,21 @@ colnames(kgp) <- colnames(han)
 #pivot_longer(cols = c(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DRB1,HLA_DQA1,HLA_DQB1,overall),names_to = 'Gene',values_to = 'Accuracy') %>%
 han %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
-  mutate(Ref = "Han Chinese") %>% select(-ID) %>% unique()-> han_type
+  mutate(Ref = "Han Chinese") %>% select(-ID) %>% unique() %>% filter(type != "0") -> han_type
 
 pan %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
-  mutate(Ref = "Pan-Kor") %>% select(-ID) %>% unique() -> pan_type
+  mutate(Ref = "Pan-Kor") %>% select(-ID) %>% unique() %>% filter(type != "0") -> pan_type
 
 kmhc %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
-  mutate(Ref = "KMHC") %>% select(-ID) %>% unique() -> kmhc_type
+  mutate(Ref = "KMHC") %>% select(-ID) %>% unique() %>% filter(type != "0") -> kmhc_type
 
 kgp %>% #select(-Region,-Population,-Sample.ID) %>% #head()
   select(-ID,-HLA_DPA1.1,-HLA_DPA1.2,-HLA_DPB1.1,-HLA_DPB1.2,-HLA_DQA1.1,-HLA_DQA1.2) %>% #head()
   pivot_longer(1:10,names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
-  mutate(Ref = "1KGP") %>% unique() -> kgp_type
+  mutate(Ref = "1KGP") %>% unique() %>% filter(type != "0") -> kgp_type
 
 
 head(kgp_type)
@@ -96,8 +100,20 @@ fd_withkgp %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> td
 fd$digit <- "4 digit"
 td$digit <- "2 digit"
 
+fd$digit <- "Two-field"
+td$digit <- "One-field"
+
+
 fd_withkgp$digit <- "4 digit"
 td_withkgp$digit <- "2 digit"
+
+fd_withkgp$digit <- "Two-field"
+td_withkgp$digit <- "One-field"
+
+
+fd %>% rbind(td) %>%
+  count(Gene,Ref,digit) -> test
+  
 
 
 fd %>% rbind(td) %>%
@@ -109,9 +125,10 @@ fd %>% rbind(td) %>%
   theme(legend.title=element_text(size=12,face = "bold"),
         legend.text=element_text(size=10),
         axis.title.x = element_text(size = 13,face = "bold"),
-        axis.title.y = element_text(size = 13,face = "bold")) +
+        axis.title.y = element_text(size = 13,face = "bold"),
+        legend.position = "right") +
   facet_grid(~digit) + 
-  theme(strip.text.x = element_text(size = 20,face = "bold"))
+  theme(strip.text.x = element_text(size = 15,face = "bold"))
 
 
 fd_withkgp %>% rbind(td_withkgp) %>% 
@@ -124,9 +141,10 @@ fd_withkgp %>% rbind(td_withkgp) %>%
   theme(legend.title=element_text(size=12,face = "bold"),
         legend.text=element_text(size=10),
         axis.title.x = element_text(size = 13,face = "bold"),
-        axis.title.y = element_text(size = 13,face = "bold")) +
+        axis.title.y = element_text(size = 13,face = "bold"),
+        legend.position = "bottom") +
   facet_grid(~digit) + 
-  theme(strip.text.x = element_text(size = 20,face = "bold"))
+  theme(strip.text.x = element_text(size = 13,face = "bold"))
 
 
 
@@ -140,7 +158,10 @@ ggvenn::ggvenn(
   x,
   stroke_size = 0.5, set_name_size = 4
 )
-
+head(kmhc_type)
+dim(kmhc_type)
+kmhc_type %>% unique() %>% dim()
+han_type %>% unique() %>% dim()
 x <- list(KMHC = kmhc_type$type,`Multi-ethnic` = michigan[michigan$digit =='fd',]$type,`Han Chinese`  = han_type$type,`Pan-Kor` = pan_type$type,`1KGP` = kgp_type$type)
 ggvenn::ggvenn(
   x,
@@ -246,8 +267,8 @@ ggvenn::ggvenn(
   stroke_size = 0.5, set_name_size = 4
 )
 
-
-
+a %>% count(Ref)
+head(a)
 #####
 han %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
