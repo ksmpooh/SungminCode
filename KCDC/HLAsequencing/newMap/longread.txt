@@ -38,12 +38,20 @@ ls HLA.Longread.Seq.NIH19KT*bam | cut -d"." -f"1-4" | xargs -I{} -P 2 bash -c 'p
 out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg19_whole
 ls /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/*bam |rev | cut -d'/' -f1 | rev | sed 's/.bam//' | xargs -I{} -P 2 bash -c "pbmm2 align /BDATA/smkim/HLA_seq/REF/hg19/hg19.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/{}.bam {}.hg19_whole_mapped.bam --sort --preset CCS"
 
-# Q30
+out : /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_whole
+ref: /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa
+ls /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/*bam |rev | cut -d'/' -f1 | rev | sed 's/.bam//' | xargs -I{} -P 2 bash -c "pbmm2 align /BDATA/smkim/HLA_seq/REF/hg38/hg38.fa /RDATA80/smkim/HLA_seq/00.rawDATA/longread/01.ID.change/{}.bam {}.hg38_whole_mapped.bam --sort --preset CCS"
 
+
+# Q30
+ls HLA*bam | sed 's/.bam//g' | xargs -I{} -P 12 bash -c "samtools view -h -q 30 {}.bam -o ../02.mapped_Q30/{}.Q30.bam"
 
 
 
 # Q20
+ls HLA*bam | sed 's/.bam//g' | xargs -I{} -P 12 bash -c "samtools view -h -q 20 {}.bam -o ../02.mapped_Q20/{}.Q20.bam"
+
+
 01.mapped_hg19  01.mapped_hg38_HLAregion  01.mapped_hg38_HLAregion_withALT
 
 mkdir 01-1.mapped_Q20_hg19
@@ -81,6 +89,9 @@ python coverage.HLA.region.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
 python coverage.HLA.region.v2.py hg38 /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion
 python coverage.HLA.region.v2.py hg38_alt /BDATA/smkim/HLA_seq/longread/01.mapped_hg38_HLAregion_withALT
 python coverage.HLA.region.v2.py hg19 /BDATA/smkim/HLA_seq/longread/01.mapped_hg19
+
+python coverage.HLA.region.v2.py hg19_whole /BDATA/smkim/HLA_seq/longread/02.mapped_Q30/hg19_whole
+python coverage.HLA.region.v2.py hg38_whole /BDATA/smkim/HLA_seq/longread/02.mapped_Q30/hg38_whole
 
 ls *exon1.sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"
 ls *sh | xargs -I {} -P 32 bash -c "sh {}; rm {}"

@@ -1,0 +1,11 @@
+!cwas categorization -i de_novo_variants.annotated.vcf.gz -o_dir ../cwas_output -p 2
+
+cwas binomial_test -i ./de_novo_variants.categorization_result.zarr -o_dir ./ -s ../cwas-input-example/samples.txt -a ../cwas-input-example/adj_factors.txt
+
+cwas permutation_test -i cwas_output/de_novo_variants.categorization_result.zarr \
+-o_dir cwas_output \
+-s cwas-input-example/samples.txt \
+-a cwas-input-example/adj_factors.txt \
+-n 10 \
+-b \
+-p 2

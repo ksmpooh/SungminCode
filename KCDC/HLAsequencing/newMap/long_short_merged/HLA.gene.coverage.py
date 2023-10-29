@@ -1,7 +1,7 @@
 '''
 python HLA.gene.coverage.py [build] [wDir]
 
-# build : hg19, hg38, hg38_alt, hg38_chr6to6 (HLAmapper)
+# build : hg19, hg19_whole, hg38, hg38_alt, hg38_chr6to6 (HLAmapper)
 '''
 
 import os,glob,sys
@@ -14,6 +14,9 @@ os.system("mkdir %s"%shDir)
 #812	NR_132323.1	chr6:28510020-33480577	+	1281885	1287787	1287787	1287787	3	1281885,1282416,1287172,	1282285,1282686,1287787,	0	HLA-V	none	none	-1,-1,-1,
 
 genes = ["HLA-A","HLA-B","HLA-C","HLA-DRB1","HLA-DQA1","HLA-DQB1","HLA-DPA1","HLA-DPB1"]
+
+
+
 
 def make_target_ref(fileIn,target_contig):
     tmp = open(fileIn,'r')
@@ -105,12 +108,18 @@ def main():
     if build == "hg19":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg19_ncbiRefSeq.sorted_onlyForHLA_forIGV.txt"
         target_contig= ["6_28477797_33448354"]
+    elif build == "hg19_whole":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg19_ncbiRefSeq.sorted_onlyforHLA_oripos.txt"
+        target_contig= ["chr6"]
     elif build == "hg38":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577"]
+    elif build == "hg38_whole":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAgene_oripos.txt"
+        target_contig = ["chr6","chr6_GL000250v2_alt", "chr6_GL000251v2_alt", "chr6_GL000252v2_alt", "chr6_GL000253v2_alt", "chr6_GL000254v2_alt", "chr6_GL000255v2_alt", "chr6_GL000256v2_alt", "chr6_KI270758v1_alt"]
     elif build == "hg38_chr6to6":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_chr6to6.txt"
-        target_contig = ["6"]    
+        target_contig = ["6"]
     else:
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577","chr6_GL000250v2_alt", "chr6_GL000251v2_alt", "chr6_GL000252v2_alt", "chr6_GL000253v2_alt", "chr6_GL000254v2_alt", "chr6_GL000255v2_alt", "chr6_GL000256v2_alt", "chr6_KI270758v1_alt"]
@@ -120,8 +129,8 @@ def main():
 
     ref_df = make_target_ref(ref,target_contig)
     bams = glob.glob("%s/*.bam"%wDir)
-    os.system("mkdir %scoverage_%s_gene"%(wDir,build))
-    outDir = wDir + "coverage_%s_gene/"%build
+    os.system("mkdir %s/coverage_%s_gene"%(wDir,build))
+    outDir = wDir + "/coverage_%s_gene/"%build
     #shDir = 
     for bam in bams:
         for line in ref_df:
@@ -144,9 +153,16 @@ def main_exon():
     if build == "hg19":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg19_ncbiRefSeq.sorted_onlyForHLA_forIGV.txt"
         target_contig= ["6_28477797_33448354"]
+    elif build == "hg19_whole":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg19_ncbiRefSeq.sorted_onlyforHLA_oripos.txt"
+        target_contig= ["chr6"]
     elif build == "hg38":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_forIGV.txt"
         target_contig = ["chr6_28510020_33480577"]
+    elif build == "hg38_whole":
+        ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAgene_oripos.txt"
+        #target_contig = ["chr6","chr6_GL000250v2_alt", "chr6_GL000251v2_alt", "chr6_GL000252v2_alt", "chr6_GL000253v2_alt", "chr6_GL000254v2_alt", "chr6_GL000255v2_alt", "chr6_GL000256v2_alt", "chr6_KI270758v1_alt"]
+        target_contig = ["chr6"]
     elif build == "hg38_chr6to6":
         ref = "/BDATA/smkim/HLA_seq/REF/IGV/hg38_ncbiRefSeq_chr6_HLAregion_chr6to6.txt"
         target_contig = ["6"]    
@@ -160,8 +176,8 @@ def main_exon():
     #ref_df = make_target_ref_forExon(ref,target_contig)
     ref_df = make_target_ref_forExon1(ref,target_contig)
     bams = glob.glob("%s/*.bam"%wDir)
-    os.system("mkdir %scoverage_%s_exon"%(wDir,build))
-    outDir = wDir + "coverage_%s_exon/"%build
+    os.system("mkdir %s/coverage_%s_exon"%(wDir,build))
+    outDir = wDir + "/coverage_%s_exon/"%build
     #shDir = 
     for bam in bams:
         for line in ref_df:
@@ -175,6 +191,27 @@ def main_exon():
             shOut.write("samtools coverage -r %s:%s-%s %s > %s"%(contig,start,end,bam,out))
             shOut.close()
 
+def main_contig():
+    build = sys.argv[1]
+    wDir = sys.argv[2]
+    
+    bams = glob.glob("%s/*.bam"%wDir)
+    os.system("mkdir %s/coverage_%s_contig"%(wDir,build))
+    outDir = wDir + "/coverage_%s_contig/"%build
+    #shDir = 
+    for bam in bams:
+        for i in range(1,22+1):
+            tmp = "coverage_chr%s"%(str(i))
+            out = bam.replace(wDir,outDir).replace(".bam",".bam.%s"%tmp)
+            shout = out.replace(outDir,shDir) + ".sh"
+            #print(shout)
+            shOut = open(shout,'w')
+            shOut.write("samtools coverage -r chr%s %s > %s"%(str(i),bam,out))
+            shOut.close()
+        
+
 
 main()
 main_exon()
+main_contig():
+

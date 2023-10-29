@@ -389,3 +389,56 @@ sys     2m1.807s
 real    20m31.620s
 user    28m52.688s
 sys     2m1.141s
+
+
+### 경희대 HLA infer
+
+HLA_LA.sh
+
+
+in=$1 #ID
+out=/BDATA/smkim/HLAinfer/01.HLA_LA  #outDir
+echo $in
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir $out \
+--samtools_T /BDATA/ramdisk/reference/Homo_sapiens_assembly38.fasta \
+--BAM $in.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID $in --maxThreads 10
+
+#rsync -avhP $in.cram* /RDATA6/HLAref/01.cram/
+mv $in.cram* /RDATA6/HLAref/01.cram/
+
+
+
+
+
+
+
+
+
+## sh HLA_LA.sh [sampleID]
+
+
+
+/BDATA/smkim/TOOLs/HLA-LA/src/HLA-LA.pl \
+--workingDir /BDATA/smkim/HLAinfer/00.rawDATA \
+--samtools_T /BDATA/ramdisk/reference/Homo_sapiens_assembly38.fasta \
+--BAM NIH21D7580134.cram --graph PRG_MHC_GRCh38_withIMGT --sampleID NIH21D7580134 --maxThreads 20
+
+
+### 106
+## cram input : /ADATA/smkim/HLAinfer/00.cram
+## HLA output : /BDATA/smkim/HLAinfer/01.HLA_LA
+## backup : /RDATA6/HLAref/01.cram
+
+
+
+
+/BDATA/smkim/HLAinfer/SCRIPTs/HLA_LA.sh
+## sh HLA_LA.sh [sampleID]
+ls *cram | head -100 | sed 's/.cram//g'|xargs -I{} -P 6 bash -c "/BDATA/smkim/HLAinfer/SCRIPTs/HLA_LA.sh {}"
+ls *cram | sed 's/.cram//g'|xargs -I{} -P 6 bash -c "/BDATA/smkim/HLAinfer/SCRIPTs/HLA_LA.sh {}"
+
+
+
+/BDATA/smkim/HLAinfer/SCRIPTs/HLA_LA.sh NIH21D7025405
