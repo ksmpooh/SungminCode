@@ -442,3 +442,11 @@ ls *cram | sed 's/.cram//g'|xargs -I{} -P 6 bash -c "/BDATA/smkim/HLAinfer/SCRIP
 
 
 /BDATA/smkim/HLAinfer/SCRIPTs/HLA_LA.sh NIH21D7025405
+
+
+## save for result
+
+01_1.HLA_LA_Result.Merge
+
+
+ls -d * | xargs -I{} -P 2 bash -c "rsync -avhP {}/hla/* ../01_1.HLA_LA_Result.Merged/{}"

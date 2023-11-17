@@ -95,6 +95,8 @@ michigan %>% filter(digit == 'fd') %>% select(-digit) %>%
 
 
 head(fd)
+head(td)
+td %>% count(Ref)
 fd %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> td
 fd_withkgp %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> td_withkgp
 fd$digit <- "4 digit"
@@ -153,7 +155,9 @@ michigan %>% filter(digit == 'fd') %>% select(-digit) %>%
 
 VennDiagram::venn.diagram(x=list())
 
+
 x <- list(KMHC = kmhc_type$type,`Multi-ethnic` = michigan[michigan$digit =='fd',]$type,`Han Chinese`  = han_type$type,`Pan-Kor` = pan_type$type)
+x <- list(KMHC = td[td$Ref == "KMHC",]$type,`Multi-ethnic` = td[td$Ref == "Multi-ethnic",]$type,`Han Chinese`  = td[td$Ref == "Han Chinese",]$type,`Pan-Kor` = td[td$Ref == "Pan-Kor",]$type)
 ggvenn::ggvenn(
   x,
   stroke_size = 0.5, set_name_size = 4
@@ -383,6 +387,7 @@ VennDiagram::venn.diagram(list(g1  = a[a$group == 1,]$type,
                   five_fold  = a[a$group == 5,]$type),
                   filename = "test.png"
              )
+
 venn::venn(x,zcolor = "style")
 
 
@@ -397,6 +402,7 @@ fd %>% rbind(td) %>% select(-Gene) %>%
   count()
 
 head(td)
+head(fd)
 han_type
 pan_type
 michigan_type
@@ -404,16 +410,21 @@ kmhc_type
 kgp_type
 
 table(kmhc_type$type %in% michigan_type$type)
-
-kmhc_type %>% mutate("count" = 1) %>%
-  mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% 
+head(kmhc_type)
+kmhc_type %>% mutate("count" = 1) %>%  #head()
+  mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% #head()
   mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> kmhc_type_count
-  
+  mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% #head()
+  count(Ref,count) -> kmhc_type_count
+
+head(kmhc_type_count)
+
 michigan_type %>% mutate("count" = 1) %>%
   mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
   mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
   mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> michigan_type_count
+
+michigan_type_count
 
 han_type %>% mutate("count" = 1) %>%
   mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
@@ -426,40 +437,59 @@ pan_type %>% mutate("count" = 1) %>%
   mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% count(Ref,count) -> pan_type_count
 
 kmhc_type_count %>% rbind(michigan_type_count) %>% rbind(han_type_count) %>% rbind(pan_type_count) %>% #head()
-  mutate(count = as.factor(count),"digit" = "4 digit") -> fd_count
-  
+  mutate(count = as.factor(count),"digit" = "Two-field") -> fd_count
 
-kmhc_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> kmhc_type
-kmhc_type %>%  mutate("count" = 1) %>%
-  mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> kmhc_type_count
+head(fd_count)
+fd_count %>% count(Ref)
+#kmhc_type2 <- kmhc_type
+#michigan_type2 <- michigan_type
+#han_type2 <- han_type
+#pan_type2 <- pan_type
+
+kmhc_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> kmhc_type2
+michigan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> michigan_type2
+han_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->han_type2
+pan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->pan_type2
+
+kmhc_type2 %>% #mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() %>% head()
+  mutate("count" = 1) %>% 
+  mutate(count = ifelse(type %in% michigan_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% han_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% pan_type2$type,count+1,count)) %>% count(Ref,count) -> kmhc_type_count
 #head(kmhc_type_count)
-michigan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> michigan_type
-michigan_type %>%  mutate("count" = 1) %>%
-  mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> michigan_type_count
 
-han_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->han_type
-han_type %>%  mutate("count" = 1) %>%
-  mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% pan_type$type,count+1,count)) %>% count(Ref,count) -> han_type_count
+#michigan %>% filter(digit == "td") %>% select(-digit) %>%
+#michigan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() -> michigan_type
+michigan_type2 %>%
+  mutate("count" = 1) %>%
+  mutate(count = ifelse(type %in% kmhc_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% han_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% pan_type2$type,count+1,count)) %>% count(Ref,count) -> michigan_type_count
 
-pan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->pan_type
-pan_type %>%mutate("count" = 1) %>%
-  mutate(count = ifelse(type %in% kmhc_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% han_type$type,count+1,count)) %>% 
-  mutate(count = ifelse(type %in% michigan_type$type,count+1,count)) %>% count(Ref,count) -> pan_type_count
+#han_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->han_type
+han_type2 %>% #mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() %>%
+  mutate("count" = 1) %>%
+  mutate(count = ifelse(type %in% kmhc_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% michigan_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% pan_type2$type,count+1,count)) %>% count(Ref,count) -> han_type_count
+
+#pan_type %>% mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique() ->pan_type
+pan_type2 %>% #mutate(type = str_split_fixed(type,":",2)[,1]) %>% unique()%>%
+  mutate("count" = 1) %>%
+  mutate(count = ifelse(type %in% kmhc_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% han_type2$type,count+1,count)) %>% 
+  mutate(count = ifelse(type %in% michigan_type2$type,count+1,count)) %>% count(Ref,count) -> pan_type_count
 
 kmhc_type_count %>% rbind(michigan_type_count) %>% rbind(han_type_count) %>% rbind(pan_type_count) %>% #head()
-  mutate(count = as.factor(count),"digit" = "2 digit") -> td_count
+  mutate(count = as.factor(count),"digit" = "One-field") -> td_count
+
+td_count
+fd_count
 
 #head(han_type_count)
 fd_count %>% rbind(td_count) %>% group_by(Ref) %>% #head()
   mutate(per=paste0(n,"(",round(n/sum(n)*100, 0), "%)")) %>%
-  mutate(per=ifelse(count==1,per,NA)) %>%
+  mutate(per=ifelse(count==1,per,NA)) %>%# head()
   ggplot(aes(x= factor(Ref,levels = c("KMHC","Multi-ethnic","Han Chinese","Pan-Kor")),y=n,fill=count)) +
   geom_bar(stat="identity") + 
   geom_text(size = 4,aes(label = per),hjust = 0.5, vjust = -1, position = "stack") +

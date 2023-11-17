@@ -25,8 +25,20 @@ sudo ~/hadoop-3.3.0/sbin/start-dfs.sh
 
 sudo ~/hadoop-3.3.0/sbin/stop-dfs.sh
 sudo ~/spark-3.1.2/sbin/stop-master.sh
+
+~/spark-3.1.2/sbin/start-master.sh
+~/hadoop-3.3.0/sbin/start-dfs.sh
+
+~/hadoop-3.3.0/sbin/stop-dfs.sh
+~/spark-3.1.2/sbin/stop-master.sh
+
 # worker
 
-sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7078
+sudo ~/spark-3.1.2/sbin/start-worker.sh spark://genome106:7077
 sudo ~/spark-3.1.2/sbin/stop-worker.sh
+
+~/spark-3.1.2/sbin/start-worker.sh spark://genome106:7077
+~/spark-3.1.2/sbin/stop-worker.sh
+
+
 # ./start-slave.sh spark://your_host_name:7077 -m 512M -c 1

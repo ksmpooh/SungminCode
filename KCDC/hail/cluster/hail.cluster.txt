@@ -89,3 +89,114 @@ print("mt time : %s"%(str(end-start)))
 print("mt_partition time : %s"%(str(end1-start1)))
 print("vcf time : %s"%(str(end2-start2)))
 hl.stop()
+
+
+###### 20231116 cluster (102,103,108). vs singlenode (106)
+
+
+import hail as hl
+import time
+
+hl.init()
+
+
+start = time.time()
+hl.import_vcf("/SDATA/smkim/hail/JG.ESRD.chr22.merge.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
+mt = hl.read_matrix_table("/SDATA/smkim/hail/JG.for.hail.mt")
+
+table = (hl.import_table("/SDATA/smkim/hail/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0],test="firth")
+gwas.export('/SDATA/smkim/hail/test_output.tsv')
+end = time.time()
+print("vcf time : %s"%(str(end-start)))
+
+
+## local
+
+import hail as hl
+import time
+
+hl.init()
+#hl.init(master='spark://genome101:7078')
+
+start0 = time.time()
+hl.import_vcf("/SDATA/smkim/hail/JG.ESRD.chr22.merge.vcf.bgz").write("JG.for.hail.mt",overwrite=True)
+end0 = time.time()
+
+
+table = (hl.import_table("/SDATA/smkim/hail/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+
+start = time.time()
+
+mt = hl.read_matrix_table("/SDATA/smkim/hail/JG.for.hail.mt")
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.export("local_hailmt.nopartition.tsv")
+end = time.time()
+
+start1 = time.time()
+mt = hl.read_matrix_table("/SDATA/smkim/hail/JG.for.hail.mt")
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.export("local_hailmt.80partition.tsv")
+end1 = time.time()
+
+
+start2 = time.time()
+mt1 = hl.import_vcf("/SDATA/smkim/hail/JG.ESRD.chr22.merge.vcf.bgz")
+mt1 = mt1.annotate_cols(pheno = table[mt1.s])
+gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0,mt1.pheno.SEX,mt1.pheno.AGE],test="firth")
+gwas.export("local_vcf.nopartition.tsv")
+end2 = time.time()
+
+print("mt convert time(VCF to mt) : %s"%(str(end0-start0)))
+print("mt time : %s"%(str(end-start)))
+print("mt_partition time : %s"%(str(end1-start1)))
+print("vcf time : %s"%(str(end2-start2)))
+hl.stop()
+
+
+## cluster
+
+import hail as hl
+import time
+
+#hl.init()
+hl.init(master='spark://genome101:7077',tmp_dir = "hdfs://genome101:9000/test/tmp")
+
+start0 = time.time()
+hl.import_vcf("hdfs://genome101:9000/test/JG.ESRD.chr22.merge.vcf.bgz").write("hdfs://genome101:9000/test/JG.for.hail.mt",overwrite=True)
+end0 = time.time()
+
+
+table = (hl.import_table("hdfs://genome101:9000/test/new.pheno.sub_Total.ped",types={"FAM_ID":hl.tstr,"SEX":hl.tint32,"CASE":hl.tint32,"AGE":hl.tint32}).key_by("FAM_ID"))
+
+start = time.time()
+
+mt = hl.read_matrix_table("hdfs://genome101:9000/test/JG.for.hail.mt")
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.export("hdfs://genome101:9000/test/cluster_hailmt.nopartition.tsv")
+end = time.time()
+
+start1 = time.time()
+mt = hl.read_matrix_table("hdfs://genome101:9000/test/JG.for.hail.mt")
+mt = mt.annotate_cols(pheno = table[mt.s])
+gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
+gwas.export("hdfs://genome101:9000/test/cluster_hailmt.80partition.tsv")
+end1 = time.time()
+
+
+start2 = time.time()
+mt1 = hl.import_vcf("hdfs://genome101:9000/test/JG.ESRD.chr22.merge.vcf.bgz")
+mt1 = mt1.annotate_cols(pheno = table[mt1.s])
+gwas = hl.logistic_regression_rows(y=mt1.pheno.CASE,x=mt1.DS,covariates=[1.0,mt1.pheno.SEX,mt1.pheno.AGE],test="firth")
+gwas.export("hdfs://genome101:9000/test/cluster_vcf.nopartition.tsv")
+end2 = time.time()
+
+print("mt convert time(VCF to mt) : %s"%(str(end0-start0)))
+print("mt time : %s"%(str(end-start)))
+print("mt_partition time : %s"%(str(end1-start1)))
+print("vcf time : %s"%(str(end2-start2)))
+hl.stop()

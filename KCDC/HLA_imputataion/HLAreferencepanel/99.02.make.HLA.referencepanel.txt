@@ -648,6 +648,20 @@ python -m NomenCleaner \
 --out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field \
 --2field
 
+###### common HLA
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.chped \
+--out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.afternomen \
+--2field
+
+python -m NomenCleaner \
+--hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.chped \
+--out /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.afternomen_filed \
+--4field
+
+
+
+
 genome@genome109:/BDATA/smkim/JG.HLAimputation$ python test.py
 genome@genome109:/BDATA/smkim/JG.HLAimputation/HLA-TAPAS$ ls *sh |xargs -I{} -P 2 bash -c "sh {}"
 
@@ -714,7 +728,29 @@ python -m MakeReference \
     --nthreads 32
 
 
+## common
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.MHCref.25000000_35000000 \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.afternomen_filed.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320_commonHLA/KMHCreferencepanel.imgt3320_2to4field_commonHLA.520.withKBA.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 32
 
+
+
+python -m MakeReference \
+    --variants  MakeReference/example/g1k_subset_snps \
+    --chped MakeReference/example/g1k_subset.chped \
+    --hg 19 \
+    --out MakeReference/example/g1k_subset.bglv4 \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --nthreads 32 \
+    --phasing
 
 
 ### 1000 genome project 20230602

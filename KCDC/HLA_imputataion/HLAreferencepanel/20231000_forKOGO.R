@@ -101,7 +101,8 @@ out %>% #filter(digit == 2) %>% #head()
   select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,panel) %>% #count(CV,Tool,Ref)#head()#count(CV)
   pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>% #head()
   group_by(panel,digit) %>% #head()
-  summarise(Accuracy = ceiling(mean(Accuracy)*100)) %>% #head()
+  #summarise(Accuracy = ceiling(mean(Accuracy)*100)) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) %>% #head()
   #mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% 
   mutate(digit = ifelse(digit == "2","One-field","Two-field")) %>%
   mutate(panel = factor(panel, levels = c("SNP2HLAHLAimp","michiganHLAimp","SNP2HLAHLAimp_HanREF", "SNP2HLAHLAimp_PanREF"), labels = c("KMHC", "Multi-ethnic","Han Chinese", "Pan-Kor"))) %>% 
@@ -121,7 +122,7 @@ out %>% #filter(digit == 2) %>% #head()
   theme(strip.text.x = element_text(size = 13,face = "bold")) +
   coord_flip(clip = "on",ylim = c(50, 100))-> p1
 
-
+p1
 
 out %>% #filter(digit == 2) %>% #head()
   select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,panel) %>% #count(CV,Tool,Ref)#head()#count(CV)
@@ -132,7 +133,8 @@ out %>% #filter(digit == 2) %>% #head()
   mutate(panel = factor(panel, levels = c("SNP2HLAHLAimp","michiganHLAimp","SNP2HLAHLAimp_HanREF", "SNP2HLAHLAimp_PanREF"), labels = c("KMHC", "Multi-ethnic","Han Chinese", "Pan-Kor"))) %>% 
   mutate(class = ifelse(Gene %in% c("A","B","C"),"class I","class II")) %>% #head()
   group_by(panel,digit,class) %>%
-  summarise(Accuracy = round(mean(Accuracy)*100)) %>% #head()
+  #summarise(Accuracy = round(mean(Accuracy)*100)) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) %>% #head()
   #summarise(Accuracy = mean(Accuracy)) %>% #head()
   ungroup() %>%
   ggplot(aes(x=fct_rev(class),y=Accuracy,fill=panel))+
@@ -158,7 +160,8 @@ out %>% #filter(digit == 2) %>% #head()
   filter(Gene %in% c("A","B","DRB1")) %>%
   group_by(panel,digit,Gene) %>% #head()
   #summarise(Accuracy = mean(Accuracy)) %>% #head()
-  summarise(Accuracy = round(mean(Accuracy)*100)) %>% #head()
+  #summarise(Accuracy = round(mean(Accuracy)*100)) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) %>% #head()
   ungroup() %>%
   ggplot(aes(x=fct_rev(Gene),y=Accuracy,fill=panel))+
   #geom_boxplot() +
@@ -173,14 +176,49 @@ out %>% #filter(digit == 2) %>% #head()
         axis.title.x = element_blank()) + 
   theme(strip.text.x = element_text(size = 13,face = "bold")) +
   coord_flip(clip = "on",ylim = c(80, 100))-> p3
+p3
 
+out %>% #filter(digit == 2) %>% #head()
+  select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,panel) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>% #head()
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% 
+  mutate(digit = ifelse(digit == "2","One-field","Two-field")) %>%
+  mutate(panel = factor(panel, levels = c("SNP2HLAHLAimp","michiganHLAimp","SNP2HLAHLAimp_HanREF", "SNP2HLAHLAimp_PanREF"), labels = c("KMHC", "Multi-ethnic","Han Chinese", "Pan-Kor"))) %>% 
+  filter(Gene %in% c("A","B","DRB1")) %>%
+  group_by(panel,digit,Gene) %>% #head()
+  #summarise(Accuracy = mean(Accuracy)) %>% #head()
+  #summarise(Accuracy = round(mean(Accuracy)*100)) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) %>% #head()
+  ungroup() %>%
+  ggplot(aes(x=fct_rev(Gene),y=Accuracy,fill=panel))+
+  #geom_boxplot() +
+  geom_bar(stat='identity',position = 'dodge') + 
+  facet_wrap(~digit, ncol = 2) +  
+  geom_text(size = 4,aes(label = Accuracy),hjust = 1, vjust = 0.5,position = position_dodge(width = .9)) +
+  scale_fill_discrete(name="Ref.Panel") +
+  theme(#legend.title=element_blank(),
+        #legend.title=element_text("Ref.panel"),
+        legend.text=element_text(size=11),
+        legend.position = "bottom",
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank()) + 
+  theme(strip.text.x = element_text(size = 13,face = "bold")) +
+  coord_flip(clip = "on",ylim = c(80, 100))-> p4
 
-p <- ggarrange(p1, p2, p3,widths = c(1,1.2,1.2),ncol = 3)
+p4<- cowplot::get_legend(p4)
+p4
 
-annotate_figure(p,
+p0 <- ggarrange(p1, p2, p3,widths = c(1,1.2,1.2),labels = c("A","B","C"),ncol = 3)
+p0 <- annotate_figure(p0,
                 #top = text_grob("Visualizing len", color = "red", face = "bold", size = 14),
-                bottom = text_grob("Accuracy (%)", size = 18,face = "bold")
+                bottom = text_grob("Accuracy (%)", size = 15,face = "bold")
 )
+
+p <- ggarrange(p0, p4,heights = c(4,1),ncol = 1)
+p
+#annotate_figure(p,
+                
 
 
 gga            

@@ -1,3 +1,5 @@
+20231113 참고: https://velog.io/@somnode/hadoop-cluster-install
+
 ----- Linux setting
 
 ## ~/.bashrc
@@ -232,7 +234,7 @@ jps
 
 
 ~/spark-3.1.2/sbin/start-master.sh
-~/spark-3.1.2/sbin/start-worker.sh spark://genome101:7077
+~/spark-3.1.2/sbin/start-worker.sh spark://genome106:7077
 
 ~/spark-3.1.2/sbin/stop-master.sh
 ~/spark-3.1.2/sbin/stop-worker.sh
@@ -241,9 +243,8 @@ jps
 python
 =========================================================================== python3
 import hail as hl
-#hl.init(master='spark://genome101:7077')
-#hl.init(master='spark://genome101:7077',tmp_dir = "hdfs://genome101:9000/user/")
-hl.init(master='spark://genome101:7077',tmp_dir = "/LaCie1H/smkim/hail/")
+
+hl.init(master='spark://genome106:7077',tmp_dir = "hdfs://genome106:9000/user/")
 mt = hl.balding_nichols_model(n_populations=3,
                               n_samples=500,
                               n_variants=500_000,
@@ -252,8 +253,8 @@ mt = mt.annotate_cols(drinks_coffee = hl.rand_bool(0.33))
 gwas = hl.linear_regression_rows(y=mt.drinks_coffee,
                                  x=mt.GT.n_alt_alleles(),
                                  covariates=[1.0])
-#gwas.export('hdfs://genome101:9000/user/test.tsv')
-gwas.export('/LaCie1H/smkim/hail/test.tsv')
+gwas.export('hdfs://genome106:9000/user/test.tsv')
+
 2021-12-29 13:40:35 Hail: INFO: merging 32 files totalling 42.8M...26 + 6) / 32]
 2021-12-29 13:40:36 Hail: INFO: while writing:
     hdfs://genome101:9000/user/test/test.tsv
