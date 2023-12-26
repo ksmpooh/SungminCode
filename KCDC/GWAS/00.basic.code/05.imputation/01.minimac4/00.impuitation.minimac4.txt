@@ -1,0 +1,52 @@
+
+minimac.command: --refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} \
+--prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites \
+--meta --minRatio 0.00001 \
+${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}
+
+
+minimacv4 --refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window 500000 \
+--prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites \
+--meta --minRatio 0.00001 \
+${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}
+
+
+%s --ignoreDuplicates --chr %s \
+--start %s --end %s --minRatio 0.000001 --window 1000000 \
+--refhaps %s --haps %s --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1
+
+
+#minimac.window: 500000
+#contact.name: Christian Fuchsberger
+#chunksize: 20000000
+            20000000
+#minimac.tmp: /tmp
+
+
+
+
+/BDATA/smkim/TOOLs/Minimac4
+
+/SDATA/smkim/KBA_130K/12.panel/m3vcfs/chr22_wgs8k_imputationPanel.m3vcf.gz
+
+%s --ignoreDuplicates --chr 22 --minRatio 0.000001 --window 1000000 \
+--refhaps %s --haps %s --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1
+
+
+/BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr9_combined_b37_addCHR.m3vcf.txt
+/BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr20_wgs8k_imputationPanel.m3vcf.gz
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
+--refhaps /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr20_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix ../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr20_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 60
+
+
+for chr in $(seq 1 22);do
+    /BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
+    --refhaps /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr$chr_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --noPhoneHome --allTypedSites \
+    --format GT,DS,GP --prefix ../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr$chr.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr$chr_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 60
+    done
+
+#plink --bfile [output].chr$chr --chr $chr --recode vcf --out [output].chr$chr

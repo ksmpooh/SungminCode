@@ -5,7 +5,8 @@ library(stringr)
 library(cowplot)
 library(gridExtra)
 library(ggpubr)
-
+library(ggthemes)
+library(reshape2)
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/")
 
 michigan <- read.table("michigan.hla.type.info")
@@ -117,6 +118,7 @@ fd %>% rbind(td) %>%
   count(Gene,Ref,digit) -> test
   
 
+#fd %>% rbind(td) %>% writexl::write_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/HLAtype_4panel.xlsx")
 
 fd %>% rbind(td) %>%
   count(Gene,Ref,digit) %>% #head()
@@ -859,6 +861,117 @@ kmhc_freq1 %>% inner_join(han_freq1) %>%
 
 kmhc_freq1 %>% inner_join(han_freq1) %>% #head()
   correlate()
+
+
+#### venn bar
+df <- readxl::read_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/HLAtype_4panel.xlsx")
+head(df)
+table(df$Ref)
+df %>% filter(digit=="Two-field") %>% select(Ref,Gene,type) %>% filter(Ref == "Multi-ethnic") -> multi
+df %>% filter(digit=="Two-field") %>% select(Ref,Gene,type) %>% filter(Ref == "KMHC") -> kmhc
+df %>% filter(digit=="Two-field") %>% select(Ref,Gene,type) %>% filter(Ref == "Han Chinese") -> han
+df %>% filter(digit=="Two-field") %>% select(Ref,Gene,type) %>% filter(Ref == "Pan-Kor") -> pan
+
+
+  
+head(kmhc) 
+head(multi)
+kmhc %>% mutate(venn=ifelse(type %in% multi$type,"0",Ref)) -> kmhc1
+multi %>% filter(!(type %in% kmhc$type)) %>% mutate(venn=Ref) %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Multi") -> multi1
+
+kmhc %>% mutate(venn=ifelse(type %in% pan$type,"0",Ref)) -> kmhc1
+pan %>% filter(!(type %in% kmhc$type)) %>% mutate(venn=Ref) %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Pan") -> pan1
+
+kmhc %>% mutate(venn=ifelse(type %in% han$type,"0",Ref)) -> kmhc1
+han %>% filter(!(type %in% kmhc$type)) %>% mutate(venn=Ref) %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Han") -> han1
+
+
+kmhc %>% mutate(venn=ifelse(type %in% multi$type,'1','0')) -> kmhc1
+multi %>% filter(!(type %in% kmhc$type)) %>% mutate(venn='2') %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Multi") -> multi1
+
+kmhc %>% mutate(venn=ifelse(type %in% pan$type,'1','0')) -> kmhc1
+pan %>% filter(!(type %in% kmhc$type)) %>% mutate(venn='3') %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Pan") -> pan1
+
+kmhc %>% mutate(venn=ifelse(type %in% han$type,'1','0')) -> kmhc1
+han %>% filter(!(type %in% kmhc$type)) %>% mutate(venn='4') %>% rbind(kmhc1) %>%
+  mutate(Ref = "KMHC vs Han") -> han1
+
+
+
+library(ggplot2)
+#library(HH)
+
+multi1 %>% rbind(pan1) %>% rbind(han1) %>%
+  ggplot(aes(y=Ref,x=Ref,fill=venn)) +
+  geom_bar(position="stack", stat="identity") +
+  theme_fivethirtyeight() + 
+  coord_flip()
+
+
+multi1 %>% rbind(pan1) %>% rbind(han1) %>% 
+HH::likert(Ref., positive.order = FALSE, main="Female Responses to know how students react to maths anxiety.", scales = list(y = list(cex = .65)))
+
+head(df)
+
+df %>% filter(digit == "Two-field") %>% dplyr::select(Ref,type) %>% #head()
+  pivot_wider(names_from = Ref,values_from = type) -> df1
+
+multi1 %>% rbind(pan1) %>% rbind(han1) %>% #head()
+  count(Ref,venn) -> df1
+head(df1)  
+#writexl::write_xlsx(df1,"~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/HLAtype_forvennbar.xlsx")
+
+df1 <- readxl::read_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/HLAtype_forvennbar.xlsx",na = "NA",sheet = 2)
+
+head(df1)
+df1 %>% select(type,KMHC,`Multi-ethnic`,Intersection,`Han Chinese`,`Pan-Kor`) %>% #dplyr::select(-venn) %>% #head()
+#  pivot_wider(names_from = Ref,values_from = n,values_fill = NA) %>%
+  HH::likert( ordered=FALSE)
+
+
+df1 %>% pivot_longer(cols = 2:6,values_to = "count") %>% #head()
+  na.omit() %>% ##head()
+  mutate(name = fct_relevel(name,"KMHC","Intersection","Multi-ethnic","Han Chinese","Pan-Kor"),name=fct_rev(name)) %>% #count(type)
+  #mutate(name =)
+  #mutate(name = fct_relevel(name,"KMHC","Inter","Mulit","Han","Pan")) %>% #count(type)
+
+  ggplot(aes(x=factor(type,levels = c("KMHC vs Pan-Kor","KMHC vs Han Chinese","KMHC vs Multi-ethnic")),y=count,fill=name)) +
+  #ggplot(aes(x=type,y=count,fill=name)) +
+  #ggplot(aes(x=factor()type,y=count,fill=name)) +
+  geom_col() + 
+  geom_text(aes(label=count,fontface="bold"),position = position_stack(vjust = 0.5),color="white") + 
+  coord_flip() + 
+  #scale_fill_discrete(breaks = c("KMHC","Inter","Mulit","Han","Pan")) +
+  #scale_x_discrete(breaks = c("KMHC vs Han","KMHC vs Pan","KMHC vs Multi")) + 
+  #scale_fill_manual(values=c("#F8766D", "grey","#7CAE00","#00BFC4","#C77CFF"),guide=guide_legend(c("KMHC","Inter","Mulit","Han","Pan"))) +
+  scale_fill_manual(values=c("#C77CFF","#00BFC4","#7CAE00","grey","#F8766D"),guide=guide_legend(c("KMHC","Intersection","Multi-ethnic","Han Chinese","Pan-Kor"))) +
+  #scale_fill_manual(values=c("#C77CFF","#00BFC4","#7CAE00","grey","#F8766D"),guide=guide_legend(c("KMHC","Inter","Mulit","Han","Pan"))) +
+  #scale_fill_manual(values=c("#F8766D", "grey","#7CAE00","#00BFC4","#C77CFF",guide=guide_legend(reverse = TRUE)))+
+#  scale_fill_viridis_d() + 
+  labs(x=NULL) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        panel.grid = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") -> a
+
+df1 %>% pivot_longer(cols = 2:6,values_to = "count") %>% #head()
+  
+
+
+
+
+
+  #scale_fill_manual(values=c("#C77CFF","#00BFC4","#7CAE00","grey","#F8766D"),guide=guide_legend(c("KMHC","Inter","Mulit","Han","Pan"))) +
+
+
+
 
 
 '''

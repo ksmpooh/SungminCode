@@ -38,6 +38,12 @@ out %>% mutate(filename = str_replace_all(filename,".txt","")) %>%# head()
 head(out)
 table(out$Ref)
 table(out$CV)
+'''
+out %>% 
+  mutate(panel = factor(panel, levels = c("SNP2HLAHLAimp", "SNP2HLAHLAimp_HanREF", "SNP2HLAHLAimp_PanREF", "michiganHLAimp"), labels = c("KMHC", "Han Chinese", "Pan-Kor", "Multi-ethnic"))) %>% 
+  writexl::write_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/HLAimputation_result_compare.4panels.xlsx")
+'''
+
 
 out %>% #filter(digit == 2) %>% #head()
   select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,Ref,digit,panel) %>% #count(CV,Tool,Ref)#head()#count(CV)

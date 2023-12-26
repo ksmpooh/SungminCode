@@ -37,7 +37,7 @@ sudo docker run -v "/BDATA/smkim/HLA_seq/test":"/input" -v "/BDATA/smkim/HLA_seq
 /BDATA/smkim/HLA_seq/pacbio_20230110
 
 pbaa cluster /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0247.fastq HLA.Longread.Seq.NIH19KT0247.pbaa
-pbaa cluster -j 20 /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248.pbaa
+pbaa cluster -j 20 /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta ㅌ/BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248.pbaa
 --log-file pbaa.log --log-level INFO
 pbaa cluster -j 20 --log-file pbaa.log --log-level INFO /BDATA/smkim/HLA_seq/REF/HLA_guide/main/guides.fasta /BDATA/smkim/HLA_seq/00.rawDATA/1stTest/HLA.Longread.Seq.NIH19KT0248.fastq HLA.Longread.Seq.NIH19KT0248.pbaa
 

@@ -323,3 +323,92 @@ main_other(glob.glob("./michigan_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/D
 main_other(glob.glob("./snp2hla_han_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/Han.Nomen.2field")
 main_other(glob.glob("./snp2hla_pan_maf/02.processing/KBA.g*fd*"),"/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/PanKor.Nomen.2field")
 
+
+###20231120 by HLA frequency (common less_common rare)
+
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/
+
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_lesscommon.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_rare.chped
+
+
+03.allele.matching_freq
+
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped
+
+ls *fd*txt | xargs -I{} -P 1 zsh -c "python ../../03.matching.check.real.vs.imp.py  {} 4 ../03.allele.matching_freq"
+ls *fd*txt | xargs -I{} -P 1 zsh -c "python3 ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped {} 4 ../03.allele.matching_freq"
+
+ls *fd*txt | xargs -I{} -P 1 zsh -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped {} 4 ../03.allele.matching_freq"
+
+
+## python
+'''
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_lesscommon.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped
+HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_rare.chped
+'''
+
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+#KBA.g1_5CV.SNP2HLAHLAimp_fd.cmp_Nomencleaner_missINFO.txt
+#KBA.g1_5CV.SNP2HLAHLAimp_fd.cmp_Nomencleaner.txt
+
+def main():
+    python_script = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/03.matching.check.real.vs.imp_notinref.v2.py"
+    theme = ["common","lesscommon","notrare","rare"]
+    out_Dir = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching_freq"
+    in_dir = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/02.processing"
+    dfs = glob.glob("%s/KBA.g*fd*"%in_dir)
+
+    for i in theme:
+        print("theme: %s"%i)
+        ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_%s.chped"%i
+        for df in dfs:            
+            os.system("python3 %s %s %s 4 %s"%(python_script,ngs,df,out_Dir))
+        outs = glob.glob("%s/*Nomencleaner.txt"%out_Dir)
+        #print(dfs)
+        for j in outs:
+            os.system("mv %s %s"%(j,j.replace(".txt",".%s.txt"%i)))
+        outs = glob.glob("%s/*Nomencleaner_missINFO.txt"%out_Dir)
+        for j in outs:
+            os.system("mv %s %s"%(j,j.replace(".txt",".%s.txt"%i)))
+
+
+main()
+
+    
+
+    
+
+###
+## python
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_withheader.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        os.system("python3 ../03.matching.check.real.vs.imp_notinref.v2.py %s %s 4 ./03.allele.matching_freq"%(ngs,df))
+        
+
+main(glob.glob("./02.processing/KBA.g*fd*"))
+
+
+
+
+### 20231128 Dosage R2
+
+##INFO=<ID=DR2,Number=1,Type=Float,Description="Dosage R-Squared: estimated squared correlation between estimated REF dose [P(RA) + 2*P(RR)] and true REF dose">
+
+
+ bcftools query -f '%ID\t%REF\t%ALT\t%DR2'
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 1 bash -c "bcftools query -f '%ID\t%REF\t%ALT\t%DR2' {}.vcf.gz |grep HLA > {}_DR2.txt"
+
+

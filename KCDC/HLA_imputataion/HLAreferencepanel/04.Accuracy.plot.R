@@ -1,5 +1,6 @@
 library(stringr)
 library(tidyverse)
+
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan/03.allele.matching/")
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla/03.allele.matching/")
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_han/03.allele.matching/")
@@ -14,15 +15,16 @@ setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/TEST.JG
 #flist <- list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
 #list.files("./",pattern = "missINFO.txt", invert=TRUE, value=TRUE)
 
-
+setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching_freq/")
 
 ################
-flist = grep(list.files("./"),pattern = "missINFO.txt", invert=TRUE, value=TRUE)
+flist = grep(list.files("./"),pattern = "missINFO", invert=TRUE, value=TRUE)
 
 flist
 head(df)
 head(a)
 df <-read.table(flist[1],header = T)
+head(df)
 a <- df %>% summarise(across(colnames(df)[-1],sum))
 #for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
 for (gene in c("HLA_A","HLA_B","HLA_C","HLA_DRB1","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1")) {
@@ -523,4 +525,95 @@ out %>% select(HLA_A,HLA_B,HLA_DRB1,overall,Ref,digit) %>% #head()
   geom_point()
   #facet_grid(~digit)
 
+
+###### 20231121 by frequency
+
+head(out)
+out$freq <- str_split_fixed(out$Ref,"\\.",2)[,2]
+out %>% count(freq)
+
+out %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,freq) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>% #head()
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% #head()
+  filter(freq != "notrare") %>% #count(freq,Gene)
+  group_by(freq,Gene) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) -> a
+  
+head(out)
+#writexl::write_xlsx(out,"~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.5CV.result.byfreq.xlsx")
+
+
+
+out %>% select(HLA_A,HLA_B,HLA_C,HLA_DRB1,HLA_DPA1,HLA_DPB1,HLA_DQA1,HLA_DQB1,overall,CV,freq) %>% #count(CV,Tool,Ref)#head()#count(CV)
+  pivot_longer(1:9,names_to = "Gene",values_to = 'Accuracy') %>% #head()
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% #head()
+  #filter(freq != "notrare") %>% #filter(is.na(Accuracy))
+  na.omit() %>%
+  group_by(freq,Gene) %>% #head()
+  summarise(Accuracy = round(mean(Accuracy)*100,1)) %>% #head()
+  ungroup() %>%
+  ggplot(aes(x=fct_rev(freq),y=Accuracy,fill=freq))+
+  geom_bar(stat='identity',position = 'dodge')  + 
+  facet_wrap(~Gene, ncol = 3) +  
+  geom_text(size = 4,aes(label = Accuracy),hjust = 1, vjust = 0.5,position = position_dodge(width = .9)) +
+  scale_fill_discrete(name="Frequency") +
+  theme(#legend.title=element_text("bold"),
+      #legend.title=element_text("Ref.panel"),
+      legend.text=element_text(size=11),
+      legend.position = "bottom",
+      axis.text.y = element_text(size = 12),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank()) + 
+    theme(strip.text.x = element_text(size = 13,face = "bold")) +
+    coord_flip(clip = "on",ylim = c(0, 100)) #-> p4
+  
+
+
+df <- readxl::read_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.5CV.result.byfreq.xlsx")
+
+colnames(df)
+df %>% select(grep(".match",colnames(df)),grep(".wrong",colnames(df)),match_Sum,wrong_Sum,CV,freq) %>% #head()
+  rename('all.match' = match_Sum, 'all.wrong' = wrong_Sum) %>% #head()
+  group_by(freq) %>% #colnames()
+  #summarise(across(HLA_A.match:HLA_DQB1.wrong, sum)) %>% #head()
+  summarise(across(HLA_A.match:all.wrong, sum)) -> df
+
+head(df)
+
+df %>% select(freq,grep(".match",colnames(df))) %>%
+  pivot_longer(2:10,names_to = "Gene",values_to = 'match_count') %>% 
+  mutate(Gene = str_split_fixed(Gene,"\\.",2)[,1]) -> a
+
+df %>% select(freq,grep(".wrong",colnames(df))) %>%
+  pivot_longer(2:10,names_to = "Gene",values_to = 'wrong_count') %>% 
+  mutate(Gene = str_split_fixed(Gene,"\\.",2)[,1]) -> b
+
+a %>% left_join(b) %>% filter(freq %in% c("common","lesscommon")) %>% #head()
+  group_by(Gene) %>%
+  summarise(across(match_count:wrong_count,sum)) %>% mutate(freq = "not_Rare")  -> c
+head(a)  
+head(c)
+
+a %>% left_join(b) %>% rbind(c) %>% mutate(Accuracy = match_count/(match_count+wrong_count), Allele_count = paste0(match_count,"/",match_count + wrong_count)) %>% #head()
+  mutate(Gene = str_replace_all(Gene,"HLA_","")) %>% #head()
+  mutate(Gene = ifelse(Gene == "all","Overall",Gene)) %>% #head()
+  filter(freq != "notrare") %>% #head()
+  na.omit() %>% #head()
+  mutate(Accuracy = round((Accuracy)*100,1)) %>%
+  ggplot(aes(x=fct_rev(freq),y=Accuracy,fill=freq))+
+  geom_bar(stat='identity',position = 'dodge')  + 
+  facet_wrap(~Gene, ncol = 3) +  
+  geom_text(size = 5,aes(label = Accuracy),hjust = 1, vjust = 0.5,position = position_dodge(width = .9)) +
+  geom_text(size = 4,aes(label = Allele_count),y=00,hjust = 0) +
+  scale_fill_discrete(name="Frequency") +
+  theme(#legend.title=element_text("bold"),
+    #legend.title=element_text("Ref.panel"),
+    legend.text=element_text(size=11),
+    legend.position = "bottom",
+    axis.text.y = element_text(size = 12),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank()) + 
+  theme(strip.text.x = element_text(size = 13,face = "bold")) +
+  #coord_flip(clip = "on",ylim = c(0, 100)) #-> p4
+  coord_flip(clip = "on")
 

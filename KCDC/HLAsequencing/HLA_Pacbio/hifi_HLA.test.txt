@@ -1,0 +1,308 @@
+### HLA hifi pacbio
+
+https://github.com/PacificBiosciences/hifihla
+
+
+hifihla call-consensus [OPTIONS] --fasta <FASTA> --outdir <OUTDIR>
+hifihla call-contigs [OPTIONS] --abam <ALIGNED_ASSEMBLY> --hap1 <HAP1_FA> --outdir <OUTDIR>
+hifihla align-imgt [OPTIONS]
+
+genome@genome106:/BDATA/smkim/HLAseq/hifiHLA
+
+hifihla call-consensus \
+--fasta pbaa_12878-HG001_passed_cluster_sequences.fasta \
+--outdir my_output_dir/ \
+-v
+
+hifiasm -o 2020HLAseq001.asm -t 64 2020HLAseq001.bc1001--bc1001.hifi_reads.fastq.gz
+
+
+conda activate pacbio_python2
+
+
+hifihla call-consensus \
+--fasta 2nd_Cell.bc1001--bc1001.fasta \
+--outdir test/ \
+-v
+
+pbaa cluster -j 32 --log-file pbaa_1.classI.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta HLA.Longread.Seq.NIH19KT0247.fastq HLA.Longread.Seq.2020HLAseq001_HLAclassI.pbaa
+pbaa cluster -j 32 --log-file pbaa_1.classII.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsII_guides.fasta HLA.Longread.Seq.NIH19KT0247.fastq HLA.Longread.Seq.2020HLAseq001_HLAclassII.pbaa
+
+
+hifihla call-consensus \
+--fasta HLA.Longread.Seq.2020HLAseq001_HLAclassI.pbaa_Longread_HLA-A_ecr.fasta \
+--outdir A \
+-v
+
+
+
+pbmm2 align /BDATA/smkim/HLAseq/REF/HLA_guide/main/guides.fasta ../2nd_Cell.bc1001--bc1001.bam test_2nd001.bam --sort --preset CCS
+
+
+bedtools bamtofastq -i input.bam -fq output.fastq
+
+bedtools bamtofastq -i test_2nd001.bam -fq output.fastq
+
+pbaa cluster -j 32 --log-file pbaa_cluster.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/main/guides.fasta output.fastq output.pbaa.cluster
+pbaa cluster -j 32 --log-file pbaa_cluster.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/main/filtered.fasta output.fastq output.pbaa.cluster.filter.fasta
+
+pbaa cluster -j 32 --log-file pbaa_1.classI.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta output.fastq output.pbaa.cluster_classI
+pbaa cluster -j 32 --log-file pbaa_1.classII.log --log-level INFO /BDATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsII_guides.fasta output.fastq output.pbaa.cluster_classII --iterations 5
+
+
+hifihla call-consensus \
+--fasta output.pbaa.cluster.filter.fasta_passed_cluster_sequences.fasta \
+--outdir ./ \
+-v
+
+DATA: 
+ - HLA targeted capture sequencing (5M): Chr6 : 28477797-33448354 (hg19)
+ - it is not targeted classical HLA gene, targted HLA region(5M)
+  
+try 1.
+hifihla call-consensus
+1. hifihla cell-consensus using raw data (fastq) 
+2. error: Segmentation fault (core dumped)
+
+try 2.
+hifihla call-consensus
+1. longread mapping pbmm2 using guide ref -> select mapping reads (only align to HLA gene reads)
+2. bam to fastq (fastq index)
+3. pbaa cluster 
+    - classI OK
+    - classII not working: automatic process kill)
+4. hifihla call-consensus
+
+
+wilson told me...
+1. Lima (trim) : trim pcr primer 
+2. mapping with hg38 using minimap2
+3. hifiasm (assembly)
+4. pbaa cluster (amplicon)
+5. hifihla call-contigs (hla typing)
+
+hifihla call-contigs \
+          --abam HG002.asm.GRCh38.bam \
+          --hap1 HG002.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 HG002.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir my_output_dir \
+          -vv
+
+
+
+whilon try
+
+## trim
+rule primer_trim:
+    input:
+        primers=config['primers'], #primers_gba_gbap1.fasta
+        reads=f'batches/{batch}/demux/demultiplex.{{barcode}}.bam',
+    output:
+        base=f'batches/{batch}/{{sample}}/primertrim/{{barcode}}/primerClipped.bam',
+        report=f'batches/{batch}/{{sample}}/primertrim/{{barcode}}/primerClipped.lima.report',
+    params:
+        preset=f'--ccs --min-score {config["minPrimerMatch"]} --min-end-score {config["minPrimerMatch"]} --min-ref-span 0.75 --different --min-scoring-regions 2',
+        loglevel='INFO',
+    threads:
+        2
+    log:
+        f'batches/{batch}/logs/primertrim/{{sample}}.{{barcode}}.log'
+    conda:
+        'envs/lima.yaml'
+    shell:
+        '''
+        (lima {params.preset} \
+              -j {threads} \
+              --log-level {params.loglevel} \
+              {input.reads} {input.primers}
+
+minPrimerMatch: 95
+subsample: 1000
+randomSeed: 42
+maxClusteringReads: 500
+minClusterFrequency: 0.125
+minClusterReads: 10
+maxAmpliconSize: 20000
+maxUchime: 1
+primers: 'workflow/data/primers_gba_gbap1.fasta'
+
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 \
+--log-level INFO \
+input.reads /BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta
+
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --log-level INFO \
+{input.unalign.bam} \
+workflow/data/primers_gba_gbap1.fasta \
+{output.bam}
+
+
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 \
+--log-level INFO \
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam \
+/BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta \
+HLA.Longread.Seq.NIH19KT0247.trim_lima.bam
+
+
+lima \
+--ccs --min-score 80 --min-end-score 50 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --hifi-preset ASYMMETRIC \
+--log-level INFO \
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam \
+/BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta \
+HLA.Longread.Seq.NIH19KT0247.trim_lima.bam
+
+
+lima --ccs --min-score 80 --min-end-score 50 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --hifi-preset ASYMMETRIC \
+--log-level INFO \
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam \
+/BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta \
+HLA.Longread.Seq.NIH19KT0247.trim_lima.bam
+
+
+lima /BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam \
+/BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta --split-bam \
+HLA.Longread.Seq.NIH19KT0247.trim_lima.bam --hifi-preset SYMMETRIC -j 64 --log-level INFO
+
+
+lima /BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam \
+/BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta --split-bam \
+HLA.Longread.Seq.NIH19KT0247.trim_lima.bam --hifi-preset ASYMMETRIC -j 64 --log-level INFO
+
+
+      1 >GBA_f
+      2 CTGTCAGCAGGCATTGTTC
+      3 >GBA_r
+      4 GGTTAGGAATCCTCTGAGCTTC
+      5 >GBAP1_f
+      6 ACTGTTAGAAAGTTGCCGTCA
+      7 >GBAP1_r
+      8 GGAGAGTTGTCCGTCTTCAA
+
+
+
+https://github.com/PacificBiosciences/hifi-amplicon-workflow
+
+Hello, Wilson
+
+I'm looking for trimming, but the only way to do it with lima is "hifi-amplicon-workflow".
+So I referenced the "primertrim.smk" file in the workflow.
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --log-level INFO \
+{input.unalign.bam} \
+workflow/data/primers_gba_gbap1.fasta \
+{output.bam}
+
+But I'm not getting any analytics, can you please check?
+
+
+
+
+Maybe it's because we've already demuliplexed the data?
+When I received the data, it was demuliplexed using lima.
+
+
+
+02.minimap2
+./minimap2 -ax map-hifi ref.fa pacbio-ccs.fq.gz > aln.sam
+
+minimap2 -ax map-hifi ../HLA.Longread.Seq.NIH19KT0247.fastq 
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta
+
+minimap2 -ax map-hifi -t 32 human_GRCh38_no_alt_analysis_set.fasta [input.fasta]|samtools sort > algm_sort.bam
+#minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta ../00.raw/HLA.Longread.Seq.NIH19KT0247.fastq > algm.bam
+minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta ../00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz |samtools sort > algm_sort.bam
+minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta ../00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz |samtools sort > algm_sort_basic.bam
+
+
+
+hifiasm -o NIH19KT0247.asm -t 64 ../00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz
+
+## gfa to fq
+awk '/^S/{print ">"$2;print $3}' test.p_ctg.gfa > test.p_ctg.fa
+
+
+NIH19KT0247.asm.bp.hap1.p_ctg.gfa
+NIH19KT0247.asm.bp.hap2.p_ctg.gfa
+
+
+awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.r_utg.gfa | bgzip -c > NIH19KT0247.asm.bp.r_utg.fasta.gz
+minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta NIH19KT0247.asm.bp.r_utg.fasta.gz |samtools sort > NIH19KT0247.asm.bp.r_utg.minimap2_map.bam
+
+awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.p_utg.gfa | bgzip -c > NIH19KT0247.asm.bp.p_utg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.hap1.p_ctg.gfa | bgzip -c > NIH19KT0247.asm.bp.hap1.p_ctg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.hap2.p_ctg.gfa | bgzip -c > NIH19KT0247.asm.bp.hap2.p_ctg.fasta.gz
+ls *gz | xargs -I {} -P 2 bash -c 'samtools faidx {}'
+
+### hifihla
+hifihla call-contigs \
+          --abam HG002.asm.GRCh38.bam \
+          --hap1 HG002.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 HG002.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir my_output_dir \
+          -vv
+
+
+hifihla call-contigs \
+          --abam ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.minimap2_map.bam \
+          --hap1 ../03.hifiasm/NIH19KT0247.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 ../03.hifiasm/NIH19KT0247.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test \
+          -vv > log.log
+
+hifihla call-contigs \
+          --abam ../02.minimap2/algm_sort_basic.bam \
+          --hap1 ../03.hifiasm/NIH19KT0247.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 ../03.hifiasm/NIH19KT0247.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test \
+          -vv > log.log
+
+
+hifihla call-contigs \
+          --abam ../02.minimap2/algm_sort_basic.bam \
+          --hap1 ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.fasta.gz \
+          --outdir test \
+          -vv > log.log
+
+
+hifihla call-contigs \
+          --abam ../00.raw/HLA.Longread.Seq.NIH19KT0247.hg38_chr6_withALT_mapped.bam \
+          --hap1 ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.fasta.gz \
+          --outdir test \
+          -vv > log.log
+
+hifihla call-consensus \
+--fasta ../03.hifiasm/NIH19KT0247.asm.bp.hap1.p_ctg.fasta.gz \
+--outdir ./test1 \
+-v
+
+hifihla call-consensus \
+--fasta ../03.hifiasm/NIH19KT0247.asm.bp.hap2.p_ctg.fasta.gz \
+--outdir ./test2 \
+-v
+
+hifihla call-consensus \
+--fasta ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.fasta.gz \
+--outdir ./test0 \
+-v
+
+
+
+
+
+
+seqtk subseq human_GRCh38_no_alt_analysis_set.fasta basic_contig.txt > human_GRCh38_no_alt_analysis_set.basic.fasta
+
+pbmm2 align /RDATA80/smkim/HLA_seq/REF/HLA.target.v2.fasta ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.fasta.gz NIH19KT0247.asm.bp.r_utg.map_pbmm2.bam --sort --preset CCS

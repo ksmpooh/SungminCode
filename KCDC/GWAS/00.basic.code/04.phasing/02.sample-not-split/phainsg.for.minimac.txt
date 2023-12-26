@@ -19,6 +19,17 @@ for chr in $(seq 1 22);do
     done
 
 
+for chr in $(seq 1 22);do
+	plink --bfile [output].chr$chr --chr $chr --a2-allele /RDATA8/LaCie2/smkim/GWAS/02.phasing/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out [output].chr$chr
+    done
+
+for chr in $(seq 1 22);do
+	plink --bfile KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF --chr $chr --a2-allele /RDATA8/LaCie2/smkim/GWAS/02.phasing/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out ../04.phasing/01.split_convert_vcf/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr$chr
+    done
+
+
+
+
 
 
 mkdir 02.chr_phasing
@@ -29,10 +40,61 @@ import os
 
 tool =   "~/Downloads/Eagle_v2.4.1/eagle"
 a = [5]
-for chr in range(1,22+1):
+for chr in range(2,9+1):
 	chr = str(chr)
-	i= "/BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/01.split_convert_vcf/KKY.6th.QCed.chr"+chr
-	m = "/BDATA/smkim/JG/04.phasing/INPUTs/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
-	os.system(tool + " --vcf "+i+".vcf --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix /BDATA/smkim/KKY_6th/04.phasing/OUTPUTs/02.chr_phasing/KKY.6th.phasing.chr" +chr+" --numThreads 48")
+	i= "KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr"+chr
+	m = "/BDATA/smkim/ref/04.phasing/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
+	os.system(tool + " --vcf "+i+".vcf --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix /SDATA/smkim/KBA_130K/04.phasing/02.chr_phasing/KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr" +chr+" --numThreads 72")
 
 
+
+
+import os
+
+tool =   "~/Downloads/Eagle_v2.4.1/eagle"
+a = [5]
+for chr in range(10,19+1):
+	chr = str(chr)
+	i= "KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr"+chr
+	m = "/BDATA/smkim/GWAS/ref/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
+	os.system(tool + " --vcf "+i+".vcf --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr" +chr+" --numThreads 60")
+
+
+
+
+
+### ref guide
+
+### 3. vcf to vcf phasing
+
+import os
+
+tool =   "~/Downloads/Eagle_v2.4.1/eagle"
+a = [5]
+for chr in range(1,9+1):
+	chr = str(chr)
+	i= "KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr"+chr
+	m = "/BDATA/smkim/ref/04.phasing/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
+	ref = "/SDATA/smkim/KBA_130K/12.panel/bcfs/chr%s_wgs8k_imputationPanel.bcf"%chr
+	os.system(tool + " --vcfRef "+ref+" --vcfTarget "+i+".vcf.gz --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix /SDATA/smkim/KBA_130K/04.phasing/03.refguide.chr_phasing/KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr" +chr+" --numThreads 90")
+
+
+
+
+import os
+
+tool =   "~/Downloads/Eagle_v2.4.1/eagle"
+a = [5]
+for chr in range(10,19+1):
+	chr = str(chr)
+	i= "KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr"+chr
+	m = "/BDATA/smkim/GWAS/ref/map/genetic_map_chr"+chr+"_combined_b37_addCHR.txt"
+	ref = "/BDATA/smkim/KBA_130K/12.panel/bcfs/chr%s_wgs8k_imputationPanel.bcf"%chr
+	os.system(tool + " --vcfRef "+ref+" --vcfTarget "+i+".vcf.gz --geneticMapFile "+m+" --chrom "+chr+" --vcfOutFormat z --outPrefix KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr" +chr+" --numThreads 60")
+
+
+
+
+
+
+#eagle.command: --vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX

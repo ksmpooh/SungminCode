@@ -125,17 +125,112 @@ hla_freq %>% count(Gene,freq) %>%
         axis.title.y = element_text(size = 14,face = "bold"))
 
 
-
 head(hla_freq)
 
-ref <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped",header = F)
+#write.table(hla_freq,"~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/KMHC_HLAtype_frequency.txt",sep = "\t",quote = F,col.names = T,row.names = F)
 
+ref <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped",header = F)
+h_ref <-read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped",header = T)
 head(ref)
+head(h_ref)
+head(hla_freq)
 
 ref %>% mutate(across(c(V7:V22),~ifelse(. %in% hla_freq[hla_freq$freq!="rare",]$value,.,"0"))) -> out
+head(out)
+colnames(out) <- colnames(h_ref)
+write.table(out,"/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped",row.names = F,col.names = T,sep = "\t",quote = F)
+
+
+ref %>% mutate(across(c(V7:V22),~ifelse(. %in% hla_freq[hla_freq$freq=="common",]$value,.,"0"))) -> out
+colnames(out) <- colnames(h_ref)
+head(out)
+write.table(out,"/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped",row.names = F,col.names = T,sep = "\t",quote = F)
+
+
+ref %>% mutate(across(c(V7:V22),~ifelse(. %in% hla_freq[hla_freq$freq=="less common",]$value,.,"0"))) -> out
 
 head(out)
-write.table(out,"/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_onlycommon.chped",row.names = F,col.names = F,sep = "\t",quote = F)
+colnames(out) <- colnames(h_ref)
+write.table(out,"/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_lesscommon.chped",row.names = F,col.names = T,sep = "\t",quote = F)
+
+ref %>% mutate(across(c(V7:V22),~ifelse(. %in% hla_freq[hla_freq$freq=="rare",]$value,.,"0"))) -> out
+colnames(out) <- colnames(h_ref)
+head(out)
+write.table(out,"/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_rare.chped",row.names = F,col.names = T,sep = "\t",quote = F)
 
 
+head(out)
+head(h_ref)
+head(ref)
+head(hla_freq)
 
+custom.col <- c("#FFDB6D", "#C4961A", "#F4EDCA", 
+                "#D16103", "#C3D7A4", "#52854C", "#4E84C4", "#293352")
+
+df <- read.table("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/KMHC_HLAtype_frequency.txt",header = T)
+head(df)
+
+
+df %>% mutate(freq = ifelse(n==1,"singleton",ifelse(n == 2,"doubleton",
+                                                    ifelse(n > 2 & freq == "rare","doubleton ~ rare",
+                                                           ifelse(freq == "less_common","less common",freq))))) %>% #$head
+  group_by(Gene,freq) %>% count(Gene) %>% #writexl::write_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq.count.xlsx")
+  ggplot(aes(x=factor(freq,c('singleton','doubleton','doubleton ~ rare','less common','common')),y=n,fill=Gene))+
+  geom_bar(stat="identity") + 
+  scale_fill_manual(values = rev(custom.col)) + 
+  ylab("Count") + 
+  theme(axis.title.x = element_blank(),
+        #axis.title.y = element_text(),
+        #axis.text.y = element_blank(),
+        axis.text.x = element_text(size=10),
+        axis.ticks.x = element_blank())
+        #axis.ticks.y = element_blank()
+        #panel.background = element_blank())
+
+
+df %>% mutate(freq = ifelse(n==1,"singleton",ifelse(n == 2,"doubleton",
+                                                      ifelse(n > 2 & freq == "rare","doubleton ~ rare",freq)))) %>% #$head
+  group_by(Gene,freq) %>% count(Gene) %>% #head
+  pivot_wider(names_from = Gene,values_from = n) %>%
+  writexl::write_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq.count.xlsx")
+  
+
+
+#######
+ref <- readxl::read_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq.count.xlsx")
+ref <- read.table("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/KMHC_HLAtype_frequency.txt",header = T)
+head(ref)
+
+flist = grep(list.files("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/01.impresult/"),pattern = ".txt", invert=FALSE, value=TRUE)
+
+df <- NULL
+for (a in flist) {
+  tmp <- read.table(paste0("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/01.impresult/",a))
+  tmp$batch <- a
+  df <- rbind(df,tmp)
+}
+head(df)
+head(ref)
+ref %>% select(Gene,value,freq) -> ref
+head(ref)
+
+df %>% mutate(batch = str_split_fixed(batch,"_",2)[,1]) %>% 
+  mutate(value = str_split_fixed(V1,"_",2)[,2]) %>% 
+  left_join(ref) %>% na.omit() %>% #dim()
+  select(batch,value,Gene,freq,V4) %>% filter(V4 != 0) %>% #head()
+  group_by(Gene,freq,value) %>%
+  summarise(DS2 = mean(V4)) %>%
+  ggplot(aes(x=freq,y=DS2,fill=Gene)) + 
+  geom_boxplot() + 
+  scale_fill_manual(values = rev(custom.col)) + 
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(size=15,face = "bold"),
+        #axis.text.y = element_blank(),
+        axis.text.x = element_text(size=15),
+        axis.text.y = element_text(size=15),
+        axis.ticks.x = element_blank())
+#axis.ticks.y = element_blank()
+#panel.background = element_blank())
+
+
+  
