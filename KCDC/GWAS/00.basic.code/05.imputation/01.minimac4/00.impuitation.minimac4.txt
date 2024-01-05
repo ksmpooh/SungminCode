@@ -35,12 +35,20 @@ ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : '
 --format GT,DS,GP --prefix %s --mapFile %s --referenceEstimates --cpu 1
 
 
-/BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr9_combined_b37_addCHR.m3vcf.txt
+/BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt
 /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr20_wgs8k_imputationPanel.m3vcf.gz
 
 /BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
+--refhaps /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr21_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr21.vcf.gz --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix ../../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr21.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr21_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 30
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
+--refhaps /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr22_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr22.vcf.gz --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix ../../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr22.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr22_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 30
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
 --refhaps /BDATA/smkim/KBA_130K/12.panel/m3vcfs/chr20_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --noPhoneHome --allTypedSites \
---format GT,DS,GP --prefix ../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr20_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 60
+--format GT,DS,GP --prefix ../../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr20.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr20_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 60
 
 
 for chr in $(seq 1 22);do
@@ -50,3 +58,21 @@ for chr in $(seq 1 22);do
     done
 
 #plink --bfile [output].chr$chr --chr $chr --recode vcf --out [output].chr$chr
+
+
+
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --window 500000 \
+--refhaps /SDATA/smkim/KBA_130K/12.panel/m3vcfs/chr6_wgs8k_imputationPanel.m3vcf.gz --haps KCHIP130K_phasing_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr6.vcf.gz --noPhoneHome --allTypedSites \
+--format GT,DS,GP --prefix ../../05.imputation/KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr6.vcf.gz --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 15
+
+
+
+## VCF filter 
+mkdir ./05.vcf.filter_MAF0.01INFO0.08/
+mkdir ./05.vcf.filter_INFO0.08/
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'R2 >= 0.8 & MAF >= 0.01' {}.vcf.gz -Oz > ./05.vcf.filter_MAF0.01INFO0.08/{}_MAF0.01_INFO0.8.filter.vcf.gz"
+ls *gz | cut -d"." -f1-4 | xargs -I{} -P 24 bash -c "bcftools view -i 'R2 >= 0.8' {}.vcf.gz -Oz > ./05.vcf.filter_INFO0.8/{}_INFO0.8.filter.vcf.gz"
+
+
+ls *gz | sed 's/.vcf.gz.dose.vcf.gz//g' | xargs -I{} -P 22 bash -c "bcftools view -i 'R2 >= 0.8 & MAF >= 0.01' {}.vcf.gz.dose.vcf.gz -Oz > ./05.vcf.filter_MAF0.01INFO0.08/{}_MAF0.01_INFO0.8.filter.vcf.gz"
