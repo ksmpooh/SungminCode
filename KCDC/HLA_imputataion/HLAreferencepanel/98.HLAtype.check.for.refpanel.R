@@ -1003,3 +1003,8 @@ c2_ngs %>% select(RecInfo,DonInfo,28:44) %>% mutate("type" = "NGS") %>% #head()
   theme(legend.position = "none",
         strip.text.x = element_text(size = 12,face = "bold"))
 '''
+
+
+table(kmhc_type$type %in% pan_type$type)
+kmhc_type %>% filter(type %in% pan_type$type) %>% count(Gene)
+kmhc_type %>% filter(type %in% han_type$type) %>% count(Gene)

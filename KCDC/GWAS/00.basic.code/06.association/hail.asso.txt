@@ -22,71 +22,173 @@ mt = mt.filter_rows(mt.row.info.R2 >= 0.8)
 table = (hl.import_table('/ADATA/smkim/KBA_130K/00.input/transformation_lipid_kchip130k_v1v2_20200414_forhail.ped',impute=True).key_by("IND_ID_IND_ID"))
 mt = mt.annotate_cols(pheno=table[mt.s])
 
-
-
-
-
 gwas = hl.linear_regression_rows(
     y=mt.pheno.LDL_z,
     x=mt.DS,
     covariates=[1.0, mt.pheno.SEX,mt.pheno.AGE])
 
-#####
-# hail code
-
-## epacts vs hail test 
-### data preparing
-#### data 는 chr22 9개 chunk를 사용하여 분석
-
-#### hail input file format은 bgz 형식으로 압축된 파일만 사용 가능하여 재압축
-gunzip -c [input.vcf.gz] | bgzip > [output.vcf.bgz]
-tabix -p vcf [output.vcf.bgz]
 
 
-### python3
-
-# import python module
+##### chr merge and export hail mt
 import hail as hl
-import glob
+hl.init(spark_conf={'spark.driver.memory': '400g'})
 
-# hail initialization
-hl.init() 
+inDir = "/ADATA/smkim/KBA_130K/05.imputation/"
+inVCF = inDir + "KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr%s.vcf.gz.dose.vcf.gz"%("1")
+mt = hl.import_vcf(inVCF,force_bgz=True)
+mt = mt.filter_rows(mt.row.info.R2 >= 0.8)
 
-# read bgz file list
-dfs = glob.glob("*bgz")
+for i in range(2,22+1):
+    inVCF = inDir + "KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr%s.vcf.gz.dose.vcf.gz"%str(i)
+    df = hl.import_vcf(inVCF,force_bgz=True)
+    df = df.filter_rows(df.row.info.R2 >= 0.8)
+#    mt = mt.union_rows(df)
 
-# 하나의 vcf 파일 불러오기
-mt = hl.import_vcf(dfs.pop())
-
-# 나머지 vcf 파일 merge
-for df in dfs:
-    df = hl.import_vcf(df)
-    mt = mt.union_row(df)
-
-# table은 phenotype file 읽기
-## phenotype file은 epacts와 다르게 header에 #처리가 되어 있으면 안됨
-table = (hl.import_table('/DATA/smkim/hail.test/data/new.pheno.sub_Total.ped',impute=True).key_by("FAM_ID"))
-
-# main data set에 phenotype file 붙이기
-## mt.describe() / mt.col.describe() 를 사용하여 mt의 변수를 확인
-## 해당 파일에서는 mt에서 s라는 변수가 ID로 되어 있음 -> mt.s 라 표기 (mt.s.describe() 통해 확인 가능)
-## table의 key도 ID로 되어 있기 때문에 해당 key를 맞춰 주어야 함
-mt = mt.annotate_cols(pheno=table[mt.s])
-
-## phenotype 보기
-mt.pheno.describe()
-
-# GWAS 연관성 분석
-## test = ["Wald","LRT","Firth","Score"] 중 하나 설정
-## covariates에 seed 값처럼 1.0 을 추가 해주어야 함
-## y = mt.pheno.CASE : mt 에 있는 pheno에 CASE 를 y로 설정
-## x = mt.DS : mt에 있는 DS 값을 x 로 설정
-gwas = hl.logistic_regression_rows(y=mt.pheno.CASE,x=mt.DS,covariates=[1.0,mt.pheno.SEX,mt.pheno.AGE],test="firth")
-
-# 연관성 분석 결과 output
-gwas.describe()
-gwas.export('gaws.output.T2D.tsv')
+gwas = hl.linear_regression_rows(y=mt.pheno.,x=mt.DS,
+            covariates=[1.0])
 
 
+table = (hl.import_table('/ADATA/smkim/KBA_130K/00.input/transformation_lipid_kchip130k_v1v2_20200414_forhail.ped',impute=True).key_by("IND_ID_IND_ID"))
+
+for i in range(1,22+1):
+    inVCF = inDir + "KCHIP130K_imputation_MERGED_QCed_addINDEL_rmSNP_rmMAF_chr%s.vcf.gz.dose.vcf.gz"%str(i)
+    inhailMT = inDir + 'hail/KMCHP130K_8Kimp_chr%s.mt'%str(i)
+    #outAsso = "/ADATA/smkim/KBA_130K/06.asso/KCHIP130K_8Kimp_Asso_LDL_chr%s.txt"%(str(i))
+    hl.import_vcf(inVCF,force_bgz=True).write(inhailMT, overwrite=True)
+    mt = hl.read_matrix_table(inhailMT)
+    mt = mt.filter_rows(mt.row.info.R2 >= 0.8)
+    mt = mt.annotate_cols(pheno=table[mt.s])
+    
+    outAsso = "/ADATA/smkim/KBA_130K/06.asso/KCHIP130K_8Kimp_Asso_TC_z_chr%s.txt"%str(i)
+    gwas = hl.linear_regression_rows(y=mt.pheno.TC_z,x=mt.DS,covariates=[1.0])
+    gwas.export(outAsso)
+
+    outAsso = "/ADATA/smkim/KBA_130K/06.asso/KCHIP130K_8Kimp_Asso_HDL_z_chr%s.txt"%str(i)
+    gwas = hl.linear_regression_rows(y=mt.pheno.HDL_z,x=mt.DS,covariates=[1.0])
+    gwas.export(outAsso)
+
+    outAsso = "/ADATA/smkim/KBA_130K/06.asso/KCHIP130K_8Kimp_Asso_LDL_z_chr%s.txt"%str(i)
+    gwas = hl.linear_regression_rows(y=mt.pheno.LDL_z,x=mt.DS,covariates=[1.0])
+    gwas.export(outAsso)
+
+    outAsso = "/ADATA/smkim/KBA_130K/06.asso/KCHIP130K_8Kimp_Asso_TG_logz_chr%s.txt"%str(i)
+    gwas = hl.linear_regression_rows(y=mt.pheno.TG_logz,x=mt.DS,covariates=[1.0])
+    gwas.export(outAsso)
 
 
+
+
+
+#    df_rare = 
+#    df_common
+
+
+####
+after asso
+
+p-value, beta
+
+ls *txt | sed 's/.txt//g' | xargs -I {} -P 22 bash -c "sh run.sh {}"
+awk '$7>=0.8{print $1"\t"$5}' *info | grep -v "MAF" > all.info0.8.maf.txt
+## R
+
+library(tidyverse)
+library(stringr)
+library(data.table)
+
+#setwd("/ADATA/smkim/KBA_130K/06.asso/parsing")
+
+flist = grep(list.files("./"),pattern = ".info", value=TRUE)
+flist
+
+out <- NULL
+
+for (i in 1:length(flist)) {
+  df <- read_table(flist[i])
+  df <- df %>% select(SNP,MAF,Rsq,Genotyped) %>% mutate(chrom=str_split_fixed(SNP,":",3)[,1])
+  out <- rbind(out,df)
+}
+
+#HDL_z  #LDL_z  #TC_z  #TG_logz
+df <- fread("KCHIP130K_8Kimp_Asso_TG_logz_chr22.p_beta.txt",header=T)
+ref <-read_table("../../05.imputation/info/all.info0.8.maf.txt",col_names=c("SNP","MAF"))
+df %>% mutate(SNP = paste0(locus,":",str_split_fixed(allele,)))
+df %>% str_remove(alleles,"\\[") %>% head
+
+
+df$alleles <- str_remove(df$alleles,"\\[")
+df$alleles <- str_remove(df$alleles,"\\]")
+df$alleles <- str_remove_all(df$alleles,"\"")
+df <- df %>% mutate(SNP = paste0(locus,":",str_split_fixed(alleles,",",2)[1,],":",str_split_fixed(alleles,",",2)[2,])) %>% select(-locus,-alleles)
+df %>% left_join(ref) %>% dim()
+
+#/ADATA/smkim/KBA_130K/06.asso/merge
+
+
+
+##
+library(tidyverse)
+library(stringr)
+library(qqman)
+library(miamiplot)
+
+ref <-read_table("../../05.imputation/info/all.info0.8.maf.txt",col_names=c("SNP","MAF"))
+
+phenos = c('HDL_z','LDL_z','TC_z','TG_logz')
+for (pheno in phenos){
+  print(pheno)
+  out <- NULL
+  flist = grep(list.files("./"),pattern = pheno, value=TRUE)
+  
+  for (i in 1:length(flist)) {
+    df <- fread(flist[i])
+    df$alleles <- str_remove(df$alleles,"\\[")
+    df$alleles <- str_remove(df$alleles,"\\]")
+    df$alleles <- str_remove_all(df$alleles,"\"")
+    df <- df %>% mutate(SNP = paste0(locus,":",str_split_fixed(alleles,"\\,",2)[,1],":",str_split_fixed(alleles,"\\,",2)[,2])) %>% select(-locus,-alleles)
+    out <- rbind(out,df)
+  }
+  out <- out %>% left_join(ref)
+  write.table(out,paste0("../merge/",pheno,"_asso.allCHR.txt"),col.names=T,row.names=F,quote=F,sep="\t")
+}
+
+for (pheno in phenos) {
+  df <- read_table(paste0("../merge/",pheno,"_asso.allCHR.txt"))
+  df$CHR <- as.integer(str_split_fixed(df$SNP,":",4)[,1])
+  df$BP <- as.double(str_split_fixed(df$SNP,":",4)[,2])
+  df %>% na.omit() %>% filter(p_value != 0) %>% filter(MAF >= 0.01)-> df
+  png(paste0("../merge/",pheno,"common.png"))
+  manhattan(df, main = pheno, chr="CHR",bp="BP",snp="SNP",p="p_value",
+            #ylim = c(0, 100), 
+            cex = 0.6, cex.axis = 0.9,
+            col = c("blue4", "orange3"), suggestiveline = T, genomewideline = T)
+  dev.off()
+  
+}
+
+
+for (pheno in phenos) {
+  df <- read_table(paste0("../merge/",pheno,"_asso.allCHR.txt"))
+  df$CHR <- as.integer(str_split_fixed(df$SNP,":",4)[,1])
+  df$BP <- as.double(str_split_fixed(df$SNP,":",4)[,2])
+  df %>% na.omit() %>% filter(p_value != 0) -> df
+  png(paste0("../merge/",pheno,"miamiplot.png"))
+  ggmiami(df %>% mutate(g = ifelse(MAF>=0.01,"Common","Rare")) %>% as.data.frame(),chr="CHR",pos="BP",p="p_value",
+             split_by = "g",split_at = "Common",
+            #ylim = c(0, 100), 
+            #cex = 0.6, cex.axis = 0.9,
+            upper_ylab = "Common",
+            lower_ylab = "Rare",
+            chr_colors = c("blue4", "orange3"))
+dev.off()
+}
+
+
+
+library(qqman)
+par(mfrow=c(2,1))
+par(mar=c(0,5,3,3))
+manhattan(gwasResults,ylim=c(0,10),cex=2.2,cex.lab=2.5,font.lab=2,font.axis=2,cex.axis=1.6,las=2,font=4)
+par(mar=c(5,5,3,3))
+manhattan(gwasResults,ylim=c(10,0),cex=2.2,cex.lab=2.5,font.lab=2,font.axis=2,cex.axis=1.6,las=2,font=4,xlab="",xaxt="n")
+dev.off()

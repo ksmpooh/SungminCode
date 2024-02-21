@@ -199,8 +199,9 @@ df %>% mutate(freq = ifelse(n==1,"singleton",ifelse(n == 2,"doubleton",
 #######
 ref <- readxl::read_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq.count.xlsx")
 ref <- read.table("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/KMHC_HLAtype_frequency.txt",header = T)
+#ref %>% writexl::write_xlsx("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq.xlsx")
 head(ref)
-
+ref %>% count(freq)
 flist = grep(list.files("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/01.impresult/"),pattern = ".txt", invert=FALSE, value=TRUE)
 
 df <- NULL

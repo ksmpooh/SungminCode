@@ -241,6 +241,8 @@ NIH19KT0247.asm.bp.hap2.p_ctg.gfa
 awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.r_utg.gfa | bgzip -c > NIH19KT0247.asm.bp.r_utg.fasta.gz
 minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta NIH19KT0247.asm.bp.r_utg.fasta.gz |samtools sort > NIH19KT0247.asm.bp.r_utg.minimap2_map.bam
 
+
+awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.r_utg.gfa | bgzip -c > NIH19KT0247.asm.bp.r_utg.fasta.gz
 awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.p_utg.gfa | bgzip -c > NIH19KT0247.asm.bp.p_utg.fasta.gz
 awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.hap1.p_ctg.gfa | bgzip -c > NIH19KT0247.asm.bp.hap1.p_ctg.fasta.gz
 awk '/^S/{print ">"$2;print $3}' NIH19KT0247.asm.bp.hap2.p_ctg.gfa | bgzip -c > NIH19KT0247.asm.bp.hap2.p_ctg.fasta.gz
@@ -306,3 +308,120 @@ hifihla call-consensus \
 seqtk subseq human_GRCh38_no_alt_analysis_set.fasta basic_contig.txt > human_GRCh38_no_alt_analysis_set.basic.fasta
 
 pbmm2 align /RDATA80/smkim/HLA_seq/REF/HLA.target.v2.fasta ../03.hifiasm/NIH19KT0247.asm.bp.r_utg.fasta.gz NIH19KT0247.asm.bp.r_utg.map_pbmm2.bam --sort --preset CCS
+
+
+
+########################## 재분석 20240111
+
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz
+
+
+try1
+cd /BDATA/smkim/HLAseq/wilson/01.try
+
+lima --ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 -j 64 --log-level INFO inputubam.bam primers_gba_gbap1.fasta outputubam.bam
+
+lima <movie>.hifi_reads.bam barcodes.fasta <movie>.demux.bam --hifi-preset SYMMETRIC -j 64 --log-level INFO
+--split-bam
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --hifi-preset ASYMMETRIC \
+--log-level INFO \
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam /BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta try01.sample.lima_trim.bam
+
+lima \
+--ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 \
+-j 64 --hifi-preset ASYMMETRIC \
+--log-level INFO --split-bam \
+/BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.bam /BDATA/smkim/TOOLs/workflow/data/primers_gba_gbap1.fasta try01.sample.lima_trim.bam
+
+
+
+hifiasm -o try01.sample.hifiasm.asm -t 64 /BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz
+
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.r_utg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.r_utg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.p_utg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.p_utg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.hap1.p_ctg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.hap2.p_ctg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz
+ls *gz | xargs -I {} -P 4 bash -c 'samtools faidx {}'
+
+
+minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta try01.sample.hifiasm.asm.bp.r_utg.fasta.gz |samtools sort >try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam
+#minimap2 -ax map-hifi -t 32 human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta try01.sample.hifiasm.asm.bp.r_utg.fasta.gz |samtools sort > try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam
+samtools index try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam
+
+minimap2 -ax map-hifi -t 32 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta /BDATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.fastq.gz |samtools sort >try01.minimpa2_mapping.sort.bam
+minimap2 -ax map-hifi -t 32 human_GRCh38_no_alt_analysis_set.fasta raw.hifi.input.fastq |samtools sort > try01.minimpa2_mapping.sort.bam
+samtools index try01.minimpa2_mapping.sort.bam
+
+
+## 이건 안됨
+hifihla call-contigs \
+          --abam try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam \
+          --hap1 try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test1 \
+          -vv > log.log
+
+
+## 
+hifihla call-contigs \
+          --abam try01.minimpa2_mapping.sort.bam \
+          --hap1 try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test2 \
+          -vv > log2.log
+
+
+try2
+pbaa cluster -j 32 --log-file pbaa_1.classI.log --log-level INFO /ADATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsI_guides.fasta /ADATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.fastq try02.sample_HLAclassI.pbaa
+pbaa cluster -j 32 --log-file pbaa_1.classII.log --log-level INFO /ADATA/smkim/HLAseq/REF/HLA_guide/subGene/HLA_classsII_guides.fasta /ADATA/smkim/HLAseq/new/00.raw/HLA.Longread.Seq.NIH19KT0247.fastq try02.sample_HLAclassII.pbaa --iterations 5
+
+
+
+###### Try1 code
+
+
+
+
+ 
+1. Lima: Trimming using Lima
+lima --ccs --min-score 95 --min-end-score 95 --min-ref-span 0.75 --different --min-scoring-regions 2 -j 64 --log-level INFO inputubam.bam primers_gba_gbap1.fasta outputubam.bam
+# tried to these option but same result (--hifi-preset ASYMMETRIC,  --split-bam)
+
+2. hifiasm: assembly (skip lima)
+hifiasm -o try01.sample.hifiasm.asm -t 64 input.hifi.fastq.gz
+
+2-1. gfa to fastq
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.r_utg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.r_utg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.p_utg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.p_utg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.hap1.p_ctg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz
+awk '/^S/{print ">"$2;print $3}' try01.sample.hifiasm.asm.bp.hap2.p_ctg.gfa | bgzip -c > try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz
+
+3.minimap2: mapping with hg38
+3-1. input: assempbly fastq (r_utg)
+minimap2 -ax map-hifi -t 32 human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta try01.sample.hifiasm.asm.bp.r_utg.fasta.gz |samtools sort > try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam
+
+3-2. input: raw fastq
+minimap2 -ax map-hifi -t 32 human_GRCh38_no_alt_analysis_set.fasta raw.hifi.input.fastq |samtools sort > try01.minimpa2_mapping.sort.bam
+
+4. hifihla call-contigs: HLA typing
+4-1. input: assembly mapping bam 
+hifihla call-contigs \
+          --abam try01.sample.hifiasm.asm.asm.bp.r_utg.minimap2_map.bam \
+          --hap1 try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test1 \
+          -vv
+
+4-2. input: raw hifi mapping bam
+hifihla call-contigs \
+          --abam try01.minimpa2_mapping.sort.bam \
+          --hap1 try01.sample.hifiasm.asm.bp.hap1.p_ctg.fasta.gz \
+          --hap2 try01.sample.hifiasm.asm.bp.hap2.p_ctg.fasta.gz \
+          --outdir test2 \
+          -vv
+
+# 4-1, 4-2 same error

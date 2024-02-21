@@ -1,0 +1,64 @@
+python -m SNP2HLA \
+    --target /BDATA/smkim/KBA_130K/HLA/00.rawdata/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_update \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4 \
+    --out /BDATA/smkim/KBA_130K/HLA/01.imputation/KCHIP_130Kimp \
+    --nthreads 64 \
+    --mem 256g
+
+
+
+
+### split 5K
+import os,glob,sys
+
+plink = "KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_update"
+os.system("mkdir 5Ksplit")
+df = open(plink+".fam",'r')
+df = df.readlines()
+
+count = 0
+g = 0
+tmp5K = open("tmp","w")
+for i in df:
+    count = count + 1
+    tmp = i.split()
+    tmp5K.write("%s %s\n"%(tmp[0],tmp[1]))
+    if count == 5000:
+        g = g + 1
+        count = 0
+        tmp5K.close()
+        os.system('plink --bfile %s --keep tmp --make-bed --out 5Ksplit/%s.sample%s'%(plink,plink,str(g)))
+        tmp5K = open("tmp","w")
+
+
+g = g + 1
+tmp5K.close()
+os.system('plink --bfile %s --keep tmp --make-bed --out 5Ksplit/%s.sample%s'%(plink,plink,str(g)))
+
+
+#### HLA imputation
+
+/BDATA/smkim/KBA_130K/HLA/01.imputation/5Ksplit/
+/BDATA/smkim/KBA_130K/HLA/00.rawdata/5Ksplit
+
+### run.sh
+in=$1
+mkdir /BDATA/smkim/KBA_130K/HLA/01.imputation/5Ksplit/$1
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KBA_130K/HLA/00.rawdata/5Ksplit/$1 \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4 \
+    --out /BDATA/smkim/KBA_130K/HLA/01.imputation/5Ksplit/$1/$1.HLA-TAPASimp \
+    --nthreads 64 \
+    --mem 256g
+### 
+ls /BDATA/smkim/KBA_130K/HLA/00.rawdata/5Ksplit/*bim | head -13 | sed 's/.bim//g' | cut -d"/" -f 8 | xargs -I{} -P 1  bash -c 'sh run.sh {}'
+ls /BDATA/smkim/KBA_130K/HLA/00.rawdata/5Ksplit/*bim | tail -13 | sed 's/.bim//g' | cut -d"/" -f 8 | xargs -I{} -P 1  bash -c 'sh run.sh {}'
+
+
+cd /BDATA/smkim/KBA_130K/HLA/01.imputation
+
+
+ls 5Ksplit/*/*.gz > sample.split
+
+

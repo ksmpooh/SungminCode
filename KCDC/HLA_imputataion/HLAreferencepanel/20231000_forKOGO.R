@@ -1,6 +1,6 @@
 library(stringr)
 library(tidyverse)
-library("ggpubr")
+library(ggpubr)
 #setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/rmnotincludetype/maf/")
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/snp2hla_imgt3320/03.allele.matching/")
 setwd("~/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/rmnotincludetype/v1")

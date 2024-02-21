@@ -113,3 +113,15 @@ DRB1*51
 
 
 hla_a1_reci	hla_a2_reci	hla_b1_reci	hla_b2_reci	hla_dr1_reci	hla_dr2_reci	ABD1_B	ABD2_B	BBD1_B	BBD2_B	DRBD1_B	DRBD2_B
+
+
+
+#### 130K HLA imputation
+
+python -m SNP2HLA \
+    --target /BDATA/smkim/KBA_130K/HLA/00.rawdata/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_update \
+    --reference /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4 \
+    --out /BDATA/smkim/KBA_130K/HLA/01.imputation/KCHIP_130Kimp \
+    --nthreads 64 \
+    --mem 256g
+

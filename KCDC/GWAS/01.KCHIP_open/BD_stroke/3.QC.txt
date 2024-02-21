@@ -1,0 +1,79 @@
+# after GH
+
+# sample QC : done
+102: 
+/BDATA/smkim/BD/03.QC_2nd
+# SNP QC
+BD_2nd_rmSNP_rmPCA
+
+plink --file ../01.geno/2nd/plink/Axiom_KBAv1.1 --allow-extra-chr --no-fid --no-parents --no-sex --no-pheno --make-bed --out BD.2nd
+plink --bfile BD.2nd --extract ../01.geno/2nd/classification/Recommended.ps --make-bed --out BD.2nd_snpolisher
+plink --bfile BD.2nd_snpolisher --update-ids ../01.geno/BD.2nd.CEL_ID.txt --make-bed --out BD.2nd_snpolisher_updateID
+
+
+plink --bfile BD.2nd_snpolisher_updateID --keep ../03.QC_2nd_bygh/BD_2nd_rmSNP_rmPCA.fam --make-bed --out BD.2nd_snpolisher_updateID_rmPCA
+
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA --exclude /BDATA/smkim/GWAS/01.QCed_INPUTs/affy_snp_list.txt --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy
+
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA_rmaffy --flip /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.Flip.rmID.txt --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/01_select_dupID.py BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip
+
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip --exclude case_duplicateSNPID.txt --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup
+
+## SNP QC
+mkdir sex_chr
+cp ../03.QC_2nd_bygh/BD.sex.info.txt ./
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup --update-sex BD.sex.info.txt --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX
+
+###
+FID	IID	SEX
+NIH19E1629508	NIH19E1629508	2
+NIH19E1655235	NIH19E1655235	2
+NIH19E1527025	NIH19E1527025	1
+NIH19E1983848	NIH19E1983848	2
+NIH19E1540664	NIH19E1540664	1
+NIH19E1635293	NIH19E1635293	2
+NIH19E1734391	NIH19E1734391	2
+NIH19E1448394	NIH19E1448394	2
+NIH19E1993679	NIH19E1993679	2
+####
+
+cd sex_chr
+
+
+awk '$3==1{print $1,$1}' ../BD.sex.info.txt > male.txt
+awk '$3==2{print $1,$1}' ../BD.sex.info.txt > female.txt
+#awk '$5==2{print $1,$2}' KKY.7th.preQC.chrX.fam > female.txt
+#awk '$5==1{print $1,$2}' KKY.7th.preQC.chrX.fam > male.txt
+
+plink --bfile ../BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX --chr 23,25 --make-bed --out BD.2nd.preQC.chrX
+plink --bfile BD.2nd.preQC.chrX --chr 23 --from-bp 2699521 --to-bp 154931043 --make-bed --out BD.2nd.preQC.chrX_nonPAR
+
+
+plink --bfile BD.2nd.preQC.chrX_nonPAR --keep female.txt --maf 0.01 --make-bed --out BD.2nd.preQC.chrX_nonPAR_onlyFemale.fil
+plink --bfile BD.2nd.preQC.chrX_nonPAR --keep male.txt --set-hh-missing  --make-bed --out BD.2nd.preQC.chrX_nonPAR_onlyMale_sethhmissing
+plink --bfile BD.2nd.preQC.chrX_nonPAR_onlyMale_sethhmissing --extract BD.2nd.preQC.chrX_nonPAR_onlyFemale.fil.bim --make-bed --out BD.2nd.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect
+
+plink --bfile BD.2nd.preQC.chrX_nonPAR_onlyFemale.fil --bmerge BD.2nd.preQC.chrX_nonPAR_onlyMale_sethhmissing_intersect --make-bed --out BD.2nd.preQC.chrX_nonPAR_GenderMerge
+plink --bfile BD.2nd.preQC.chrX_nonPAR_GenderMerge --geno 0.05 --make-bed --out BD.2nd.preQC.chrX_nonPAR_GenderMerge_geno
+
+
+plink --bfile BD.2nd.preQC.chrX --exclude BD.2nd.preQC.chrX_nonPAR.bim --make-bed --out BD.2nd.preQC.chrX_PAR
+plink --bfile BD.2nd.preQC.chrX_PAR --merge-x --make-bed --out BD.2nd.preQC.chrX_PAR_mergeX
+plink --bfile BD.2nd.preQC.chrX_PAR_mergeX --maf 0.01 --geno 0.05 --make-bed --out BD.2nd.preQC.chrX_PAR_mergeX_fil
+
+
+
+plink --bfile ../BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX --chr 24,26 --make-bed --out BD.2nd.preQC.chrY_MIT
+plink --bfile BD.2nd.preQC.chrY_MIT --geno 0.05 --make-bed --out BD.2nd.preQC.chrY_MIT_geno
+
+
+plink --bfile BD.2nd.preQC.chrX_nonPAR_GenderMerge_geno --bmerge BD.2nd.preQC.chrX_PAR_mergeX_fil --make-bed --out BD.2nd.preQC.chrX_PARmerge_QCed
+
+plink --bfile BD.2nd.preQC.chrX_PARmerge_QCed --bmerge BD.2nd.preQC.chrY_MIT_geno --make-bed --out BD.2nd.preQC.chr23-26.QCed
+
+cd ..
+
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX --chr 1-22 --maf 0.01 --geno 0.05 --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX_fil
+
+plink --bfile BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX_fil --bmerge sex_chr/BD.2nd.preQC.chr23-26.QCed --make-bed --out BD.2nd_snpolisher_updateID_rmPCA_rmaffy_flip_rmdup_updateSEX_FINALQCed

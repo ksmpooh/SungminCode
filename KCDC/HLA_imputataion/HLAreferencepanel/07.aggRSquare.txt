@@ -1,0 +1,15 @@
+
+
+aggRSquare -v [Validation.vcf.gz]         [Required] Input Validation File
+           -i [Imputation.vcf.gz]         [Required] Input Imputation File
+           -o [OutputPrefix]              [Required] Output Prefix
+           --validationFormat [GT/DS/GP]  Genotype info format (Default: GT)
+           --imputationFormat [GT/DS/GP]  Genotype info format (Default: DS)
+           --AF [AlleleFrequency File]    Tab-delimited text file contains SNP and Allele Frequency.
+           --bins [Bins File]             A text file contains MAF cutoffs for bins
+           --detail                       If ON, an addtional SNP-wise r2 will be output (Default: OFF)
+           --help                         If ON, the usage documentation will be displayed.
+
+
+
+#
