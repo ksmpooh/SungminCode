@@ -1,0 +1,42 @@
+## 106 
+## revio.kchip mapping
+##e pbmm2
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping
+
+ref : /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+#pbmm2	PN:pbmm2	VN:1.10.0 (commit v1.10.0)	CL:pbmm2 align /mnt/garnet2/PacBio/smrtlink_test_v12.1/userdata/jobs_root.default/cromwell-executions/sl_import_fasta/c45d057d-cac6-42da-8c40-5a0478c5dbda/call-fasta_to_reference/execution/smrtlink_reference.referenceset.xml /mnt/garnet2/PacBio/smrtlink_test_v12.1/userdata/jobs_root.default/cromwell-executions/pb_sv_ccs/8c394d9f-5506-4f27-80fa-ed40e6aae785/call-prepare_input/prepare_input/fa1121d1-92fa-4002-9cb2-c8ec224d7d83/call-dataset_filter/execution/filtered.consensusreadset.xml mapped.consensusalignmentset.xml --sort --min-gap-comp-id-perc 70.0 --min-length 50 --sample NIH23J3031898 --preset HiFi --strip --split-by-sample -j 7 --log-level INFO --log-file pbmm2.log --alarms alarms.json
+
+
+
+
+/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio/raw.bam/*/*bam
+###
+A. Generate index file for reference and reuse it to align reads
+  $ pbmm2 index ref.fasta ref.mmi --preset SUBREAD
+  $ pbmm2 align ref.mmi movie.subreads.bam ref.movie.bam --preset SUBREAD
+
+B. Align reads and sort on-the-fly, with 4 alignment and 2 sort threads
+  $ pbmm2 align ref.fasta movie.subreads.bam ref.movie.bam --preset SUBREAD --sort -j 4 -J 2
+
+C. Align reads, sort on-the-fly, and create PBI
+  $ pbmm2 align ref.fasta movie.subreadset.xml ref.movie.alignmentset.xml --preset SUBREAD --sort
+
+D. Omit output file and stream BAM output to stdout
+  $ pbmm2 align hg38.mmi movie1.subreadset.xml --preset SUBREAD | samtools sort > hg38.movie1.sorted.bam
+
+E. Align CCS fastq input and sort output
+  $ pbmm2 align ref.fasta movie.Q20.fastq ref.movie.bam --sort --rg '@RG\tID:myid\tSM:mysample'
+  ###
+
+
+pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 5th_Cell.3832.bc1008--bc1008_trimmed.bam test.bam --sort --preset CCS --rg '@RG\tID:103test\tSM:mysample'
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta 
+
+
+## python3
+import os,glob
+
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274.bam --sort --sort -j 40 --preset CCS --rg '@RG\tID:NIH23F1013274\tSM:mysample'
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274.bam --sort --sort -j 40 --preset CCS --sample NIH23F1013274

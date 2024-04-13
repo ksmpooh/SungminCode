@@ -1,0 +1,64 @@
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/RS
+
+theme=KMHC
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -f '%ID\t%AF\t%DR2\n' $in |grep HLA | grep ":" > $i.$theme.DR2.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+theme=Han
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -f '%ID\t%AF\t%DR2\n' $in | grep HLA | grep ":"  > $i.$theme.DR2.txt
+    done
+
+
+# PanKor
+
+theme=PanKor
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -f '%ID\t%AF\t%DR2\n' $in | grep HLA | grep ":"  > $i.$theme.DR2.txt
+    done
+
+
+# multi
+
+theme=Multi
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -f '%ID\t%AF\t%R2\t%ER2\n' $in | grep HLA | grep ":" > $i.$theme.R2_ER2.txt
+    done
+
+
+
+# 1KGP
+
+
+theme=1KGP
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    bcftools query -f '%ID\t%AF\t%DR2\n' $in | grep HLA | grep ":" > $i.$theme.DR2.txt
+    done

@@ -1,0 +1,36 @@
+
+
+KCDC/HLA_imputataion/HLAreferencepanel/KHU_HLA/HLAimputation.txt
+
+
+## binary 0,1 -> 1,2
+#code controls as 1, cases as 2, missing phenotypes as -9 or 0.
+df <- read.table("CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro.txt",header=T)
+
+#7~52
+
+
+for (i in 7:52) {
+  print(i)
+  df[,i] <- ifelse(is.na(df[,i]),df[,i],ifelse(df[,i] == 1,2,1))
+  
+}
+
+for(i in 7:52){
+    print(table(is.na(df[,i])))
+}
+
+for(i in 7:52){
+    print(table(df[,i]))
+}
+
+write.table(df,"CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt",col.names=T,row.names=F,quote=F,sep=" ")
+
+
+
+
+
+
+
+cat /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/LOGISTIC_pheno_list.txt | tail -n+2 | xargs -I{} -P 10 bash -c "Rscript AA.test.R --disease {} --type BI"
+cat /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno//QT_pheno_list.txt | tail -n+2 | xargs -I{} -P 10 bash -c "Rscript qt.test.R --disease {} --type QT"

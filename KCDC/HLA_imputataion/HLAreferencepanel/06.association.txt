@@ -1,0 +1,6 @@
+#### HLA imputation 130K and association
+
+ref_panel="/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz"
+
+
+/BDATA/smkim/KBA_130K/HLA/02.asso/

@@ -67,7 +67,7 @@ df %>% pivot_longer(7:22) %>% select(value) %>%
 
 colnames(out) <- "Han"
 dim(out)
-write.table(out,"../hlatype/Han.Nomen.2field",col.names = T,row.names = F,quote = F)
+#write.table(out,"../hlatype/Han.Nomen.2field",col.names = T,row.names = F,quote = F)
 
 
 df <-read.table("PanKor_merged.hg19.haplegendtovcf.modify.hlatype_fd.IDchange_fornomenclean_2field.chped")
@@ -77,7 +77,7 @@ df %>% pivot_longer(7:22) %>% select(value) %>%
 dim(out)
 colnames(out) <- "PanKor"
 head(out)
-write.table(out,"../hlatype/PanKor.Nomen.2field",col.names = T,row.names = F,quote = F)
+#write.table(out,"../hlatype/PanKor.Nomen.2field",col.names = T,row.names = F,quote = F)
 
 df <-read.table("HLAtyping.1000genomePhase3.rouph_forHLAPATAS_edit_fornomenclean_2field.chped")
 head(df)
@@ -88,7 +88,7 @@ colnames(out) <- "1KGP"
 head(out)
 #unique(out$`1KGP`)
 dim(out)
-write.table(out,"../hlatype/1KGP.Nomen.2field",col.names = T,row.names = F,quote = F)
+#write.table(out,"../hlatype/1KGP.Nomen.2field",col.names = T,row.names = F,quote = F)
 
 
 kmhc_type %>% unique() %>% dim()
@@ -99,6 +99,19 @@ kmhc_type %>% unique() %>% dim()
 ref <- read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_withheader.chped",header = T)
 head(ref)
 
+## 1 field
+ref %>% select(-IID,-FID,-pID,-mID,-SEX,-PHENO) %>% pivot_longer(1:16,names_to = 'Gene') %>% 
+  mutate(Gene=str_split_fixed(Gene,"\\.",2)[,1]) %>% 
+  mutate(Gene=str_split_fixed(Gene,"HLA_",2)[,2]) %>% 
+  mutate(value=str_split_fixed(value,":",2)[,1]) %>% 
+  filter(value !=0) %>% 
+  count(Gene,value) %>% 
+  group_by(Gene) %>% 
+  mutate(prop = prop.table(n)) %>% #summarise(sum = sum(n))
+  mutate(freq = ifelse(prop<0.01,"rare",ifelse(prop<0.05,"less common","common"))) -> hla_freq_1field
+head(hla_freq_1field)
+#writexl::write_xlsx(hla_freq_1field,"~/Desktop/KCDC/HLAimputation/MakeReferencePanel/Result/KMHC.HLAtype.freq_1field.xlsx")
+## 2 field
 ref %>% select(-IID,-FID,-pID,-mID,-SEX,-PHENO) %>% pivot_longer(1:16,names_to = 'Gene') %>%
   mutate(Gene=str_split_fixed(Gene,"\\.",2)[,1]) %>% 
   mutate(Gene=str_split_fixed(Gene,"HLA_",2)[,2]) %>%

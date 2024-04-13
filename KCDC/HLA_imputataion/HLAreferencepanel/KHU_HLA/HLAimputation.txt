@@ -1,0 +1,370 @@
+#!/bin/bash
+
+# 코드 설명 : input data phasing하는 툴은 Eagle v2.4.1 (가장 최신), imputation 툴은 impute5 v1.2.0 (가장 최신) 을 설치하고 써주시면 됩니다..!
+
+# input genotyp data phasing
+inputpath="~~~"
+outpath="~~~"
+
+/kimlab_wd/yuo1996/tools/Eagle_v2.4.1/eagle --geneticMapFile /kimlab_wd/yuo1996/tools/Eagle_v2.4.1/tables/genetic_map_hg38_withX.txt.gz  \
+                                            --numThreads 200 \
+                                            --vcf ${inputpath}/input.vcf.gz \
+                                            --outPrefix ${outpath}/chr6.MHC24to36mb.eagle.phased
+zcat ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.gz | bgzip > ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+
+
+# AC field add for IMPUTE5 running
+bcftools +fill-tags ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.bgzip.gz -Oz -o ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.AC.bgzip.gz -- -t AN,AC
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz
+
+
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/imputation" # imputation 결과 path
+
+# imputation
+mkdir $imputepath/wholesample_imputation_result
+
+
+/BDATA/smkim/TOOLs/impute5_v1.2.0/impute5_v1.2.0_static \
+--h ${refpath}/whole.eagle.phased.sampleQC.AC.xcf.vcf.gz.bcf \
+--g ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz \
+--r 6:24000000-36000000 \
+--buffer-region 6:24000000-36000000 \
+--m /BDATA/smkim/JG.HLAimputation/KHU/00.data/chr6.b38.gmap.gz \    # 첨부드렸습니다, 주석제거 후 돌려주세요
+--threads 60 \
+--o ${imputepath}/wholesample_imputation_result/wholesample.imputed.vcf.gz \
+--l ${imputepath}/wholesample_imputation_result/imputation.log 
+
+
+
+#################
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_snpQC_chr6.fam
+
+
+inputpath="/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/imputation"
+
+~/Downloads/Eagle_v2.4.1/eagle --geneticMapFile ~/Downloads/Eagle_v2.4.1/tables/genetic_map_hg19_withX.txt.gz  \
+                                            --numThreads 60 \
+                                            --vcf ${inputpath}/JG.forHLAtyping.MHCref.25000000_35000000_convert.vcf.gz \
+                                            --outPrefix ${outpath}/chr6.MHC24to36mb.eagle.phased
+zcat ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.gz | bgzip > ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+
+bcftools +fill-tags ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz -Oz -o ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz -- -t AN,AC
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz
+
+
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/imputation/" # imputation 결과 path
+
+# imputation
+mkdir $imputepath/wholesample_imputation_result
+
+
+/BDATA/smkim/TOOLs/impute5_v1.2.0/impute5_v1.2.0_static \
+--h ${refpath}/whole.eagle.phased.sampleQC.AC.xcf.vcf.gz.bcf \
+--g ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz \
+--r 6:24000000-36000000 \
+--buffer-region 6:24000000-36000000 \
+--m /BDATA/smkim/JG.HLAimputation/KHU/00.data/chr6.b38.gmap.gz \
+--threads 60 \
+--o ${imputepath}/wholesample_imputation_result/wholesample.imputed.vcf.gz \
+--l ${imputepath}/wholesample_imputation_result/imputation.log 
+
+
+### KCHIP QC
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip/
+/RDATA8/LaCie2/smkim/GWAS/hg38pos_probeID.txt
+
+##
+  --chr 6
+  --geno 0.05
+  --hwe 1e-6
+  --maf 0.01
+  --make-bed
+##
+
+
+#6	AX-15350231	0	---	A	G
+#6	AX-15219261	0	---	A	G
+#grep -E "\\--" V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6.bim > remove.snp
+
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6 --exclude remove.snp --make-bed --out V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38
+cp V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38.bim V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38.bim_ori
+
+## R liftover
+
+library(dplyr)
+df <- read.table("V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38.bim_ori")
+ref <-read.table("/RDATA8/LaCie2/smkim/GWAS/hg38pos_probeID.txt")
+colnames(ref)[1]<-"hg38"
+df %>% left_join(ref) -> out
+
+
+write.table(out[,c(1,2,3,7,5,6)],"V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38.bim",col.names=F,row.names=F,quote=F,sep="\t")
+
+###
+/BDATA/smkim/JG/03.QC_2nd/OUTPUTs/control/V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC.fam
+
+
+
+
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC --geno 0.01 --maf 0.05 --indep-pairwise 50 5 0.2 --hwe 1e-3 --out V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_pruning --chr 1-22
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC --extract V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_pruning.prune.in --make-bed --out V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_pruned
+
+## new 20240409 kchip rm NC 
+cd /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/control
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip --keep V2_MERGED_RAW_rmaffy_indel_flip_fil_rmNC_pruned.fam --make-bed --out V2_MERGED_RAW_rmaffy_indel_flip_onlyDS
+
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_onlyDS --chr 6 --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out /BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip/V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6
+
+cd /BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6 --exclude remove.snp --make-bed --out V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38
+cp V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38.bim V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38.bim_ori
+
+## R liftover
+
+library(dplyr)
+df <- read.table("V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38.bim_ori")
+ref <-read.table("/RDATA8/LaCie2/smkim/GWAS/hg38pos_probeID.txt")
+colnames(ref)[1]<-"hg38"
+df %>% left_join(ref) -> out
+
+
+write.table(out[,c(1,2,3,7,5,6)],"V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38.bim",col.names=F,row.names=F,quote=F,sep="\t")
+
+
+##
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38 --chr 6 --from-bp 24000000 --to-bp 36000000 --make-bed --out V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC
+plink --bfile V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC --a2-allele /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt --recode vcf --out V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC_converVCF
+bcftools query -l V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC_converVCF.vcf | awk '{split($1,a,"_"); print $1"\t"a[1]}' > sampleID.change
+bcftools reheader -s sampleID.change V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC_converVCF.vcf |bgzip -c > V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC_converVCF.vcf.gz
+
+# 20240401 flashPCA 분석
+# SNP QCed call 99%, MAF 0.05 indel pair-wise 50 5 0.2 hwe 1e-3 -> flashpca
+# /BDATA/smkim/JG/03.QC_2nd/OUTPUTs/control
+plink --bfile 
+
+##
+
+inputpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/01.phase"
+
+~/Downloads/Eagle_v2.4.1/eagle --geneticMapFile ~/Downloads/Eagle_v2.4.1/tables/genetic_map_hg38_withX.txt.gz  \
+                                            --numThreads 60 \
+                                            --vcf ${inputpath}/V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38.vcf \
+                                            --outPrefix ${outpath}/chr6.MHC24to36mb.eagle.phased
+zcat ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.gz | bgzip -c > ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+
+bcftools +fill-tags ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.bgzip.gz -Oz -o ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.AC.bgzip.gz -- -t AN,AC
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.AC.bgzip.gz
+
+
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/02.imputation" # imputation 결과 path
+
+# imputation
+mkdir $imputepath/wholesample_imputation_result
+
+
+/BDATA/smkim/TOOLs/impute5_v1.2.0/impute5_v1.2.0_static \
+--h ${refpath}/whole.eagle.phased.sampleQC.AC.xcf.vcf.gz.bcf \
+--g ${outpath}/chr6.MHC24to36mb.eagle.phased.sort.vcf.AC.bgzip.gz \
+--r 6:24000000-36000000 \
+--buffer-region 6:24000000-36000000 \
+--m /BDATA/smkim/JG.HLAimputation/KHU/00.data/chr6.b38.gmap.gz \
+--threads 60 \
+--o ${imputepath}/wholesample_imputation_result/wholesample.imputed.vcf.gz \
+--l ${imputepath}/wholesample_imputation_result/imputation.log 
+
+
+## new
+
+
+# input genotyp data phasing
+inputpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/new"
+
+~/Downloads/Eagle_v2.4.1/eagle --geneticMapFile ~/Downloads/Eagle_v2.4.1/tables/genetic_map_hg38_withX.txt.gz \
+                                            --numThreads 60 \
+                                            --vcf ${inputpath}/V2_MERGED_RAW_rmaffy_indel_flip_fillCHR6_rmnohg38_MHC_covertVCF.vcf.gz \
+                                            --outPrefix ${outpath}/chr6.MHC24to36mb.eagle.phased
+zcat ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.gz | bgzip > ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+
+
+# AC field add for IMPUTE5 running
+bcftools +fill-tags ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz -Oz -o ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz -- -t AN,AC
+#bcftools +fill-tags chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz -Oz -o test.AC.bgzip.gz -- -t AN,AC
+
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz
+
+
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/new" # imputation 결과 path
+
+# imputation
+mkdir $imputepath/wholesample_imputation_result
+
+
+/BDATA/smkim/TOOLs/impute5_v1.2.0/impute5_v1.2.0_static \
+--h ${refpath}/whole.eagle.phased.sampleQC.AC.xcf.vcf.gz.bcf \
+--g ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz \
+--r 6:24000000-36000000 \
+--buffer-region 6:24000000-36000000 \
+--m /BDATA/smkim/JG.HLAimputation/KHU/00.data/chr6.b38.gmap.gz \
+--threads 60 \
+--o ${imputepath}/wholesample_imputation_result/wholesample.imputed.vcf.gz \
+--l ${imputepath}/wholesample_imputation_result/imputation.log
+
+
+## after imputation
+
+/BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result/wholesample.imputed.vcf.gz
+
+2.after_imputation.sh
+
+###
+#!/bin/bash
+
+# 코드 설명 : imputation 결과파일 (wholesample.imputed.vcf.gz) 에서 dosage를 추출해낸 후 Diploid C4 copy number dosage를 계산합니다.
+
+# input genotyp data phasing
+inputpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/new"
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/new" # imputation 결과 path
+
+
+
+cd /BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result # imputation 결과 파일 들어있는 폴더.
+
+zcat wholesample.imputed.vcf.gz | grep -v "##" | grep IMP | cut -f 1-2 > imputed_snps.txt
+zcat wholesample.imputed.vcf.gz | grep -v "#" | cut -f 1-5 > ref_snps.txt
+
+cd ${imputepath}/wholesample_imputation_result
+awk '$3 ~ /^AA|HLA|copy/' ref_snps.txt | cut -f 1-2 > C4HLA_snps.txt
+
+# extract HLA/C4; 좀 걸림.
+vcftools --gzvcf wholesample.imputed.vcf.gz \
+         --positions C4HLA_snps.txt \
+         --recode \
+         --recode-INFO-all \
+         --stdout | gzip > wholesample.imputed.for_C4HLA_check.vcf.gz
+
+zcat wholesample.imputed.for_C4HLA_check.vcf.gz | java -jar /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/dependency/vcf2beagle.jar 0 wholesample.imputed.for_C4HLA_check
+gzip -d wholesample.imputed.for_C4HLA_check.bgl.gz
+#gzip -d wholesample.imputed.for_C4HLA_check.vcf.gz
+#sed -i '/^##/d' wholesample.imputed.for_C4HLA_check.vcf
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' wholesample.imputed.for_C4HLA_check.vcf.gz -H --output MHC_GT.txt
+
+
+# diploid C4 copy calculation
+
+cd /BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result
+
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT[\t%DS]\n' wholesample.imputed.vcf.gz -H --output dosage.txt
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t%AF\t%INFO\n' wholesample.imputed.vcf.gz -H --output DR2.txt
+
+cat <(head -n 1 dosage.txt) <(cut -f 2 ./imputed_snps.txt | grep -F -f - dosage.txt) > dosage_imputed_snps_only.txt
+cat <(head -n 1 DR2.txt) <(cut -f 2 ./imputed_snps.txt | grep -F -f - DR2.txt) > DR2_imputed_snps_only.txt
+
+
+Rscript /BDATA/smkim/JG.HLAimputation/KHU/SCRIPTs/2_1.mk_diploid_table.R --snpver ${ver} --haplonetver ${haplonetver}
+
+# imputation QC  : DR2 > 0.5 , MAF >  0.005 (0.5%)
+###
+
+
+#######
+2024-04-09 new only DS
+
+
+inputpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/new_20240409"
+
+~/Downloads/Eagle_v2.4.1/eagle --geneticMapFile ~/Downloads/Eagle_v2.4.1/tables/genetic_map_hg38_withX.txt.gz \
+                                            --numThreads 60 \
+                                            --vcf ${inputpath}/V2_MERGED_RAW_rmaffy_indel_flip_onlyDS_fillCHR6_rmnohg38_MHC_converVCF.vcf.gz \
+                                            --outPrefix ${outpath}/chr6.MHC24to36mb.eagle.phased
+zcat ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.gz | bgzip > ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz
+
+
+# AC field add for IMPUTE5 running
+bcftools +fill-tags ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz -Oz -o ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz -- -t AN,AC
+#bcftools +fill-tags chr6.MHC24to36mb.eagle.phased.vcf.bgzip.gz -Oz -o test.AC.bgzip.gz -- -t AN,AC
+
+tabix -p vcf ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz
+
+
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/new_20240409" # imputation 결과 path
+
+# imputation
+mkdir $imputepath/wholesample_imputation_result
+
+
+/BDATA/smkim/TOOLs/impute5_v1.2.0/impute5_v1.2.0_static \
+--h ${refpath}/whole.eagle.phased.sampleQC.AC.xcf.vcf.gz.bcf \
+--g ${outpath}/chr6.MHC24to36mb.eagle.phased.vcf.AC.bgzip.gz \
+--r 6:24000000-36000000 \
+--buffer-region 6:24000000-36000000 \
+--m /BDATA/smkim/JG.HLAimputation/KHU/00.data/chr6.b38.gmap.gz \
+--threads 60 \
+--o ${imputepath}/wholesample_imputation_result/wholesample.imputed.vcf.gz \
+--l ${imputepath}/wholesample_imputation_result/imputation.log
+
+
+### 2
+#!/bin/bash
+
+# 코드 설명 : imputation 결과파일 (wholesample.imputed.vcf.gz) 에서 dosage를 추출해낸 후 Diploid C4 copy number dosage를 계산합니다.
+
+# input genotyp data phasing
+inputpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data/kchip"
+outpath="/BDATA/smkim/JG.HLAimputation/KHU/new_20240409"
+refpath="/BDATA/smkim/JG.HLAimputation/KHU/00.data" # reference 있는 path
+imputepath="/BDATA/smkim/JG.HLAimputation/KHU/new_20240409" # imputation 결과 path
+
+
+
+cd /BDATA/smkim/JG.HLAimputation/KHU/new_20240409/wholesample_imputation_result # imputation 결과 파일 들어있는 폴더.
+
+zcat wholesample.imputed.vcf.gz | grep -v "##" | grep IMP | cut -f 1-2 > imputed_snps.txt
+zcat wholesample.imputed.vcf.gz | grep -v "#" | cut -f 1-5 > ref_snps.txt
+
+cd ${imputepath}/wholesample_imputation_result
+awk '$3 ~ /^AA|HLA|copy/' ref_snps.txt | cut -f 1-2 > C4HLA_snps.txt
+
+# extract HLA/C4; 좀 걸림.
+vcftools --gzvcf wholesample.imputed.vcf.gz \
+         --positions C4HLA_snps.txt \
+         --recode \
+         --recode-INFO-all \
+         --stdout | gzip > wholesample.imputed.for_C4HLA_check.vcf.gz
+
+zcat wholesample.imputed.for_C4HLA_check.vcf.gz | java -jar /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/dependency/vcf2beagle.jar 0 wholesample.imputed.for_C4HLA_check
+gzip -d wholesample.imputed.for_C4HLA_check.bgl.gz
+#gzip -d wholesample.imputed.for_C4HLA_check.vcf.gz
+#sed -i '/^##/d' wholesample.imputed.for_C4HLA_check.vcf
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' wholesample.imputed.for_C4HLA_check.vcf.gz -H --output MHC_GT.txt
+
+
+# diploid C4 copy calculation
+
+cd /BDATA/smkim/JG.HLAimputation/KHU/new_20240409/wholesample_imputation_result
+
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT[\t%DS]\n' wholesample.imputed.vcf.gz -H --output dosage.txt
+bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t%AF\t%INFO\n' wholesample.imputed.vcf.gz -H --output DR2.txt
+
+cat <(head -n 1 dosage.txt) <(cut -f 2 ./imputed_snps.txt | grep -F -f - dosage.txt) > dosage_imputed_snps_only.txt
+cat <(head -n 1 DR2.txt) <(cut -f 2 ./imputed_snps.txt | grep -F -f - DR2.txt) > DR2_imputed_snps_only.txt
+
+
+Rscript /BDATA/smkim/JG.HLAimputation/KHU/SCRIPTs/2_1.mk_diploid_table.R --snpver ${ver} --haplonetver ${haplonetver}
+

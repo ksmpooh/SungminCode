@@ -1,0 +1,89 @@
+Nanopore
+- raw DATA: 
+    - fastq:표준, 시퀀스, 퀄리티정보, 
+    - POD5: 나노포어 자체,  시퀀스, 퀄리티정보, 종단정보, 이벤트 정보, 나노포어 분석도구 (장거리 시퀀싱 분석 가능)
+
+###
+https://pod5-file-format.readthedocs.io/en/latest/docs/install.html#install-pod5
+
+
+### header
+
+@PG	ID:minimap2	PN:minimap2	VN:2.24-r1122	CL:minimap2 -y -t 40 -ax map-ont genome.fa -
+@PG	ID:samtools	PN:samtools	PP:minimap2	VN:1.18	CL:samtools sort -@ 3 --write-index -o NIH23O8372486.bam##idx##NIH23O8372486.bam.bai -O bam --reference genome.fa -
+@PG	ID:samtools.1	PN:samtools	PP:samtools	VN:1.13	CL:/mnt/garnet2/Tools/WGS_Analysis/Program/SAMtools/samtools-1.13/samtools view -@ 20 -h NIH23O8372486/output/NIH23O8372486.bam
+@PG	ID:samtools.2	PN:samtools	PP:samtools.1	VN:1.13	CL:/mnt/garnet2/Tools/WGS_Analysis/Program/SAMtools/samtools-1.13/samtools view -@ 20 -b -o NIH23O8372486/output/NIH23O8372486_replaceRG.bam
+@PG	ID:samtools.3	PN:samtools	PP:samtools.2	VN:1.13	CL:/mnt/garnet2/Tools/WGS_Analysis/Program/SAMtools/samtools-1.13/samtools addreplacerg --threads 40 -r @RG ID:PCAMP212 PL:ONT LB:NIH23O8372486 SM:NIH23O8372486 -w -m orphan_only NIH23O8372486/output/NIH23O8372486_replaceRG_tmp.bam -o NIH23O8372486/output/NIH23O8372486_replaceRG.bam
+@PG	ID:samtools.4	PN:samtools	PP:samtools.3	VN:1.10	CL:samtools view -H NIH23O8372486_sorted.bam
+@RG	ID:PCAMP212	PL:ONT	LB:NIH23O8372486	SM:NIH23O8372486
+###
+
+/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8372486/Raw_Data/NIH23O8372486.fastq.gz
+ref : /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+cd /BDATA/smkim/pangenome/test/nanopore
+
+time /BDATA/smkim/TOOLs/minimap2/minimap2 -y -t 40 -ax map-ont /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8372486/Raw_Data/NIH23O8372486.fastq.gz |
+samtools sort -@ 40 --write-index -o NIH23O8372486_sorted.bam --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -
+
+minimap2 -ax map-ont -t 8 reads.fastq reference.fasta | samtools sort -@ 8 -o sorted.bam
+
+
+time /BDATA/smkim/TOOLs/minimap2/minimap2 -y -t 40 -ax map-ont /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8372486/Raw_Data/NIH23O8372486.fastq.gz -o test.bam
+###
+[M::main] Real time: 9796.850 sec; CPU: 342426.945 sec; Peak RSS: 34.787 GB
+[bam_sort_core] merging from 204 files and 4 in-memory blocks...
+real    163m17.491s
+user    5642m33.860s
+sys     64m33.724s
+###
+
+time samtools sort -@ 4 --write-index --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta test.bam -o test_sorted.bam
+time samtools sort -@ 4 --write-index test.bam > test_sorted.bam
+###
+real    10m52.677s
+user    33m9.498s
+sys     4m15.713s
+###
+
+## 확인중
+time /BDATA/smkim/TOOLs/minimap2/minimap2 -ax map-ont -t 40 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8372486/Raw_Data/NIH23O8372486.fastq.gz | samtools sort --write-index -@ 40 -o v2.test_sorted.bam
+
+
+## 추가 확인
+minimap2 ... | samtools sort - -o a.bam
+
+
+##### 경헌샘 데이터 체크 ## 106번 서버
+##Tools: minimap2 (nanopore, revio 다 가능함), long-read 전용 alignment tool
+/BDATA/smkim/TOOLs/minimap2/minimap2
+
+## reference genome
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+## DATA 
+/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/
+/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio
+
+### nanopore
+
+minimap2 -ax map-ont -t 40 [referenec.fasta] [input.fastq] -o [output.bam]
+samtools sort --write-index [output.bam] > output_sorted.bam ## --write-index 잘 되는지 확인 필요
+
+## 아래 두개가 잘 되는지 확인해야함. 보니깐 잘 안되는것 같음.. -@ multi core 분석할 때 잘 안됨
+samtools sort -@ [cores] --write-index [output.bam] > output_sorted.bam 
+samtools sort -@ [cores] --write-index [output.bam] -o output_sorted.bam ## 
+
+
+## 분석 예시
+/BDATA/smkim/TOOLs/minimap2/minimap2 -ax map-ont -t 40 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8372486/Raw_Data/NIH23O8372486.fastq.gz -o output.bam
+
+
+### Revio
+## pbmm2 사용하여 mapping : pbmm2 : pacbio에서 만든 minimap2, conda를 활용함
+conda env list # conda 가상환경 확인
+conda activate pacbio_python2 # pacbio_python2라는 가상환경 들어가기 -> 이떄부터 pbmm2 명령어 사용가능
+
+#pbmm2: j는 mapping thread, J는 sort thread로 위에처럼 따로 samtools sort 할 필요가 없음
+# pacbio는 기본 uBAM 데이터 임
+pbmm2 align [referenec.fasta] [input.bam] [output.bam] --sort -j 40 -J 20
+

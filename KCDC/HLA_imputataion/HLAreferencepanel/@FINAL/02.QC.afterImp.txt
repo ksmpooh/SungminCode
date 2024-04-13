@@ -1,0 +1,143 @@
+
+### 2
+/Volumes/DATA/HLAreferencePanel/Final
+
+ls 1KGP/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan.py 1KGP/{} Result/02.{}.txt"
+
+ls Han/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan.py Han/{} Result/02.{}.txt"
+ls PanKor/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan.py PanKor/{} Result/02.{}.txt"
+ls KMHC/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan.py KMHC/{} Result/02.{}.txt"
+
+# R2 > 0.8
+ls KMHC/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan_filterR20.8.py KMHC/{} v3.upper/{}.txt"
+
+
+### 3
+
+#ls *fd*txt | xargs -I{} -P 1 zsh -c "python ../../03.matching.check.real.vs.imp.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_4field.chped {} 4 ../03.allele.matching_freq"
+#ls Result/02.*txt | xargs -I{} -P 1 bash -c "python 03.HLAimputation.accuracy.check_otherpanelnotpanelremove.py /Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped {} 4 ./"
+
+
+## python
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        if "td" in df:
+            os.system("python3 03.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 2 ./accuracy"%(ngs,df))
+        else:
+            os.system("python3 03.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 4 ./accuracy"%(ngs,df))
+            os.system("python3 03.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 42 ./accuracy"%(ngs,df))
+        
+
+main(glob.glob("Result/02.*fd*txt"))
+
+###KMHC
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        if "td" in df:
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 2 ./accuracy"%(ngs,df))
+        else:
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 4 ./accuracy"%(ngs,df))
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 42 ./accuracy"%(ngs,df))
+        
+
+main(glob.glob("Result/02.*KBA*txt"))
+
+
+######## 4 ref intersect HLA type
+## python
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        if "td" in df:
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 2 ./v2.allRefCommon/accuracy"%(ngs,df))
+        else:
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 4 ./v2.allRefCommon/accuracy"%(ngs,df))
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_otherpanelnotpanelremove.py %s %s 42 ./v2.allRefCommon/accuracy"%(ngs,df))
+        
+
+main(glob.glob("Result/02.*SNPQC_520sample*fd*txt"))
+main(glob.glob("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan/02.processing/KBA.g*fd*txt"))
+
+###KMHC
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        if "td" in df:
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 2 ./v2.allRefCommon/accuracy"%(ngs,df))
+        else:
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 4 ./v2.allRefCommon/accuracy"%(ngs,df))
+            os.system("python3 03-1.inter4Ref.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 42 ./v2.allRefCommon/accuracy"%(ngs,df))
+        
+
+main(glob.glob("Result/02.*KBA.SNPQC_520sample*fd.txt"))
+
+
+
+######### R2 > 0.8
+ls KMHC/*dose.vcf.gz | cut -d"/" -f 2 | xargs -I{} -P 5 bash -c "python3 02.imputation.extract_HLAtype_forMichigan_filterR20.8.py KMHC/{} v3.upper/{}.txt"
+
+
+
+import os,glob
+#ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_common.chped"
+ngs = "/Users/ksmpooh/Desktop/KCDC/HLAimputation/HLAtyping_Final_20211126/IMGT3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare.chped"
+#/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLA.4digit.520sample.nomenclean_withheader.chped
+
+def main(dfs):
+    for df in dfs:
+        if "td" in df:
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 2 ./v3.upper/accuracy"%(ngs,df))
+        else:
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 4 ./v3.upper/accuracy"%(ngs,df))
+            os.system("python3 03.HLAimputation.accuracy.check_5CVnotpanelremove_onlynotrare.py %s %s 42 ./v3.upper/accuracy"%(ngs,df))
+        
+
+main(glob.glob("v3.upper/*KBA.SNPQC_520sample*fd.txt"))
+
+
+
+#### F1 score
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/KMHC
+ls *SNPQC_520sample.dose.vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 5 bash -c "bcftools query -f '%ID\n' {}.vcf.gz | grep HLA > merge/{}.merge.hla.type.txt"
+ls *SNPQC_520sample.dose.vcf.gz | sed 's/.vcf.gz//g' | xargs -I{} -P 5 bash -c "bcftools view -i ID==@merge/5CV.all.HLAtype.txt {}.vcf.gz | bcftools query -f '%ID[\t%SAMPLE=%GT]\n' > merge/{}.5CV_common.HLA_GT.txt"
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/Han
+mkdir merge
+ls *SNPQC_520sample*.dose.vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 5 bash -c "bcftools query -f '%ID[\t%SAMPLE=%GT]\n' {}.vcf.gz | grep HLA > merge/{}.HLA_GT.txt"
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/PanKor
+mkdir merge
+ls *SNPQC_520sample*.dose.vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 5 bash -c "bcftools query -f '%ID[\t%SAMPLE=%GT]\n' {}.vcf.gz | grep HLA > merge/{}.HLA_GT.txt"
+
+cd /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/test/michigan
+ls -d g* | xargs  -I{} -P 1 | xargs -I {} -P 5 bash -c "bcftools query -f '%ID[\t%SAMPLE=%GT]\n' {}/chr_6/chr6.dose.vcf.gz | grep HLA > /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/michigan/merge/{}\_HLAimputation_test.SNPQC_520sample.michigan_imputation_minimac4.dose.HLA_GT.txt"
+
+g1_HLAimputation_test.SNPQC_520sample.PanKor_imputation_minimac4.dose.HLA_GT.txt
+
+/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common
+
+
+rsync -avhP /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/KMHC/merge/*HLA_GT* /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common/
+rsync -avhP /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/Han/merge/*HLA_GT* /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common/
+rsync -avhP /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/PanKor/merge/*HLA_GT* /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common/
+rsync -avhP /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/michigan/merge/*HLA_GT* /Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common/
+
+ls *txt | xargs -I {} -P 5 bash -c "python3 test.py {}"

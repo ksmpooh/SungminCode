@@ -1,0 +1,147 @@
+## KCHIP QC
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/new
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M --update-names --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids
+
+
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids --maf 0.01 --hwe 1e-6 --geno 0.05 --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_snpQC
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_snpQC --keep  /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink_for529/HLAtyping.520sample.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_snpQC_HLAtypesample
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids --keep  /BDATA/smkim/JG.HLAimputation/kchip_forHLA.FIANL/02.plink_for529/HLAtyping.520sample.txt --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_HLAtypesample
+plink --bfile JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_HLAtypesample --maf 0.01 --hwe 1e-6 --geno 0.05 --make-bed --out JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_HLAtypesample_snpQC
+
+
+
+### make reference with without rare
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare
+
+
+/BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare_noheader.chped
+
+python -m NomenCleaner \
+    --hped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field_notrare_noheader.chped \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/01.nomen/HLA.520sample_INGT3320_notRare.nomen \
+    --2field
+
+
+
+
+V1: SNPQC -> 520sample
+
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/new/JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_snpQC_HLAtypesample \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/KMHC_v1.hg19.HLAtapas_makereference_2field \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 64
+
+V2: 520sample -> SNPQC
+python -m MakeReference \
+    --variants /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/new/JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_HLAtypesample_snpQC \
+    --chped /BDATA/smkim/JG.HLAimputation/HLA-TAPAS/DATA/00.rawDATA/imgt3320/HLA.typing.Final.result_520sample_IMGT3320convert_forReference_2field.chped \
+    --hg 19 \
+    --out /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/KMHC_v2.hg19.HLAtapas_makereference_2field \
+    --dict-AA MakeReference/data/hg19/HLA_DICTIONARY_AA.hg19.imgt3320 \
+    --dict-SNPS MakeReference/data/hg19/HLA_DICTIONARY_SNPS.hg19.imgt3320 \
+    --phasing \
+    --mem 64g \
+    --nthreads 64
+
+
+
+bcftools view -e ID==@../KMHC.rare.2field.txt all/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz -Oz -o notrare/KMHC_v1.hg19.HLAtapas_makereference_2field_notrare.bgl.phased.vcf.gz
+bcftools view -e ID==@../KMHC.rare.2field.txt all/KMHC_v2.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz -Oz -o notrare/KMHC_v2.hg19.HLAtapas_makereference_2field_notrare.bgl.phased.vcf.gz
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/notrare/KMHC_v1.hg19.HLAtapas_makereference_2field_notrare.bgl.phased.vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/notrare/KMHC_v2.hg19.HLAtapas_makereference_2field_notrare.bgl.phased.vcf.gz
+
+## phasing ref guide
+
+
+## other panel
+
+#/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps %s --rsid --processReference --prefix %s
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4
+
+han: /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+pan: /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+1kgp : /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz
+
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz --rsid --processReference --prefix Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz --rsid --processReference --prefix PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz --rsid --processReference --prefix 1KGP3.MHC.referencepanel.bgl.phased.vcf.gz
+
+~/Downloads/Eagle_v2.4.1/eagle --vcfRef "+ref_out+" --vcfTarget "+plink_out+".vcf.gz --geneticMapFile "+m+" --chrom 6 --vcfOutFormat z --outPrefix "+phasing_out.replace(".vcf","")+" --numThreads 20
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --rsid \
+            --refhaps "+ref_out+".m3vcf.gz --haps "+phasing_out+".vcf.gz --noPhoneHome --allTypedSites \
+            --format GT,DS,GP --prefix "+imputation_out+" --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 15
+
+##KBA
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/00.preimp/*train*.vcf.gz
+
+kba: g1_HLAimputation.minimac4.KBA.520sample_SNPQC.dose.vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel
+PanKor
+Han : g4_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+1KGP
+
+#### phasing
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/00.preimp/
+# Han
+ls *test*.vcf.gz | sed 's/.vcf.gz//g' | \
+xargs -I {} -P 10 bash -c "~/Downloads/Eagle_v2.4.1/eagle --vcfRef /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/Han/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz \
+--vcfTarget {}.vcf.gz --geneticMapFile /BDATA/smkim/GWAS/ref/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --vcfOutFormat z \
+--outPrefix /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/Han/{}.Han_phasing --numThreads 20"
+
+# Pan
+ls *test*.vcf.gz | sed 's/.vcf.gz//g' | \
+xargs -I {} -P 10 bash -c "~/Downloads/Eagle_v2.4.1/eagle --vcfRef /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/PanKor/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz \
+--vcfTarget {}.vcf.gz --geneticMapFile /BDATA/smkim/GWAS/ref/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --vcfOutFormat z \
+--outPrefix /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/PanKor/{}.PanKor_phasing --numThreads 20"
+
+# 1KGP
+ls *test*.vcf.gz | sed 's/.vcf.gz//g' | \
+xargs -I {} -P 10 bash -c "~/Downloads/Eagle_v2.4.1/eagle --vcfRef /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/HLA-TAPAS/1KGP/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz \
+--vcfTarget {}.vcf.gz --geneticMapFile /BDATA/smkim/GWAS/ref/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --vcfOutFormat z \
+--outPrefix /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/1KGP/{}.1KGP_phasing --numThreads 20"
+
+#### imputation
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz.m3vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz.m3vcf.gz
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz.m3vcf.gz
+
+
+
+# Han
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/Han
+ls *gz | sed 's/_phasing.vcf.gz//g' | xargs -I {} -P 10 bash -c \
+"/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --rsid \
+            --refhaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/Han.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz.m3vcf.gz --haps {}\_phasing.vcf.gz --noPhoneHome --allTypedSites \
+            --format GT,DS,GP --prefix {}\_imputation_minimac4 --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 15"
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/PanKor
+ls *gz | sed 's/_phasing.vcf.gz//g' | xargs -I {} -P 10 bash -c \
+"/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --rsid \
+            --refhaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/PanKor_merged.hg19.HLAtapas_makereference.bglv4.bgl.phased.vcf.gz.m3vcf.gz --haps {}\_phasing.vcf.gz --noPhoneHome --allTypedSites \
+            --format GT,DS,GP --prefix {}\_imputation_minimac4 --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 15"
+
+# Han
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/03.HLAimputation/other_ref/1KGP
+ls *gz | sed 's/_phasing.vcf.gz//g' | xargs -I {} -P 10 bash -c \
+"/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --rsid \
+            --refhaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/minimac4/1KGP3.MHC.referencepanel.bgl.phased.vcf.gz.m3vcf.gz --haps {}\_phasing.vcf.gz --noPhoneHome --allTypedSites \
+            --format GT,DS,GP --prefix {}\_imputation_minimac4 --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 15"
+
+
+
+
+ls *gz | xargs -I {} -P 5 bash -c "tabix -f -p vcf {}"

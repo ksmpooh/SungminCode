@@ -275,7 +275,13 @@ ggvenn::ggvenn(
 
 a %>% count(Ref)
 head(a)
-#####
+
+
+
+
+
+##########
+head(han)
 han %>% pivot_longer(2:ncol(han),names_to = 'Gene',values_to = 'type') %>% #head()
   mutate(Gene = str_replace_all(Gene,"\\.1","")) %>% mutate(Gene = str_replace_all(Gene,"\\.2","")) %>% #count(Gene)#head()
   mutate(Ref = "Han Chinese") %>% select(-ID) ->han_freq
@@ -707,6 +713,10 @@ library(cowplot)
 
 plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
           ncol = 2)
+
+plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,labels = c("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1"),
+          ncol = 4)
+
 
 plot_grid(p1,p2,labels = c("A","B"),
           ncol = 2)

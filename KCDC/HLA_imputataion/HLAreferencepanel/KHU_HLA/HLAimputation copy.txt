@@ -1,0 +1,100 @@
+/home1/rhdfyd/rvtests/executable/rvtest --inVcf ${imputed_vcf_path}/wholesample.imputed.vcf.gz \
+                                        --out ${outputpath}/RA/rvtest.RA1 \
+                                        --covar /kimlab_wd/kah/0.data/1.4th_KCHIP/3.imputed/2.ped/2.4th.kchip.ra.vcfID.ver3.ped \
+                                        --covar-name "SEX,PC1,PC2,PC3,PC4,PC5" \
+                                        --pheno /kimlab_wd/kah/0.data/1.4th_KCHIP/3.imputed/2.ped/2.4th.kchip.ra.vcfID.ver3.ped \
+                                        --pheno-name "RA_kin" \
+                                        --dosage "DS" \
+                                        --meta "score" \
+                                        --freqUpper 0.995000 \
+                                        --freqLower 0.005000 \
+                                        --numThread 50 \
+                                        --noweb
+
+
+/BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result/wholesample.imputed.vcf.gz
+
+#QT: quantitative trait 분석용 (linear regression) (covariate PC1-5)
+#Logistic: binary trait (case, control) 분석용 (covariate AGE, SEX, PC1-5 사용해야함)
+
+##
+pca <-read.table("pca.txt",header=T)
+pca <- pca[,c(1,2,3,4,5,6,7)]
+
+ref <- read.table("/BDATA/smkim/JG.HLAimputation/KHU/pheno/CITY_HLA_LOGISTIC_pheno_20240408.txt",header=T)
+ref1 <- read.table("/BDATA/smkim/JG.HLAimputation/KHU/pheno/CITY_HLA_QT_pheno_20240408.txt",header=T)
+
+out <- merge(ref,pca)
+out1 <- merge(ref1,pca)
+
+write.table(out,"CITY_HLA_LOGISTIC_pheno_20240408_withPCA.txt",col.names=T,row.names=F,quote=F,sep=" ")
+write.table(out1,"CITY_HLA_QT_pheno_20240408_withPCA.txt",col.names=T,row.names=F,quote=F,sep=" ")
+
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt
+
+awk '{print $1,$2,0,0,0,$0}' CITY_HLA_QT_pheno_20240408_withPCA.txt | cut -d" " -f 1-5,8-  > CITY_HLA_QT_pheno_20240408_withPCA_pro.txt
+awk '{print $1,$2,0,0,0,$0}' CITY_HLA_LOGISTIC_pheno_20240408_withPCA.txt | cut -d" " -f 1-5,8-  > CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro.txt
+awk '{print $1,$2,0,0,$4,$0}' CITY_HLA_LOGISTIC_pheno_20240408_withPCA.txt | cut -d" " -f 1-5,8,10-  > CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro.txt
+
+
+###
+#code controls as 1, cases as 2, missing phenotypes as -9 or 0.
+df <- read.table("CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro.txt",header=T)
+
+#7~52
+
+
+for (i in 7:52) {
+  print(i)
+  df[,i] <- ifelse(is.na(df[,i]),df[,i],ifelse(df[,i] == 1,2,1))
+  
+}
+
+for(i in 7:52){
+    print(table(is.na(df[,i])))
+}
+
+for(i in 7:52){
+    print(table(df[,i]))
+}
+
+write.table(df,"CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt",col.names=T,row.names=F,quote=F,sep=" ")
+###
+data
+
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt
+
+
+###
+
+
+mkdir STOMACH
+/BDATA/smkim/TOOLs/rvtests/executable/rvtest --inVcf /BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result/wholesample.imputed.newID.vcf.gz \
+                                        --out STOMACH/rvtest.STOMACH \
+                                        --covar /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt \
+                                        --covar-name "AGE,SEX,PC1,PC2,PC3,PC4,PC5" \
+                                        --pheno /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_LOGISTIC_pheno_20240408_withPCA_pro_01to12.txt \
+                                        --pheno-name "STOMACH" \
+                                        --dosage "DS" \
+                                        --meta "score" \
+                                        --freqUpper 0.995000 \
+                                        --freqLower 0.005000 \
+                                        --numThread 60 \
+                                        --noweb
+
+
+mkdir BMI
+/BDATA/smkim/TOOLs/rvtests/executable/rvtest --inVcf /BDATA/smkim/JG.HLAimputation/KHU/new/wholesample_imputation_result/wholesample.imputed.newID.vcf.gz \
+                                        --out BMI/rvtest.BMI \
+                                        --covar /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA_pro.txt \
+                                        --covar-name "PC1,PC2,PC3,PC4,PC5" \
+                                        --pheno /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA_pro.txt \
+                                        --pheno-name "BMI" \
+                                        --dosage "DS" \
+                                        --meta "score" \
+                                        --freqUpper 0.995000 \
+                                        --freqLower 0.005000 \
+                                        --numThread 24 \
+                                        --noweb

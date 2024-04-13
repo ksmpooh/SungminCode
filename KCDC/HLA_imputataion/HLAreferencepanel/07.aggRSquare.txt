@@ -13,3 +13,695 @@ aggRSquare -v [Validation.vcf.gz]         [Required] Input Validation File
 
 
 #
+wDir
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR
+
+tool
+/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+
+inVCF
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/g1_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+
+
+bcftools query -l /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/g1_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz > samplelist.txt
+bcftools view -S samplelist.txt /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz |bgzip -c > test.vcf.gz
+
+/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare \
+-v test.vcf.gz \
+-i /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/g1_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz \
+-o test_aggr
+
+
+
+bcftools view -s NIH19KT0009 /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/g1_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz | bgzip -c > sample.1.imp.vcf.gz
+bcftools view -s NIH19KT0009 /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz |bgzip -c > sample.1.val.vcf.gz
+
+/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare \
+-v sample.1.val.vcf.gz \
+-i sample.1.imp.vcf.gz \
+-o test_s1.aggr
+
+
+## rawDATA
+bcftools query -f '%ID\n' /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz | grep HLA | grep ":" > HLA.2filed.type
+bcftools view --include ID==@HLA.2filed.type /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz | bgzip -c > KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+
+# t1 
+extract matching sample -> aggR
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/g1_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+
+
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    #bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $i.aggR
+    done
+
+
+# t2  : extract HLA type -> extract matching sample -> aggR
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    wc -l tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/han
+
+
+theme=Han
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    wc -l tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/pan
+
+
+theme=PanKor
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    wc -l tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail
+    done
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/multi
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    wc -l tmp
+    bcftools query -l $in > samplelist_v1.txt
+    awk '{split($1,a,"_");print $1,a[1]}' samplelist_v1.txt > samplelist.txt
+    awk '{print $2}' samplelist.txt > samplelist_v2.txt
+    bcftools reheader -s samplelist.txt $in -o tmp.vcf.gz
+    bcftools view -S samplelist_v2.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i tmp.vcf.gz -o $theme.$i.aggR --detail
+    done
+
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/1kgp
+
+
+theme=1KGP
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $in | grep HLA | grep ':' > tmp
+    wc -l tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail
+    done
+
+
+######## v2: extract HLA allele from ref -> extract HLA(in ref) from imputed VCF -> agg R2 ########
+
+# t2  : extract HLA type -> extract matching sample -> aggR
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+###### v1 #############
+### t3 reference panel each
+#: extract HLA type -> extract matching sample -> agg
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/kmhc/v1
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+refDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/02.makeReference/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    ref_panel=$refDir$i\_HLAreference.Panel.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref_panel | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref |bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/han/v1
+
+
+theme=Han
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/pan/v1
+
+
+theme=PanKor
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/multi/v1
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist_v1.txt
+    awk '{split($1,a,"_");print $1,a[1]}' samplelist_v1.txt > samplelist.txt
+    awk '{print $2}' samplelist.txt > samplelist_v2.txt
+    bcftools reheader -s samplelist.txt $in -o tmp.vcf.gz
+    #bcftools view -S samplelist_v2.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist_v2.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp tmp.vcf.gz | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# 1KGP
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/1kgp/v1
+
+
+theme=1KGP
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+
+### check multi
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+
+bcftools query -f '%ID\t%POS\n' $ref | grep HLA | grep ':' > tmp
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -f '%ID\t%POS\n' $in | grep HLA | grep ':' > $i.imputed.tmp
+    #bcftools view --include ID==@tmp tmp.vcf.gz | bgzip -c > $1.imputed.vcf.gz
+    #$tool -v $i.vcf.gz -i $1.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+##### v2 all variant
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/kmhc/v2
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+#ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/KMHC/KMHCreferencepanel.520.withKBA.bglv4.bgl.phased.vcf.gz
+refDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/02.makeReference/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/han/v2
+
+
+theme=Han
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/KMHC/KMHCreferencepanel.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/pan/v2
+
+
+theme=PanKor
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/KMHC/KMHCreferencepanel.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/multi/v2
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/KMHC/KMHCreferencepanel.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -l $in > samplelist_v1.txt
+    awk '{split($1,a,"_");print $1,a[1]}' samplelist_v1.txt > samplelist.txt
+    awk '{print $2}' samplelist.txt > samplelist_v2.txt
+    bcftools reheader -s samplelist.txt $in -o tmp.vcf.gz
+    bcftools view -S samplelist_v2.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i tmp.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# 1KGP
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/1kgp/v2
+
+
+theme=1KGP
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/ref_panel/KMHC/KMHCreferencepanel.520.withKBA.bglv4.bgl.phased.vcf.gz
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+#### V3 (1 field)
+#: extract HLA type -> extract matching sample -> agg
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/kmhc/v3
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+refDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/02.makeReference/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    ref_panel=$refDir$i\_HLAreference.Panel.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref_panel | grep HLA | grep -v ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref |bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    bcftools query -f '%ID\n' $i.vcf.gz | grep HLA | grep ':' > tmp
+    Rscript /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/HLAtype.parsing.af.R tmp tmp.af.txt
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt --AF tmp.af.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/han/v1
+
+
+theme=Han
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/pan/v1
+
+
+theme=PanKor
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/multi/v1
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA | grep ':' > tmp
+    bcftools query -l $in > samplelist_v1.txt
+    awk '{split($1,a,"_");print $1,a[1]}' samplelist_v1.txt > samplelist.txt
+    awk '{print $2}' samplelist.txt > samplelist_v2.txt
+    bcftools reheader -s samplelist.txt $in -o tmp.vcf.gz
+    #bcftools view -S samplelist_v2.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist_v2.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp tmp.vcf.gz | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# 1KGP
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/1kgp/v1
+
+
+theme=1KGP
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    bcftools query -f '%ID\n' $ref | grep HLA_A | grep ':' > tmp
+    bcftools query -l $in > samplelist.txt
+    #bcftools view -S samplelist.txt $ref | bcftools view --include ID==@tmp | bgzip -c > $i.vcf.gz
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    bcftools view --include ID==@tmp $in | bgzip -c > $i.imputed.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+
+### Han panel check
+
+   5647 6       29910317        HLA_A*74:01     A       T       .       PASS    AR2=0.00;DR2=0.00;AF=0.0020;IMP GT:DS:GP        0|0:0:>
+   5648 6       29910318        HLA_A*74:02     A       T       .       PASS    AR2=0.00;DR2=0.00;AF=0.0020;IMP GT:DS:GP        0|0:0:>
+   5649 6       29910319        6_29910274_G_C  G       C       .       PASS    AR2=0.40;DR2=0.52;AF=0.050;IMP  GT:DS:GP        0|1:0.>
+   5650 6       29910320        6_29910289_G_C  G       C       .       PASS    AR2=0.42;DR2=0.52;AF=0.062;IMP  GT:DS:GP        0|1:0.>
+   5651 6       29910321        6_29910294_C_A  C       A       .       PASS    AR2=0.54;DR2=0.63;AF=0.099;IMP  GT:DS:GP        0|1:0.>
+   5652 6       29910322        6_29910302_G_C  G       C       .       PASS    AR2=0.60;DR2=0.67;AF=0.099;IMP  GT:DS:GP        0|1:0.>
+   5653 6       29910419        6_29910419_G_T  G       T       .       PASS    AR2=0.34;DR2=0.46;AF=0.072;IMP  GT:DS:GP        0|1:0.>
+   5654 6       29910816        6_29910816_G_A  G       A       .       PASS    AR2=0.42;DR2=0.57;AF=0.092;IMP  GT:DS:GP        0|1:0.>
+   5655 6       29910866        6_29910866_G_A  G       A
+
+
+#### v4: HLA type 공통 추출안하고 샘플만 맞춰서 비교
+
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/kmhc/v4
+
+theme=KMHC
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/03.SNP2HLA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+refDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_5CV_IMGT3320/02.makeReference/
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    ref_panel=$refDir$i\_HLAreference.Panel.KBA.MHCref.25000000_35000000_idchange.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+#do t=${i/.vcf.gz/};echo $t;done
+
+
+# han 
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/han/v4
+
+
+theme=Han
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/Han/KBA/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.Han.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+# PanKor
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/pan/v4
+
+
+theme=PanKor
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/PanKor/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g5_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.PanKor_merged.bgl.phased.vcf.gz.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# multi
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/multi/v4
+
+
+theme=Multi
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/multi/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g1/chr_6/chr6.dose.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i/chr_6/chr6.dose.vcf.gz
+    bcftools query -l $in > samplelist_v1.txt
+    awk '{split($1,a,"_");print $1,a[1]}' samplelist_v1.txt > samplelist.txt
+    awk '{print $2}' samplelist.txt > samplelist_v2.txt
+    bcftools reheader -s samplelist.txt $in -o $i.imputed.vcf.gz
+    bcftools view -S samplelist_v2.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $i.imputed.vcf.gz -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
+
+
+# 1KGP
+cd /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/1kgp/v4
+
+
+theme=1KGP
+tool=/BDATA/smkim/TOOLs/aggRSquare/release-build/aggRSquare
+inDir=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/1KGP/
+ref=/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/00.rawDATA/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased_onlyHLA2field.vcf.gz
+
+#g4_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+
+for i in g1 g2 g3 g4 g5
+    do  
+    in=$inDir$i\_HLAimputation.SNP2HLA.KBA.MHCref.1KGP_4digit.bgl.phased.vcf.gz
+    bcftools query -l $in > samplelist.txt
+    bcftools view -S samplelist.txt $ref | bgzip -c > $i.vcf.gz
+    $tool -v $i.vcf.gz -i $in -o $theme.$i.aggR --detail --bins /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/aggR/bed.txt
+    done
+
