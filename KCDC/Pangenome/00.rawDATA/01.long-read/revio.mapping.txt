@@ -30,13 +30,128 @@ E. Align CCS fastq input and sort output
   $ pbmm2 align ref.fasta movie.Q20.fastq ref.movie.bam --sort --rg '@RG\tID:myid\tSM:mysample'
   ###
 
+--log-leve INFO --log-file filename
+ls *.subreads.bam > in.fofn
+pbmm2 align hg38.fasta mymovies.fofn hg38.mymovies.bam
+
+
+ls *.bam > in.fofn
+pbmm2 align human_GRCh38_no_alt_analysis_set.basic.fasta in.fofn [output.bam] --sort --preset ccs --log-level INFO --log-file [output.log]
+
+
 
 pbmm2 align /BDATA/smkim/HLA_seq/REF/HLA.target.fasta 5th_Cell.3832.bc1008--bc1008_trimmed.bam test.bam --sort --preset CCS --rg '@RG\tID:103test\tSM:mysample'
 pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta 
+
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274_test.bam --sort --preset CCS --log-level INFO
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274_test.bam --sort --preset CCS --log-level INFO
+
+/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio/raw.bam
+pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/NIH23F1013274_test.bam --sort --preset CCS --log-level INFO
 
 
 ## python3
 import os,glob
 
-pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274.bam --sort --sort -j 40 --preset CCS --rg '@RG\tID:NIH23F1013274\tSM:mysample'
-pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH23F1013274/m84065_230718_065320_s1.hifi_reads.bc2022.bam /BDATA/smkim/pangenome/01.revio_kchip/01.mapping/NIH23F1013274.bam --sort --sort -j 40 --preset CCS --sample NIH23F1013274
+inDir = "/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio/raw.bam/"
+ref = "/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
+outDir = "/BDATA/smkim/pangenome/01.revio_kchip/01.mapping/"
+datain = inDir +"sample.list.txt"
+flist = open(datain,'r')
+flist = flist.readlines()
+for i in flist:
+    print(i)
+    temp = i.strip().split()
+    os.system("pbmm2 align %s%s/%s %s %s%s.bam --preset hifi --sort -j 60"%(inDir,temp[0],temp[1],ref,outDir,temp[0]))
+
+### 
+
+
+### KCHIP REvio 48 mapping
+
+
+##
+#sample.list.txt
+[s for s in os.listdir() if "HLA" in s]
+##
+
+import os,glob
+
+#inDir = "/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio/RawBAMs/"
+inDir = "/SDATA/smkim/pangenome/00.rawDATA/2023.pro.KCHIP.Revio/RawBAMs/"
+ref = "/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
+#outDir = "/BDATA/smkim/pangenome/01.revio_kchip/01.mapping/"
+#outDir = "/BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/"
+outDir = "/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/"
+outDir2 = "/BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/"
+
+done_list = [s.replace(outDir2,"").split(".")[0] for s in glob.glob(outDir2+"*bai")]
+flist = [s for s in os.listdir(inDir) if "NIH" in s]
+
+for i in flist:
+    if i in done_list:
+      continue
+    print(i)
+    os.system("ls %s%s/*.bam > in.fofn"%(inDir,i))
+    #os.system("cat in.fofn")
+    os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38.bam --unmapped --sort --preset HIFI --log-level INFO --log-file %s.log --sample %s"%(ref,outDir,i,i,i))
+
+
+NIH23F1374073
+NIH23F1777753
+
+
+import os,glob
+
+inDir = "/RDATA6/Pangenome/00.rawDATA/2023.pro.KCHIP.Revio/RawBAMs/"
+ref = "/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
+outDir = "/BDATA/smkim/pangenome/01.revio_kchip/01.mapping/"
+#flist = [s for s in os.listdir(inDir) if "NIH" in s]
+
+
+for i in ["NIH23F1374073","NIH23F1777753"]:
+    print(i)
+    os.system("ls %s%s/*.bam > in.fofn"%(inDir,i))
+    #os.system("cat in.fofn")
+    os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38.bam --sort --preset ccs --log-level INFO --log-file %s.log"%(ref,outDir,i,i))
+
+
+NIH23F1135991
+NIH23F1374073
+NIH23F1777753
+NIH23F1978164
+
+
+
+NIH23F1374073
+cd NIH23F1777753
+
+cd NIH23F1777753
+ls *.bam > in.fofn
+pbmm2 align \
+--sort --preset hifi --log-level INFO --log-file test.log --unmapped \
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta in.fofn test.bam
+
+pbmm2 align \
+--sort --preset hifi --log-level INFO --log-file test.log --unmapped \
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta m84065_231207_085138.hifi_reads.bam test.bam
+
+## jasmine
+pbmm2 align \
+--sort --preset hifi --log-level INFO --log-file test2.log --unmapped \
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta m84065_240112_080522.hifi_reads.bam test2.bam
+
+
+pbmm2 align \
+--sort --preset ccs --log-level INFO --log-file test3.log \
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta m84065_240112_080522.hifi_reads.bam test3.bam
+
+
+cd NIH23F1374073
+ls *.bam > in.fofn
+pbmm2 align \
+--sort --preset hifi --log-level INFO --log-file test.log --unmapped \
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta in.fofn test.bam
+
+
+ls *bam |xargs -I {} -P 20 bash -c "samtools stats {} > bam.stats/{}.stats;samtools flagstats {} > bam.stats/{}.flagstats;samtools coverage {} > bam.stats/{}.coverage"

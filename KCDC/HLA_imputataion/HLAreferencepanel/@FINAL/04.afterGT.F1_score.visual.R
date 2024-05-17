@@ -8,6 +8,10 @@ colnames(ref_2)[1]<-c("HLAtype")
 ref <-read.table("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/HLAtype_check/other_panel/hlatype/intersect.HLAtype.in4Ref.txt")
 colnames(ref) <- "Gene"
 
+head(ref)
+head(ref_2)
+
+ref_2 %>% filter(HLAtype %in% ref$Gene) %>% count()
 
 
 flist = grep(list.files("./"),pattern = "after.GTmatchin", value=TRUE)
@@ -61,14 +65,54 @@ df %>% mutate(CV = str_split_fixed(filename,"_",2)[,1]) %>% mutate(HLAtype = str
   mutate(F1_score = TP/(TP+(FP+FN)/2)) %>% 
   select(Gene,HLAtype,Ref,CV,F1_score) %>% #head()
   filter(HLAtype %in% ref$Gene) %>% #inner_join(ref_2) %>%
-  group_by(Gene,HLAtype,CV) %>% #head()
+  group_by(Gene,HLAtype,CV) %>% 
   pivot_wider(names_from = Ref,values_from = F1_score) %>% na.omit() %>% #head()
   pivot_longer(4:7) %>% 
   inner_join(ref_2) -> new_df
   
 hla_gene <- new_df %>% ungroup %>% select(HLAtype,prop,freq) %>% unique()
 hla_gene
+
+head(ref_2)
+df %>% mutate(CV = str_split_fixed(filename,"_",2)[,1]) %>% mutate(HLAtype = str_split_fixed(ID,"_",2)[,2],Gene = str_split_fixed(HLAtype,"\\*",2)[,1] ) %>% #head()
+  filter(HLAtype %in% ref$Gene) %>% #inner_join(ref_2) %>%
+  mutate(F1_score = TP/(TP+(FP+FN)/2)) %>% inner_join(ref_2) %>% na.omit() %>% #filter
+  select(Ref,CV,HLAtype,Gene,F1_score,freq) %>% filter(freq != "rare") %>% 
+  group_by(freq,Ref,Gene) %>% summarise(F1_5CV_mean = mean(F1_score)) -> a
+
+df %>% mutate(CV = str_split_fixed(filename,"_",2)[,1]) %>% mutate(HLAtype = str_split_fixed(ID,"_",2)[,2],Gene = str_split_fixed(HLAtype,"\\*",2)[,1] ) %>% #head()
+  filter(HLAtype %in% ref$Gene) %>% #inner_join(ref_2) %>%
+  mutate(F1_score = TP/(TP+(FP+FN)/2)) %>% inner_join(ref_2) %>% na.omit() %>% #filter
+  select(Ref,CV,HLAtype,Gene,F1_score,freq) %>% filter(freq != "rare") %>%
+  group_by(freq,Ref) %>%  summarise(F1_5CV_mean = mean(F1_score)) %>% mutate(Gene = "Overall") -> b
+
+df %>% mutate(CV = str_split_fixed(filename,"_",2)[,1]) %>% mutate(HLAtype = str_split_fixed(ID,"_",2)[,2],Gene = str_split_fixed(HLAtype,"\\*",2)[,1] ) %>% #head()
+#  filter(HLAtype %in% ref$Gene) %>% #inner_join(ref_2) %>%
+  mutate(F1_score = TP/(TP+(FP+FN)/2)) %>% inner_join(ref_2) %>% na.omit() %>% #filter
+  select(Ref,CV,HLAtype,Gene,F1_score,freq) %>% filter(freq == "rare") -> c
+c %>% group_by(Ref,Gene) %>% summarise(mean=mean(F1_score))
+
+table(ref_2$HLAtype %in% ref$Gene)
+dim(ref)
+table(c$HLAtype %in% ref$Gene)
+a %>% rbind(b) %>%
+  mutate(Ref = factor(Ref, levels = c("KMHC","Multi-ethnic","Han Chinese", "Pan-Kor"), labels = c("KMHC", "Multi-ethnic","Han Chinese", "Pan-Kor"))) %>% 
+  ggplot(aes(x=Ref,y=F1_5CV_mean,fill=Ref)) +
+  geom_bar(stat = "identity") +
+  facet_grid(freq~Gene)
+
+
+
+head(new_df)
+new_df %>% filter(HLAtype == hla_gene[1,"HLAtype"]) %>%  count(freq)
+   
+new_df %>% filter(HLAtype == hla_gene[1,"HLAtype"]) %>% 
+  mutate(name = factor(name, levels = c("KMHC","Multi-ethnic","Han Chinese", "Pan-Kor"), labels = c("KMHC", "Multi-ethnic","Han Chinese", "Pan-Kor"))) %>% 
+  group_by(freq,name,Gene) %>% #head()
+  summarise(mean = mean(value))
+
 setwd("/Users/ksmpooh/Desktop/KCDC/HLAimputation/MakeReferencePanel/Final/F1_score/common/plot")
+
 
 head(new_df)
 new_df %>% filter(HLAtype == hla_gene[1,"HLAtype"]) %>% 

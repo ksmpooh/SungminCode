@@ -2,5 +2,36 @@
 
 ref_panel="/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_all/imgt3320/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.bgl.phased.vcf.gz"
 
+python -m HLAassoc LINEAR \
+    --vcf /BDATA/smkim/KBA_130K/HLA/01.imputation/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_update.merged.HLA-TAPASimp.bgl.phased.vcf.gz \
+    --out /BDATA/smkim/KBA_130K/HLA/02.asso/KCHIP_130K_HLA_TAPAS_asso_HDL_z \
+    --pheno /BDATA/smkim/KBA_130K/00.input/transformation_lipid_kchip130k_v1v2_20200414_forHLA.ped \
+    --pheno-name HDL_z
 
 /BDATA/smkim/KBA_130K/HLA/02.asso/
+
+### after KHU
+cd /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt
+
+HCT
+HB
+PLAT
+RBC
+WBC
+MCV
+MCH
+MCHC
+
+cat 
+cat /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema/
+
+in=$1
+python -m HLAassoc LINEAR \
+    --vcf /BDATA/smkim/KBA_130K/HLA/01.imputation/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_update.merged.HLA-TAPASimp.bgl.phased.vcf.gz \
+    --out /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema/KCHIP_130K_HLA_TAPAS_asso.$in \
+    --pheno /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt \
+    --pheno-name $in
+
+
+ls /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema/

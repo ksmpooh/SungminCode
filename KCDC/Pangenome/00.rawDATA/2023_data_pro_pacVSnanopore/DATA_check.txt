@@ -414,6 +414,19 @@ SnpSift concordance ../00.rawDATA/Revio/kchip/Revio_kchip.NIH14D3747033.GRCh38.d
 
 SnpSift concordance 0002.vcf 0003.vcf > test.txt
 
+# wgs
+cd /BDATA/smkim/pangenome/00.rawDATA/wgs/vcf_66/auto
+cat /BDATA/smkim/pangenome/99.datacheck/wgs.17sample.txt |awk '{print $1".autosomal.vcf.gz"}' |tr '\n' ' '
+
+bcftools merge NIH20N2851386.autosomal.vcf.gz NIH20N2786387.autosomal.vcf.gz NIH20N2689160.autosomal.vcf.gz NIH20N2200250.autosomal.vcf.gz NIH20N2156788.autosomal.vcf.gz NIH20N2556365.autosomal.vcf.gz NIH20N2172445.autosomal.vcf.gz NIH20N2771162.autosomal.vcf.gz NIH20N2427301.autosomal.vcf.gz NIH20N2298807.autosomal.vcf.gz NIH20N2439417.autosomal.vcf.gz NIH20N2242959.autosomal.vcf.gz NIH20N2000078.autosomal.vcf.gz NIH20N2240231.autosomal.vcf.gz NIH20N2570199.autosomal.vcf.gz NIH20N2569067.autosomal.vcf.gz NIH20N2663116.autosomal.vcf.gz | bgzip -c > ../../WGS.merge_17samples.autosomal.vcf.gz
+cd ../../
+bcftools reheader -s /BDATA/smkim/pangenome/99.datacheck/wgstokba.txt WGS.merge_17samples.autosomal.vcf.gz | bgzip -c > WGS.merge_17samples_reheader.autosomal.vcf.gz
+bcftools reheader -s /BDATA/smkim/pangenome/99.datacheck/wgstokba.txt WGS.merge_17samples.autosomal.vcf.gz -Oz -o WGS.merge_17samples_reheader.autosomal.vcf.gz
+
+
+bcftools norm -m -any WGS.merge_17samples_reheader.autosomal.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+
+bcftools view -i 'F_MISSING <= 0.30  & HWE >= 1e-6' WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.vcf.gz -Oz -o /BDATA/smkim/pangenome/99.datacheck/02.concordance/newcall_withWGS/WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
 
 ## kchip vs nanopore vs revio 
 cd /BDATA/smkim/pangenome/02.concordance
@@ -469,3 +482,188 @@ bcftools query -f "%ID\n" ../00.rawDATA/Revio_kchip.merge.deep_PASS_autosomal.no
 bcftools query -f "%ID\n" ../00.rawDATA/Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.vcf.gz > nanopore.before
 
 cat kchip revio.before nanopore.before | sort |uniq -c | awk '$1==3{print $0}' |wc -l
+
+
+
+
+### wgs vs nanopore vs revio 17 sample
+liftover 38 to 19: 104서버
+
+###liftover 38 to 19
+/SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --java-options "-Xmx500G" --INPUT [INPUT] --OUTPUT [OUTPUT] --REJECT reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh37/hg19.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh37/hg38ToHg19.over.chain.gz
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 2 bash -c /SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --INPUT {}.vcf.gz --OUTPUT {}.hg39tohg19.vcf.gz --REJECT {}.reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh37/hg19.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh37/hg38ToHg19.over.chain.gz
+
+
+###liftover 19 to 38 : chr번호 잇어야함!!!
+/SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --INPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.vcf.gz --OUTPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.vcf.gz --REJECT reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh38/hg38.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh38/hg19ToHg38.over.chain.gz
+##### wgs 19 to 38로 선택!!!
+bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.vcf.gz | bgzip -c > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz
+
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS
+
+
+WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz
+../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+bcftools isec --nfiles 3 -p inter3all WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_revio WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_nanopore WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+
+
+SnpSift concordance 0000.vcf 0001.vcf > 01.txt
+SnpSift concordance 0000.vcf 0002.vcf > 02.txt
+SnpSift concordance 0001.vcf 0002.vcf > 12.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/inter_wgs_revio
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_revio_23.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/inter_wgs_nanopore
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_nanopore_23.txt
+
+
+
+
+### 동일하게 QC
+
+##bcftools view -i 'F_MISSING <= 0.30  & HWE >= 1e-6 & AC > 0'
+bcftools view -i 'F_MISSING <= 0.30  & HWE >= 1e-6 & AC > 0' 
+bcftools +fill-tags in.bcf -Ob -o out.bcf -- -t AF,AC,AN,F_MISSING,NS,HWE
+
+
+bcftools +fill-tags WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz -- -t F_MISSING  | bcftools view -i 'F_MISSING <= 0.30  & HWE >= 1e-6 & AC > 0' | bgzip -c > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz
+bcftools +fill-tags WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.vcf.gz -- -t F_MISSING  | bcftools view -v snps -i 'F_MISSING <= 0.30  & HWE >= 1e-6 & AC > 1' | bgzip -c > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz
+
+bcftools view -i 'AF != 1' WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz | bgzip -c > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz
+
+Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz
+
+bcftools query -f "%ID\n" > .ID
+
+bcftools view -v snps
+
+bcftools query -f "%ID\n" Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz > Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz.ID
+bcftools query -f "%ID\n" Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz > Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz.ID
+bcftools query -f "%ID\n" WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz.ID
+bcftools query -f "%ID\n" WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz.ID
+bcftools query -f "%ID\n" WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz > WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz.ID
+
+### concordance after same QC
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS
+
+
+WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz
+../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+bcftools isec --nfiles 3 -p inter3all WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_revio WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_nanopore WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+cd inter3all
+SnpSift concordance 0000.vcf 0001.vcf > 01.txt
+SnpSift concordance 0000.vcf 0002.vcf > 02.txt
+SnpSift concordance 0001.vcf 0002.vcf > 12.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/inter_wgs_revio
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_revio_23.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/inter_wgs_nanopore
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_nanopore_23.txt
+###
+filter 2
+
+WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz
+../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+bcftools isec --nfiles 3 -p filter2_inter3all WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p filter2_inter_wgs_revio WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p filter2_inter_wgs_nanopore WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter2.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+cd filter2_inter3all
+SnpSift concordance 0000.vcf 0001.vcf > 01.txt
+SnpSift concordance 0000.vcf 0002.vcf > 02.txt
+SnpSift concordance 0001.vcf 0002.vcf > 12.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/filter2_inter_wgs_revio
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_revio_23.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/filter2_inter_wgs_nanopore
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_nanopore_23.txt
+
+###
+filter 3
+filter 2
+
+WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz
+../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+bcftools isec --nfiles 3 -p filter3_inter3all WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p filter3_inter_wgs_revio WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p filter3_inter_wgs_nanopore WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.setID.filter3.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+cd filter3_inter3all
+SnpSift concordance 0000.vcf 0001.vcf > 01.txt
+SnpSift concordance 0000.vcf 0002.vcf > 02.txt
+SnpSift concordance 0001.vcf 0002.vcf > 12.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/filter3_inter_wgs_revio
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_revio_23.txt
+
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/withWGS/filter3_inter_wgs_nanopore
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_nanopore_23.txt
+
+
+
+
+#### 66 wgs new call
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 70 bash -c "bcftools filter -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 {}.vcf.gz | bgzip -c > ./auto/{}.autosomal.vcf.gz"
+
+
+### wgs vs nanopore vs revio 17 sample (new calling)
+cd /BDATA/smkim/pangenome/99.datacheck/02.concordance/newcall_withWGS
+
+WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+bcftools isec --nfiles 3 -p inter3all WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_revio WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+bcftools isec -p inter_wgs_nanopore WGS.merge_17samples_reheader.autosomal.norm_setID.onlySNP.03snpqc.vcf.gz ../Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlySNP.03snpqc.vcf.gz
+
+
+
+cd inter3all
+SnpSift concordance 0000.vcf 0001.vcf > 01.txt
+SnpSift concordance 0000.vcf 0002.vcf > 02.txt
+SnpSift concordance 0001.vcf 0002.vcf > 12.txt
+
+cd ../inter_wgs_revio
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_revio_23.txt
+
+cd ../inter_wgs_nanopore
+SnpSift concordance 0002.vcf 0003.vcf > inter_wgs_nanopore_23.txt
+

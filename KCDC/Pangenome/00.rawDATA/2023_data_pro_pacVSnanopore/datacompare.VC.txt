@@ -1,0 +1,24 @@
+###
+wgs 8K
+nano 17
+pacbio 17
+
+cd /BDATA/smkim/pangenome/99.datacheck
+
+## list
+tail -n+2 same.sample.all.platform.txt | awk '{print $1}' | xargs -I {} -P1 bash -c "echo /BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling/{}.pbmm2_hg38.Deepvariant_Variantcalling.gvcf.gz >> Revio_kchip_gvcf_17samples.txt"
+
+
+###. multi-sample call
+ls /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling/*gvcf.gz > gvcf.list.txt
+ls /BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling_dnalinke/*g.vcf.gz >> gvcf.list.txt
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > Pangenome.Revio.2023_pro_66sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+
+/BDATA/smkim/pangenome/00.rawDATA/Revio/kchip/
+/BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling_dnalinke
+
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant --bed auto.bed --list ../kchip.revio.17sample.txt | bcftools view - | bgzip -c > Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli -d Revio_kchip --config DeepVariant --list /BDATA/smkim/pangenome/99.datacheck/Revio_kchip_gvcf_17samples.txt | bcftools view - | bgzip -c > Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz

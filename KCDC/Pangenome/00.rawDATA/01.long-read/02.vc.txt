@@ -1,0 +1,102 @@
+in=$1
+echo $in
+docker run -v "/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio":"/input" -v "/ADATA/smkim/pangenome/02.varinat.call":"/output" -v "/ADATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set":"/ref" google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in/Data/Basic_Analysis/$in\_sorted.bam --output_gvcf /output/$in.Pacbio_refpanel.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Pacbio_refpanel.Deepvariant_Variantcalling.vcf.gz --num_shards 72
+
+ls -d /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH* | cut -d"/" -f 6 | xargs -I{} -P 1 bash -c "sh run1.sh {}"
+
+ls -d /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH*/Data/Basic_Analysis/*bam
+
+in=$1
+echo $in
+docker run -v "/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore":"/input" -v "/ADATA/smkim/pangenome/02.varinat.call":"/output" -v "/ADATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set":"/ref" google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type NANOPORE --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in/Raw_Data/$in\_sorted.bam --output_gvcf /output/Nanorpoe_refpanel.$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/Nanorpo_refpanel.$in.Deepvariant_Variantcalling.vcf.gz --num_shards 72
+
+ls -d /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.nanopore/NIH23O8* | cut -d"/" -f 6 | xargs -I{} -P 1 bash -c "sh run.sh {}"
+
+
+
+docker kill $(docker ps -q)
+
+#### 106 kchip revio
+
+in=$1
+echo $in
+docker run --rm -v /BDATA/smkim/pangenome/01.revio_kchip/01.mapping:/input -v /BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Deepvariant_Variantcalling.vcf.gz --num_shards 40
+
+
+##
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping
+ls NIH*bam |sed 's/.bam//g'| head -3 | xargs -I{} -P 2 bash -c "sh run.sh {}"
+ls NIH*bam |sed 's/.bam//g'| tail -n+3 | xargs -I{} -P 2 bash -c "sh run.sh {}"
+
+ls NIH*bam | tail 15
+
+NIH23F1093518
+NIH23F1013274
+
+###105
+
+in=$1
+echo $in
+docker run --rm -v /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/$in/Data/Basic_Analysis:/input -v /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in\_sorted.bam --output_gvcf /output/$in.Revio_refpanel.pbmm2_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Revio_refpanel.pbmm2_hg38.Deepvariant_Variantcalling.vcf.gz --num_shards 40
+
+
+/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH23J3031898/Data/Basic_Analysis/NIH23J3031898_sorted.bam
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling
+ls -d /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH* |cut -d"/" -f6 | xargs -I{} -P 2 bash -c "sh run.sh {}"
+
+### 106
+
+in=$1
+echo $in
+sudo docker run --rm -v /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/$in/Data/Basic_Analysis:/input -v /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type PACBIO --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in\_sorted.bam --output_gvcf /output/$in.Revio_refpanel.pbmm2_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Revio_refpanel.pbmm2_hg38.Deepvariant_Variantcalling.vcf.gz --num_shards 40
+
+
+/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH23J3031898/Data/Basic_Analysis/NIH23J3031898_sorted.bam
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling
+ls -d /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/NIH* |cut -d"/" -f6 | tail -10 | xargs -I{} -P 2 bash -c "sh run.sh {}"
+
+##### 103 nanopore 
+in=$1
+echo $in
+sudo docker run --rm -v /SDATA/smkim/pangenome/00.rawDATA/2023.pro.ref_panel.nanopore:/input -v /SDATA/smkim/pangenome/nanopore:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type ONT_R104 --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.Nanopore.minimap2_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.Nanopore.minimap2_hg38.Deepvariant_Variantcalling.vcf.gz \
+--intermediate_results_dir /output/tmp/ --num_shards 60
+
+
+
+#### mjulti
+#ls ../03.variant.calling/*gvcf.gz > gvcf.list.txt 
+/BDATA/smkim/TOOLs/glnexus_cli --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > HLA.LongShort_merged.bwamem2_align.sort.Deepvariant_Variantcalling.GLnexus_Jointcalling.vcf.gz
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/03.joint.calling
+
+
+ls /BDATA/smkim/pangenome/01.revio_refpanel/02.variant.calling/*gvcf.gz > gvcf.list.txt
+ls /BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling_dnalinke/*g.vcf.gz >> gvcf.list.txt
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant --list gvcf.list.txt | bcftools view - | bgzip -c > Pangenome.Revio.2023_pro_66sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+tabix -f -p vcf angenome.Revio.2023_pro_66sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+

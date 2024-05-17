@@ -4,7 +4,7 @@
 import os,sys,glob
 
 
-wDir = "/Users/ksmpooh/Desktop/KCDC/pangenome/00.datacheck/01.vcf.stat/"
+wDir = "/Users/ksmpooh/Desktop/KCDC/pangenome/00.datacheck/01.vcf.stat/wgs/auto/"
 file_lists = glob.glob(wDir+"*stats")
 
 out = open("%sfilter.info.txt"%wDir,"w")

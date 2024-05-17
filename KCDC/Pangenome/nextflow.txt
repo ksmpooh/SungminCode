@@ -1,0 +1,2 @@
+nextflow run ~/nf-core-sarek_3.4.1/3_4_1/workflows/sarek --input samplesheet.csv --outdir results 
+ # usual parameters here

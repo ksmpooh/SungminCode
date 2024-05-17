@@ -1,0 +1,56 @@
+## phasgin
+/BDATA/smkim/KBA_130K/HLA/00.rawdata/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_convert.vcf.gz
+
+plink_data = '/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/00.rawData/new/JG.forHLAtyping.v2023_snpolisher_rmaffy_indel_flip_rmdup_idchange_rmSampleQCout_25M-35M_updateids_snpQC_HLAtypesample'
+ref_all = '/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/notrare/KMHC_v1.hg19.HLAtapas_makereference_2field_notrare.bgl.phased.vcf.gz'
+
+
+/BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/all/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz
+
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/all/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz \
+--rsid --processReference --prefix m3vcf/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz
+
+
+~/Downloads/Eagle_v2.4.1/eagle --vcfRef "+ref_out+" --vcfTarget "+plink_out+".vcf.gz --geneticMapFile "+m+" --chrom 6 --vcfOutFormat z --outPrefix "+phasing_out.replace(".vcf","")+" --numThreads 20\n\
+
+~/Downloads/Eagle_v2.4.1/eagle --vcfRef /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/all/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz \
+--vcfTarget /BDATA/smkim/KBA_130K/HLA/00.rawdata/KCHIP130K_MERGED_QCed_addINDEL_rmSNP_rmMAF_HLAregion_convert.vcf.gz \
+--geneticMapFile /BDATA/smkim/GWAS/ref/map/genetic_map_chr6_combined_b37_addCHR.txt --chrom 6 --vcfOutFormat z --outPrefix KBA_130K.KMHC_v1_ref.eagle_phasing --numThreads 60
+
+
+
+/BDATA/smkim/TOOLs/Minimac4 --minRatio 0.000001 --rsid \
+            --refhaps /BDATA/smkim/JG.HLAimputation/HLAreferencePanel/KMHC_IMGT3320_notrare/02.makeReference/all/m3vcf/KMHC_v1.hg19.HLAtapas_makereference_2field.bgl.phased.vcf.gz.m3vcf.gz \
+            --haps /BDATA/smkim/KBA_130K/HLA/01.imputation_minimac4/01.phasing/KBA_130K.KMHC_v1_ref.eagle_phasing.vcf.gz --noPhoneHome --allTypedSites \
+            --format GT,DS,GP --prefix KBA_130K.KMHC_v1_ref.eagle_phasing.minimac4_imputation --mapFile /BDATA/smkim/GWAS/ref/map/m3vcf/genetic_map_chr6_combined_b37_addCHR.m3vcf.txt --referenceEstimates --cpu 60
+
+
+### after KHU
+cd /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema
+/BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt
+
+/BDATA/smkim/KBA_130K/HLA/01.imputation_minimac4/02.imputation/KBA_130K.KMHC_v1_ref.eagle_phasing.minimac4_imputation.dose.vcf.gz
+
+
+HCT
+HB
+PLAT
+RBC
+WBC
+MCV
+MCH
+MCHC
+
+cat 
+cat /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema/target
+
+in=$1
+python -m HLAassoc LINEAR \
+    --vcf /BDATA/smkim/KBA_130K/HLA/01.imputation_minimac4/02.imputation/KBA_130K.KMHC_v1_ref.eagle_phasing.minimac4_imputation.dose.reheader.vcf.gz \
+    --out /BDATA/smkim/KBA_130K/HLA/02.asso/after_khu_hema/minimac4_imp/KCHIP_130K.KMHC_v1_ref.eagle_phasing.minimac4_imputation.HLA_TAPAS_asso.$in \
+    --pheno /BDATA/smkim/JG.HLAimputation/KHU/00.data/pheno/CITY_HLA_QT_pheno_20240408_withPCA.txt \
+    --pheno-name $in
+
+
+
