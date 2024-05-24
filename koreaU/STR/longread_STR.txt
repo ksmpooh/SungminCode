@@ -1,0 +1,39 @@
+## 103
+
+strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+NIH23F1013274.pbmm2_hg38.bam STR_test/NIH23F1013274.pbmm2_hg38.strling.bin 2> STR_test/NIH23F1013274.strling.log
+
+## longread STRling
+
+STRling
+###1. bin
+
+strling extract -f {input.fasta} {input.reads} {output.bin} 2> {log}
+
+
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 7 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/longread/01.bin/logs/{}.strling.log"
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 12 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/longread/01.bin/logs/{}.strling.log"
+        
+###2. bin merge
+
+strling merge --output-prefix str-results/str_merge -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta *bin
+
+###3. call
+strling call --output-prefix {params.prefix} -f {input.fasta} -b {input.bound} {input.reads} {input.bin} 2> {log}
+
+cd /BDATA/smkim/STR/strling/03.joint.call
+
+strling call --output-prefix {}.string_call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta\
+-b /BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt input.bam input.bin 2> logs/{}.strling_call.log
+
+/BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I{} -P 10 bash -c 'strling call --output-prefix {}.string_call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -b /BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt /RDATA7/smkim/pangenome/wgs/align/{}.bam /BDATA/smkim/STR/strling/01.bin/{}.strling.bin 2> logs/{}.strling_call.log'
+
+###4 outliner
+strling-outliers.py --genotypes *-genotype.txt --unplaced *-unplaced.txt
+Pandas 1.5.3
+pip install pandas==1.5.3

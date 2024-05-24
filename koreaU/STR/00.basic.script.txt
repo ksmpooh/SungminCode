@@ -1,0 +1,22 @@
+######## ExpansionHunter
+
+#sh
+
+in=$1
+echo $in
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /RDATA7/smkim/pangenome/wgs/align/$in.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --threads 72 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
+        --output-prefix $1.EH 2 > $1.EH.log
+
+
+###
+cd /BDATA/smkim/STR/EH_shortread
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
+
+

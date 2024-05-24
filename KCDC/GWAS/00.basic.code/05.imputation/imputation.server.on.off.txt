@@ -1,0 +1,96 @@
+Kis1VM zookeeper(zookeeper) namenode(hdfs계정) 리소스매니저(yarn) hbaseMaster(hbase)
+Kis2 3 zookeeper datanode nodemanager hbaseRegionserver
+
+
+
+#kis1 cloudgene 계정 cloudgene 서버 끄기
+cloudgene@kis1:/opt/cloudgene
+
+su cloudgene
+screen 들어가서 끄고 screen off
+
+
+#Kis1 yarn계정 리소스매니저 끄기
+su yarn # root 계정에서 들어가기
+yarn@kis1:/$ jps
+4886 Jps
+5738 ResourceManager
+
+yarn-daemon.sh --config $HADOOP_CONF_DIR stop resourcemanager
+
+yarn@kis1:/$ jps
+4951 Jps
+
+exit
+
+#Kis2 3 yarn계정 노드매니저 끄기
+su yarn
+
+yarn@kis3:/$ jps
+6372 NodeManager
+5021 Jps
+
+yarn-daemon.sh --config $HADOOP_CONF_DIR stop nodemanager
+nodemanager did not stop gracefully after 5 seconds: killing with kill -9
+yarn@kis2:/$ jps
+16864 Jps
+
+
+#Kis1 hdfs계정 namenode 끄기
+su hdfs
+hdfs@kis1:/$ jps
+5521 NameNode
+5078 Jps
+
+hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs stop namenode
+
+hdfs dfsadmin -safemode get
+hdfs dfsadmin -safemode leave
+hdfs dfsadmin -safemode get
+
+#Kis2 3 hdfs datanode 끄기
+hdfs@kis2:/$ jps
+17044 Jps
+5535 DataNode
+
+hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs stop datanode
+
+#Kis1 2 3 zookeeper계정 zookeeper 끄기
+su zookeeper
+
+zookeeper@kis1:/$ jps
+5845 Jps
+5375 QuorumPeerMain
+
+zkServer.sh stop
+#Kis1 hbase 끄기
+su hbase
+stop-hbase.sh 
+
+
+##### start
+#Kis1 2 3 zookeeper 가동
+
+zkServer.sh start
+
+#Kis1 네임노드 켜기  kis 2 3 데이터노드 켜기
+
+hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start namenode
+hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start datanode
+
+#Kis1 리소스매니저 켜기 kis23 노드매니저 켜기
+su yarn
+yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager
+
+yarn-daemon.sh --config $HADOOP_CONF_DIR start nodemanager
+
+#Kis1 hbase 켜기
+su hbase
+start-hbase.sh
+
+#Kis1 cloudgene 켜기
+su cloudgene
+cd /opt/cloudgene
+
+screen -S 
+./cloudgene server

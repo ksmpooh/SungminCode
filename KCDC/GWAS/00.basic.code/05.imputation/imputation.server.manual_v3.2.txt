@@ -1,0 +1,338 @@
+Michigan Imputation Server 설치 참고자료 
+v3.2
+2022.07.04.
+
+Michigan Imputation Server 설치 참고자료
+ 1. Michigan Imputation Server란?
+   1.1 Imputation 분석 서비스를 제공하는 Cloudgene GUI 플랫폼의 웹서비스 프로그램  
+     - 데이터(VCF)를 업로드 후 Reference Panel을 선택하여 Imputation 분석 옵션 선택 뒤에 서버에 Submit하여 분석을 진행
+     - 웹서비스 홈페이지 주소: https://imputationserver.sph.umich.edu/
+     - Cloudgene github 주소: https://github.com/genepi/cloudgene
+
+   1.2 Sebastian Schonherr, Lukas Forer가 개발하고 현재까지 유지보수 중
+     - `12 Cloudgene: A graphical execution platform for MapReduce programs on private and public cloud
+     - `15 Delivering Bioinformatics MapReduce Applications in the Cloud
+     - `16 Next-generation genotype imputation service and methods
+     - Whole-genotype imputation 워크플로우를 Hadoop 프레임워크의 MapReduce proramming model로 Imputation 분석 시 부하가 많이 걸리는 작업을 병렬화 시켜서 구현함
+     - Cloudgene 프레임워크에서 가장 첫번째 Imputation Job Run을 진행할 때, cloudgene install로 Cloudgene 프레임워크에 설치된 Reference Panel, genetic maps, software packages들을 Hadoop Distributed File System(HDFS)에 복사하게 됨
+ 
+
+ 2. Michigan Imputation Server 설치방법 개요 
+   2.1 Apache Hadoop가 호환되는 Linux 운영체제 설치
+   2.2 Apache Hadoop가 호환되는 JAVA 설치
+   2.3 Apache Hadoop 클러스터 내의 노드 간 통신을 위해 SSH 프로토콜 설치
+   2.4 Apache Hadoop, Zookeeper, Hbase 설치
+   2.5 Cloudgene 프레임워크 설치
+   2.6 Michigan Imputation Server 어플리케이션 설치
+   2.7 Korean Reference Genome의 Reference Panel 설치
+
+
+ 3. Michigan Imputation Server 상세 설치방법 
+   3.1 Apache Hadoop가 호환되는 Linux 운영체제(Ubuntu, CentOS) 설치
+     - Microsoft Window, Unix 계열 운영체제는 Apache에서 지원하지 않음
+   3.2 Apache Hadoop가 호환되는 JAVA 설치
+     - OpenJDK 버전의 JAVA8를 Apache에서 권장함
+     - https://cwiki.apache.org/confluence/display/HADOOP2/HadoopJavaVersions
+
+   3.3 노드 별 호스트 이름 설정
+     - 마스터 : hostnamectl set-hostname master
+     - 워커1 : hostnamectl set-hostname worker1
+     - /etc/hosts 파일 내용 전부 삭제 및 아래 내용 작성
+       * ’192.168.10.100 master
+       * ’192.168.10.200 worker1
+       ** IP는 예시로 작성됐음
+       *** 
+   3.4 Hadoop(HDFS, YARN), Zookeeper, Hbase Cloudgene 별 계정 생성
+     - 전체 공유 그룹 추가
+       * ’groupadd hadoop
+              * ’groupadd supergroup
+     - Hadoop 파일시스템을 관리할 HDFS 계정 추가
+       * ’adduser hdfs; password hadoop; usermod –aG haddop hdfs ; usermod –aG supergroup hdfs
+       ** 생성된 계정에 hadoop group을 추가하여, 권한 관리를 편하게 할 필요 있음
+     - Hadoop 리소스매니저를 관리할 YARN 계정 추가
+       * ’adduser yarn; password hadoop; usermod –aG haddop yarn
+     - Zookeeper, Hbase, Cloudgene 사용 계정 추가
+       * ’adduser zookeeper; password hadoop; usermod –aG haddop zookeeper
+       * ’adduser hbase; password hadoop; usermod –aG haddop hbase
+       * ’adduser cloudgene; password hadoop; usermod –aG haddop cloudgene
+   3.5○ Apache Hadoop 클러스터의 노드 간 통신을 위해 SSH 프로토콜 설치
+     - 각 노드에 openssh-client, openssh-server 설치
+   3.6 클러스터 내의 노드 간 네트워크 연결 작업
+     - 각 관리계정의 노드 간 원활한 통신을 위해 각 노드에 계정별 공개키를 전달하는 작업이 필요함
+       * 마스터: ’su hdfs; 패스워드 입력(hadoop); ssh-keygen -t rsa -f ~/.ssh/id_rsa; ssh-copy-id -i ~/.ssh/id_rsa.pub master; ssh-copy-id -i ~/.ssh/id_rsa.pub worker1
+       * 워커1: ’su hdfs; 패스워드 입력(hadoop); ssh-keygen -t rsa -f ~/.ssh/id_rsa; ssh-copy-id -i ~/.ssh/id_rsa.pub worker1; ssh-copy-id -i ~/.ssh/id_rsa.pub master
+   3.7 Zookeeper 설치
+     3.7.1 주키퍼 배포 버전 다운로드
+       * http://zookeeper.apache.org
+     3.7.2 주키퍼 /opt폴더에 압축해제
+    3.7.3 /etc/bash.bashrc에 주키퍼 환경변수 설정
+       * master, worker1에 똑같이 설정      
+       * export ZOOKEEPER_HOME=/opt/주키퍼설치폴더/
+       * export PATH=$PATH:$ZOOKEEPER_HOME/bin
+     3.7.4 주키퍼 환경설정 파일(zoo.cfg) 작성
+       *마스터에서 zoo.cfg 작성 후 worker1에 똑같이 복사하면 됨
+       * cp /opt/apache-zookeeper-3.8.0-bin/conf/zoo_sample.cfg zoo.cfg  
+       *tickTime=2000 주키퍼의 기본 시간 단위, 밀리초
+       *dataDir=/disk1/zookeeper 주키퍼의 영속적인 데이터 저장폴더
+       *dataLogDir=/disk2/zookeeper 주키퍼의 로그 데이터 저장폴더
+       *clientPort=2181 클라이언트 연결 포트
+       *inintLimit=5 tickTime의 배수로 계산, 대표에 연결하고 동기화하려는 추종자에 허용된 시간의 양, 과반수의 추종자가 기간 내에 동기화하지 않으면 대표는 권한을 포기하고 다른 대표 선출에 참여
+       *syncLimit=2 tickTime의 배수로 계산, 대표와 동기화하려는 추종자에 허용된 시간의 양, 추종자가 시간 내에 동기화하지 못하면 스스로 재시작, 이 추종자에 접속되었던 클라이언트는 다른 서버로 연결됨
+       *server.1=master:2888:3888 2888(대표일 때 추종자 연결용), 3888(대표 선출단계에서 다른서버 연결용) 포트를 Listen함
+       *server.2=worker1:2888:3888 
+     - 주키퍼 myid 텍스트파일을 dataDir에 생성
+     *마스터: echo 1 > /disk1/zookeeper/myid
+     *worker1: echo 2 > /disk1/zookeeper/myid
+     *주키퍼 서버 구동 시 myid 파일을 읽어 서버역할을 확인, Listen할 포트를 결정, zoo.cfg 파일을 읽어 다른 서버의 네트워크 주소 확인함
+     - 주키퍼 복제(앙상블)모드 작동 확인
+     *zkCli.sh -server 127.0.0.1:2181
+     *create /zookeeper_znode_1 sample_data
+     *get /zookeeper_znode_1 #master, worker1에서 확인
+     - 주키퍼 관리자 가이드: https://zookeeper.apache.org/doc/r3.8.0/zookeeperAdmin.htm
+   ○ Zookeeper 고려사항
+     - 클러스터 내의 노드를 대표(leader) / 추종자(Follower)로 나누며, 모든 쓰기요청은 대표에게, 대표는 추종자에 업데이트를 Broadcast함, 과반수 노드에서 변경을 저장하면 대표는 업데이트 연산을 마무리하고 클라이언트는 업데이트 성공 응답을수신
+     - 주키퍼의 과반수 초과란 작동원리 때문에 과반수의 노드가 작동할 때 서비스가 제공됨, 5대 클러스터에서 2대 고장이면 작동 3대 고장이면 서비스 중지, 6대 구성 클러스터에서 3대 고장이면 서비스 정지
+     - 주키퍼 앙상블 모드에선 일반적으로 홀수의 컴퓨터로 구성하는 것을 권장함
+   ○ Apache Hadoop 설치
+     - 배포판을 다운로드
+       * 2.10.2 버전(https://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz), 하둡 3버전이 미시간 임퓨테이션 서버와 호환되는지 확인 못함
+     - 배포판을 /opt폴더에 압축해제
+     - /etc/bash.bashrc에 하둡 환경변수 설정
+       * master, worker1에 똑같이 설정
+       * export HADOOP_HOME=/opt/하둡설치폴더
+       * export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+       * export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
+       * export HADOOP_COMMON_HOME=$HADOOP_HOME
+       * export HADOOP_MAPRED_HOME=$HADOOP_HOME
+       * export HADOOP_HDFS_HOME=$HADOOP_HOME
+       * export HADOOP_YARN_HOME=$HADOOP_HOME
+       * export HADOOP_PID_DIR=${HADOOP_HOME}/pids
+       * export HADOOP_CLASSPATH=$HADOOP_HOME/share/hadoop
+       * CLASSPATH=$CLASSPATH:$HADOOP_CLASSPATH
+       * PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+     - /하둡설치폴더/etc에 하둡설정
+       * 미시간 임퓨테이션 서버 프로그램이 실행 될 수 있게 기본적인 설정만 작성했기에, 최적화 작업이 필요함
+      - 마스터 노드
+      - core-site.xml
+       * HDFS, 맵리듀스, YARN 공통적으로 사용되는 I/O설정 같은 하둡 핵심 환경설정 구성 
+       * <configuration1>
+       * <property><name>fs.defaultFS</name><value>hdfs://master:9000</value></property>
+       * <property><name>hadoop.tmp.dir</name><value>hdfs://tmp</value></property>
+       * </configuration>
+      - hdfs-site.xml
+       * HDFS 데몬 환경설정 구성
+       * HDFS 데몬은 NameNode, SecondaryNameNode, DataNode가 있음
+       * <configuration>
+       * <property><name>dfs.replication</name><value>1</value></property>
+       * <property><name>dfs.namenode.name.dir</name><value>/home/hdfs/dfs/namenode</value></property>
+       * <property><name>dfs.namenode.http-address</name><value>master:50070</value></property>
+       * </configuration>
+      - yarn-site.xml
+       * YARN 데몬 환경설정 구성
+       * YARN 데몬은 ResourceManager, NodeManager, WebAppProxy가 있음       
+       * <configuration>
+       * <property><name>yarn.resourcemanager.hostname</name><value>master</value></property>
+       * <property><name>yarn.resourcemanager.scheduler.class</name><value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value></property>
+       * <property><name>yarn.scheduler.minimum-allocation-mb</name><value>1024</value></property>
+       * <property><name>yarn.scheduler.maximum-allocation-mb</name><value>215040</value></property>
+       * <property><name>yarn.scheduler.minimum-allocation-vcores</name><value>1</value></property>
+       * <property><name>yarn.scheduler.maximum-allocation-vcores</name><value>28</value></property>
+       * </configuration>
+      - mapred-site.xml
+       * 맵리듀스 데몬 환경설정 구성
+       * <configuration>
+       * <property><name>mapreduce.framework.name</name><value>yarn</value></property>
+       * <!-- MapReduce ApplicationMaster properties -->
+       * <property><name>yarn.app.mapreduce.am.resource.mb</name><value>122880</value></property>
+       * <property><name>yarn.app.mapreduce.am.command-opts</name><value>-Xmx122880m</value></property>
+       * <!-- Mappers and Reducers settings -->
+       * <property><name>mapreduce.map.memory.mb</name><value>40960</value></property>
+       * <property><name>mapreduce.map.cpu.vcores</name><value>1</value></property>
+       * <property><name>mapreduce.reduce.memory.mb</name><value>81920</value></property>
+       * <property><name>mapreduce.reduce.cpu.vcores</name><value>1</value></property>
+       * </configuration>
+      - slaves
+       * DataNode와 NodeManager를 구동할 노드의 목록
+       * worker1 작성      
+      - 워커1 노드
+      - core-site.xml
+       * master와 똑같이 설정
+      - hdfs-site.xml
+       * <configuration>
+       * <property><name>dfs.datanode.data.dir</name><value>/home/hdfs/dfs/datanode</value></property>
+       * </configuration>
+      - yarn-site.xml
+       * <configuration>
+       * <property><name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value></property>
+       * <property><name>yarn.resourcemanager.hostname</name><value>master</value></property>
+       * <property><name>yarn.nodemanager.local-dirs</name><value>/data/yarn</value></property>
+       * <property><name>yarn.nodemanager.log-dirs</name><value>data/yarn/logs</value></property>
+       * <property><name>yarn.nodemanager.vmem-check-enabled</name><value>false</value></property>
+       * <property><name>yarn.nodemanager.pmem-check-enabled</name><value>false</value></property>
+       * <property><name>yarn.nodemanager.vmem-pmem-ratio</name><value>1</value></property>
+       * <property><name>yarn.nodemanager.resource.memory-mb</name><value>204800</value></property>
+       * <property><name>yarn.nodemanager.resource.cpu-vcores</name><value>28</value></property>
+       * </configuration>
+      - mapred-site.xml
+       * master와 똑같이 설정
+      - slaves
+       * master와 똑같이 설정 
+     - 하둡 작동 확인
+       * hdfs, yarn
+   ○ Hbase 설치
+     - 배포판 다운로드
+       * http://www.apache.org/dyn/closer.cgi/hbase        
+     - 배포판을 /opt폴더에 압축해제
+     - /etc/bash.bashrc에 하둡 환경변수 설정
+       * master, worker1에 똑같이 설정
+       * export HBASE_HOME=/opt/hbase설치폴더   
+       * PATH=$PATH:$HBASE_HOME/bin
+     - /hbase설치폴더/conf에 hbase설정
+       * master와 worker1 똑같이 설정
+      - hbase-env.sh
+       * export HBASE_REGIONSERVERS=$HBASE_HOME/conf/regionservers
+       * export HBASE_MANAGES_ZK=false
+      - hbase-site.sh
+       * </configuration>
+       * <property>
+       * <name>hbase.cluster.distributed</name><value>true</value></property>
+       * <property><name>hbase.rootdir</name><value>hdfs://master:9000/hbase</value></property>
+       * <property><name>hbase.master</name><value>master:9000</value></property>
+       * <property><name>dfs.replicatoin</name><value>1</value></property>
+       * <property><name>hbase.zookeeper.property.clienPort</name><value>2181</value></property>
+       * <property><name>hbase.zookeeper.quorum</name><value>master,worker1</value></property>
+       * <property><name>hbase.zookeeper.property.dataDir</name><value>/data/zookeeper</value></property>  
+       * </configuration>
+      - regionservers
+       * worker1 작성
+   ○ Zookeeper, 하둡, Hbase 작동 확인
+     - Zookeeper 작동 확인
+       - 마스터 노드
+       * su zookeeper; 암호입력; zkServer.sh start; jps, QuorumPeerMain Jps 출력확인      
+       - 워커1 노드
+       * su zookeeper; 암호입력; zkServer.sh start; jps, QuorumPeerMain Jps 출력확인
+     - 하둡 작동 확인
+       - 마스터 노드 
+       * su hdfs; 암호입력; hdfs namenode -format(하둡 HDFS은 처음에 포맷 과정이 필요함); hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start namenode; jps, NameNode Jps 출력확인
+
+       - 워커1 노드
+       * su hdfs; 암호입력; hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start datanode; jps, DataNode Jps 출력확인
+       - 마스터 노드
+hadoop fs -mkdir /tmp
+hadoop fs -mkdir /hbase
+hadoop fs -mkdir /hbase/cloudgene
+hadoop fs -mkdir /user
+hadoop fs -mkdir /user/cloudgene
+hadoop fs -mkdir -p /cloudgene/data
+
+hadoop fs -chmod 777 /tmp
+hadoop fs -chmod 775 /hbase
+hadoop fs -chmod -R 775 /hbase/cloudgene
+hadoop fs -chmod -R 777 /cloudgene
+
+hadoop fs -chown hbase /hbase
+hadoop fs -chown -R cloudgene /user/cloudgene
+hadoop fs -chown -R cloudgene /cloudgene
+
+hadoop fs -chown kis /hbase
+hadoop fs -chown -R kis /user/cloudgene
+hadoop fs -chown -R kis /cloudgene
+
+
+       - 마스터 노드
+       * su yarn; 암호입력; yarn-daemon.sh --config $HADOOP_CONF_DIR --script start resourcemanager; jps, ResourceManager Jps 출력확인
+       - 워커1 노드
+       * su yarn; 암호입력; yarn-daemon.sh --config $HADOOP_CONF_DIR --script start nodemanager; jps, NodeManager Jps 출력확인
+       - 마스터 노드
+       * su hbase; 암호입력; start-hbase; jps, HRegionServer 출력확인
+       - 워커1 노드
+       * su hbase; 암호입력; jps, HMaster 출력확인
+
+   ○ Cloudgene 프레임워크 설치
+     - /opt폴더에 cloudgene 폴더 생성
+      * mkdir cloudgene
+      * cd cloudgene
+      * curl -s install.cloudgene.io | bash
+      * ./cloudgene version
+     - /opt/cloudgene/config/settings.yaml cloudgene 환경설정
+      *http://docs.cloudgene.io/daemon/configuration/
+      *cloudgene - 하둡 연결 설정
+	*cluster:
+	*  name: Test Cluster
+	*  conf: /하둡설치폴더/etc/hadoop
+	*  type: hadoop
+	*  user: cloudgene
+      *cloudgene h2 데이터베이스 연결
+	*database:
+	*   database: /hbase/cloudgene
+	*   password: hadoop
+	*   driver: h2
+	*   user: cloudgene
+      *cloudgene 디렉터리 및 워크스페이스 설정
+       *# location for temporary files (e.g. cached file uploads) [default: tmp]
+       *tempPath: tmp
+       *# location for the results of a job [default: workspace]
+      *cloudgene에서 실행된 Job의 결과를 HDFS -> Local파일 시스템으로 옮기며, 해당 위치에 Job 결과를 저장함. 해당 경로는 대용량의 스토리지를 마운트해서 사용할 필요가 있음
+       *localWorkspace: /mnt/new-disc/workspace
+       *# HDFS location for the results of a job [default: cloudgene/data]
+       *hdfsWorkspace: cloudgene/data
+       *# if set all HDFS files are deleted after job execution [default: true]
+       *removeHdfsWorkspace: true
+       *# HDFS location for the meta-data of an app [default: cloudgene/apps]
+       *hdfsAppWorkspace: cloudgene/apps
+      *cloudgene 다운로드 설정
+       *# max number of downloads [default: 10]
+       *# use -1 for unlimited downloads
+       *maxDownloads: 10
+      *cloudgene Queue 설정
+       *# max. n jobs can execute their setup steps in parallel [default: 5]
+       *threadsSetupQueue: 5
+       *# max. n jobs can execute their workflow steps in parallel  [default: 5]
+       *threadsQueue: 5
+       *# each user can run max. n jobs at the same time  [default: 2]
+       *maxRunningJobsPerUser: 2
+      *cloudgene Auto-Retire 설정
+       *# retire jobs after x days [default: 6]
+       *retireAfter: 6
+       *# sent notification after x days [default: 4]
+       *notificationAfter: 4
+       *# perform retire as a cronjob [default: false].
+       *autoRetire: true
+       *# perform retire cronjob every x hours [default: 5].
+       *autoRetireInterval: 5
+      *cloudgene 메일서버 연결, name 속성에 도메인 주소가 필요한 것으로 판단하며 개인 도메인 주소가 없기에 postfix-smtp.gmail.com 설정으로 사용자에게 분석이 끝났다고 메일을 보내는 것만 확인함
+	*mail: 
+	*   password: tlpsszmtubhnwzax
+	*   smtp: smtp.gmail.com
+	*   port: 587
+	*   name: master
+	*   # the email address that Cloudgene uses to send emails	
+	*   user: choi88hulk@gmail.com
+      *cloudgene Web-Application 설정
+	*   # the name of your service [default: Cloudgene]
+	*   name: My Service
+	*   # port [default: 8082]
+	*   port: 8082
+	*   # max file size that can be uploaded in Bytes. -1 is unlimited [deafult: -1]
+	*   uploadLimit: 50000
+	*   # root url of the web-application [default: empty]
+	*   urlPrefix: /my-service
+      *cloudgene HTTPS Certificate and Security 설정
+	*   # use https with the provided key store [default: false]
+	*   https: true
+	*   httpsKeystore: /your/key.jks
+	*   httpsPassword: password
+	*   # use secure cookies [default: false]
+	*   secureCookie: true
+	*   # use this secret key to generate JWT tokens.
+	*   # please use a secret random string
+	*   secretKey: some-random-string
+   ○ Michigan Imputation Server 어플리케이션 설치
+     - 배포판을 다운로드
+       *v1.6.8(https://github.com/genepi/imputationserver/releases)
+     - 배포판을 섪치
+       *cloudgene install imputationserver.zip
+   ○ Korean Reference Panel 설치
+     - 패널을 섪치
+       *cloudgene install panel.zip
+

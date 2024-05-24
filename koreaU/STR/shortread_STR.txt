@@ -1,0 +1,120 @@
+rule run_EH:
+    input:
+        reads="data/{sample}.bam",
+        fasta=config["ref"]["fasta"],
+        catalog=config["variant_catalog"],
+    output:
+        temp(multiext("results/{sample}", ".json.gz", ".vcf.gz", "_realigned.bam.gz")),
+    log:
+        "logs/EH/{sample}.log",
+    params:
+        prefix=lambda w, output: output[0].split('.')[0],
+        gz=multiext("results/{sample}", ".json", ".vcf", "_realigned.bam"),
+    threads:
+        10
+    shell:
+        """
+        ExpansionHunter/bin/ExpansionHunter \\
+        --reads {input.reads} \\
+        --reference {input.fasta} \\
+        --analysis-mode streaming \\
+        --threads {threads} \\
+        --variant-catalog {input.catalog} \\
+        --output-prefix {params.prefix} 2> {log}
+        gzip {params.gz[0]}
+        gzip {params.gz[1]}
+        gzip {params.gz[2]}
+        """
+
+
+#!/usr/bin/env bash
+
+scriptDir=$(cd $(dirname $0) && pwd -P)
+cd $scriptDir
+
+../bin/ExpansionHunter \
+  --reads input/variants.bam \
+  --reference input/reference.fa \
+  --variant-catalog input/variants.json \
+  --output-prefix output/repeats
+
+
+##### STR test
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /BDATA/smkim/STR/EH/data/NIH20N2000078.bam \
+        --reference /BDATA/smkim/STR/EH/resources/genome.fa \
+        --analysis-mode streaming \
+        --threads 60 \
+        --variant-catalog /BDATA/smkim/STR/EH/ExpansionHunter/variant_catalog/grch38/variant_catalog.json \
+        --output-prefix /BDATA/smkim/STR/test/test 2> test.log
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /BDATA/smkim/STR/EH/data/NIH20N2000078.bam \
+        --reference /BDATA/smkim/STR/EH/resources/genome.fa \
+        --analysis-mode streaming \
+        --threads 60 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
+        --output-prefix /BDATA/smkim/STR/test/test 2> test.log
+
+#sh
+
+in=$1
+echo $in
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /RDATA7/smkim/pangenome/wgs/align/$in.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --threads 72 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
+        --output-prefix $1.EH 2 > $1.EH.log
+
+
+###
+cd /BDATA/smkim/STR/EH_shortread
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
+
+##### STR
+STRling
+###1. bin
+
+strling extract -f {input.fasta} {input.reads} {output.bin} 2> {log}
+
+strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /BDATA/smkim/STR/EH/data/NIH20N2000078.bam NIH20N2000078.strling.bin  > NIH20N2000078.strling.log
+
+genome@genome106:/BDATA/smkim/STR/test$ time strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /BDATA/smkim/STR/EH/data/NIH20N2000078.bam NIH20N2000078.strling.bin 2> NIH20N2000078.strling.log
+
+real    20m53.802s
+user    20m27.345s
+sys     0m24.828s
+
+strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /BDATA/smkim/STR/EH/data/NIH20N2000078.bam NIH20N2000078.strling.bin  > NIH20N2000078.strling.log
+
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I{} -P 10 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /RDATA7/smkim/pangenome/wgs/align/{}.bam {}.strling.bin 2> logs/{}.strling.log"
+
+
+
+        
+###2. bin merge
+
+strling merge --output-prefix str-results/str_merge -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta *bin
+
+###3. call
+strling call --output-prefix {params.prefix} -f {input.fasta} -b {input.bound} {input.reads} {input.bin} 2> {log}
+
+cd /BDATA/smkim/STR/strling/03.joint.call
+
+strling call --output-prefix {}.string_call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta\
+-b /BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt input.bam input.bin 2> logs/{}.strling_call.log
+
+/BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I{} -P 10 bash -c 'strling call --output-prefix {}.string_call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -b /BDATA/smkim/STR/strling/01.bin/str-results/str_merge-bounds.txt /RDATA7/smkim/pangenome/wgs/align/{}.bam /BDATA/smkim/STR/strling/01.bin/{}.strling.bin 2> logs/{}.strling_call.log'
+
+###4 outliner
+strling-outliers.py --genotypes *-genotype.txt --unplaced *-unplaced.txt
+Pandas 1.5.3
+pip install pandas==1.5.3

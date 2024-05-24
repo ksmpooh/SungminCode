@@ -155,3 +155,28 @@ pbmm2 align \
 
 
 ls *bam |xargs -I {} -P 20 bash -c "samtools stats {} > bam.stats/{}.stats;samtools flagstats {} > bam.stats/{}.flagstats;samtools coverage {} > bam.stats/{}.coverage"
+
+
+#### ref_panel revio mapping (--unmapped)
+##109
+import os,glob
+
+inDir = "/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/"
+ref = "/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
+#outDir = "/SDATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
+#outDir = "/DATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
+outDir = "/ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
+
+
+flist = [s for s in os.listdir(inDir) if "NIH" in s]
+
+for i in flist[7:18+1]:
+    print(i)
+    os.system("ls %s%s/Data/Raw_Data/*.bam > in.fofn"%(inDir,i))
+    os.system("cat in.fofn")
+    os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38_withunmapped.bam --unmapped --sort --preset HIFI --log-level INFO --log-file %s.log --sample %s"%(ref,outDir,i,i,i))
+
+
+#for i in flist[0:1+1]: #103
+#for i in flist[2:6+1]: #109
+#for i in flist[7:18+1]: #106
