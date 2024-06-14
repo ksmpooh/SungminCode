@@ -1,0 +1,25 @@
+epigenome@worker1:/media/epigenome/My Book/KBA$ du -shc ./KoGES/*;du -shc ./KoGES/00.CEL/*;du -shc CMERC/*;du -shc ./KNHANES/*
+CEL list check
+
+
+## python3
+
+import os,glob
+koGESv1_0 = "/media/epigenome/My Book/KBA/KoGES/00.CEL/KBAv1.0/"
+koGESv1_1 = "/media/epigenome/My Book/KBA/KoGES/00.CEL/KBAv1.1/"
+
+cmerc = "/media/epigenome/My Book/KBA/CMERC/00.CEL/"
+kky = "/media/epigenome/My Book/KBA/KNHANES/00.CEL/"
+
+
+koGESv1_1 = glob.glob(koGESv1_1 + "*CEL")
+koGESv1_0 = glob.glob(koGESv1_0 + "*CEL")
+
+kky = glob.glob(kky + "*CEL")
+cmerc = glob.glob(cmerc + "*CEL")
+
+print("1.1 %s"%len(koGESv1_1))
+print("1.0 %s"%len(koGESv1_0))
+
+print("cmerc %s"%len(cmerc))
+print("kky %s"%len(kky))

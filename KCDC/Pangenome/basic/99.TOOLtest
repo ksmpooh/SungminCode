@@ -1,0 +1,59 @@
+## TOOL test
+
+/ADATA/smkim/pangenome/test_data/kchip/
+
+
+/ADATA/smkim/pangenome/test_data/NIH23J3016218_1.hifi_reads
+/ADATA/smkim/pangenome/test_data/kchip/
+
+./NIH23F1013274/m84065_231124_080536.hifi_reads.bam
+
+
+## apg_score
+https://github.com/PacificBiosciences/pb-CpG-tools?tab=readme-ov-file
+
+/BDATA/smkim/TOOLs/pangenome/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores
+
+pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores \
+  --bam HG002.hg38.pbmm2.bam \
+  --output-prefix HG002.hg38.pbmm2 \
+  --model pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite \
+  --threads 8
+
+
+cd /ADATA/smkim/pangenome/test_data/kchip/
+input mapping bam
+output 
+
+
+/BDATA/smkim/TOOLs/pangenome/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores \
+  --bam pbmm2/NIH23F1013274.pbmm2_hg38.bam \
+  --output-prefix CpG/NIH23F1013274.pbmm2_hg38 \
+  --model /BDATA/smkim/TOOLs/pangenome/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite \
+  --threads 60
+
+## hifiadaptor
+https://github.com/sheinasim/HiFiAdapterFilt
+
+## 사전 작업 bam to fastq, fasta
+/ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/
+samtools fastq m84065_231124_080536.hifi_reads.bam > m84065_231124_080536.hifi_reads.fastq
+samtools fastq m84065_231215_084418.hifi_reads.bam > m84065_231215_084418.hifi_reads.fastq
+
+#samtools fasta m84065_231124_080536.hifi_reads.bam > m84065_231124_080536.hifi_reads.fasta
+#samtools fasta m84065_231215_084418.hifi_reads.bam > m84065_231215_084418.hifi_reads.fasta
+
+#/BDATA/smkim/TOOLs/pangenome/HiFiAdapterFilt
+export PATH=$PATH:/BDATA/smkim/TOOLs/pangenome/HiFiAdapterFilt
+export PATH=$PATH:/BDATA/smkim/TOOLs/pangenome/HiFiAdapterFilt/DB
+
+bash hifiadapterfilt.sh [ -p file Prefix ] 
+[ -l minimum Length of adapter match to remove. Default=44 ] 
+[ -m minimum percent Match of adapter to remove. Default=97 ] 
+[ -t Number of threads for blastn. Default=8 ]
+[ -o outdirectory prefix Default=. ]
+
+
+# folder에 있어야함
+bash hifiadapterfilt.sh -p m84065_231124_080536.hifi_reads -t 60 
+bash hifiadapterfilt.sh -p m84065_231215_084418.hifi_reads -t 60 

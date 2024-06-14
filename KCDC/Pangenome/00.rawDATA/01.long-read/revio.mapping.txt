@@ -163,20 +163,27 @@ import os,glob
 
 inDir = "/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/"
 ref = "/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
-#outDir = "/SDATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
-#outDir = "/DATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
-outDir = "/ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/"
+outDir = "/SDATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/" #109
+#outDir = "/DATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/" #103
+#outDir = "/ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/" #106
 
 
 flist = [s for s in os.listdir(inDir) if "NIH" in s]
 
-for i in flist[7:18+1]:
+for i in flist[6:9+1]: #109
     print(i)
-    os.system("ls %s%s/Data/Raw_Data/*.bam > in.fofn"%(inDir,i))
+    os.system("ls %s%s/Data/Raw_Data/*.fastq.gz > in.fofn"%(inDir,i))
     os.system("cat in.fofn")
-    os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38_withunmapped.bam --unmapped --sort --preset HIFI --log-level INFO --log-file %s.log --sample %s"%(ref,outDir,i,i,i))
+    #os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38_withunmapped.bam --unmapped --sort --preset HiFi --log-level INFO --log-file %s.log --sample %s"%(ref,outDir,i,i,i))
+    #os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38_withunmapped.bam --unmapped --sort -m 3G --preset HiFi --log-level INFO --log-file %s.log --sample %s -J 40"%(ref,outDir,i,i,i))
+    os.system("pbmm2 align %s ./in.fofn %s%s.pbmm2_hg38_withunmapped.bam --unmapped --sort --preset HiFi --log-level INFO --log-file %s.log --rg \'@RG\\tID:NIH23J3493642\\tSM:%s\'"%(ref,outDir,i,i,i))
 
 
-#for i in flist[0:1+1]: #103
-#for i in flist[2:6+1]: #109
-#for i in flist[7:18+1]: #106
+#for i in flist[0:5+1]: #103
+#for i in flist[6:9+1]: #109
+#for i in flist[10:17+1]: #106
+
+
+#pbmm2 align /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta in.fofn NIH23J3493642.pbmm2_hg38_withunmapped.bam --rg '@RG\tID:NIH23J3493642\tSM:NIH23J3493642' --unmapped --sort --preset HiFi --log-level INFO
+
+#ubam to bam 일 경우 뭔가 느린게 있음. core나 sort memory를 잘 선택해야함

@@ -100,3 +100,54 @@ ls /BDATA/smkim/pangenome/01.revio_kchip/02.variant.calling_dnalinke/*g.vcf.gz >
 tabix -f -p vcf angenome.Revio.2023_pro_66sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
 
 
+
+
+#### WGS 
+## 106
+##### 106 wgs
+in=$1
+echo $in
+docker run --rm -v /ADATA/smkim/pangenome/01.wgs/01.bam:/input -v /ADATA/smkim/pangenome/01.wgs/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.vcf.gz \
+--intermediate_results_dir /output/tmp/ --num_shards 40
+
+
+
+cd /ADATA/smkim/pangenome/01.wgs/01.bam
+ls NIH*bam | sed 's/.bam//g' | head -40 | xargs -I{} -P 2 bash -c "sh run.sh {}"
+
+
+##### 103 wgs
+in=$1
+echo $in
+sudo docker run --rm -v /RDATA7/smkim/pangenome/wgs/align:/input -v /DATA/smkim/pangenome/01.wgs/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.vcf.gz \
+--intermediate_results_dir /output/tmp/ --num_shards 60
+
+
+
+cd /DATA/smkim/pangenome/01.wgs/02.variant.calling
+
+ls /RDATA7/smkim/pangenome/wgs/align/NIH*bam | cut -d"/" -f 7 | head -50 | tail -10 | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "sh run.sh {}"
+
+##### 109 wgs
+in=$1
+echo $in
+sudo docker run --rm -v /RDATA7/smkim/pangenome/wgs/align:/input -v /BDATA/smkim/pangenome/01.wgs/02.variant.calling:/output -v /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set:/ref \
+google/deepvariant:1.6.1 \
+/opt/deepvariant/bin/run_deepvariant --model_type WGS --ref /ref/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--reads /input/$in.bam --output_gvcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.gvcf.gz \
+--output_vcf /output/$in.WGS.bwa_rmdup_bqsr_hg38.Deepvariant_Variantcalling.vcf.gz \
+--intermediate_results_dir /output/tmp/ --num_shards 60
+
+
+
+cd /BDATA/smkim/pangenome/01.wgs/02.variant.calling
+
+ls /RDATA7/smkim/pangenome/wgs/align/NIH*bam | cut -d"/" -f 7 | tail -16 | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "sh run.sh {}"

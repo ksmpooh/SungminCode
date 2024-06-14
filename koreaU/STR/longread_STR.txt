@@ -3,7 +3,7 @@
 strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
 NIH23F1013274.pbmm2_hg38.bam STR_test/NIH23F1013274.pbmm2_hg38.strling.bin 2> STR_test/NIH23F1013274.strling.log
 
-## longread STRling
+## longread STRling -> 분석이 안됨. bin STR read 가 비어 있음
 
 STRling
 ###1. bin
@@ -11,14 +11,19 @@ STRling
 strling extract -f {input.fasta} {input.reads} {output.bin} 2> {log}
 
 
+# 103
 cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
-ls *bam | sed 's/.bam//g' | xargs -I{} -P 7 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/longread/01.bin/logs/{}.strling.log"
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 7 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/strling/longread/01.bin/logs/{}.strling.log"
 
 cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
-ls *bam | sed 's/.bam//g' | xargs -I{} -P 12 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/longread/01.bin/logs/{}.strling.log"
-        
-###2. bin merge
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 12 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /SDATA/smkim/STR/longread/01.bin/{}.strling.bin 2> /SDATA/smkim/STR/strling/longread/01.bin/logs/{}.strling.log"
 
+# 106
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 20 bash -c "strling extract -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.bam /BDATA/smkim/STR/strling/longread/01.bin/{}.strling.bin 2> /BDATA/smkim/STR/strling/longread/01.bin/logs/{}.strling.log"
+
+###2. bin merge
+cd /BDATA/smkim/STR/strling/longread/01.bin
 strling merge --output-prefix str-results/str_merge -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta *bin
 
 ###3. call
@@ -37,3 +42,122 @@ ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | 
 strling-outliers.py --genotypes *-genotype.txt --unplaced *-unplaced.txt
 Pandas 1.5.3
 pip install pandas==1.5.3
+
+
+
+
+
+
+
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "mv {}.bam {}\_withunmapped.bam"
+ls NIH*bam.bai | sed 's/.bam.bai//g' | xargs -I{} -P 1 bash -c "mv {}.bam.bai {}\_withunmapped.bam.bai"
+
+
+ls NIH*bin | sed 's/.strling.bin//g' | xargs -I{} -P 1 bash -c "mv {}.strling.bin {}\_withunmapped.strling.bin"
+
+
+### trgt
+
+
+/BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed
+
+
+./trgt genotype --genome example/reference.fasta \
+       --repeats example/repeat.bed \
+       --reads example/sample.bam \
+       --output-prefix sample
+
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed \
+       --reads {}.bam \
+       --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype/{}_trgt
+
+#106
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 5 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype/{}_trgt"
+
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 45 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_pathogenic/{}_pathogenic_trgt"
+
+
+#103
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 20 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed --reads {}.bam --output-prefix /DATA/smkim/STR/trgt/01.trgt_genotype/{}_trgt"
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 30 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed --reads {}.bam --output-prefix /DATA/smkim/STR/trgt/01.trgt_genotype/{}_trgt"
+
+
+
+
+#### new DB (eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed)
+
+/BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed
+
+mkdir 01.trgt_genotype_gangstr.v13
+
+# 103
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /DATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13/{}_trgt_genotype_gangstr -t 30"
+
+# 106
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_pathogenic/{}_trgt_genotype_gangstr"
+
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed \
+       --reads /ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/NIH23J3016218.pbmm2_hg38_withunmapped.bam \
+       --output-prefix NIH23J3016218.pbmm2_hg38_withunmapped_trgt_ehDB -t 80
+
+
+
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.sort/{}.sorted.vcf.gz {}.vcf.gz;bcftools index 02.sort/{}.sorted.vcf.gz"
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o 02.sort/{}.sorted.bam {}.bam;samtools index 02.sort/{}.sorted.bam"
+
+
+### check
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 2 bash -c "bcftools sort -Ob -o {}.sorted.vcf.gz {}.vcf.gz;bcftools index {}.sorted.vcf.gz"
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 2 bash -c "samtools sort -o {}.sorted.bam {}.bam;samtools index {}.sorted.bam"
+
+./trgt plot --genome example/reference.fasta \
+       --repeats example/repeat.bed \
+       --vcf sample.sorted.vcf.gz \
+       --spanning-reads sample.spanning.sorted.bam \
+       --repeat-id TR1 \
+       --image TR1.svg
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed \
+--reads {}.bam --output-prefix /DATA/smkim/STR/trgt/01.trgt_genotype/{}_trgt
+
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt plot --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed \
+       --vcf NIH23J3911721.pbmm2_hg38_withunmapped_trgt.sorted.vcf.gz \
+       --spanning-reads NIH23J3911721.pbmm2_hg38_withunmapped_trgt.spanning.sorted.bam \
+       #--repeat-id TR1 \
+       --image TR1.svg
+
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt plot --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/TOOLs/trgt/repeats/repeat_catalog.hg38.bed \
+       --vcf ubmtobam_NIH23J3911721.pbmm2_hg38_withunmapped_trgt.sorted.vcf.gz \
+       --spanning-reads ubmtobam_NIH23J3911721.pbmm2_hg38_withunmapped_trgt.spanning.sorted.bam \
+       --repeat-id ubmtobam_TR1 \
+       --image ubmtobam_TR1.svg
+
+
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /ADATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped/NIH23J3911721.pbmm2_hg38_withunmapped.bam \
+        --reference /BDATA/smkim/STR/EH/resources/genome.fa \
+        --analysis-mode streaming \
+        --threads 60 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
+        --output-prefix ./test 2> test.log

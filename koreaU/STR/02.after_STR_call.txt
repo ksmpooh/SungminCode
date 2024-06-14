@@ -1,0 +1,39 @@
+### after DATA merge
+
+bcftools merge --merge all *vcf.gz -Oz -o output.vcf.gz
+
+cd /BDATA/smkim/STR/01.compare/00.rawDATA
+
+bcftools query -f '%CHROM\t%POS\t%TRID\t%END\t%MOTIFS\t%STRUC[\t%SAMPLE=%AL]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+bcftools query -f '%CHROM\t%POS\t%TRID\t%END\t%MOTIFS\t%STRUC[\t%SAMPLE=%MC]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+
+
+bcftools query -f '%CHROM\t%POS\t%TRID\t%REF\t%MOTIFS\t%STRUC[\t%SAMPLE=%CN]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+
+bcftools query -f '%CHROM\t%POS\t%TRID\t%REF\t%MOTIFS\t%STRUC[\t%SAMPLE=%AP]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+bcftools query -f '%CHROM\t%POS\t%TRID\t%REF\t%MOTIFS\t%STRUC[\t%SAMPLE=%AP]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+
+
+bcftools query -f '%CHROM\t%POS\t%TRID\t%REF\t%MOTIFS\t%STRUC[\t%SAMPLE=%CN]\n' Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz |less -NS
+
+
+bcftools query -f '%REPID\t%VARID\t%ALT\t%RU\t[\t%SAMPLE=%REPCN]\n' Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz |less -NS
+
+bcftools query -f '%REPID\t%VARID\t%ALT\t%RU\t%REPCN\t%GT\n' Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz |less -NS
+bcftools query -f '%REPID\t%VARID\t%ALT\t%RU\t%REPCN\t%GT\n' Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz |less -NS
+
+
+bcftools query -f '%REPID\t%VARID\t%ALT\t%RU\t[\t%SAMPLE=%REPCN]\n' Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz |less -NS
+bcftools query -f '%FILTER\t%REPID\t%VARID\t%ALT\t%RU\t[\t%SAMPLE=%REPCN]\n' Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz |less -NS
+
+
+bcftools query -f '%REPID\t%VARID\t%ALT\t%RU[\t%SAMPLE=%GT\t%SAMPLE=%REPCN]\n'
+
+
+
+
+
+### compare
+
+trgt: TRID END MOTIFS STRUC - MC AP
+EH:REPID, END, RU - REPCN, REPCI
