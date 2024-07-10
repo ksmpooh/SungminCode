@@ -1,4 +1,4 @@
-##### /home/epigenome/바탕화면/smkim
+##### /home/epigenome/�???????면�smkim
 
 
 ## R
@@ -63,7 +63,53 @@ write.table(out[,c(2,1,3,4)],"Nanopore_sample_md5sum.txt",col.names = T,row.name
 ###
 
 
-grep HN00202145 Revio_sample_md5sum.txt | grep HDD1 | awk '{print $1,$2}' | sed 's/HDD1/./g' > HN00202145_HDD1.md5sum
+#grep HN00202145 Revio_sample_md5sum.txt | grep HDD1 | awk '{print $1,$2}' | sed 's/HDD1/./g' > HN00202145_HDD1.md5sum
 
-cp HN00202145_HDD1.md5sum /media/epigenome/One\ Touch/HN00202145_HDD1/
+#cp HN00202145_HDD1.md5sum /media/epigenome/One\ Touch/HN00202145_HDD1/
+
+
+## data check 
+
+nano <- readxl::read_xlsx("~/Desktop/KCDC/pangenome/00.datacheck/2023_pro_long.xlsx",sheet = 1)
+revio48 <- readxl::read_xlsx("~/Desktop/KCDC/pangenome/00.datacheck/2023_pro_long.xlsx",sheet = 3)
+revio18 <- readxl::read_xlsx("~/Desktop/KCDC/pangenome/00.datacheck/2023_pro_long.xlsx",sheet = 2,skip = 1)
+
+head(nano)
+head(revio48)
+head(revio18)
+nano %>% select(1,2,3,4,5) -> nano
+revio48 %>% select(1,2,3,7,4) -> revio48
+#revio18 %>% select(1,2,3,7,4) -> revio18
+colnames(revio48) <- colnames(nano)
+colnames(revio18) <- colnames(nano)
+
+nano$platform <- "Nanopore"
+revio48$platform <- "Revio_b1"
+revio18$platform <- "Revio_b2"
+
+nano %>% rbind(revio48) %>% rbind(revio18)-> df
+#df$`Read N50 (bp)` <- as.numeric(df$`Read N50 (bp)`)
+
+#df$`Average Read Length (bp)` <- as.numeric(df$`Average Read Length (bp)`)
+head(df)
+ggplot(df,aes(y=`Total Bases (bp)`,x=platform,fill=platform)) +
+  geom_boxplot() + 
+  theme(legend.position = 'none') -> a
+a
+ggplot(df,aes(y=`Total Reads`,x=platform,fill=platform)) +
+  geom_boxplot() + 
+  theme(legend.position = 'none') -> b
+b
+ggplot(df,aes(y=`Read N50 (bp)`,x=platform,fill=platform)) +
+  geom_boxplot() + 
+  theme(legend.position = 'none') -> c
+c
+ggplot(df,aes(y=`Average Read Length (bp)`,x=platform,fill=platform)) +
+  geom_boxplot() + 
+  theme(legend.position = 'none')-> d
+d
+ggarrange(b,d,c,a, nrow = 2,ncol = 2)
+c
+head(df) 
+
 

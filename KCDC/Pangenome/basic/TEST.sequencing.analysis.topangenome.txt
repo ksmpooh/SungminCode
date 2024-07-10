@@ -1,0 +1,78 @@
+/ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz
+
+/ADATA/smkim/pangenome/test_data/kchip/00.rawDATA
+-rw-rw-r-- 1 genome genome  33G  6월 13 20:42 m84065_231124_080536.hifi_reads.filt.fastq.gz
+-rw-rw-r-- 1 genome genome 1.1K  6월 13 20:43 m84065_231124_080536.hifi_reads.stats
+-rw-rw-r-- 1 genome genome    0  6월 13 21:16 m84065_231215_084418.hifi_reads.contaminant.blastout
+-rw-rw-r-- 1 genome genome    0  6월 13 21:16 m84065_231215_084418.hifi_reads.blocklist
+-rw-rw-r-- 1 genome genome  15G  6월 13 21:18 m84065_231215_084418.hifi_reads.filt.fastq.gz
+-rw-rw-r-- 1 genome genome  720  6월 13 21:19 m84065_231215_084418.hifi_reads.stats
+
+
+GraphAligner -g test/graph.gfa -f test/read.fa -a test/aln.gaf -x vg
+
+/CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz
+
+
+/CDATA/pangenome/99.ref/MC/hprc-v1.1-mc-grch38.full.gfa.gz
+/CDATA/pangenome/99.ref/MC/hprc-v1.1-mc-grch38.gfa.gz
+/CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz
+
+GraphAligner -x vg -g mc_graph.gfa -f pacbio_reads.fastq -a alignments.gaf
+
+
+
+GraphAligner -g /CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz \
+-f /ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz \
+-a alignments.gaf -x vg
+
+
+GraphAligner -g /CDATA/pangenome/99.ref/chr6.hprc-v1.0-pggb.gfa.gz \
+-f /ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz \
+-a alignments.gaf -x vg
+
+
+GraphAligner -g /CDATA/pangenome/99.ref/MC/hprc-v1.1-mc-grch38.full.gfa.gz \
+-f /ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz \
+-a alignments.gaf -x vg
+
+
+/CDATA/pangenome/99.ref/MC/chr6.full.og
+/CDATA/pangenome/99.ref/MC/chr6.d9.vg
+
+
+GraphAligner -g /CDATA/pangenome/99.ref/MC/hprc-v1.1-mc-grch38.full.gfa.gz \
+-f /ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz \
+-a alignments.gaf -x vg
+
+
+
+/BDATA/smkim/TOOLs/pangenome/minigraph/minigraph
+./minigraph test/MT.gfa test/MT-orangA.fa > out.gaf
+
+## 돌아감
+/BDATA/smkim/TOOLs/pangenome/minigraph/minigraph -t 72 /CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz \
+/ADATA/smkim/pangenome/test_data/kchip/00.rawDATA/m84065_231215_084418.hifi_reads.filt.fastq.gz > out.gaf
+
+
+#vg pack -x graph.xg -g out.gaf -Q -1 -o out.read_depth.pack
+#vg pack -x /CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz -g out.gaf -Q -1 -o out.read_depth.pack
+#error
+vg pack -x /CDATA/pangenome/99.ref/MC/chr6.d9.vg -g out.gaf -Q -1 -o out.read_depth.pack -t 66
+
+
+
+vg pack -x pangenome.xg -g filtered_alignments.gaf -Q -1 -o read_depth.pack
+vg call -k read_depth.pack -r pangenome.gbwt -o variants.vcf
+
+vg pack -t 66 -x /CDATA/pangenome/99.ref/hprc-v1.0-minigraph-grch38.gfa.gz -g out_chr6.gaf -Q -1 -o read_depth.pack
+vg call -k read_depth.pack -r pangenome.gbwt -o variants.vcf
+
+
+31994000
+
+
+32031000
+
+
+

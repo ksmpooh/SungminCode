@@ -118,3 +118,43 @@ ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | 
 strling-outliers.py --genotypes *-genotype.txt --unplaced *-unplaced.txt
 Pandas 1.5.3
 pip install pandas==1.5.3
+
+
+## EH quality check
+#PASS low depth 비율 by sample
+#spanning allele type
+
+bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%ALT\t%REF[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n'
+
+ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n' {}.vcf.gz > Quality_check/{}.qcmt.txt"
+
+
+ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%REPCN\t%REPCI]\n' {}.vcf.gz > Quality_check_repeatcount/{}.qcmt.cn.txt"
+
+#LC
+ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%REPID\t%RU[\t%LC]\n' {}.vcf.gz > coverage/{}.coverage_LC.txt"
+#######
+/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.bed
+/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed
+/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.sort.bed
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+samtools coverage -b /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.bed ../NIH20N2923120.EH_realigned.bam > test.txt
+
+samtools coverage -b /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.sort.bed ../NIH20N2923120.EH_realigned.bam > test.txt
+samtools bedcov /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed ../NIH20N2923120.EH_realigned.bam > test.txt
+
+samtools coverage -r chr6:16327633-1632772 ../NIH20N2923120.EH_realigned.bam > test.cov.txt
+
+bedtools coverage -a /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed ../NIH20N2771162.bam > NIH20N2771162.bam.bedtools.coverage
+
+NIH20N2771162.bam.bai
+
+
+samtools flagstats ../NIH20N2771162.bam > NIH20N2771162.bam.flagstats
+
+samtools coverage -r chr1:35488-35504 test.sort.bam > test.sort.bam.cover.check
+
+samtools coverage -r chr6:16327633-1632772 ../NIH20N2771162.bam > NIH20N2771162.bam.coverage
+samtools bedcov --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed ../NIH20N2771162.bam > NIH20N2771162.bam.coverage

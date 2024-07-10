@@ -57,3 +57,21 @@ bash hifiadapterfilt.sh [ -p file Prefix ]
 # folder에 있어야함
 bash hifiadapterfilt.sh -p m84065_231124_080536.hifi_reads -t 60 
 bash hifiadapterfilt.sh -p m84065_231215_084418.hifi_reads -t 60 
+
+
+
+
+m.header
+@HD	VN:1.6	SO:unknown	pb:5.0.0
+@RG	ID:997a92a4/96--96	PL:PACBIO	DS:READTYPE=CCS;Ipd:Frames=ip;PulseWidth:Frames=pw;BINDINGKIT=102-739-100;SEQUENCINGKIT=102-118-800;BASECALLERVERSION=5.0;FRAMERATEHZ=100.000000;BarcodeFile=metadata/m84065_231124_080536_s3.barcodes.fasta;BarcodeHash=e7c4279103df8c8de7036efdbdca9008;BarcodeCount=113;BarcodeMode=Symmetric;BarcodeQuality=Score	LB:NIH23F1013274	PU:m84065_231124_080536_s3	SM:NIH23F1013274	PM:REVIO	BC:ATGTACTAGTGAGTAT	CM:R/P1-C1/5.0-25M
+@PG	ID:ccs	PN:ccs	VN:7.0.0 (commit v7.0.0)	DS:Generate circular consensus sequences (ccs) from subreads.	CL:/opt/pacbio/tag-ccs-current/bin/ccs --streamed --log-level INFO --stderr-json-log --kestrel-files-layout --movie-name m84065_231124_080536_s3 --log-file metadata/m84065_231124_080536_s3.ccs.log --min-rq 0.9 --non-hifi-prefix fail --knrt-ada --pbdc-model /opt/pacbio/tag-ccs-current/bin/../models/revio_v1.onnx --alarms metadata/m84065_231124_080536_s3.ccs.alarms.json
+@PG	ID:lima	VN:2.7.1 (commit v2.7.1-1-gf067520)	CL:/opt/pacbio/tag-lima-current/bin/lima --movie-name m84065_231124_080536_s3 --kestrel-files-layout --quality hifi --output-missing-pairs --shared-prefix --hifi-preset SYMMETRIC-ADAPTERS --store-unbarcoded --split-named --reuse-source-uuid --reuse-biosample-uuids --stderr-json-log --alarms metadata/m84065_231124_080536_s3.hifi_reads.lima.alarms.json --log-file metadata/m84065_231124_080536_s3.hifi_reads.lima.log pb_formats/m84065_231124_080536_s3.hifi_reads.consensusreadset.primrose.xml metadata/m84065_231124_080536_s3.barcodes.fasta hifi_reads/m84065_231124_080536_s3.hifi_reads.demux.bam
+@PG	ID:primrose	VN:1.4.0 (commit v1.4.0)	CL:/opt/pacbio/tag-primrose-current/bin/primrose --movie-name m84065_231124_080536_s3 --kestrel-files-layout --quality hifi --reuse-source-uuid --stderr-json-log --log-file metadata/m84065_231124_080536_s3.hifi_reads.primrose.log --alarms metadata/m84065_231124_080536_s3.hifi_reads.primrose.alarms.json --keep-kinetics
+@PG	ID:samtools	PN:samtools	PP:primrose	VN:1.16.1	CL:samtools view -H NIH23F1013274/m84065_231124_080536.hifi_reads.bam
+
+@HD	VN:1.6	SO:unknown	pb:5.0.0
+@RG	ID:42975d22/36--36	PL:PACBIO	DS:READTYPE=CCS;Ipd:Frames=ip;PulseWidth:Frames=pw;BINDINGKIT=102-739-100;SEQUENCINGKIT=102-118-800;BASECALLERVERSION=5.0;FRAMERATEHZ=100.000000;BarcodeFile=metadata/m84067_230923_105227_s4.barcodes.fasta;BarcodeHash=e7c4279103df8c8de7036efdbdca9008;BarcodeCount=113;BarcodeMode=Symmetric;BarcodeQuality=Score	LB:NIH23J3016218	PU:m84067_230923_105227_s4	SM:NIH23J3016218	PM:REVIO	BC:ACGTCGCTGCGAGTAT	CM:R/P1-C1/5.0-25M
+@PG	ID:ccs	PN:ccs	VN:7.0.0 (commit v7.0.0)	DS:Generate circular consensus sequences (ccs) from subreads.	CL:/opt/pacbio/tag-ccs-current/bin/ccs --streamed --log-level INFO --stderr-json-log --kestrel-files-layout --movie-name m84067_230923_105227_s4 --log-file metadata/m84067_230923_105227_s4.ccs.log --min-rq 0.9 --non-hifi-prefix fail --knrt-ada --pbdc-model /opt/pacbio/tag-ccs-current/bin/../models/revio_v1.onnx --alarms metadata/m84067_230923_105227_s4.ccs.alarms.json
+@PG	ID:lima	VN:2.7.1 (commit v2.7.1-1-gf067520)	CL:/opt/pacbio/tag-lima-current/bin/lima --movie-name m84067_230923_105227_s4 --kestrel-files-layout --quality hifi --output-missing-pairs --shared-prefix --hifi-preset SYMMETRIC-ADAPTERS --store-unbarcoded --split-named --reuse-source-uuid --reuse-biosample-uuids --stderr-json-log --alarms metadata/m84067_230923_105227_s4.hifi_reads.lima.alarms.json --log-file metadata/m84067_230923_105227_s4.hifi_reads.lima.log pb_formats/m84067_230923_105227_s4.hifi_reads.consensusreadset.primrose.xml metadata/m84067_230923_105227_s4.barcodes.fasta hifi_reads/m84067_230923_105227_s4.hifi_reads.demux.bam
+@PG	ID:primrose	VN:1.4.0 (commit v1.4.0)	CL:/opt/pacbio/tag-primrose-current/bin/primrose --movie-name m84067_230923_105227_s4 --kestrel-files-layout --quality hifi --reuse-source-uuid --stderr-json-log --log-file metadata/m84067_230923_105227_s4.hifi_reads.primrose.log --alarms metadata/m84067_230923_105227_s4.hifi_reads.primrose.alarms.json --keep-kinetics
+@PG	ID:samtools	PN:samtools	PP:primrose	VN:1.16.1	CL:samtools view -H NIH23J3016218_1.hifi_reads.bam

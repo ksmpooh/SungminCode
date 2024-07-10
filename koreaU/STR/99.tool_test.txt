@@ -1,0 +1,220 @@
+## 20240627
+## STR tool test
+## dumpSTR DB : http://hgdownload.cse.ucsc.edu/goldenpath/hg38/database/genomicSuperDups.txt.gz
+
+
+cd /ADATA/smkim/pangenome/01.wgs/str_test
+
+
+ref : /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+bam: /ADATA/smkim/pangenome/01.wgs/01.bam/NIH20N2000078.bam
+bed: /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed
+eh.vcf: /ADATA/smkim/pangenome/01.wgs/str_test/NIH20N2000078.EH.vcf.gz
+
+##eh
+/BDATA/smkim/TOOLs/tool_db/RepeatCatalogs/hg38/polymorphic_STR.json
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /ADATA/smkim/pangenome/01.wgs/01.bam/NIH20N2000078.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --threads 72 \
+        --variant-catalog /BDATA/smkim/TOOLs/tool_db/RepeatCatalogs/hg38/polymorphic_STR.json \
+        --output-prefix NIH20N2000078.EH_new 2 > EH.log
+
+##
+
+ensembletr --out output.vcf
+           --ref ref.fa
+           --vcfs vcf1.vcf,vcf2.vcf,...
+
+
+time ensembletr --out NIH20N2000078.ensembletr.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --vcf NIH20N2000078.EH.vcf.gz
+time ensembletr --vcf /BDATA/smkim/STR/EH_shortread/02.gz/NIH20N2038392.EH.vcf.gz --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --out test1.EH.vcf
+time ensembletr --vcf NIH20N2000078.EH.vcf.gz,NIH20N2000078.HipSTR.vcf.gz --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --out NIH20N2000078.HipSTR.ensembleTR.vcf
+
+
+Analysing record cluster ranged in chr4:39337436-39337473.
+Traceback (most recent call last):
+
+
+time ensembletr --vcf NIH20N2000078.EH_new.vcf.gz --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --out NIH20N2000078.EH_new.ensembleTR.vcf
+
+
+
+
+## GangSTR: 
+db: /BDATA/smkim/TOOLs/tool_db/gangSTR/hg38_ver13.bed
+
+
+/BDATA/smkim/TOOLs/str_tool/GangSTR-2.5.0-Source/bin/GangSTR
+GangSTR --bam file.bam 
+        --ref ref.fa 
+        --regions regions.bed 
+        --out outprefix 
+
+time /BDATA/smkim/TOOLs/str_tool/GangSTR-2.5.0-Source/bin/GangSTR \
+--bam /ADATA/smkim/pangenome/01.wgs/01.bam/NIH20N2000078.bam \
+--ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--regions /BDATA/smkim/TOOLs/tool_db/gangSTR/gangstr.v13.polymorphic_w_eh.v5_offtarget.exp10_p05.top5_no_segdup.fast_2s.bed \
+--out NIH20N2000078.GangSTR
+
+[GangSTR-2.5.0] ProgressMeter:  Genotyper Results:  7, 7        likelihood = 217.475
+
+real    497m11.639s
+user    496m36.121s
+sys     0m31.046s
+
+
+## HipSTR
+/BDATA/smkim/TOOLs/str_tool/HipSTR/HipSTR
+/BDATA/smkim/TOOLs/tool_db/HipSTR/hg38.hipstr_reference.bed
+./HipSTR --bams          run1.bam,run2.bam,run3.bam,run4.bam
+         --fasta         genome.fa
+         --regions       str_regions.bed
+         --str-vcf       str_calls.vcf.gz
+
+
+time /BDATA/smkim/TOOLs/str_tool/HipSTR/HipSTR \
+--bams /ADATA/smkim/pangenome/01.wgs/01.bam/NIH20N2000078.bam \
+--fasta /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--regions /BDATA/smkim/TOOLs/tool_db/HipSTR/hg38.hipstr_reference.bed \
+--str-vcf NIH20N2000078.HipSTR.vcf.gz
+
+
+Approximate timing breakdown
+ BAM seek time       = 0.80094 seconds
+ Read filtering      = 3324.68 seconds
+ SNP info extraction = 44.3764 seconds
+ Stutter estimation  = 0.302847 seconds
+ Genotyping          = 70.2476 seconds
+         Left alignment        = 4.53917 seconds
+         Haplotype generation  = 0.166445 seconds
+         Haplotype alignment   = 48.1001 seconds
+         Flank assembly        = 0.376884 seconds
+         Posterior computation = 0.032084 seconds
+         Alignment traceback   = 16.6029 seconds
+HipSTR execution finished: Total runtime = 3839.1 sec
+-----------------
+
+
+
+real    63m59.903s
+user    62m38.853s
+sys     1m20.262s
+
+
+time ensembletr --vcfs NIH20N2000078.EH.vcf.gz,NIH20N2000078.HipSTR.vcf.gz \
+--out NIH20N2000078.merge.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+약 2분
+
+
+
+###
+
+dumpSTR \
+  --vcf <vcf file> \
+  --out <string> \
+  [filter options]
+
+dumpSTR --vcf NIH20N2000078.EH.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.vcf.gz \
+--min-locus-callrate 0.7 \
+--min-locus-hwep 0.000001 \
+--filter-regions-names SEGDUP
+
+--filter-regions hg38_segdup.sorted.bed.gz 
+
+        
+dumpSTR --vcf NIH20N2000078.EH.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.vcf.gz \
+--min-locus-callrate 0.7 \
+--min-locus-hwep 0.000001 \
+--filter-regions /BDATA/smkim/TOOLs/tool_db/hg38_segdup.sorted.bed.gz \
+--filter-regions-names SEGDUP
+
+
+/BDATA/smkim/TOOLs/tool_db/genomicSuperDups.txt
+
+time ensembletr --vcf NIH20N2000078.EH.dumpSTR.vcf.gz.vcf \
+--out NIH20N2000078.EH.dumpSTR.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+분석 시간
+EH: 5분 이내, multi-threads 가능
+gangSTR: multi-threads 불가능.. 약 8시간
+HipSTR: multi-threads 불가능.. 약 1시간
+
+ensembleTR: EH 결과만 했을때, 약 1분
+ensembleTR: EH+gangSTR+HipSTR, 약 2분
+
+
+guo DB: 321,298개
+ensembleTR 기본 DB: 174293개
+
+
+sort -k1,1V -k2,2n -k3,3n guo.sup1.sheet1.dup.bed > guo.sup1.sheet1.dup.sort.bed
+
+/BDATA/smkim/STR/db/guo.sup1.sheet1.dup.sort.bed.gz
+
+
+time dumpSTR --vcf NIH20N2000078.EH.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.vcf.gz \
+--min-locus-callrate 0.7 \
+--min-locus-hwep 0.000001 \
+--filter-regions /BDATA/smkim/STR/db/guo.sup1.sheet1.dup.sort.bed.gz \
+--filter-regions-names SEGDUP
+
+real    40m25.634s
+user    40m15.810s
+sys     0m23.181s
+
+## error
+time ensembletr --vcf NIH20N2000078.EH.dumpSTR.vcf.gz.vcf \
+--out NIH20N2000078.EH.dumpSTR.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+## 추가 확인..
+cd /ADATA/smkim/pangenome/01.wgs/str_test
+
+bcftools query -f '%CHROM\t%POS\t%END\tSEGDUP\n' NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz | uniq -c | awk '$1==2{OFS="\t";print $2,$3,$4,$5}' > /BDATA/smkim/STR/db/eh.dupSTR.additional.txt
+
+cd /BDATA/smkim/STR/db
+cat guo.sup1.sheet1.dup.bed eh.dupSTR.additional.txt | sort -k1,1V -k2,2n -k3,3n > guo.sup1.sheet1.sort_add.bed
+
+
+time dumpSTR --vcf NIH20N2000078.EH.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.vcf.gz \
+--min-locus-callrate 0.7 \
+--min-locus-hwep 0.000001 \
+--filter-regions /BDATA/smkim/STR/db/guo.sup1.sheet1.sort_add.bed.gz \
+--filter-regions-names SEGDUP
+
+bgzip NIH20N2000078.EH.dumpSTR.vcf.gz.vcf;tabix NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz
+
+time ensembletr --vcf NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+ bcftools view -T ^/BDATA/smkim/STR/db/eh.dupSTR.additional.txt NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz -Oz -o NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz
+
+
+time ensembletr --vcf NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.rmadd.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+Analysing record cluster ranged in chr4:41735638-41735665.
+Analysing record cluster ranged in chr4:41736719-41736738.
+Analysing record cluster ranged in chr4:41745775-41745795.
+
+
+bcftools query -f '%CHROM\t%POS\t%POS\t%RU\n' NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz | awk '$4 !~ /^[ATCG]+$/'
+## 아래 추가로 지우기
+chr4    39348424        39348424        AARRG
+chr4    41745972        41745972        GCN
+
+bcftools view -T ^/BDATA/smkim/STR/db/eh.dupSTR.additional.txt NIH20N2000078.EH.dumpSTR.vcf.gz.vcf.gz -Oz -o NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz
+tabix -f -p vcf NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz
+
+time ensembletr --vcf NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz \
+--out NIH20N2000078.EH.dumpSTR.rmadd.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta

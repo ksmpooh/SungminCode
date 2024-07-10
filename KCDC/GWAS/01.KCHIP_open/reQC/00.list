@@ -5,11 +5,11 @@ CEL list check
 ## python3
 
 import os,glob
-koGESv1_0 = "/media/epigenome/My Book/KBA/KoGES/00.CEL/KBAv1.0/"
-koGESv1_1 = "/media/epigenome/My Book/KBA/KoGES/00.CEL/KBAv1.1/"
+koGESv1_0 = "/media/genome/My Book/KBA/KoGES/00.CEL/KBAv1.0/"
+koGESv1_1 = "/media/genome/My Book/KBA/KoGES/00.CEL/KBAv1.1/"
 
-cmerc = "/media/epigenome/My Book/KBA/CMERC/00.CEL/"
-kky = "/media/epigenome/My Book/KBA/KNHANES/00.CEL/"
+cmerc = "/media/genome/My Book/KBA/CMERC/00.CEL/"
+kky = "/media/genome/My Book/KBA/KNHANES/00.CEL/"
 
 
 koGESv1_1 = glob.glob(koGESv1_1 + "*CEL")

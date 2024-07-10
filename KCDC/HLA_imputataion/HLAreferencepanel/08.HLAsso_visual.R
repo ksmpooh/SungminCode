@@ -376,12 +376,15 @@ out %>% filter(freq != 'rare') %>%
 head(out)
 # only 4 type
 head(df)
-df %>% rename("HLAtype" = SNP) %>% mutate(only = ifelse(HLAtype %in% only_kmhc$HLAtype,HLAtype,"Intersect")) %>% arrange(!only) %>%
+df %>% rename("HLAtype" = SNP) %>% mutate(only = ifelse(HLAtype %in% only_kmhc$HLAtype,HLAtype,"Intersect")) %>% #arrange(desc(only)) %>% #head()
   #mutate(size = ifelse(only == "Unique",1,0.5)) %>%
   ggplot(aes(x=BETA,y=-log10(P),color = only)) +
   geom_point()+
-  scale_color_manual(values=c("grey","blue","red","green","yellow")) + 
-  #scale_size_continuous(range = c(1, 2)) + 
+  #scale_color_manual(values=c("grey","blue","red","green","purple")) +
+  scale_color_manual(values=c("blue","red","green","purple",rgb(0.6,0.6,0.6,0.2))) + 
+  scale_size_continuous(range = c(1,3,3,3,3)) + 
+  theme(legend.position = "bottom",
+        legend.title = element_blank()) + 
   facet_wrap(~Trait,ncol = 4,scales = 'free')
   
 

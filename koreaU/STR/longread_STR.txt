@@ -161,3 +161,35 @@ ls *bam | sed 's/\.bam//g' | xargs -I{} -P 2 bash -c "samtools sort -o {}.sorted
         --threads 60 \
         --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
         --output-prefix ./test 2> test.log
+
+
+#### ubam to mapping -> TRGT
+/RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio/*/Data/Basic_Analysis
+cd /RDATA6/Pangenome/00.rawDATA/2023.pro.ref_panel.Revio
+ls NIH*bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_pathogenic/{}_trgt_genotype_gangstr"
+
+ls -d NIH23J3* | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads ./{}/Data/Basic_Analysis/{}\_sorted.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr"
+ls -d NIH23J3* | tail -15 | grep -v NIH23J3247250 | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads ./{}/Data/Basic_Analysis/{}\_sorted.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_sorted_trgt_genotype_gangstr"
+
+# 106
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr"
+ls *bam | grep -E 'NIH23J3178611' | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr"
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr"
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix trgt/{}\_trgt_genotype_gangstr"
+
+
+## sort
+/BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.sort/{}.sorted.vcf.gz {}.vcf.gz;bcftools index 02.sort/{}.sorted.vcf.gz"
+
+# merge
+bcftools merge -m all 02.sort/*gz -Oz -o 03.merge/Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
+
+Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
