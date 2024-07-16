@@ -2,6 +2,9 @@ library(tidyverse)
 library(data.table)
 library(ggbreak)
 library(ggpubr)
+library(ggplot2)
+library(cowplot)
+
 setwd("/Users/ksmpooh/Desktop/KU/@research/STR/eh/Quality_check/")
 
 ## EH quality check
@@ -246,9 +249,10 @@ load(file="~/Desktop/KU/@research/STR/Rdata/longread.tgrt.66sample.qc.upper0.8.i
 ref <- read.table("~/Desktop/KCDC/pangenome/00.datacheck/KBA.Long_Revio_Nanopore_short.IDmatchinagtable.txt",header = T)
 common_str <- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/TRID_common_EHpass_TRGTupper0.8.txt",header = T)
 
+head(common_str)
 head(trgt_pass_common)
 head(eh_pass_common)
-
+#trgt_pass_common %>% filter(ID == "NIH23F1013274") %>% select(TRID) %>% unique() %>% dim()
 trgt_pass_common %>% filter(ID == "NIH23F1013274") %>%
   select(TRID,MOTIFS) %>% count(MOTIFS)
 
@@ -292,6 +296,159 @@ str_RU_count %>% mutate(new_n = ifelse(n %in% c(1:10),n,">10")) %>%
   theme(#axis.title.x = element_blank(),
         legend.position = 'None',
         axis.text = element_text(size = 10))
+
+
+####
+head(str_match_score_freqeuncy)
+head(ref)
+common_str <- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/TRID_common_EHpass_TRGTupper0.8.txt",header = T)
+ru <- read_table("~/Desktop/KU/@research/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed",col_names = F)
+head(ru)
+head(common_str)
+head(ru)
+ru %>% mutate(MOTIFS = str_split_fixed(X4,";",3)[,2]) %>% 
+  mutate(MOTIFS = str_split_fixed(MOTIFS,"=",2)[,2]) %>% #head()
+  mutate(ID = str_split_fixed(X4,";",3)[,1]) %>% 
+  mutate(ID = str_split_fixed(ID,"=",2)[,2]) %>% #head()
+  select(X1,X2,X3,MOTIFS,ID) -> ru
+
+head(ru)
+head(common_str)
+colnames(ru) <- c("chrom","start","end","MOTIFS","STR")
+ru %>% mutate(STR_region = paste0(chrom,"_",start,"_",end)) %>% filter(STR %in% common_str$TRID)-> ru
+
+#write.table(ru,"/Users/ksmpooh/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt",row.names = F,col.names = T,quote = F,sep = "\t")
+####
+####
+
+#ru,"/Users/ksmpooh/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt"
+ru <- read_table("/Users/ksmpooh/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt")
+head(ru)
+ru.scale = c(seq(1,14),"15+")
+ru.scale
+ru %>% select(MOTIFS) %>% mutate(RU.length = str_length(MOTIFS)) %>%
+  count(RU.length) %>% mutate(RU.length = ifelse(RU.length >= 15,"15+",RU.length)) %>%
+  ggplot(aes(x=factor(RU.length,levels=ru.scale),y=n)) + 
+  geom_bar(stat = 'identity') + 
+  labs(x="RU length",y="# of STRs") -> p1
+
+ru %>% select(MOTIFS) %>% mutate(RU.length = str_length(MOTIFS)) %>%
+  count(RU.length) %>% mutate(RU.length = ifelse(RU.length >= 15,"15+",RU.length)) %>%
+  ggplot(aes(x=factor(RU.length,levels=ru.scale),y=n)) + 
+  geom_bar(stat = 'identity') + 
+  xlim(c(seq(7,14),"15+")) + 
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank())-> p2
+
+
+combined_plot <- ggdraw() +
+  draw_plot(p1, 0, 0, 1, 1) +           # p1을 원본 크기로 배치
+  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2를 오른쪽 위에 작게 배치
+
+# 결과 출력
+print(combined_plot)
+
+head(ru)
+
+ru %>%
+  select(STR,MOTIFS) %>% count(MOTIFS) %>% arrange(-n) %>% mutate(Rank = rank(-n)) %>% 
+  mutate(STR_MOTIFs = ifelse(Rank %in% c(1:10),MOTIFS,"other")) %>% #head()
+  group_by(STR_MOTIFs) %>%
+  summarise(n = sum(n)) %>%
+  mutate(pct=n/sum(n)*100) %>% #head()
+  ggplot(aes(x=reorder(STR_MOTIFs,-n),y=n,fill=reorder(STR_MOTIFs,-n))) + 
+  geom_bar(stat='identity') + 
+  geom_text(aes(label=paste0(round(pct,1), '%')),
+            position=position_stack(vjust=0.99)) + 
+#    scale_y_cut(breaks=c(50000, 160000), scales=c(0)) +
+  scale_y_break(c(50000, 150000)) +
+  labs(y="# of STRs") +
+  theme(axis.title.x = element_blank(),
+        #legend.title = element_blank(),
+        legend.position = "None",
+        axis.text = element_text(size = 10)) -> p1
+
+p1
+
+head(ru)
+ru %>%
+  select(STR,MOTIFS) %>% count(MOTIFS) %>% arrange(-n) %>% mutate(Rank = rank(-n)) -> str_RU_count
+
+trans <- function(x){pmin(x,500) + 0.05*pmax(x-500,0)}
+yticks <- c(0,100,200,400,600,800,4900,5000)
+
+str_RU_count %>% mutate(new_n = ifelse(n %in% c(1:10),n,">10")) %>% 
+  #group_by(RU) %>%
+  count(new_n) %>% #head()
+  ggplot(aes(x=factor(new_n,c("1","2","3","4","5","6","7","8","9","10",">10")),y=n,fill=new_n)) + 
+  geom_bar(stat='identity') +
+    scale_y_break(c(1000, 4700),ticklabels = c(1,2,3,4900,5000)) + 
+
+  labs(x="# of RU types",y="# of STRs")  + 
+  theme(#axis.title.x = element_blank(),
+    legend.position = 'None',
+    #axis.y.
+    axis.text = element_text(size = 10)) -> p2
+p2
+#p2
+
+combined_plot <- ggdraw() +
+  draw_plot(p1, 0, 0, 1, 1) +           # p1을 원본 크기로 배치
+  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2를 오른쪽 위에 작게 배치
+
+# 결과 출력
+print(combined_plot)
+
+
+#install.packages("tidyverse")
+library(tidyverse)
+##### STR type
+ref_db <- readxl::read_xlsx("~/Desktop/KCDC/paper/STR/2023_guo_sup_2.xlsx",sheet = 1)
+head(ref_db)
+ref_db %>% select(chr,`STR start position (GRCh38)`,`STR end position (GRCh38)`,motif,`Reference tract length`,`Genomic annotation`,`Distance to nearest TSS`) -> ref_db
+
+colnames(ref_db) <- c("chrom","start","end","MOTIFS","Referencetractlength","anotation","DistancetoTSS")
+ref_db %>% mutate(STR_region = paste0(chrom,"_",start,"_",end)) -> ref_db
+
+ru <- read_table("/Users/ksmpooh/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt")
+
+
+head(ru)
+head(ref_db)
+
+library(plotly)
+library(ggrepel)
+
+ru %>% left_join(ref_db) %>% mutate(anotation = ifelse(is.na(anotation),"chrX",anotation)) %>% #head()
+  group_by(anotation) %>% #head()
+  count() %>% ungroup() %>%
+  mutate(perc = n/sum(n)) %>%
+  arrange(perc) %>% #-> a
+  mutate(labels = scales::percent(perc)) %>% #head
+  ggplot(aes(1, perc, fill = anotation)) +
+  geom_col(color = 'black', 
+           position = position_stack(reverse = TRUE), 
+           show.legend = FALSE) +
+  geom_text_repel(aes(x = 1.4, y = , label = label), 
+                  nudge_x = .3, 
+                  segment.size = .7, 
+                  show.legend = FALSE) +
+  coord_polar('y') +
+  theme_void())
+
+  
+
+
+
+
+
+
+dup <- read_table('~/Desktop/KU/@research/STR/db/genomicSuperDups.txt.gz',col_names = F)
+head(dup)
+dup[1:5,]
+
+###
+
 
                                        
 
@@ -433,9 +590,10 @@ df %>% count(EH_STR1 > EH_STR2)
 df %>% count(TRGT_STR1 > TRGT_STR2)
 
 
-#########################
+######################### comapre
 #write.table(df,"~/Desktop/KU/@research/STR/02.compare/STR.TRGT_0.8upper.EH_pass.common.merge.onlyReaptnumber.with_dfiff.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 df <- read_table("~/Desktop/KU/@research/STR/02.compare/STR.TRGT_0.8upper.EH_pass.common.merge.onlyReaptnumber.with_dfiff.txt")
+head(df)
 df %>% count(ID) %>% count(n)
 summary(df$nRU_diff_mean)
 
@@ -444,6 +602,16 @@ df %>% ggplot(aes(x=ID,y=nRU_diff_mean,fill=nRU_diff_mean)) +
   scale_y_break(c(50,300))+
   #scale_y_break(c(700, 4900),ticklabels = c(1,2,3,4950))
   theme(axis.text.x = element_blank())
+
+
+df %>% filter(nRU_diff_mean != 0) %>%
+  ggplot(aes(x=ID,y=nRU_diff_mean,fill=nRU_diff_mean)) + 
+  geom_violin()+
+  ylim(c(-1,1)) + 
+  theme(axis.text.x = element_blank())
+
+
+
 head(df)
 head(df)
 

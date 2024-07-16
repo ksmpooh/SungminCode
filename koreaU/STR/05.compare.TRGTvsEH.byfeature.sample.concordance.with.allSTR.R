@@ -4,7 +4,7 @@ library(data.table)
 library(ggbreak)
 library(ggpubr)
 library(ggtext)
-library(normentR)
+
 
 df <- read_table("~/Desktop/KU/@research/STR/02.compare/STR.TRGT_0.8upper.EH_pass.common.merge.onlyReaptnumber.with_dfiff.txt")
 str_match_score_freqeuncy <- read_table("~/Desktop/KU/@research/STR/02.compare/STR_type/str_match_score_frequency.txt")
@@ -34,7 +34,7 @@ df %>% mutate(match_bystr = ifelse((STR1 == 0 & STR2 == 0),"ALL match",ifelse((S
 
 df %>% left_join(str_match_score_freqeuncy) %>% 
   mutate(EH = (EH_STR1+EH_STR2)/2) %>%
-  mutate(TRGT = (TRGT_STR1+TRGT_STR1)/2) %>% select(-EH_STR1,-EH_STR2,-TRGT_STR1,-TRGT_STR2,-score) %>% #head()
+  mutate(TRGT = (TRGT_STR1+TRGT_STR2)/2) %>% select(-EH_STR1,-EH_STR2,-TRGT_STR1,-TRGT_STR2,-score) %>% #head()
   group_by(STR,MOTIFS) %>%
   summarise(EH = mean(EH),TRGT=mean(TRGT),concordance = mean(concordance),nRU_diff_mean= mean(nRU_diff_mean)) -> df_diff_meanMC_concordance
 
@@ -56,10 +56,10 @@ df_match %>% group_by(ID) %>% mutate(pct=n/sum(n)*100)  %>% #head()
   #  mutate(n=factor(n)) %>%
   ggplot(aes(x=fct_reorder(ID,n),y=n,fill=fct_reorder(match,n))) +
   geom_bar(stat = 'identity') + 
-  xlab("# of Sample") +
-  ylab("# of STR") + 
+  xlab("Sample") +
+  ylab("# of STRs") + 
   scale_y_continuous(
-    name = "# of STR",
+    name = "# of STRs",
     sec.axis = sec_axis(~ . / max(302660) * 100, name = "Percentage of STR")
   ) +
   theme(axis.text.x = element_blank(),
@@ -124,10 +124,10 @@ df_forMan %>% mutate(new_rankPOS = seq(1,nrow(df_forMan))) %>% #head()
   ) + 
   labs(title = "STR Concordance by chromosome")  -> p1
 
-'''
-  labs(x = "Chromosome", y = "Concordance",
-       title = "Manhattan Plot of STR Concordance (TRGT vs EH)") 
-'''
+p1
+#  labs(x = "Chromosome", y = "Concordance",
+#       title = "Manhattan Plot of STR Concordance (TRGT vs EH)") 
+
 
 df_forMan %>% mutate(new_rankPOS = seq(1,nrow(df_forMan))) %>% #head()
   mutate(GC = str_length(gsub("[^CG]", "",MOTIFS))/str_length(MOTIFS)) %>%
@@ -197,7 +197,157 @@ p4
 cowplot::plot_grid(p1,p2,p3,p4,nrow = 4,rel_heights = c(2,2,2,0.5)) + 
   labs(x = "Chromosome", y = "Concordance")
 
+
+head(df_forMan)
+chrOrder<-c(1:22,"X")
+rev(chrOrder)
+
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  group_by(chrom,match) %>%
+  count(chrom) %>% ungroup() %>% summarise(max = max(n)) -> max_n
+
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  group_by(chrom) %>%
+  count(match) -> for_line
+
+head(for_line)
+
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                       ifelse(concordance > 0.5, "0.5<x<1",
+                                              ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  #mutate(match = factor(match,levels=c("ALL match","0.5<x<1",0,"0<x=<0.5","ALL missmatch"))) %>%
+  mutate(match = factor(match, levels = c("ALL missmatch","0<x=<0.5","0.5<x<1","ALL match"))) %>%  # Fill 순서 반대로 설정
+  group_by(chrom) %>%
+  count(match) %>% 
+  ggplot(aes(x=factor(chrom,levels=rev(chrOrder)),y=n,fill=match)) + 
+  geom_bar(stat='identity',position = 'fill') + 
+  geom_text(aes(label = ifelse(match %in% c("ALL match"),n,""), y = 0),
+            hjust = 0) +
+  geom_text(aes(label = ifelse(match %in% c("0.5<x<1"),n,""),y = 0.75),
+            hjust = 0) + 
+  labs(x="Chromosome",y="Percentage") + 
+  theme(legend.position= "none",
+        legend.title = element_blank(),
+   #     axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+  #      axis.title.x = element_blank(),
+        axis.text = element_text(size = 10)) +
+  guides(fill = guide_legend(reverse=T)) + 
+  coord_flip() -> p1
+  
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  #mutate(match = factor(match,levels=c("ALL match","0.5<x<1",0,"0<x=<0.5","ALL missmatch"))) %>%
+  mutate(match = factor(match, levels = c("ALL missmatch","0<x=<0.5","0.5<x<1","ALL match"))) %>%  # Fill 순서 반대로 설정
+  group_by(chrom,match) %>%
+  count(chrom) %>%
+  ggplot(aes(x=factor(chrom,levels=rev(chrOrder)),y=n,fill=match)) + 
+  geom_bar(stat='identity') + 
+  #geom_bar(stat='identity',position = 'fill') + 
+  #geom_text(aes(label = ifelse(name %in% c("0.5<x<1","ALL match"),value,"")),
+  geom_text(aes(label = ifelse(match %in% c("ALL match"),n,""), y = 0),
+            hjust = 0) +
+  geom_text(aes(label = ifelse(match %in% c("0.5<x<1"),n,"")),
+            position = position_stack(vjust = 0.8)) + 
+  labs(x="Chromosome",y="# of STRs") + 
+  theme(legend.position = "none",
+        legend.title = element_blank(),
+             axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+              #axis.title.x = element_blank(),
+        axis.text = element_text(size = 10)) +
+  guides(fill = guide_legend(reverse=T)) + 
+  coord_flip() -> p2
+
+p2
+
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  mutate(match = factor(match, levels = c("ALL missmatch","0<x=<0.5","0.5<x<1","ALL match"))) %>%  # Fill 순서 반대로 설정
+  group_by(chrom,match) %>%
+  count(chrom) %>%
+  ggplot(aes(x=factor(chrom,levels=rev(chrOrder)),y=n,fill=match)) + 
+  geom_bar(stat='identity') + 
+  theme(legend.position = "bottom",
+        legend.title = element_blank()) + 
+  guides(fill = guide_legend(reverse=T)) + 
+  coord_flip() -> p3
+
+p3 <- get_legend(p3)
+
+p1
+p2
+
+cowplot::plot_grid(p1,p2,nrow = 1) -> p11
+p11
+#gridExtra::grid.arrange(p11,bottom = "Percentage",top="# of STRs",left = "Repeat Unit") -> p11
+
+cowplot::plot_grid(p11,p3,nrow = 2,rel_heights = c(1,0.1))
+
+
+
+
+
+df_forMan %>% mutate(match = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  #mutate(match = factor(match,levels=c("ALL match","0.5<x<1",0,"0<x=<0.5","ALL missmatch"))) %>%
+  mutate(match = factor(match, levels = c("ALL missmatch","0<x=<0.5","0.5<x<1","ALL match"))) %>%  # Fill 순서 반대로 설정
+  group_by(chrom) %>%
+  count(match) %>% 
+  mutate(cumulative_n = cumsum(n)) %>% #head()
+  ggplot(aes(x=factor(chrom,levels=rev(chrOrder)),y=n,fill=match)) + 
+  geom_bar(stat='identity',position = 'fill') + 
+  geom_text(aes(label = ifelse(match %in% c("ALL match"),n,""), y = 0),
+            hjust = 0) +
+  geom_text(aes(label = ifelse(match %in% c("0.5<x<1"),n,""),y = 0.75),
+            hjust = 0) + 
+  labs(x="Chromosome",y="Percentage") + 
+  theme(legend.position= "none",
+        legend.title = element_blank(),
+        #     axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        #      axis.title.x = element_blank(),
+        axis.text = element_text(size = 10)) +
+  guides(fill = guide_legend(reverse=T)) + 
+  coord_flip() +
+  geom_line(aes(y = n/max_n$max, group = match), color = match, size = 1) #+
+  scale_y_continuous(sec.axis = sec_axis(~ .*n/max_n$max, name = "Cumulative Count")) 
+
+
 #######
+ggplot
+
+
+  geom_text(aes(label = ifelse(name %in% c("0.5<x<1"),value,""), y = 0.5),
+            hjust = 0) + 
+  geom_text(aes(label = ifelse(name %in% c("ALL missmatch"),value,""),fontface = "bold",y = 1), 
+            hjust = 0,color = "darkred",) + 
+  geom_text(aes(label = ifelse(name %in% c("0<x=<0.5"),add_text,"")), 
+            position = position_fill(vjust = 0),color='darkgreen') + 
+  scale_y_continuous(labels = percent) + 
+  #labs(title = "Other, Rank 1~19") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        axis.text = element_text(size = 10)) +
+  guides(fill = guide_legend(reverse=T)) + 
+  coord_flip()
+
+
+
+
+
+
+#########
 
 
 head(df)
@@ -207,13 +357,14 @@ head(df_diff_meanMC_concordance)
 head(str_RU_count)
 colnames(str_RU_count)[1] <- "MOTIFS"
 
-df_diff_meanMC_concordance %>% group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRGT = mean(TRGT)) %>%  
-  left_join(str_RU_count) %>% 
+df_diff_meanMC_concordance %>% #group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRGT = mean(TRGT)) %>%  
+  left_join(str_RU_count) %>% #head()
   mutate(count=ifelse(n==1,"n=1",
                       ifelse(n==2,"n=2",
                              ifelse(Rank %in% c(1:10),"Top10","other")))) %>% #ungroup() %>% count(count)
+  #filter(count == "Top10")
   mutate(GC = str_length(gsub("[^CG]", "",MOTIFS))/str_length(MOTIFS)) %>%
-  mutate(RU.length = str_length(MOTIFS)) %>% #head()
+    mutate(RU.length = str_length(MOTIFS)) %>% #head()
   ggscatter(.,x='TRGT',y="EH",color = "GC",size='RU.length',
             #  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
             add = "reg.line",
@@ -223,22 +374,29 @@ df_diff_meanMC_concordance %>% group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRG
             #ylim = c(0,0.5),
             cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n",label.y.npc = "top"),
                         #cor.coeff.args = list(method = "pearson", label.sep = "\n"),
-            xlab = "TRGT",
-            ylab = "EH") + 
+            xlab = "Long-read (TRGT)",
+            ylab = "Short-read (EH)") + 
   geom_abline(slope = 1,linetype="dashed") + 
-  gradient_color(c("white","red")) + 
+  gradient_color(c("blue","red")) + 
   #  guides(color=guide_legend(title="GC contents of RU")) + 
-  theme(legend.position = "right") + 
-  facet_wrap(~count,scales = 'free',nrow = 1)
+  theme(legend.position = "right",strip.text = element_text(size = 20)) + 
+  facet_wrap(~count,nrow = 2,scales = 'free') -> p1
 
+p1
 
-df_diff_meanMC_concordance %>% group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRGT = mean(TRGT)) %>%  
-  left_join(str_RU_count) %>% #head()
-  mutate(count=ifelse(n==1,"1",
-                      ifelse(n==2,"2",
-                             ifelse(Rank %in% c(1:10),"Top10","other")))) %>% #ungroup() %>% count(count)
+df_diff_meanMC_concordance %>% #head()
+  mutate(concordance_group = ifelse(concordance == 1,"ALL match",
+                                    ifelse(concordance > 0.5, "0.5<x<1",
+                                           ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>% filter(concordance == 1)
+
+df_diff_meanMC_concordance %>% #head()
+  mutate(concordance_group = ifelse(concordance == 1,"ALL match",
+                              ifelse(concordance > 0.5, "0.5<x<1",
+                                     ifelse(concordance > 0,"0<x=<0.5","ALL missmatch")))) %>%
+  mutate(concordance_group = factor(concordance_group,levels=c("ALL match","0.5<x<1",0,"0<x=<0.5","ALL missmatch"))) %>%
   mutate(GC = str_length(gsub("[^CG]", "",MOTIFS))/str_length(MOTIFS)) %>%
   mutate(RU.length = str_length(MOTIFS)) %>% #head()
+  #mutate(concordance = as.factor(concordance)) %>%
   ggscatter(.,x='TRGT',y="EH",color = "GC",size='RU.length',
             #  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
             add = "reg.line",
@@ -248,40 +406,96 @@ df_diff_meanMC_concordance %>% group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRG
             #ylim = c(0,0.5),
             #cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")) +
             cor.coeff.args = list(method = "pearson", label.sep = "\n"),
-            xlab = "TRGT",
-            ylab = "EH") + 
+            xlab = "Long-read (TRGT)",
+            ylab = "Short-read (EH)") + 
   geom_abline(slope = 1,linetype="dashed") + 
-  gradient_color(c("white","red")) + 
+  #gradient_color(c("white","red")) + 
+  gradient_color(c("blue","red")) + 
   #  guides(color=guide_legend(title="GC contents of RU")) + 
-  theme(legend.position = "right") -> p1
+  theme(legend.position = "right",strip.text = element_text(size = 20)) + 
+  facet_wrap(~concordance_group,scales = 'free') -> p2
 
-p1
-h
-df_diff_meanMC_concordance %>% head()
-  mutate(concordance = ifelse(concordance == 1,"ALL match",
-                              ifelse(concordance > 0.5, ">0.5",
-                                     ifelse(concordance > 0,">0","ALL missmatch")))) %>%
+  
+cowplot::plot_grid(p1,p2)
+
+
+
+## by length
+ru.scale = c(seq(1,14),"15+")
+ru.scale
+ru %>% select(MOTIFS) %>% mutate(RU.length = str_length(MOTIFS)) %>%
+  count(RU.length)
+
+
+
+df_diff_meanMC_concordance %>% #group_by(MOTIFS) %>% #summarise(EH = mean(EH),TRGT = mean(TRGT)) %>%  
+  left_join(str_RU_count) %>% #head()
   mutate(GC = str_length(gsub("[^CG]", "",MOTIFS))/str_length(MOTIFS)) %>%
-  mutate(RU.length = str_length(MOTIFS)) %>% #head()
-  mutate(concordance = as.factor(concordance)) %>%
-  ggscatter(.,x='TRGT',y="EH",color = "GC",size='concordance',
-            #  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
+  mutate(RU.length = str_length(MOTIFS)) %>% #count(RU.length)
+  ungroup() %>%
+  mutate(RU.length = ifelse(RU.length >= 15,"15+",RU.length)) -> plot.data
+
+cor_with_p <- function(x, y) {
+  test <- cor.test(x, y, method = "pearson")
+  tibble(correlation = test$estimate, p_value = test$p.value)
+}
+plot.data %>% filter(RU.length=="2") -> a
+a
+cor.test(a$EH,a$TRGT,method = "pearson")
+cor(a$EH,a$TRGT,method = "pearson")
+
+#  head()
+plot.data %>% group_by(RU.length) %>% 
+  summarise(R = cor(TRGT, EH, method = "pearson"),P=)
+
+head(plot.data)
+plot.data %>% group_by(RU.length) %>%
+  summarize(result = list(cor_with_p(TRGT, EH))) %>%
+  unnest(result) %>% mutate(p_value = ifelse(p_value == 0,2.2e-16,p_value)) -> plot.data.cor
+
+head
+plot.data %>% 
+  ggscatter(.,x='TRGT',y="EH",color = "GC",#size='RU.length',
             add = "reg.line",
             conf.int = TRUE, # Add confidence interval
             cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-            #xlim = c(0,0.5),
-            #ylim = c(0,0.5),
-            #cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")) +
-            cor.coeff.args = list(method = "pearson", label.sep = "\n"),
-            xlab = "TRGT",
-            ylab = "EH") + 
+            cor.coeff.args = list(method = "pearson", label.sep = "\n",label.y=400),
+            xlab = "Long-read (TRGT)",
+            ylab = "Short-read (EH)") + 
   geom_abline(slope = 1,linetype="dashed") + 
-  gradient_color(c("white","red")) + 
+  #stat_cor(method = "pearson", label.x.npc = "center", label.y.npc = "top") + 
+  gradient_color(c("blue","red")) + 
   #  guides(color=guide_legend(title="GC contents of RU")) + 
-  theme(legend.position = "bottom") +
-  facet_wrap(~concordance)
+  theme(legend.position = "right",strip.text = element_text(size = 10)) + 
+  facet_wrap(~factor(RU.length,levels = ru.scale),nrow = 2) -> p1
 
-  
+p1
+
+plot.data %>% #left_join(plot.data.cor)
+  ggscatter(.,x='TRGT',y="EH",color = "GC",#size='RU.length',
+            add = "reg.line",
+            conf.int = TRUE, # Add confidence interval
+            cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+            cor.coeff.args = list(method = "pearson", label.sep = "\n",
+                                  label.x.npc = "center",label.y.npc = "top"),
+            xlab = "Long-read (TRGT)",
+            ylab = "Short-read (EH)") + 
+  geom_abline(slope = 1,linetype="dashed") + 
+  #stat_cor(method = "pearson", label.x.npc = "center", label.y.npc = "top") + 
+  gradient_color(c("blue","red")) + 
+  #  guides(color=guide_legend(title="GC contents of RU")) + 
+  theme(legend.position = "right",strip.text = element_text(size = 10)) + 
+  facet_wrap(~factor(RU.length,levels = ru.scale),nrow = 2,scale='free') -> p2
+
+
+p1
+p2
+
+
+###################
+
+head(df_diff_meanMC_concordance)
+
 
 
 df %>% ggplot(aes(x=ID,y=nRU_diff_mean,fill=nRU_diff_mean)) + 
@@ -347,9 +561,7 @@ df %>% mutate(match_bystr = ifelse((STR1 == 0 & STR2 == 0),"match",'missmatch'))
   #summarise(sum = count(match_bystr))-> test
   count(STR,MOTIFS,match_bystr) #-> df_match_bystr
 
-head(df_match_bystr) 
-df_match_bystr %>% pivot_wider(names_from = match_bystr,values_from = n) %>% head()
-  
+
 
 df_match_bystr %>% group_by(match_bystr) %>%
   count(n) %>%
@@ -452,6 +664,8 @@ b %>% count(n) %>% left_join(c %>% count(n) %>% rename(`All allele not match` = 
         axis.text = element_text(size = 10))
 
 #ggplot(aes())
+
+#### all match RU type count
 c %>% filter(n==66) %>% dim()
 
 head(a)
@@ -481,12 +695,9 @@ str_RU_count %>% #head()
   ylab("# of STR") + 
   theme(axis.title.x = element_blank(),
         legend.position = "None",
-        axis.text = element_text(size = 10))
-
+        axis.text = element_text(size = 10)) -> p1
+p1
 head(c)
-c %>% filter(n == 66) %>% #dim()
-  count(MOTIFS) %>% arrange(-n) %>% head()
-  
 
 c %>% filter(n == 66) %>% #dim()
   count(MOTIFS) %>% arrange(-n) %>% #ggplot(aes(x=MOTIFS,y=n)) + geom_bar(stat = 'identity')
@@ -506,8 +717,9 @@ c %>% filter(n == 66) %>% #dim()
   ylab("# of STR") + 
   theme(axis.title.x = element_blank(),
         legend.position = "None",
-        axis.text = element_text(size = 10))
+        axis.text = element_text(size = 10)) -> p2
 
+p2
 
 b %>% filter(n == 66) %>% #dim()
   count(MOTIFS) %>% arrange(-n) %>% #ggplot(aes(x=MOTIFS,y=n)) + geom_bar(stat = 'identity')
@@ -526,6 +738,63 @@ b %>% filter(n == 66) %>% #dim()
         legend.position = "None",
         axis.text = element_text(size = 10))
 
+head(df)
+head(df_match_bystr)
+head(str_RU_count)
+
+
+df %>% filter(ID == "NIH23F1724125") %>% select(STR,MOTIFS) %>% unique() %>% #head()
+  count(MOTIFS) %>% arrange(-n) %>% mutate(Ori_Rank = rank(-n)) -> str_all_count
+
+head(str_all_count)
+head(str_RU_count)
+sum(str_RU_count$n)
+colnames(str_RU_count)[2] <- "match_n"
+colnames(str_RU_count)[3] <- "match_Rank"
+
+str_all_count %>% left_join(str_RU_count) %>% mutate(notmatch=n-match_n) %>% 
+  select(MOTIFS,Ori_Rank,match_Rank,match_n,notmatch) %>% #head()
+  #select(-match_Rank) %>%
+  mutate(match_Rank = ifelse(Ori_Rank %in% c(1:10),match_Rank,"Other")) %>%
+  mutate(Ori_Rank = ifelse(Ori_Rank %in% c(1:10),Ori_Rank,"Other")) %>%
+  mutate(MOTIFS = ifelse(Ori_Rank %in% c(1:10),MOTIFS,"Other")) %>% na.omit() %>% #head()
+  group_by(MOTIFS,Ori_Rank,match_Rank) %>% summarise(match_n = sum(match_n),notmatch=sum(notmatch)) %>%
+  pivot_longer(cols = c(match_n,notmatch)) %>% #count(MOTIFS)
+  mutate(name = ifelse(name == "match_n","ALL match","missmatch")) %>% #head()
+  mutate(name = factor(name,levels = c("ALL match","missmatch"))) %>%  #head
+  group_by(MOTIFS) %>% mutate(pct=value/sum(value)*100) -> plot_data
+
+plot_data %>%
+  ggplot(aes(x=reorder(MOTIFS,-value),y=value,fill=name)) + 
+  geom_bar(stat = 'identity',position = 'stack') + 
+  ylab("# of STR") + 
+  labs(title = "Percentage of Motif Counts for ALL Matches",subtitle = "(RU count) Original Rank -> ALL match Rank") + 
+  geom_text(aes(label = ifelse(name == "ALL match", paste0(round(pct, 1), '%'), '')),
+            position = position_stack(vjust = 0.99)) +
+  theme(axis.title.x = element_blank(),
+        legend.position = "right",
+        plot.title = element_text(hjust = 0.5,size=20),
+        plot.subtitle = element_text(hjust = 0.5,size=10),
+        legend.title = element_blank(),
+        axis.text = element_text(size = 10)) -> p1
+
+p1 + annotate("text", x = plot_data$MOTIFS, y = -10, # y 값을 적절히 조정
+             label = ifelse(plot_data$name == "missmatch" & plot_data$Ori_Rank != "Other", paste0(plot_data$Ori_Rank, '->', plot_data$match_Rank), '')) -> p1
+   
+p1
+head(plot_data)
+
+
+geom_bar(position="fill", stat="identity")
+
+
+plot_data %>% filter(match_Rank != "Ohter") %>% select(MOTIFS,Ori_Rank,match_Rank)
+
+a %>% filter(n == 66) %>% 
+  count(MOTIFS) %>% arrange(-n) %>% mutate(Rank = rank(-n)) -> str_RU_count
+
+a %>% filter(n == 66) -> all_sample_same_RUtype
+head(str_RU_count)
 
 str_RU_count %>% #head()
   mutate(Rank = ifelse(Rank %in% c(1:10),Rank,"Other")) %>%
@@ -533,34 +802,26 @@ str_RU_count %>% #head()
   group_by(MOTIFS) %>% #head()
   summarise(n = sum(n)) %>% #dim()
   mutate(pct=n/sum(n)*100) %>% #head()
-  mutate(theme = "ALL match") %>% #head()
-  rbind(c %>% filter(n == 66) %>% #dim()
-              count(MOTIFS) %>% arrange(-n) %>% #ggplot(aes(x=MOTIFS,y=n)) + geom_bar(stat = 'identity')
-              mutate(MOTIFS = ifelse(n == 1,'n=1',MOTIFS)) %>%
-              mutate(MOTIFS = ifelse(n == 2,'n=2',MOTIFS)) %>% 
-              mutate(MOTIFS = ifelse(n == 3,'n=3',MOTIFS)) %>% 
-              group_by(MOTIFS) %>% #head()
-              summarise(n = sum(n)) %>% #dim()
-              mutate(pct=n/sum(n)*100) %>% #head()
-              mutate(theme = "ALL missmatch")
-        ) %>% 
-  group_by(theme) %>%
   ggplot(aes(x=reorder(MOTIFS,-n),y=n,fill=reorder(MOTIFS,-n))) + 
   geom_bar(stat='identity') + 
   geom_text(aes(label=paste0(round(pct,1), '%')),
-            position=position_stack(vjust=0.99)) + 
+            position=position_stack(vjust=0)) + 
+  #  scale_y_cut(breaks=c(50000, 160000), scales=c(0)) +
+  scale_y_break(c(15000, 94000),ticklabels = c(0,5000,10000,15000,94000,96000)) +
   ylab("# of STR") + 
   theme(axis.title.x = element_blank(),
         legend.position = "None",
-        axis.text = element_text(size = 10)) + 
-  facet_wrap(~theme,scales = "free") 
-  
+        axis.text = element_text(size = 10))
 
-str_match_score_freqeuncy
+head(c)
 
 
 
 
+
+p1
+p2
+#cowplot::plot_grid(p1,p2,p3,nrow = 1,rel_widths = c(1,1,0.2))
 
 head(a)
 head(b)
@@ -580,6 +841,7 @@ str_match_score_freqeuncy %>%
   xlab("RU.length") + 
   ylab("concordance by STR") + 
   geom_violin() -> p1
+p1
 
 str_match_score_freqeuncy_byRU %>% #head()
   #filter(concordance != 1) %>%
@@ -618,13 +880,17 @@ str_match_score_freqeuncy %>% mutate(RU.length = str_length(MOTIFS)) %>% #head()
 cowplot::plot_grid(p1,p2)
 
 ####### total STR
+################################################## check_~20240710
 head(df)
+df %>% mutate(match_type = ifelse(STR %in% b$STR,"missmatch","match")) %>% 
+  mutate(match_type=ifelse(STR %in% c$STR,"All_missmatch",match_type)) -> df_type
+
 df_type %>% mutate(STR1_length = TRGT_STR1*str_length(MOTIFS),STR2_length = TRGT_STR2*str_length(MOTIFS)) %>%
   #filter(STR %in% c1$STR) %>% 
   mutate(RU_length = str_length(MOTIFS)) %>%
   mutate(RU_length = ifelse(RU_length %in% c(1:6),RU_length,"7~"))-> df_type
 
-
+## 이거 오래 걸림
 head(df_type)
 df_type %>% #filter(ID == "NIH23F1724125" )%>% 
   ggpubr::ggscatter(.,x='STR1_length',y="STR2_length",#shape = 21,
@@ -647,6 +913,7 @@ df_type %>% #filter(ID == "NIH23F1724125" )%>%
 #######
 #head(new_df)
 ######### non-match
+
 
 head(df)
 df %>% filter(STR %in% all_sample_same_RUtype$STR) %>% #head()

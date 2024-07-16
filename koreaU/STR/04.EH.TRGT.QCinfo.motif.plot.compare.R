@@ -1,4 +1,8 @@
 #### QC ÈÄ ±×¸²
+library(tidyverse)
+library(data.table)
+library(ggbreak)
+library(ggpubr)
 
 
 load(file="~/Desktop/KU/@research/STR/Rdata/shortread.eh.66sample.qc.PASS.intersect.RData")
@@ -13,11 +17,24 @@ head(eh_pass_common)
 
 #### motif freqeuncy
 eh_pass_common %>% filter(ID == "NIH20N2000078") %>%
-  select(STR_ID,RU) %>% count(RU) %>% arrange(-n) %>% mutate(Rank = rank(-n)) %>% 
-  mutate(STR_MOTIFs = ifelse(Rank == c(1:10),RU,"other")) %>% #head()
+  select(STR_ID,RU) %>% count(RU) %>% arrange(-n) %>% mutate(Rank = rank(-n)) %>%  #head()
+  mutate(STR_MOTIFs = ifelse(Rank %in% c(1:10),RU,"other")) %>% #head()
   group_by(STR_MOTIFs) %>%
   summarise(n = sum(n)) %>%
-  mutate(pct=n/sum(n)*100) %>% #head()
+  mutate(pct=n/sum(n)*100) -> str_qc_pass_common
+
+eh_pass_common %>% filter(ID == "NIH20N2000078") %>%
+  select(STR_ID,RU) %>% count(RU) %>% arrange(-n) %>% mutate(Rank = rank(-n)) -> str_RU_count
+
+
+#head(str_qc_pass_common)
+#write.table(str_qc_pass_common,"~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.qcpass.common.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(str_RU_count,"~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.qcpass.common.RUcount.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+str_RU_count<- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.qcpass.common.RUcount.txt",header =T)
+str_qc_pass_common <- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.qcpass.common.txt",header = T)
+head(str_qc_pass_common)
+
+str_qc_pass_common %>%
   ggplot(aes(x=reorder(STR_MOTIFs,-n),y=n,fill=reorder(STR_MOTIFs,-n))) + 
   geom_bar(stat='identity') + 
   geom_text(aes(label=paste0(round(pct,1), '%')),
@@ -29,22 +46,22 @@ eh_pass_common %>% filter(ID == "NIH20N2000078") %>%
         legend.title = element_blank(),
         axis.text = element_text(size = 10))
 
-eh_pass_common %>% filter(ID == "NIH20N2000078") %>%
-  select(STR_ID,RU) %>% count(RU) %>% arrange(-n) %>% mutate(Rank = rank(-n)) -> str_RU_count
-#  filter(Rank %in% c(1:10)) -> str_RU_count
-#  mutate(STR_MOTIFs = ifelse(Rank == c(1:10),RU,"other")) %>% #head()
+head(str_qc_pass_common)
+
+
+
+
+head(str_RU_count)
 str_RU_count %>% filter(n == 1) %>% dim()
 
-trans <- function(x){pmin(x,500) + 0.05*pmax(x-500,0)}
-yticks <- c(0,100,200,400,600,800,4900,5000)
+head(str_RU_count)
 
-str_RU_count %>% mutate(new_n = ifelse(n %in% c(1:10),n,">10")) %>% 
-  #group_by(RU) %>%
+str_RU_count %>% mutate(new_n = ifelse(n %in% c(1:10),n,">10")) %>% #head()
   count(new_n) %>% #head()
   ggplot(aes(x=factor(new_n,c("1","2","3","4","5","6","7","8","9","10",">10")),y=n,fill=new_n)) + 
   geom_bar(stat='identity') +
   scale_y_break(c(700, 4900),ticklabels = c(1,2,3,4950)) + 
-  #  ylim(c(0,5000)) + 
+#  ylim(c(0,5000)) + 
   xlab("RU type count") + 
   ylab("Count") + 
   theme(#axis.title.x = element_blank(),
@@ -92,12 +109,11 @@ trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_mea
   theme(legend.position = "right")
 
 
-trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_meanMC) %>% #head()
-  mutate(diff = mean_MC_TRGT - mean_MC_EH) %>% #ggplot(aes(y=diff,x=RU)) + geom_point() 
-  mutate(RU.length = str_length(RU)) %>%
-  mutate(STR_mean_diff = ifelse(abs(diff) >1,">1","1>=")) %>%
-  #ggpubr::ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",fill = "STR_mean_diff",color = "STR_mean_diff",size = "RU.length",
-  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",color = "RU.length",#,shape = "STR_mean_diff",
+trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_meanMC) %>% 
+  mutate(GC = str_length(gsub("[^CG]", "",RU))/str_length(RU)) %>%
+  mutate(RU.length = str_length(RU)) %>% #head()
+  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",color = "GC",size='RU.length',
+#  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
             add = "reg.line",
             conf.int = TRUE, # Add confidence interval
             cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
@@ -109,14 +125,26 @@ trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_mea
             ylab = "EH") + 
   geom_abline(slope = 1,linetype="dashed") + 
   gradient_color(c("white","red")) + 
-  theme(legend.position = "right")
+  #  guides(color=guide_legend(title="GC contents of RU")) + 
+  theme(legend.position = "right") -> p1
+
+p1
+
+#write.table(str_match_score_freqeuncy,"~/Desktop/KU/@research/STR/02.compare/STR_type/str_match_score_frequency.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+str_match_score_freqeuncy <- read_table("~/Desktop/KU/@research/STR/02.compare/STR_type/str_match_score_frequency.txt")
+head(str_match_score_freqeuncy)
+colnames(str_match_score_freqeuncy)[1] <- 'RU'
+
+head(eh_pass_common)
+head(trgt_pass_common)
 
 
-trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_meanMC) %>% #head()
+#head(trgt_pass_common_meanMC)
+trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_meanMC) %>%
   mutate(GC = str_length(gsub("[^CG]", "",RU))/str_length(RU)) %>%
-  mutate(RU.length = str_length(RU)) %>%
-  #ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",color = "GC",size='RU.length',
-  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
+  mutate(RU.length = str_length(RU)) %>% head()
+  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",color = "GC",size='RU.length',
+            #  ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
             add = "reg.line",
             conf.int = TRUE, # Add confidence interval
             cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
@@ -127,9 +155,10 @@ trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_mea
             xlab = "TRGT",
             ylab = "EH") + 
   geom_abline(slope = 1,linetype="dashed") + 
-  gradient_color(c("white","blue")) + 
+  gradient_color(c("white","red")) + 
   #  guides(color=guide_legend(title="GC contents of RU")) + 
   theme(legend.position = "right")
+
 
 
 head(eh_pass_common)
@@ -191,4 +220,6 @@ head(df)
 head(df)
 df %>% count(EH_STR1 > EH_STR2)
 df %>% count(TRGT_STR1 > TRGT_STR2)
+
+#write.table(df,"~/Desktop/KU/@research/STR/02.compare/STR.TRGT_0.8upper.EH_pass.common.merge.onlyReaptnumber.with_dfiff.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
