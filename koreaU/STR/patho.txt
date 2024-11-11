@@ -1,0 +1,17 @@
+#!/bin/zsh
+
+# List of STR_IDs to extract
+str_ids=("ATXN7" "CNBP" "HTT" "FXN" "FRA10AC1" "ATXN8OS" "NOP56" "PRNP" "TMEM185A")
+
+# Loop through the files you want to process (adjust file paths as needed)
+for file in trgt_eh_meanbaseq.simpleSTR.txt trgt_eh_meandepth.simpleSTR.txt trgt_eh_meanmapq.simpleSTR.txt; do
+  echo "Processing $file..."
+  
+  # Create an output file for the filtered data
+  output_file="filtered_$file"
+  
+  # Filter the file for matching STR_IDs and save to the output file
+  grep -E "$(printf "|%s" "${str_ids[@]}")" $file > $output_file
+  
+  echo "Filtered data saved to $output_file"
+done

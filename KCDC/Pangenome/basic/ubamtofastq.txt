@@ -1,0 +1,9 @@
+cd /CDATA/pangenome/2023.pro.KCHIP.Revio/ubamtobastq/NIH23F1013274
+
+samtools bam2fq input.bam | gzip > output.fastq.gz
+
+ls *bam |sed 's/.bam//g' | xargs -I {} -P 2 bash -c "samtools bam2fq {}.bam | gzip > /CDATA/pangenome/2023.pro.KCHIP.Revio/ubamtobastq/NIH23F1013274/{}.fastq.gz"
+
+
+
+ls NIH23F1*/*bam | grep -v "NIH23F1013274" |sed 's/.bam//g' | xargs -I {} -P 40 bash -c "samtools bam2fq {}.bam | gzip > /CDATA/pangenome/2023.pro.KCHIP.Revio/ubamtobastq/{}.fastq.gz"

@@ -1,0 +1,110 @@
+
+
+#cat list.txt | xargs -I {} -P 4 bash -c 'hifiasm -o /ADATA/pangenome/01.hifisam/{}/{}.asm -t 30 {}/*'
+
+
+
+#!/bin/bash
+# conda activate basicGenomics
+LENGTH=250000000
+
+mkdir 04_NGx
+cd 04_NGx
+
+ln -s ../sampleList.txt .
+
+awk '$1=="LR"' sampleList.txt | while read -r TYPE SAMPLE FASTQ; do
+    ls -1 ../03_assembly/${SAMPLE}/${SAMPLE}.*.fa | awk -v sample="${SAMPLE}" 'OFS="\t"{print "Assembly",sample,$1,"haplotype"NR}' >> sampleList.txt
+done
+
+echo "Sample,Length,Type,Coverage,LengthSum" >> length.csv
+
+awk '$1=="Assembly"' sampleList.txt | while read -r TYPE SAMPLE FASTA HAP; do
+    cat ${FASTA} | bioawk -c fastx -v sample="${SAMPLE}.${HAP}" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len="${LENGTH}" -v type="${TYPE}" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        >> length.csv
+done
+
+
+
+ls -1 ../03_assembly/${SAMPLE}/${SAMPLE}.*.fa | awk -v sample="${SAMPLE}" 'OFS="\t"{print "Assembly",sample,$1,"haplotype"NR}' >> sampleList.txt
+
+awk '$1=="Assembly"' sampleList.txt | while read -r TYPE SAMPLE FASTA HAP; do
+    cat ${FASTA} | bioawk -c fastx -v sample="${SAMPLE}.${HAP}" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len="${LENGTH}" -v type="${TYPE}" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        >> length.csv
+
+
+
+    awk '/^S/{print ">"$2;print $3}' ${PREFIX}*.hap1.*p_ctg.gfa > ${PREFIX}.h1.fa
+    awk '/^S/{print ">"$2;print $3}' ${PREFIX}*.hap2.*p_ctg.gfa > ${PREFIX}.h2.fa
+    cd ..
+done
+
+assembly-stats */*.fa > assembly-stat.txt
+
+
+##############
+after_hifiasm
+
+cd /ADATA/pangenome/01.hifisam
+###
+in=$1
+awk '/^S/{print ">"$2;print $3}' $in/*.hap1.*p_ctg.gfa > $in/$in.h1.fa
+awk '/^S/{print ">"$2;print $3}' $in/*.hap2.*p_ctg.gfa > $in/$in.h2.fa
+###
+
+ls -d NIH23* | xargs -I {} -P 30 bash -c "sh after_hifiasm.sh {}"
+
+assembly-stats */*.fa > assembly-stat.txt
+
+
+
+
+echo "Sample,Length,Type,Coverage,LengthSum" >> ../02.NGx/length.csv
+
+
+###ls -d NIH23* | xargs -I{} -P 10 bash -c "sh sample.sh {}"
+
+in=$1
+ls -1 $in/$in.*.fa | awk -v sample=$in 'OFS="\t"{print "Assembly",sample,$1,"hqaplotype"NR}' >> ../02.NGx/sampleList.csv
+
+
+###
+#Assembly	NIH23J3822962	NIH23J3822962/NIH23J3822962.h2.fa	haplotype2
+#Assembly	NIH23J3904558	NIH23J3904558/NIH23J3904558.h1.fa	haplotype1
+#Assembly	NIH23J3904558	NIH23J3904558/NIH23J3904558.h2.fa	haplotype2
+#Assembly	NIH23J3849957	NIH23J3849957/NIH23J3849957.h1.fa	haplotype1
+
+awk '$1=="Assembly"' ../02.NGx/sampleList.csv | while read -r TYPE SAMPLE FASTA HAP; do
+    cat ${FASTA} | bioawk -c fastx -v sample="${SAMPLE}.${HAP}" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len= -v type="${TYPE}" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        >> ../02.NGx/length.csv
+done
+
+
+###
+
+ls *fa | while read -r FASTA; do
+    cat ${FASTA} | bioawk -c fastx -v sample="${SAMPLE}.${HAP}" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len= -v type="${TYPE}" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        >> ../02.NGx/length.csv
+done
+
+in=$1
+cat $in | bioawk -c fastx -v sample="$in" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len=3000000000 -v type="Assembly" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        > NGx/$in.length.csv
+
+
+
+in=$1
+cat $in | bioawk -c fastx -v sample="$in" 'OFS=","{print sample, length($seq)}' | sort -k2rV -t "," | \
+        awk -F "," -v len=3000000000 -v type="Assembly" 'OFS=","{ print $1,$2,type,(sum+0)/len,(sum+0); sum+=$2 } END { print $1,$2,type,sum/len,sum }' \
+        > $in.length.csv
+
+## busco
+
+
+
+

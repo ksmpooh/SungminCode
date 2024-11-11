@@ -77,6 +77,7 @@ def main():
     ## make df
     print("make df......")
     mk_df_out(long_out,long_mc,long_ap,long_am)
+    os.system("rm %s;rm %s;rm %s"%(long_mc,long_ap,long_am))
 
 
 

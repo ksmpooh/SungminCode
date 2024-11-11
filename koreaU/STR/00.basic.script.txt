@@ -15,8 +15,3 @@ echo $in
 
 
 ###
-cd /BDATA/smkim/STR/EH_shortread
-
-ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
-
-

@@ -52,7 +52,7 @@ out <- rbind(out,df)
 head(out)
 
 
-write.table(out[,c(2,1,3,4)],"Nanopore_sample_md5sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+#write.table(out[,c(2,1,3,4)],"Nanopore_sample_md5sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
 
 
@@ -112,4 +112,11 @@ ggarrange(b,d,c,a, nrow = 2,ncol = 2)
 c
 head(df) 
 
+
+head(df)
+ref <- read.table("~/Desktop/KCDC/pangenome/00.datacheck/KBA.Long_Revio_Nanopore_short.IDmatchinagtable.txt",header = T) %>% na.omit()
+head(ref)
+ref %>% select(Nanopore,Revio) %>% pivot_longer(1:2) %>% rename(ID = value) -> ref
+df %>% mutate(ID = str_split_fixed(`Sample ID`,"_",2)[,1]) %>% filter(ID %in% ref$ID) %>% group_by(platform) %>%
+  summarise(mean(`Average Read Length (bp)`),mean(`Read N50 (bp)`)) -> a
 

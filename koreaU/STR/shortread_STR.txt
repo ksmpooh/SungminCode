@@ -76,6 +76,35 @@ cd /BDATA/smkim/STR/EH_shortread
 
 ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
 
+
+
+#gender setting
+
+in=$1
+echo $in
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads /RDATA7/smkim/pangenome/wgs/align/$in.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --threads 72 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.json \
+        --output-prefix $1.EH 2 > $1.EH.log
+
+
+###
+cd /BDATA/smkim/STR/EH_shortread
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
+
+
+
+
+
+
+
+
+
 ##### STR
 STRling
 ###1. bin
@@ -126,6 +155,7 @@ pip install pandas==1.5.3
 
 bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%ALT\t%REF[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n'
 
+
 ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n' {}.vcf.gz > Quality_check/{}.qcmt.txt"
 
 
@@ -133,6 +163,7 @@ ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%REPID
 
 #LC
 ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%REPID\t%RU[\t%LC]\n' {}.vcf.gz > coverage/{}.coverage_LC.txt"
+ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%REPID\t%RU[\t%LC]\n' {}.vcf.gz > coverage_pathgenicSTRanalysisDB/{}.coverage_LC.txt"
 #######
 /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.bed
 /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed
@@ -158,3 +189,188 @@ samtools coverage -r chr1:35488-35504 test.sort.bam > test.sort.bam.cover.check
 
 samtools coverage -r chr6:16327633-1632772 ../NIH20N2771162.bam > NIH20N2771162.bam.coverage
 samtools bedcov --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.target.region.test.bed ../NIH20N2771162.bam > NIH20N2771162.bam.coverage
+
+## pathogennic 20240819
+cd /BDATA/smkim/STR/EH_shortread
+
+ls /RDATA7/smkim/pangenome/wgs/align/*bam | cut -d "/" -f 7 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
+
+ls /CDATA/pangenome/01.wgs/01.bam/*bam | cut -d "/" -f 6 | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "sh run.sh {}"
+
+#/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/variant_catalog_with_offtargets.GRCh38.json
+
+
+
+mkdir Quality_check_pathogenic
+ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n' {}.vcf.gz > Quality_check_pathogenic/{}.qcmt.txt"
+
+
+
+cat bam.list bai.list | sed 's/.sorted//g' | sort | uniq -c | awk '$1==1{print $2}' | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o bam.sort/{}.sorted.bam {}.bam;samtools index bam.sort/{}.sorted.bam"
+
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o bam.sort/{}.sorted.bam {}.bam;samtools index bam.sort/{}.sorted.bam
+
+
+
+samtools view -h -o output.sam input.bam
+samtools view -S -b -o NIH20N2042469.EH_realigned.sorted.samtobam.bam NIH20N2042469.EH_realigned.sorted.sam
+
+
+samtools mpileup -r chr:start-end -Q 0 -q 0 input.bam
+samtools coverage -r chr10:100009719-100009739 -Q 0 -q 0 NIH20N2042469.EH_realigned.sorted.samtobam.bam
+
+samtools mpileup -r chr1:44835-44867 -Q 0 -q 0 input.bam
+
+bcftools mpileup -r chr:start-end -f reference.fasta input.bam
+
+bcftools mpileup -r chr1:44835-44867 -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta input.bam
+
+am-readcount -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH20N2042469.EH_realigned.sorted.bam chr1:44835-44867
+
+bam-readcount -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-q 0 -b 0 NIH20N2042469.EH_realigned.sorted.samtobam.bam chr1:44835-44867
+
+samtools mpileup -r chr1:44835-44867 -aa -Q 0 -q 0 -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta NIH20N2042469.EH_realigned.sorted.samtobam.bam
+
+
+bamtools filter -in NIH20N2042469.EH_realigned.sorted.samtobam.bam -region chr1:44835-44867 -out NIH20N2042469.EH_realigned.sorted.samtobam.out.bam
+
+
+bedtools intersect -a your_file.bam -b region.bed -ubam | samtools view - | awk '{print $5}' > mq_values.txt
+
+/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed
+bedtools intersect -a NIH20N2799583.bam -b /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed -ubam | samtools view - | awk '{print $5}' > mq_values.txt
+
+
+
+############
+## python
+cd /CDATA/pangenome/01.wgs/01.bam
+import glob,os,sys
+
+bam = sys.argv[1]
+bam_outpath = "coverage/%s.coverage.merge"%bam
+def main():
+       ref = open("/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed","r")
+       #ref = open("/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              tmp_out =  "coverage/%s.%s"%(bam,id)
+              os.system("samtools coverage -r %s:%s-%s %s > %s"%(chr,start,end,bam,tmp_out))
+              os.system("grep -v \'#\' %s >> %s"%(tmp_out,bam_outpath))
+              os.system("rm %s"%tmp_out)
+              #print("samtools coverage -r %s:%s-%s %s > coverage/%s.%s"%(chr,start,end,bam,id))
+       
+main()
+
+def main():
+       #ref = open("/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed","r")
+       ref = open("/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              os.system("samtools coverage -r %s:%s-%s %s > coverage_path/%s.%s"%(chr,start,end,bam,bam,id))
+
+main()
+
+ls *.bam | xargs -I {} -P 70 bash -c "python cov.py {}"
+
+
+######
+import json
+
+# JSON 파일 읽기
+input_file = 'eh.v5_w_gangstr.v13.polymorphic.json'  # 원본 JSON 파일 경로
+output_file = 'eh.v5_w_gangstr.v13.polymorphic.chrX_filtered.json'   # chrX만 필터링한 새로운 JSON 파일 경로
+
+with open(input_file, 'r') as f:
+    data = json.load(f)
+
+# chrX에 해당하는 ReferenceRegion만 필터링
+filtered_data = [
+    entry for entry in data
+    if isinstance(entry.get("ReferenceRegion"), str) and entry.get("ReferenceRegion").startswith("chrX")
+]
+
+# 필터링된 데이터를 새로운 JSON 파일로 저장
+with open(output_file, 'w') as f:
+    json.dump(filtered_data, f, indent=4)
+
+print(f"chrX 데이터가 {output_file}에 저장되었습니다.")
+
+
+###
+/BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.chrX_filtered.json
+
+/BDATA/smkim/pangenome/sex.info
+cd NIH20N2172445.bam.md5
+
+##
+in=$1
+sex=$2
+
+echo $in
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads $in.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --sex $sex \ 
+        --threads 72 \
+        --variant-catalog /BDATA/smkim/STR/EH/resources/eh.v5_w_gangstr.v13.polymorphic.chrX_filtered.json \
+        --output-prefix /CDATA/pangenome/01.wgs/01.bam/eh_chrX/normal/$1.EH 2 > /CDATA/pangenome/01.wgs/01.bam/eh_chrX/normal/$1.EH.log
+
+
+###
+/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/variant_catalog_with_offtargets.GRCh38.withoutalt.json
+##
+in=$1
+sex=$2
+
+echo $in
+
+/BDATA/smkim/STR/EH/ExpansionHunter/bin/ExpansionHunter \
+        --reads $in.bam \
+        --reference /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+        --analysis-mode streaming \
+        --sex $sex \
+        --threads 30 \
+        --variant-catalog /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/variant_catalog_with_offtargets.GRCh38.withoutalt.json \
+        --output-prefix /CDATA/pangenome/01.wgs/01.bam/eh_chrX/patho/$1.EH.patho 2 > /CDATA/pangenome/01.wgs/01.bam/eh_chrX/patho/$1.EH.patho.log
+
+
+###
+
+
+cat KBA.Long_Revio_Nanopore_short.IDmatchinagtable.txt | awk '{print $2, ($3 == "M" ? "male" : "female")}' | xargs -I {} -P 10 bash -c 'sh run.sh {}'
+cat /BDATA/smkim/pangenome/sex.info | awk '{print $2, ($3 == "M" ? "male" : "female")}' | xargs -I {} -P 5 bash -c 'sh eh.run.chrX.normal.sh {}'
+
+cat /BDATA/smkim/pangenome/sex.info | awk '{print $2, ($3 == "M" ? "male" : "female")}' | xargs -I {} -P 5 bash -c 'sh run.chrX.patho.sh {}'
+
+
+
+mkdir 02.gz
+ls *vcf | xargs -I {} -P 40 bash -c "bgzip -c {} > 02.gz/{}.gz;tabix -f -p vcf 02.gz/{}.gz"
+
+
+ls *.gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR\t%LC]\n' {}.vcf.gz > ../../Quality_check_chrX/{}.qcmt.txt"
+
+
+## pandepth GC
+cd /CDATA/pangenome/01.wgs/01.bam
+
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 10 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 8 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/EH_shortread/pandepth/{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 10 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 8 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/EH_shortread/pandepth/{}.bam.pandepth.patho"

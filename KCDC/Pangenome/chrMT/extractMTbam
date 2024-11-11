@@ -1,0 +1,26 @@
+# 106
+/ADATA/smkim/pangenome/chrMT/longread
+
+/ADATA/smkim/pangenome/01.revio_refpanel/01.mapped_fromfastq
+
+#mkdir chrMT
+/ADATA/smkim/pangenome/01.revio_refpanel/01.mapped_fromfastq
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 10 bash -c "samtools view -h -b {}.bam chrM > /ADATA/smkim/pangenome/chrMT/longread/{}.chrM.bam"
+
+
+
+
+# 103 # 34 /BDATA/smkim/pangenome/chrMT
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 10 bash -c "samtools view -h -b {}.bam chrM > /BDATA/smkim/pangenome/chrMT/{}.chrM.bam"
+
+#14개
+/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+## shortread
+mkdir /ADATA/smkim/pangenome/chrMT/shortread
+/CDATA/pangenome/01.wgs/01.bam
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 30 bash -c "samtools view -h -b {}.bam chrM > /ADATA/smkim/pangenome/chrMT/shortread/{}.chrM.bam"
+
+ls *bam |xargs -I{} -P 60 bash -c "samtools index {}"

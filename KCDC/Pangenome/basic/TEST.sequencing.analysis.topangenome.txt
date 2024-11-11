@@ -75,4 +75,41 @@ vg call -k read_depth.pack -r pangenome.gbwt -o variants.vcf
 32031000
 
 
+####
 
+ln -s ../sampleList.txt
+
+awk '$1=="LR"' sampleList.txt | while read -r TYPE PREFIX HIFI; do
+    mkdir ${PREFIX} && cd ${PREFIX}
+
+    hifiasm -o ${PREFIX} -t 1 ${HIFI} --hg-size 250m
+    # You can specify the estimated genome size using: --hg-size 3g
+    # If your sample is inbred, then add: -l 0
+
+    awk '/^S/{print ">"$2;print $3}' ${PREFIX}*.hap1.*p_ctg.gfa > ${PREFIX}.h1.fa
+    awk '/^S/{print ">"$2;print $3}' ${PREFIX}*.hap2.*p_ctg.gfa > ${PREFIX}.h2.fa
+    cd ..
+done
+
+assembly-stats */*.fa > assembly-stat.txt
+
+####
+
+cd /CDATA/pangenome/test/data/NIH23J3016218
+
+
+awk '/^S/{print ">"$2;print $3}' NIH23J3016218.asm.bp.hap1.p_ctg.gfa > NIH23J3016218.asm.h1.fa
+awk '/^S/{print ">"$2;print $3}' NIH23J3016218.asm.bp.hap2.p_ctg.gfa > NIH23J3016218.asm.h2.fa
+
+
+
+
+
+
+
+/CDATA/pangenome/99.ref/CHM13v11Y.fa.gz
+
+
+/BDATA/smkim/TOOLs/pangenome/minigraph/minigraph -t 72 -x asm -o test_pangenome.gfa /CDATA/pangenome/99.ref/CHM13v11Y.fa.gz NIH23J3016218.asm.bp.hap1.p_ctg.gfa
+
+GraphAligner -x vg -g NIH23J3016218.asm.bp.hap1.p_ctg.gfa -f /CDATA/pangenome/99.ref/CHM13v11Y.fa.gz -a test_pangenome_graphaligner.gaf -t 64

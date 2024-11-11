@@ -178,10 +178,12 @@ ls *bam | grep -E 'NIH23J3178611' | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/
 cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
 ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr"
 
+
+
 # 109
 cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
 
-ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix trgt/{}\_trgt_genotype_gangstr"
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 60 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix trgt/{}\_trgt_genotype_gangstr"
 
 
 ## sort
@@ -193,3 +195,774 @@ ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.
 bcftools merge -m all 02.sort/*gz -Oz -o 03.merge/Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
 
 Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
+
+
+
+
+
+
+### test
+##/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/{}\_trgt_genotype_gangstr
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed --reads NIH23J3016218_sorted.bam \
+--output-prefix test.patho
+
+### pathogenic call 20240819
+
+https://github.com/broadinstitute/str-analysis/tree/main
+
+
+#106
+DB:
+
+/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_genotype_pathogenic_str_analysisDB/{}\_trgt_genotype_stranalysisDB"
+
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_genotype_pathogenic_str_analysisDB/{}\_trgt_genotype_stranalysisDB"
+
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix trgt/{}\_trgt_genotype_stranalysisDB"
+
+# 103 # 34
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 1 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 72 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix trgt/{}\_trgt_genotype_stranalysisDB"
+
+#14개
+/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+
+
+##106
+/BDATA/smkim/STR/trgt/trgt_genotype_pathogenic_str_analysisDB/
+
+## sort
+mkdir 02.sort
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.sort/{}.sorted.vcf.gz {}.vcf.gz;bcftools index 02.sort/{}.sorted.vcf.gz"
+
+# merge
+
+mkdir 03.merge
+bcftools merge -m all 02.sort/*gz -Oz -o 03.merge/Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
+
+
+
+
+### pathogenic call 2024028 -v option test
+
+https://github.com/broadinstitute/str-analysis/tree/main
+
+
+#106
+DB:
+
+/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+mkdir /BDATA/smkim/STR/trgt/trgt_VoptionTEST/
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 32 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_VoptionTEST/{}\_trgt_genotype_stranalysisDB_testV"
+
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 32 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_VoptionTEST/{}\_trgt_genotype_stranalysisDB_testV"
+
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+mkdir trgt_VoptionTEST
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 32 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix trgt_VoptionTEST/{}\_trgt_genotype_stranalysisDB_testV"
+
+# 103 # 34
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+mkdir trgt_VoptionTEST
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype  -t 30 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix trgt_VoptionTEST/{}\_trgt_genotype_stranalysisDB_testV"
+
+#14개
+/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+mkdir trgt_VoptionTEST
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 2 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype  -t 30 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed --reads {}.bam --output-prefix trgt_VoptionTEST/{}\_trgt_genotype_stranalysisDB_testV"
+
+##106
+/BDATA/smkim/STR/trgt/trgt_VoptionTEST
+
+## sort
+mkdir 02.sort
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.sort/{}.sorted.vcf.gz {}.vcf.gz;bcftools index 02.sort/{}.sorted.vcf.gz"
+
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o 02.sort/{}.sorted.bam {}.bam;samtools index 02.sort/{}.sorted.bam"
+
+
+
+
+# merge
+
+mkdir 03.merge
+bcftools merge -m all 02.sort/*gz -Oz -o 03.merge/Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr_new.sorted.merged_withall.vcf.gz
+
+
+
+
+
+
+
+
+
+
+### trgt patho for.. RFC1
+#106
+DB:
+/BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed 
+
+
+cd /BDATA/smkim/STR/trgt/trgt_trgtpatho_forRFC1
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 10 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 10 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_trgtpatho_forRFC1/{}\_trgt_genotype_trgtpatho"
+
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 10 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 10 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/STR/trgt/trgt_trgtpatho_forRFC1/{}\_trgt_genotype_trgtpatho"
+
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+mkdir trgt_trgtpatho_forRFC1
+
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 10 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype -t 10 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed --reads {}.bam --output-prefix trgt_trgtpatho_forRFC1/{}\_trgt_genotype_trgtpatho"
+
+# 103 # 34
+/BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+mkdir trgt_trgtpatho_forRFC1
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 5 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype  -t 10 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/trgt_trgtpatho_forRFC1/{}\_trgt_genotype_trgtpatho"
+
+#14개
+/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *bam | sed 's/.bam//g' | xargs -I{} -P 5 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt -v genotype  -t 30 --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta --repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed --reads {}.bam --output-prefix /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/trgt_trgtpatho_forRFC1/{}\_trgt_genotype_trgtpatho"
+
+##106
+
+
+## sort
+mkdir 02.sort
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools sort -Ob -o 02.sort/{}.sorted.vcf.gz {}.vcf.gz;bcftools index 02.sort/{}.sorted.vcf.gz"
+
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o 02.sort/{}.sorted.bam {}.bam;samtools index 02.sort/{}.sorted.bam"
+
+
+cd /BDATA/smkim/STR/trgt/trgt_trgtpatho_forRFC1/02.sort
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######  coverage
+sed 's/ID=//g' eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed | awk '{split($4,a,";"); print $1,$2,$3,a[1]}'  > eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed
+sed 's/ID=//g' catalog.GRCh38.with_adjacent_repeats.TRGT.bed | awk '{split($4,a,";"); print $1,$2,$3,a[1]}'  > catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed
+
+/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed
+
+
+
+cd /ADATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/02.sort
+mkdir coverage
+## python
+import glob,os,sys
+
+bam = sys.argv[1]
+bam_outpath = "coverage/%s.coverage.merge"%bam
+def main():
+       ref = open("/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed","r")
+       #ref = open("/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              tmp_out =  "coverage/%s.%s"%(bam,id)
+              os.system("samtools coverage -r %s:%s-%s %s > %s"%(chr,start,end,bam,tmp_out))
+              os.system("grep -v \'#\' %s >> %s"%(tmp_out,bam_outpath))
+              os.system("rm %s"%tmp_out)
+              #print("samtools coverage -r %s:%s-%s %s > coverage/%s.%s"%(chr,start,end,bam,id))
+       
+main()
+
+ls *.bam | xargs -I {} -P 70 bash -c "python test.py {}"
+
+
+cd /ADATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/02.sort
+mkdir coverage
+
+
+import glob,os,sys
+
+bam = sys.argv[1]
+
+def main():
+       #ref = open("/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed","r")
+       ref = open("/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              os.system("samtools coverage -r %s:%s-%s %s > coverage_path/%s.%s"%(chr,start,end,bam,bam,id))
+
+              #print("samtools coverage -r %s:%s-%s %s > coverage/%s.%s"%(chr,start,end,bam,id))
+       
+main()
+
+ls *.bam | xargs -I {} -P 70 bash -c "python cov.py {}"
+
+
+ls *bam | sed 's/\.bam//g' | xargs -I{} -P 40 bash -c "samtools sort -o bam.sort/{}.sorted.bam {}.bam;samtools index bam.sort/{}.sorted.bam"
+
+
+
+
+
+
+
+### chrX
+106: /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.chrX.bed
+
+
+
+
+
+103번
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+mkdir trgt_normal_chrx
+mkdir trgt_pathoSTRDB_chrx
+
+cat /BDATA/smkim/pangenome/00.rawDATA/sex.info | awk '{print $1, $3}' | xargs -n 2 -P 6 bash run.sh
+
+#!/bin/bash
+
+# 첫 번째 인자: sample ID (두 번째 열)
+sample_id=$1
+# 두 번째 인자: 성별 정보 (세 번째 열)
+gender=$2
+
+# 성별에 따른 -k 옵션 설정
+if [ "$gender" == "M" ]; then
+    k_option="XY"
+else
+    k_option="XX"
+fi
+
+# 해당 sample_id로 시작하는 .bam 파일 찾기
+bam_file=$(find ./ -maxdepth 1 -name "${sample_id}*.bam")
+
+if [ -z "$bam_file" ]; then
+    echo "BAM file for $sample_id not found"
+    exit 1
+fi
+
+# trgt
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/pangenome/00.rawDATA/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.chrX.bed \
+    --reads $bam_file \
+    --output-prefix /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/trgt_normal_chrx/${sample_id}.trgt_normal_chrx
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+    --reads $bam_file \
+    --output-prefix /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/trgt_pathoSTRDB_chrx/${sample_id}.trgt_pathoSTRDB_chrx
+
+
+106번
+/BDATA/smkim/STR/trgt/chrX
+
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+cat /BDATA/smkim/pangenome/sex.info | awk '{print $1, $3}' | xargs -n 2 -P 3 bash /BDATA/smkim/STR/trgt/chrX/run.sh
+
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+cat /BDATA/smkim/pangenome/sex.info | awk '{print $1, $3}' | xargs -n 2 -P 3 bash /BDATA/smkim/STR/trgt/chrX/run.sh
+
+#!/bin/bash
+
+# 첫 번째 인자: sample ID (두 번째 열)
+sample_id=$1
+# 두 번째 인자: 성별 정보 (세 번째 열)
+gender=$2
+
+# 성별에 따른 -k 옵션 설정
+if [ "$gender" == "M" ]; then
+    k_option="XY"
+else
+    k_option="XX"
+fi
+
+# 해당 sample_id로 시작하는 .bam 파일 찾기
+bam_file=$(find ./ -maxdepth 1 -name "${sample_id}*.bam")
+
+if [ -z "$bam_file" ]; then
+    echo "BAM file for $sample_id not found"
+    exit 1
+fi
+
+# ExpansionHunter 실행
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.chrX.bed \
+    --reads $bam_file \
+    --output-prefix /BDATA/smkim/STR/trgt/chrX/${sample_id}.trgt_normal_chrx
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+    --reads $bam_file \
+    --output-prefix /BDATA/smkim/STR/trgt/chrX/${sample_id}.trgt_pathoSTRDB_chrx
+
+
+
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+
+cat /BDATA/smkim/pangenome/sex.info | awk '{print $1, $3}' | xargs -n 2 -P 4 bash run.sh
+
+#!/bin/bash
+
+# 첫 번째 인자: sample ID (두 번째 열)
+sample_id=$1
+# 두 번째 인자: 성별 정보 (세 번째 열)
+gender=$2
+
+# 성별에 따른 -k 옵션 설정
+if [ "$gender" == "M" ]; then
+    k_option="XY"
+else
+    k_option="XX"
+fi
+
+# 해당 sample_id로 시작하는 .bam 파일 찾기
+bam_file=$(find ./ -maxdepth 1 -name "${sample_id}*.bam")
+
+if [ -z "$bam_file" ]; then
+    echo "BAM file for $sample_id not found"
+    exit 1
+fi
+
+# ExpansionHunter 실행
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/pangenome/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.chrX.bed \
+    --reads $bam_file \
+    --output-prefix /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping/trgt_chrX/${sample_id}.trgt_normal_chrx
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t 10 \
+    -k $k_option \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/pangenome/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+    --reads $bam_file \
+    --output-prefix /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping/trgt_chrX/${sample_id}.trgt_pathoSTRDB_chrx
+
+
+
+
+### 106 
+cat /BDATA/smkim/pangenome/sex.info
+
+/BDATA/smkim/STR/trgt/chrX
+
+cat /BDATA/smkim/pangenome/sex.info | awk '$3=="M"{print $1}' |xargs -I{} -P 1 bash -c "mv {}* male/"
+cat /BDATA/smkim/pangenome/sex.info | awk '$3=="F"{print $1}' |xargs -I{} -P 1 bash -c "mv {}* female/"
+
+
+###
+Usage: pandepth -i in.bam [-g gene.gff | -b region.bed] -o outPrefix
+
+/BDATA/smkim/STR/trgt/chrX/male/02.sort/test
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i ../../NIH23F1978164.trgt_pathoSTRDB_chrx.spanning.bam -b /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -o test
+
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i ../../NIH23F1978164.trgt_pathoSTRDB_chrx.spanning.bam -b /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -o test_
+
+
+NIH23J3493642
+
+
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i /BDATA/smkim/STR/trgt/chrX/male/NIH23J3493642.trgt_pathoSTRDB_chrx.spanning.bam \
+-b /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+-c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o test_chrX_male
+
+
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped/NIH23J3493642_sorted.bam \
+-b /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+-c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o test_ori_mapped_bam
+
+
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i /BDATA/smkim/STR/trgt/trgt_genotype_pathogenic_str_analysisDB/NIH23J3493642_sorted_trgt_genotype_stranalysisDB.spanning.bam \
+-b /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+-c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o test_strdb_bam
+
+
+##ori bam pandepth
+/BDATA/smkim/STR/trgt/pandepth/patho/
+/BDATA/smkim/STR/trgt/pandepth/normal/
+#103
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+# 106
+/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/variant_catalogs/catalog.GRCh38.with_adjacent_repeats.TRGT.bed
+
+/BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed
+/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed
+
+
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/trgt/pandepth/normal/{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/trgt/pandepth/patho/{}.bam.pandepth.patho"
+
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/trgt/pandepth/normal/{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/trgt/pandepth/patho/{}.bam.pandepth.patho"
+
+
+
+#103
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth/{}.bam.pandepth.patho"
+
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 6 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth/{}.bam.pandepth.patho"
+
+# 109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 8 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth{}.bam.pandepth.normal"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 8 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth \
+-i {}.bam \
+-b /BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+-t 10 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+-o /BDATA/smkim/STR/pandepth/{}.bam.pandepth.patho"
+
+
+
+####
+103
+
+#mkdir coverage_oribam
+## python
+import glob,os,sys
+
+bam = sys.argv[1]
+def main():
+       ref = open("/BDATA/smkim/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed","r")
+       #ref = open("/BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+       bam_outpath = "/BDATA/smkim/STR/pandepth/coverage_oribam/%s.coverage.merge.normal"%bam
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              tmp_out =  "/BDATA/smkim/STR/pandepth/coverage_oribam/%s.%s"%(bam,id)
+              os.system("samtools coverage -r %s:%s-%s %s > %s"%(chr,start,end,bam,tmp_out))
+              os.system("grep -v \'#\' %s >> %s"%(tmp_out,bam_outpath))
+              os.system("rm %s"%tmp_out)
+       ref = open("/BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed","r")
+
+       
+       bam_outpath = "/BDATA/smkim/STR/pandepth/coverage_oribam/%s.coverage.merge.patho"%bam
+
+       while 1:
+              line = ref.readline()
+              if not line:break
+              chr,start,end,id = line.split()
+              tmp_out =  "/BDATA/smkim/STR/pandepth/coverage_oribam/%s.%s"%(bam,id)
+              os.system("samtools coverage -r %s:%s-%s %s > %s"%(chr,start,end,bam,tmp_out))
+              os.system("grep -v \'#\' %s >> %s"%(tmp_out,bam_outpath))
+              os.system("rm %s"%tmp_out)
+       
+main()
+
+######
+import glob
+import os
+import sys
+from multiprocessing import Pool
+
+bam = sys.argv[1]
+
+# 함수로 만든 각각의 작업을 분리
+def process_region(line):
+    chr, start, end, id, bam, outpath = line
+    tmp_out = "/BDATA/smkim/STR/pandepth/multi_test/%s.%s" % (bam, id)
+    os.system("samtools coverage -r %s:%s-%s %s > %s" % (chr, start, end, bam, tmp_out))
+    os.system("grep -v \'#\' %s >> %s" % (tmp_out, outpath))
+    os.system("rm %s" % tmp_out)
+
+def process_regions(file_path, bam, outpath):
+    with open(file_path, "r") as ref:
+        lines = [line.split() + [bam, outpath] for line in ref.readlines()]
+    return lines
+
+def main():
+    # 첫 번째 작업 목록 불러오기 (normal)
+    normal_outpath = "/BDATA/smkim/STR/pandepth/multi_test/%s.coverage.merge.normal" % bam
+    regions_normal = process_regions("/BDATA/smkim/STR/eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.onlywithID.bed", bam, normal_outpath)
+
+    # 두 번째 작업 목록 불러오기 (patho)
+    patho_outpath = "/BDATA/smkim/STR/pandepth/multi_test/%s.coverage.merge.patho" % bam
+    regions_patho = process_regions("/BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed", bam, patho_outpath)
+
+    # 병렬 처리할 프로세스 수 설정 (예: 4)
+    num_processes = 4
+    with Pool(num_processes) as pool:
+        # 병렬 처리 실행
+        pool.map(process_region, regions_normal)  # normal 작업
+        pool.map(process_region, regions_patho)  # patho 작업
+
+if __name__ == "__main__":
+    main()
+
+######
+
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *.bam | xargs -I {} -P 70 bash -c "python cov.py {}"
+
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *.bam | xargs -I {} -P 70 bash -c "python cov.py {}"
+
+cd /BDATA/smkim/STR/coverage_oribam/
+
+
+106
+cd /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+ls *.bam | xargs -I {} -P 70 bash -c "python /BDATA/smkim/STR/pandepth/cov.py {}"
+z
+cd /ADATA/smkim/pangenome/01.revio_refpanel/01.mapped
+
+ls *.bam | xargs -I {} -P 70 bash -c "python /BDATA/smkim/STR/pandepth/cov.py {}"
+
+109
+cd /SDATA/smkim/pangenome/01.revio_refpanel/01.mapping
+
+ls *.bam | xargs -I {} -P 70 bash -c "python /BDATA/smkim/STR/pandepth/cov.py {}"
+
+
+#207
+/ADATA/smkim/pangenome/01.revio_refpanel/01.mapped_fromfastq
+ls *.bam | xargs -I {} -P 70 bash -c "python cov.py {}"
+
+cat list.bam  | sed 's/_sorted.bam//g' | xargs -I {} -P 1 bash -c 'rsync -avhP /RDATA7/smkim/pangenome/revio_refpanel/01.mapped_fromfastq/{}*bam* ./'
+
+
+
+####### RFC1
+
+./trgt plot --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+       --vcf sample.sorted.vcf.gz \
+       --spanning-reads sample.spanning.sorted.bam \
+       --repeat-id RFC1 \
+       --image .svg
+
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+       --repeats /BDATA/smkim/STR/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
+       --vcf {}.vcf.gz \
+       --spanning-reads {}.spanning.bam \
+       --repeat-id RFC1 \
+       --image ../visual/RFC1.{}.svg
+
+
+ls *bam | sed 's/.spanning.sorted.bam//g' | xargs -I{} -P 60 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt plot \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed \
+--vcf {}.sorted.vcf.gz --spanning-reads {}.spanning.sorted.bam \
+--repeat-id RFC1 --image ../plot/RFC1.{}.svg --flank-len 30"
+
+ls *bam | sed 's/.spanning.sorted.bam//g' | xargs -I{} -P 60 bash -c "/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt plot \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed \
+--vcf {}.sorted.vcf.gz --spanning-reads {}.spanning.sorted.bam \
+--repeat-id RFC1 --image ./plot/RFC1.{}.svg --flank-len 30"
+
+
+
+
+## RFC1
+ls *gz | xargs -I {} -P 40 bash -c "bcftools query -f '%TRID\t%REF\t%ALT[\t%SAMPLE=%GT][\t%AL]\n' {} | grep RFC1 > RFC/{}.RFC"
+
+
+
+import re
+from collections import Counter
+
+# 패턴 목록 정의
+patterns = ["AAAAG", "AAAGG", "AAGGG", "AAGAG", "AGAGG", "AACGG", "GGGAC", "AAAGGG"]
+
+# 입력 데이터 예시
+data = {
+    "RFC1": "RFC1",
+    "REF": "AAAAAGAAAAGAAAAGAAAAGAAAAGAAAAGAAAAGAAAAGAAAAGAAAAGAAAAG",
+    "ALT": "AAAAAAAAGGAAAGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAAGGAAAGGAAAGGAAAGGAAAGGAAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAAGAAAAGAAAAGAAAAGAAAAG",
+    "SAMPLE_GT": "NIH23J3016218=0/1",
+    "AL": "55,576"
+}
+
+# 패턴이 등장하는 빈도를 세는 함수
+def count_patterns(sequence, patterns):
+    pattern_counts = Counter()
+    for pattern in patterns:
+        pattern_counts[pattern] = len(re.findall(pattern, sequence))
+    return pattern_counts
+
+# REF에서 첫 번째 'A'를 제거한 부분에서 패턴 빈도 계산
+ref_sequence = data["REF"][1:]  # 첫 번째 A 제거
+ref_counts = count_patterns(ref_sequence, patterns)
+
+# ALT에서 패턴 빈도 계산
+alt_counts = count_patterns(data["ALT"], patterns)
+
+# 결과 출력 형식 만들기
+output = f"{data['RFC1']}\t{data['REF']}\t{data['ALT']}\t{data['SAMPLE_GT']}\t{data['AL']}"
+
+# 패턴 빈도 추가
+for pattern in patterns:
+    output += f"\t{pattern}_REF:{ref_counts[pattern]}\t{pattern_ALT}:{alt_counts[pattern]}"
+
+# 결과 출력
+print(output)
+
+
+import re
+
+# 주어진 문자열
+import re
+
+# 주어진 문자열
+sequence = "AAAAAAAAGGAAAGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAGGGAAAAGGAAAGGAAAGGAAAGGAAAGGAAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAGGAAAAGAAAAGAAAAGAAAAGAAAAG"
+
+# 패턴을 찾고 해당 패턴을 제거하는 함수
+def count_and_remove_patterns(sequence, pattern):
+    count = 0
+    while True:
+        match = re.search(pattern, sequence)
+        if match:
+            count += 1
+            # 패턴이 발견되면 해당 패턴을 지우고 나머지 문자열에서 다시 탐색
+            sequence = sequence[match.end():]
+        else:
+            break
+    return count
+
+# 확인할 패턴 목록
+patterns = ["AAAAG", "AAAGG", "AAGGG", "AAGAG", "AGAGG", "AACGG", "GGGAC", "AAAGGG"]
+
+# 각 패턴의 개수 계산 및 출력
+for pattern in patterns:
+    count = count_and_remove_patterns(sequence, pattern)
+    print(f"'{pattern}' 패턴의 개수: {count}")
+
+
+
+
+
+###
+/BDATA/smkim/TOOLs/trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt genotype -t 90 \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/TOOLs/trgt/repeats/pathogenic_repeats.hg38.bed \
+--reads NIH23J3258034_sorted.bam \
+--output-prefix test/test_trgt_path
+
+
+
+

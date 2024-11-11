@@ -3,3 +3,39 @@ cloudgene
 HLA imputation server 점검
 
 
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=FILEID' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=FILEID" -O FILENAME && rm -rf /tmp/cookies.txt
+
+https://drive.google.com/file/d/19d0sNXBGwrajp8JKOgLNNWalQVDFc786/view?usp=sharing
+https://drive.google.com/file/d/19d0sNXBGwrajp8JKOgLNNWalQVDFc786/view?usp=share_link
+
+
+
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=19d0sNXBGwrajp8JKOgLNNWalQVDFc786' -O KHUbeta.zip
+
+gdown https://drive.google.com/file/d/19d0sNXBGwrajp8JKOgLNNWalQVDFc786
+
+gdown --id 19d0sNXBGwrajp8JKOgLNNWalQVDFc786
+
+
+/opt/cloudgene/pages/home.stache
+
+
+https://drive.google.com/file/d/1GHyeIbIT2N8Ryar84PBdAEwkfyRCgWVk/view?usp=sharing
+
+
+gdown https://drive.google.com/uc?id=1GHyeIbIT2N8Ryar84PBdAEwkfyRCgWVk
+
+
+https://drive.google.com/file/d/1csmY-97dFbWAzYPpVeUP-G1M1oRgaum7/view?usp=sharing
+
+
+gdown https://drive.google.com/uc?id=1csmY-97dFbWAzYPpVeUP-G1M1oRgaum7
+
+
+
+# minimac4
+
+https://drive.google.com/file/d/1UAC-72YE_wdpG44-dEDcyZHUvVFER8zD/view?usp=sharing
+
+
+gdown https://drive.google.com/uc?id=1UAC-72YE_wdpG44-dEDcyZHUvVFER8zD

@@ -552,3 +552,49 @@ cowplot::plot_grid(p1,p2,p3,nrow = 1,rel_widths = c(5,3,1)) -> p11
 gridExtra::grid.arrange(p11, bottom = "# of STRs",left = "Repeat Unit (RU length)")
 
 
+######### functional annotation
+str_match_score_freqeuncy <- read_table("~/Desktop/KU/@research/STR/02.compare/STR_type/str_match_score_frequency.txt")
+str_RU_count<- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.qcpass.common.RUcount.txt",header =T)
+str_id <- read.table("~/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt",header = T)
+
+
+ref_db <- readxl::read_xlsx("~/Desktop/KCDC/paper/STR/2023_guo_sup_2.xlsx",sheet = 1)
+head(ref_db)
+ref_db %>% select(chr,`STR start position (GRCh38)`,`STR end position (GRCh38)`,motif,`Reference tract length`,`Genomic annotation`,`Distance to nearest TSS`) -> ref_db
+colnames(ref_db) <- c("chrom","start","end","MOTIFS","Referencetractlength","anotation","DistancetoTSS")
+ref_db %>% mutate(STR_region = paste0(chrom,"_",start,"_",end)) -> ref_db
+
+head(ref_db)
+head(str_match_score_freqeuncy)
+head(str_RU_count)
+
+head(ref_db)
+head(str_id)
+str_id %>% dim()
+str_id %>% select(STR_region) %>% unique() -> c
+str_id %>% select(STR_region) %>% duplicated() -> c
+table(c)
+head(c)
+c$STR_region[,2]
+str_id  %>% filter(!(STR_region %in% c$STR_region))
+str_id  %>% filter(STR_region %in% c$STR_region[1])
+ref_db %>% left_join(str_id %>% select(STR,STR_region)) %>% na.omit() %>% 
+  left_join(str_match_score_freqeuncy) %>% #dim
+  filter(concordance < 0.5) %>% count(anotation) %>% head()
+  ggplot(aes(x=annotation))
+
+head(str_match_score_freqeuncy)
+
+str_match_score_freqeuncy %>% mutate(concordance_range = cut(concordance,breaks = c(-Inf, 0, seq(0.1, 0.9, by = 0.1), 1, Inf),
+                                                             labels = c("0", "(0,0.1)", "[0.1,0.2)", "[0.2,0.3)", "[0.3,<0.4)",
+                                                                        "[0.4,0.5)", "[0.5,<0.6)", "[0.6,0.7)", "[0.7,0.8)", 
+                                                                        "[0.8,0.9)", "[0.9,1)", "1"),right = FALSE)) %>% #head()
+  count(concordance_range) %>% #head()
+  ggplot(aes(x=factor(concordance_range,levels= c("0", "(0,0.1)", "[0.1,0.2)", "[0.2,0.3)", "[0.3,<0.4)",
+                                                  "[0.4,0.5)", "[0.5,<0.6)", "[0.6,0.7)", "[0.7,0.8)", 
+                                                  "[0.8,0.9)", "[0.9,1)", "1")),y=n)) + 
+  geom_bar(stat = 'identity') + 
+  labs(x="Concordance","# of STRs") + 
+  scale_y_break(c(15000, 100000))#,#ticklabels = c(0,5000,10000,15000,94000,96000))
+  
+                                                             

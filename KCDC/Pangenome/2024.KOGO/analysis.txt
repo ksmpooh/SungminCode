@@ -1,0 +1,283 @@
+######
+wgs vs longread vs nanopore: 17 sample
+
+/ADATA/smkim/pangenome/02.variant.calling/deepvariant
+
+
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli -d Revio_kchip --config DeepVariant --list /BDATA/smkim/pangenome/99.datacheck/Revio_kchip_gvcf_17samples.txt | bcftools view - | bgzip -c > Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli -d Revio_kchip --config DeepVariant --list /BDATA/smkim/pangenome/99.datacheck/Revio_kchip_gvcf_17samples.txt | bcftools view - | bgzip -c > Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+revio.17sample.gvcf.txt
+nanopore.all.sample.gvcf.txt
+wgs.17sample.gvcf.txt
+
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant --list revio.17sample.gvcf.txt -t 60 | bcftools view - | bgzip -c > kogo_17sample/Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant *.gvcf.gz | bcftools view - | bgzip -c > ../kogo_17sample/Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+/BDATA/smkim/TOOLs/GLnexus/glnexus_cli --config DeepVariant --list wgs.17.sample.txt -t 60 | bcftools view - | bgzip -c > ../kogo_17sample/Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+./glnexus_cli --config DeepVariant --bed ALDH2.bed \
+    dv_1000G_ALDH2_gvcf/*.g.vcf.gz > dv_1000G_ALDH2.bcf
+
+
+
+
+bcftools view -f PASS
+
+
+mkdir pass
+ls *.vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 66 bash -c "bcftools view -f PASS {}.vcf.gz | bgzip -c > pass/{}.PASS.vcf.gz;tabix -f -p vcf pass/{}.PASS.vcf.gz"
+
+
+
+
+
+
+
+
+#
+sed 's/.gvcf/.PASS.vcf/g' ../../revio.17sample.gvcf.txt | cut -d"/" -f 2 |
+sed 's/.gvcf/.PASS.vcf/g' ../../wgs.17sample.gvcf.txt | cut -d"/" -f 2 | xargs -I {} -P 2 bash -c "rsync -avhP {} ../../kogo_17sample/"
+
+
+xargs -I {} -P 20 bash -c "bcftools stats --fasta-ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {} > ../vcf.stats/{}.stats"
+
+ls *gz | xargs -I {} -P 60 bash -c "tabix -f -p vcf {}"
+
+ls *gz | xargs -I {} -P 60 bash -c "bcftools stats --fasta-ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {} > ./vcf.pass.stats/{}.stats"
+
+
+### depth 체크
+pandepth
+/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth
+
+
+## bam
+#pacbio
+
+103번
+/DATA/smkim/pangenome/01.revio_refpanel/01.mapping_withunmapped # 6개 fastq to bam
+
+
+## ref_panel 18개 origninal 
+109번
+/SDATA/smkim/pangenome/01.revio_refpanel/01.mapping/ # 8개 ori
+106번
+/ADATA/smkim/pangenome/01.revio_refpanel/01.mapped/ *4개 ori
+/BDATA/smkim/pangenome/01.revio_refpanel/01.mapping/ *6개 ori
+
+## kchip revio with unmapped
+103번
+/SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/ # 14개
+/BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped/ # 34개
+
+## nanopore 
+205:
+/BDATA/smkim/pangenome/00.rawDATA/
+
+
+
+./pandepth -q 20 -i NIH23F1013274.pbmm2_hg38_withunmapped.bam -o testout -t 1 -r human_GRCh38_no_alt_analysis_set.basic.fasta -c
+./pandepth -q 20 -i NIH23F1013274.pbmm2_hg38_withunmapped.bam -o testout -t 4 -r human_GRCh38_no_alt_analysis_set.basic.fasta -c
+
+
+-q: mapping quality 20으로 놓고 계산
+-t가 thread에요
+-c가 CG contents 계산
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+mkdir bam.stats.pandepth
+
+ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i {} -o bam.stats.pandepth/{}.pandepth -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+#q10
+ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -q 10 -i {} -o bam.stats.pandepth/{}.pandepth_q10 -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+#q20
+ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -q 20 -i {} -o bam.stats.pandepth/{}.pandepth_q20 -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+#q30
+ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -q 30 -i {} -o bam.stats.pandepth/{}.pandepth_q30 -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+
+
+######## VCF quality check
+
+
+
+ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -q 30 -i {} -o {}.pandepth_q30 -t 60 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+#####
+Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz 
+Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+
+bcftools norm -m -any Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'| bcftools +fill-tags -Oz -o Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'| bcftools +fill-tags -Oz -o Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+
+
+bcftools norm -m -any Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'| bcftools +fill-tags -Oz -o Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'| bcftools +fill-tags -Oz -o Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+
+
+
+bcftools norm -m -any Nanopore_repanel.merge.rmINFO_autosomal.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' |  bcftools +fill-tags -Oz -o Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlyindel.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Revio_kchip.merge.deep_PASS_autosomal.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT'| bcftools +fill-tags -Oz -o Revio_kchip.merge.deep_PASS_autosomal.norm_setID.onlyindel.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+bcftools norm -m -any Nanopore_repanel.merge.rmINFO_autosomal.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' |  bcftools +fill-tags -Oz -o Nanopore_repanel.merge.rmINFO_autosomal.norm_setID.onlyindel.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE
+
+
+ls Pangenome*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 3 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o merge/{}.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+ls Pangenome*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 3 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o merge/{}.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+
+
+
+
+#AF,AC,AN,F_MISSING,NS,HWE"
+ls *.only*gz | xargs -I{} -P 2 bash -c "bcftools query -f '%ID\t%QUAL\t%F_MISSING\t%NS\t%AN\t%AF\t%AC\t%HWE\t[%DP\t]\n' {} > {}.AF_stat.txt"
+ls *.only*gz | xargs -I{} -P 2 bash -c "bcftools query -f '%ID\t%QUAL\t%F_MISSING\t%NS\t%AN\t%AF\t%AC\t%HWE\t[%DP\t]\n' {} > stats/{}.AF_stat.txt"
+
+
+
+cd /ADATA/smkim/pangenome/02.variant.calling/deepvariant
+
+awk '{print $1"\t"$4}' 17smaple.info > kogo_17sample/sampleID_change/RevioToKBAv1.ID.txt
+awk '{print $2"\t"$4}' 17smaple.info > kogo_17sample/sampleID_change/NanoporeToKBAv1.ID.txt
+awk '{print $3"\t"$4}' 17smaple.info > kogo_17sample/sampleID_change/IlluminaToKBAv1.ID.txt
+
+
+Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz
+
+
+cd /ADATA/smkim/pangenome/02.variant.calling/deepvariant/kogo_17sample
+bcftools reheader -s sampleID_change/RevioToKBAv1.ID.txt Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view | bgzip -c > sampleID_change/Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf.gz
+bcftools reheader -s sampleID_change/NanoporeToKBAv1.ID.txt Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view | bgzip -c > sampleID_change/Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf.gz
+bcftools reheader -s sampleID_change/IlluminaToKBAv1.ID.txt Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.vcf.gz |bcftools view | bgzip -c > sampleID_change/Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf.gz
+
+ls Pangenome*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 3 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o only/{}.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+ls Pangenome*gz | sed 's/.vcf.gz//g' | xargs -I {} -P 3 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o only/{}.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+
+
+sampleID_change/individual/
+
+ls *pbmm2*gz | grep NIH|sed 's/.vcf.gz//g' | xargs -I {} -P 17 bash -c "bcftools reheader -s sampleID_change/RevioToKBAv1.ID.txt {}.vcf.gz |bcftools view | bgzip -c > sampleID_change/individual/{}.sampleID.vcf.gz"
+ls *minimap2*gz | grep NIH|sed 's/.vcf.gz//g' | xargs -I {} -P 17 bash -c "bcftools reheader -s sampleID_change/NanoporeToKBAv1.ID.txt {}.vcf.gz |bcftools view | bgzip -c > sampleID_change/individual/{}.sampleID.vcf.gz"
+ls *WGS*gz | grep NIH|sed 's/.vcf.gz//g' | xargs -I {} -P 17 bash -c "bcftools reheader -s sampleID_change/IlluminaToKBAv1.ID.txt {}.vcf.gz |bcftools view | bgzip -c > sampleID_change/individual/{}.sampleID.vcf.gz"
+
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 60 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v snps | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o only/{}.norm_setID.onlySNP.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 60 bash -c "bcftools norm -m -any {}.vcf.gz |bcftools view -v indels | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o only/{}.norm_setID.onlyindels.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 60 bash -c "bcftools view --max-alleles 2 -v snps {}.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' -Oz -o ./onlySNPrmdup/{}.rmdup.onlySNP.vcf.gz"
+
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 3 bash -c "bcftools view --max-alleles 2 -v snps -t ^chrM,chrX,chrY {}.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o ./onlySNPrmdup/tag/{}.rmdup.onlySNP_withtag.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 3 bash -c "bcftools view --max-alleles 2 -v indels -t ^chrM,chrX,chrY {}.vcf.gz | bcftools annotate --set-id '%CHROM\_%POS\_%REF\_%ALT' | bcftools +fill-tags -Oz -o ./onlySNPrmdup/tag/{}.rmdup.onlyindels_withtag.vcf.gz -- -t AF,AC,AN,F_MISSING,NS,HWE"
+
+
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 3 bash -c "bcftools view -t ^chrM,chrX,chrY {}.vcf.gz -Oz -o ./{}.rmMXY.vcf.gz"
+
+ls *gz | sed "s/.vcf.gz//g" | xargs -I{} -P 60 bash -c "bcftools view -t ^chrM,chrX,chrY {}.vcf.gz -Oz -o ./rmMXY/{}.rmMXY.vcf.gz"
+
+
+#-t ^chrM,chrX,chrY
+
+ls *gz |xargs -I{} -P 60 bash -c "tabix -f -p vcf {}"
+ls *gz |xargs -I{} -P 60 bash -c "bcftools stats {}.stats"
+
+SnpSift concordance -v ../0002.vcf ../0003.vcf > QulityMetricx_longshort.txt
+
+SnpSift concordance -v ../NIH23F1013274.pbmm2_hg38.Deepvariant_Variantcalling.PASS.sampleID.vcf.gz ../NIH23O8118727_sorted.Nanopore.minimap2_hg38.Deepvariant_Variantcalling.PASS.sampleID.vcf.gz > test.concor.txt
+SnpSift concordance -v NIH23F1013274.pbmm2_hg38.Deepvariant_Variantcalling.PASS.sampleID.vcf NIH23O8118727_sorted.Nanopore.minimap2_hg38.Deepvariant_Variantcalling.PASS.sampleID.vcf > test.concor.txt
+
+
+
+SnpSift concordance -v Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf > wgs.revio.txt
+mv concordance_Pangenome_Pangenome.summary.txt concordance_wgs_revio.summary.txt
+mv concordance_Pangenome_Pangenome.by_sample.txt concordance_wgs_revio.by_sample.txt
+
+SnpSift concordance -v Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf > wgs.nanopore.txt
+mv concordance_Pangenome_Pangenome.summary.txt concordance_wgs_nanopore.summary.txt
+mv concordance_Pangenome_Pangenome.by_sample.txt concordance_wgs_nanopore.by_sample.txt
+
+
+SnpSift concordance -v Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.vcf > revio.nanopore.txt
+mv concordance_Pangenome_Pangenome.summary.txt concordance_revio_nanopore.summary.txt
+mv concordance_Pangenome_Pangenome.by_sample.txt concordance_revio_nanopore.by_sample.txt
+
+
+bcftools isec -p inter3_SNP Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlySNP.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlySNP.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlySNP.vcf.gz
+bcftools isec -p inter3_INDEL --nfiles 3 Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlyindels.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlyindels.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.norm_setID.onlyindels.vcf.gz
+
+
+
+
+cd /ADATA/smkim/pangenome/02.variant.calling/deepvariant/kogo_17sample/sampleID_change/onlySNPrmdup
+
+bcftools isec -p inter3_onlySNPrmdup --nfiles 3 Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP.vcf.gz Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP.vcf.gz
+
+cd /ADATA/smkim/pangenome/02.variant.calling/deepvariant/kogo_17sample/sampleID_change/onlySNPrmdup/tag
+conda activate bcftools
+
+bcftools isec -p inter3_onlySNPrmdup --nfiles 3 Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz
+#bcftools isec -p inter3_onlySNPrmdup_type2 --nfiles =3 Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlySNP_withtag.vcf.gz
+
+
+bcftools isec -p inter3_onlyINDELrmdup --nfiles 3 Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz
+#bcftools isec -p inter3_onlyINDELrmdup_type2 --nfiles =3 Pangenome.wgs.same_17sample.bwa_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz Pangenome.Revio_kchip.same_17sample.pbmm2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz Pangenome.nanopore.same_17sample.minimap2_hg38.DeepVariant.GLnexus_Jointcalling.sampleID.rmdup.onlyindels_withtag.vcf.gz
+
+
+
+#../inter3_onlySNPrmdup/0000.vcf  ../inter3_onlySNPrmdup/0001.vcf  ../inter3_onlySNPrmdup/0002.vcf
+#../inter3_onlyOnlyrmdup/0000.vcf  ../inter3_onlyOnlyrmdup/0001.vcf  ../inter3_onlyOnlyrmdup/0002.vcf
+
+
+cd /ADATA/smkim/pangenome/02.variant.calling/deepvariant/kogo_17sample/sampleID_change/onlySNPrmdup/tag/concordance
+
+conda activate snpeffsift
+SnpSift concordance -v ../inter3_onlySNPrmdup/0000.vcf ../inter3_onlySNPrmdup/0001.vcf > wgs.revio.txt
+mv concordance_0000_0001.summary.txt concordance_wgs_revio.summary.txt
+mv concordance_0000_0001.by_sample.txt concordance_wgs_revio.by_sample.txt
+
+SnpSift concordance -v ../inter3_onlySNPrmdup/0000.vcf ../inter3_onlySNPrmdup/0002.vcf > wgs.nanopore.txt
+mv concordance_0000_0002.summary.txt concordance_wgs_nanopore.summary.txt
+mv concordance_0000_0002.by_sample.txt concordance_wgs_nanopore.by_sample.txt
+
+
+SnpSift concordance -v ../inter3_onlySNPrmdup/0001.vcf ../inter3_onlySNPrmdup/0002.vcf > revio.nanopore.txt
+mv concordance_0001_0002.summary.txt concordance_revio_nanopore.summary.txt
+mv concordance_0001_0002.by_sample.txt concordance_revio_nanopore.by_sample.txt
+
+### Indel
+
+SnpSift concordance -v ../inter3_onlyINDELrmdup/0000.vcf ../inter3_onlyINDELrmdup/0001.vcf > wgs.revio.indel.txt
+mv concordance_0000_0001.summary.txt concordance_wgs_revio.summary.indel.txt
+mv concordance_0000_0001.by_sample.txt concordance_wgs_revio.by_sample.indel.txt
+
+SnpSift concordance -v ../inter3_onlyINDELrmdup/0000.vcf ../inter3_onlyINDELrmdup/0002.vcf > wgs.nanopore.indel.txt
+mv concordance_0000_0002.summary.txt concordance_wgs_nanopore.summary.indel.txt
+mv concordance_0000_0002.by_sample.txt concordance_wgs_nanopore.by_sample.indel.txt
+
+
+SnpSift concordance -v ../inter3_onlyINDELrmdup/0001.vcf ../inter3_onlyINDELrmdup/0002.vcf > revio.nanopore.indel.txt
+mv concordance_0001_0002.summary.txt concordance_revio_nanopore.summary.indel.txt
+mv concordance_0001_0002.by_sample.txt concordance_revio_nanopore.by_sample.indel.txt
+
+
+
+
+
+
+
+ls *.only*gz | xargs -I{} -P 6 bash -c "bcftools query -f '%ID\t%QUAL\t%F_MISSING\t%NS\t%AN\t%AF\t%AC\t%HWE\t[%DP\t]\n' {} > stats/{}.AF_stat.txt"
+1, 2, 7

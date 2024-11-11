@@ -1,0 +1,32 @@
+#ls NIH*bam | xargs -I {} -P 17 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i {} -o bam.stats.pandepth/{}.pandepth -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+
+/RDATA6/HLAref/01.cram
+
+/BDATA/smkim/HLAinfer/bam.depth
+
+
+ls NIH*bam | xargs -I {} -P 17 bash -c "pandepth -i {} -o bam.stats.pandepth/{}.pandepth -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -c"
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta
+
+ls NIH*cram | xargs -I {} -P 10 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i {} -o /BDATA/smkim/HLAinfer/bam.depth/{}.pandepth -t 5 -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta"
+
+## 
+ls NIH*cram | xargs -I {} -P 10 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i {} -o bam.depth.pandepth/{}.pandepth -t 5 -r /BDATA/dongmun/ref/human_GRCh38_no_alt_analysis_set.fasta"
+
+
+# 기본 코드
+pandepth -i in.cram -o out.result -t 5 -r human_GRCh38_no_alt_analysis_set.fasta
+
+# 멀티 프로세싱
+ls NIH*cram | xargs -I {} -P 10 bash -c "pandepth -i {} -o bam.depth.pandepth/{}.pandepth -t 5 -r human_GRCh38_no_alt_analysis_set.fasta"
+
+
+ls NIH*cram | xargs -I {} -P 10 bash -c "pandepth -i {} -o bam.depth.pandepth/{}.pandepth -t 5 -r human_GRCh38_no_alt_analysis_set.fasta"
+
+/BDATA/smkim/hlaref_bamstats
+
+/BDATA/smkim/ref/human_GRCh38_no_alt_analysis_set.fasta
+
+ls NIH*cram | xargs -I {} -P 12 bash -c "/BDATA/smkim/TOOLs/PanDepth-2.25-Linux-x86_64/pandepth -i {} -o /BDATA/smkim/hlaref_bamstats/{}.pandepth -t 5 -r /BDATA/smkim/ref/human_GRCh38_no_alt_analysis_set.fasta"

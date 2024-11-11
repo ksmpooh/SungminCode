@@ -65,7 +65,7 @@ df_filter_withtype %>% mutate(type = ifelse(type == "./.","Missing value",type))
 
 library(unikn)
 
-palette(usecol(pal_unikn, n = 9))    
+palette(usecol(pal_unikn, n = 9))
 
 palette(rainbow(n = 9)) -> a
 c("grey",rev(a)) -> a
@@ -132,6 +132,10 @@ df %>% select(-CHROM,-POS,-STRUC,-ALT) -> df_mc_ap_am
 head(df_mc_ap_am)
 
 df_mc_ap_am %>% filter(!(AP %in% c(".","NA"))) %>% filter(MC != 0) %>% mutate(AP = as.numeric(AP)) -> df_mc_ap_am
+#df_mc_ap_am %>% filter(!(AP %in% c(".","NA"))) %>% filter(MC == 0) -> trgt_check
+df_mc_ap_am %>% filter(str_detect(MC,"_")) -> trgt_check
+#head(trgt_check)
+#write.table(trgt_check,"~/Desktop/KU/@research/STR/figure/trgt_complex_str_basic.info.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 head(df_mc_ap_am)
 
 df_mc_ap_am %>% ggplot(aes(x=ID,y=AP)) + 
@@ -180,9 +184,10 @@ load(file="~/Desktop/KU/@research/STR/Rdata/longread.tgrt.66sample.qc.info.RData
 
 trgt <- tgrt
 tgrt <- NULL
-
+head(tgrt)
 head(eh)
 head(trgt)
+
 eh %>% select()
 eh %>% filter(FILTER == "PASS") %>% select(-type,-ADSP,-ADFL,-ADIR)
 
@@ -199,6 +204,7 @@ eh %>% filter(FILTER == "PASS") %>% select(ID,STR_ID,type) %>% mutate(type1 = st
 
 head(eh_pass_type)
 head(eh_pass_gt)
+
 eh_pass_gt %>% select(-FILTER) %>% left_join(eh_pass_type) -> eh_pass
 
 head(eh_pass)
@@ -215,7 +221,7 @@ trgt %>% filter(AP >=0.8) %>% dim()
 trgt %>% filter(MC == 0) %>% head(10)
 
 trgt %>% filter(!(AP %in% c(".","NA"))) %>% filter(MC != 0) %>% select(-AM) %>% #dim()
-  mutate(AP = as.numeric(AP)) %>% filter(AP >=0.8) ->trgt_pass
+  mutate(AP = as.numeric(AP)) %>% filter(AP >=0.8) -> trgt_pass
 
 
 
@@ -411,7 +417,7 @@ colnames(ref_db) <- c("chrom","start","end","MOTIFS","Referencetractlength","ano
 ref_db %>% mutate(STR_region = paste0(chrom,"_",start,"_",end)) -> ref_db
 
 ru <- read_table("/Users/ksmpooh/Desktop/KU/@research/STR/02.compare/STR_type/STR.type.pass.IDregion.txt")
-
+dim(ru)
 
 head(ru)
 head(ref_db)
@@ -434,7 +440,7 @@ ru %>% left_join(ref_db) %>% mutate(anotation = ifelse(is.na(anotation),"chrX",a
                   segment.size = .7, 
                   show.legend = FALSE) +
   coord_polar('y') +
-  theme_void())
+  theme_void()
 
   
 

@@ -1,3 +1,6 @@
+### 아 이건 안함.. bcftools로 바로 분석함
+##
+#ls *gz| sed 's/.vcf.gz//g' | xargs -I{} -P 40 bash -c "bcftools query -f '%CHROM\t%POS\t%REPID\t%RU\t%INFO/REF\t%ALT\t%FILTER[\t%GT\t%SO\t%ADSP\t%ADFL\t%ADIR]\n' {}.vcf.gz > Quality_check/{}.qcmt.txt"
 #######AD MC extract
 # python3 script.py [input TRGT VCF]
 
@@ -56,7 +59,7 @@ def main():
     #inVCF_long = wDir + "Revio.STR.pbmm2_hg38_withunmapped_trgt_genotype_gangstr.sorted.merged_withall.vcf.gz"
     #inVCF_short = wDir + "Shortread.STR.goast_hg38_withunmapped_EH_genotype_gangstr.merged_withall.vcf.gz"
     inVCF = sys.argv[1]
-    outDir = "./Quality_check/"
+    outDir = "./Quality_check_pathogenic/"
     if Path(outDir).exists() == False:
         os.system("mkdir %s"%outDir)
     
@@ -77,7 +80,7 @@ def main():
 
     ## make df
     print("make df......")
-    mk_df_out(long_out,long_mc,long_ap,long_am)
+    mk_df_out(short_out,short_mc,long_ap,long_am)
 
 
 

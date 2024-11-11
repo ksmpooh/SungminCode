@@ -1,0 +1,203 @@
+vep -i input_file.bed --assembly GRCh38 --plugin STR --species homo_sapiens --format bed -o output_file.vep
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+vep -i pathogenic_repeats.hg38.bed.bed --assembly GRCh38 --plugin STR --species homo_sapiens --format bed -o test.vep
+vep -i test.vcf --assembly GRCh38 --species homo_sapiens -o test.vep
+
+##
+cd /BDATA/smkim/STR/db
+python3
+
+def bed_to_vcf(bed_file, vcf_file):
+    with open(bed_file, 'r') as bed, open(vcf_file, 'w') as vcf:
+        vcf.write("##fileformat=VCFv4.2\n")
+        vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+        
+        for line in bed:
+            fields = line.strip().split()
+            chrom = fields[0]
+            start = fields[1]
+            end = fields[2]
+            info = fields[3].replace("ID=", "")
+            vcf.write(f"{chrom}\t{start}\t{info.split(';')[0]}\tN\t<STR>\t.\t.\t{info}\n")
+
+#bed_to_vcf("eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed", "/BDATA/smkim/STR/db/annotation/eh.v5_w_gangstr.v13.target.region.sort.vcf")
+bed_to_vcf("catalog.GRCh38.with_adjacent_repeats.TRGT.bed", "/BDATA/smkim/STR/db/annotation/catalog.GRCh38.with_adjacent_repeats.TRGT.vcf")
+
+## v2
+def bed_to_vcf(bed_file, vcf_file):
+    with open(bed_file, 'r') as bed, open(vcf_file, 'w') as vcf:
+        vcf.write("##fileformat=VCFv4.2\n")
+        vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+
+        for entry in bed:
+            # 탭을 기준으로 데이터를 분리합니다.
+            fields = entry.split("\t")
+            chrom = fields[0]
+            pos_start = fields[1]
+            pos_end = fields[2]
+
+            # INFO 필드 정보를 추출합니다.
+            info_data = fields[3].split(";")
+            var_id = info_data[0].split("=")[1]
+            motifs = info_data[1].split("=")[1]
+            struc = info_data[2].split("=")[1].strip()
+
+            # VCF 형식으로 변환하여 출력합니다.
+            info_field = f"MOTIF={motifs};STRUC={struc};END={pos_end}"
+            #vcf.write(f"{chrom}\t{pos_start}\t{var_id}_STR\tN\t<STR>\t.\t.\t{info_field}")
+            vcf.write("%s\t%s\t%s\tN\t<STR>\t.\t.\t%s\n"%(chrom,pos_start,var_id,info_field))
+
+bed_to_vcf("catalog.GRCh38.with_adjacent_repeats.TRGT.bed", "/BDATA/smkim/STR/db/annotation/catalog.GRCh38.with_adjacent_repeats.TRGT.withEND.vcf")
+bed_to_vcf("eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed", "/BDATA/smkim/STR/db/annotation/eh.v5_w_gangstr.v13.target.region.sort.withEND.vcf")
+
+##
+cd /BDATA/smkim/STR/db/annotation
+vep -i eh.v5_w_gangstr.v13.target.region.sort.vcf --cache --assembly GRCh38 --species homo_sapiens -o eh.v5_w_gangstr.v13.target.region.sort.testfork.vep --offline --fork 60
+vep -i catalog.GRCh38.with_adjacent_repeats.TRGT.vcf --cache --assembly GRCh38 --species homo_sapiens -o catalog.GRCh38.with_adjacent_repeats.TRGT.vep --offline --fork 60
+
+
+vep -i catalog.GRCh38.with_adjacent_repeats.TRGT.withEND.vcf --cache --assembly GRCh38 --species homo_sapiens -o catalog.GRCh38.with_adjacent_repeats.TRGT.withEND.vep --offline --fork 60 --force_overwrite
+vep -i eh.v5_w_gangstr.v13.target.region.sort.withEND.vcf --cache --assembly GRCh38 --species homo_sapiens -o eh.v5_w_gangstr.v13.target.region.sort.withEND.vep --offline --fork 60 --force_overwrite
+##
+
+## Annovar
+/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed
+/BDATA/smkim/STR/db/annotation/annova.test
+perl table_annovar.pl str.avinput humandb/ -buildver hg38 -out str_annotation -remove -protocol refGene -operation g -nastring . -otherinfo
+perl table_annovar.pl --bedfile /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/annova.test_refGene -remove -protocol refGene -operation r -nastring . -otherinfo
+
+./table_annovar.pl /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/annova.test_refGen -remove -protocol refGene,cytoBand,dbnsfp30a -operation g,r,f -nastring .  --bedfile 
+
+./table_annovar.pl /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.bed humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/annova.test_nestedRepeats -remove -protocol nestedRepeats -operation r -nastring .
+
+
+
+cd /BDATA/smkim/STR/db
+
+awk '{print $1"\t"$2"\t"$3"\t.\t."}' catalog.GRCh38.with_adjacent_repeats.TRGT.bed > catalog.GRCh38.with_adjacent_repeats.TRGT.forAnnovar
+awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6}' catalog.GRCh38.with_adjacent_repeats.TRGT.bed > catalog.GRCh38.with_adjacent_repeats.TRGT.forAnnovar
+awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6}' input.bed > input.avinput
+
+/BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.forAnnovar
+/BDATA/smkim/STR/db/annotation
+
+./table_annovar.pl /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.forAnnovar humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/anno.test -remove -protocol refGene,cytoBand,genomicSuperDups -operation g,r,r -nastring . -otherinfo
+
+
+./annotate_variation.pl -buildver hg38 -downdb genomicSuperDups humandb/
+
+./table_annovar.pl /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.forAnnovar humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/anno.test -remove -protocol refGene,cytoBand,genomicSuperDups -operation g,r,r -nastring . -otherinfo
+
+./table_annovar.pl /BDATA/smkim/STR/db/annotation/catalog.GRCh38.with_adjacent_repeats.TRGT.withEND.vcf humandb/ -buildver hg38 -out /BDATA/smkim/STR/db/annotation/catalog.GRCh38.with_adjacent_repeats.TRGT.withEND.annovar -remove -protocol refGene,cytoBand,genomicSuperDups -operation g,r,r -nastring . -vcfinput
+
+
+
+### reference allele 찾기
+
+chr1    10000    10000    A    T
+chr2    20000    20000    G    C
+
+bedtools getfasta -fi reference_genome.fa -bed input.bed -fo output.fasta
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+bedtools getfasta -fi /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta -bed output.bed -fo output.fasta
+
+
+cat eh.v5_w_gangstr.v13.polymorphic.JSONtoBED.bed catalog.GRCh38.with_adjacent_repeats.TRGT.NA.bed | sort | uniq -c | awk '{print $2"\t"$3"\t"$4"\t"$5}' > db.merge.all.bed
+
+
+import csv
+
+# 입력 BED 파일과 출력 BED 파일 경로 설정
+input_bed = "db.merge.all.bed"    # 입력 BED 파일 경로
+output_bed = "output.bed"  # 출력 BED 파일 경로
+output_bed_ref = "output_ref.bed"
+
+# 출력 BED 파일 열기 (쓰기 모드)
+with open(output_bed, 'w', newline='') as output_file, open('output_bed_ref', 'w', newline='') as output_file_ref:
+    bed_writer = csv.writer(output_file, delimiter='\t')
+    bed_ref_writer = csv.writer(output_file_ref, delimiter='\t')
+    
+    # 입력 BED 파일 열기 (읽기 모드)
+    with open(input_bed, 'r') as bed_file:
+        bed_reader = csv.reader(bed_file, delimiter='\t')
+        
+        # 각 행에 대해 처리
+        for row in bed_reader:
+            chrom = row[0]  # 염색체 번호
+            try:
+                start = int(row[1])  # 시작 위치
+                end = int(row[2])    # 끝 위치
+            except ValueError:
+                # 숫자가 아닌 경우 오류 처리
+                print(f"잘못된 숫자 형식: {row}")
+                continue
+            
+            # 중간 위치 계산 (정수로 변환)
+            middle = (start + end) // 2
+            ##ID=chr10_100001401_100001413;MOTIFS=TTG;STRUC=(TTG)n
+            id = row[3].split(";")[0].split("=")[1]
+
+            # 중간 위치를 새로운 시작과 끝으로 설정
+            bed_writer.writerow([chrom, middle, middle + 1])
+            bed_ref_writer.writerow([chrom, middle, middle + 1,id])
+
+
+print(f"새로운 중간 위치 BED 파일 생성 완료: {output_bed}")
+
+
+###
+import re
+
+# 입력 FASTA 파일 경로 및 출력 VCF 파일 경로
+input_fasta = "output.fasta"
+output_vcf = "output.vcf"
+
+# VCF 파일 헤더 작성
+vcf_header = """##fileformat=VCFv4.2
+##source=FASTA_to_VCF
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"""
+
+# 참조 염기 서열은 'REF'로 제공되지는 않음 -> 추후에 외부 데이터로 업데이트가 필요
+reference = '0'
+
+# VCF 파일 작성
+with open(input_fasta, 'r') as fasta_file, open(output_vcf, 'w') as vcf_file:
+    vcf_file.write(vcf_header)
+    
+    lines = fasta_file.readlines()
+    for i in range(0, len(lines), 2):  # FASTA는 두 줄씩 처리 (위치, 염기)
+        position_line = lines[i].strip()
+        alt_allele = lines[i + 1].strip()  # 변이 염기
+        
+        # 염색체와 위치 정보 추출 (정규 표현식)
+        match = re.match(r'>(chr[\w]+):(\d+)-(\d+)', position_line)
+        if match:
+            chrom = match.group(1)  # 염색체
+            pos = match.group(2)    # 변이 위치
+
+            # VCF 형식에 맞춰 데이터 작성 (ID는 '.', REF는 기본적으로 'N'으로 설정)
+            vcf_file.write(f"{chrom}\t{pos}\t.\t{alt_allele}\t{reference}\t.\t.\t.\n")
+
+print(f"VCF 파일 생성 완료: {output_vcf}")
+
+###
+/BDATA/smkim/STR/db/output.vcf
+/BDATA/smkim/STR/db/output.vcf.avinput
+
+convert2annovar.pl -format vcf4 output.vcf > ex2output.vcf.
+/BDATA/smkim/TOOLs/annovar/annovar/convert2annovar.pl -format vcf4 output.vcf > output.vcf.avinput
+
+
+table_annovar.pl /BDATA/smkim/STR/db/output.vcf.avinput humandb/ -buildver hg38 -out myanno -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f -nastring . -csvout -polish -xref example/gene_xref.txt
+
+
+./annotate_variation.pl -geneanno -dbtype refGene -buildver hg38 /BDATA/smkim/STR/db/output.vcf.avinput ./humandb/
+
+
+
+./annotate_variation.pl -regionanno -dbtype cytoBand -buildver hg38 /BDATA/smkim/STR/db/output.vcf.avinput ./humandb/
+

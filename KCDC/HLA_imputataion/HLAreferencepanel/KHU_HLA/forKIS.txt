@@ -1,0 +1,259 @@
+bcftools annotate --rename-chrs chr_conversion.txt input.vcf -o output_chr6.vcf
+
+-	Create bcf files
+mkdir bcfs  legends  m3vcfs
+
+
+/BDATA/smkim/JG.HLAimputation/KHU/forKIS/01.format
+
+whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz
+bcftools view whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz -O b -o ../01.format/minimac4/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.bcf
+bcftools index ../01.format/minimac4/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.bcf
+
+
+
+
+-	Create m3vcf files
+Minimac3 --refHaps [input].vcf.gz --processReference --prefix m3vcfs/[output] --rsid
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz --processReference --prefix ../01.format/minimac4/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected --rsid
+
+- make header
+nano header
+id position a0 a1 all.aaf
+
+-	Create legend files
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ../01.format/minimac4/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' |  bgzip > ../01.format/minimac4/legends/whole.eagle.phased.sampleQC.AC.legend.gz 
+
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ../01.format/minimac4/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > ../01.format/minimac4/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.legend.gz 
+
+
+zip -r archive_name.zip folder_name/
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' |  bgzip > ./minimac4_format/legends/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.legend.gz 
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ./minimac4_format/bcfs/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > ./minimac4_format/legends/KMHCreferencepanel.imgt3320.520.withKBA.bglv4.merge_HLAtype_AA.bgl.phased.fill.legend.gz 
+
+
+zip -r KHUbeta.zip minimac4
+
+
+
+
+
+
+### chr6
+
+bcftools annotate --rename-chrs chr_conversion.txt input.vcf -o output_chr6.vcf
+
+-	Create bcf files
+mkdir bcfs  legends  m3vcfs
+
+
+/BDATA/smkim/JG.HLAimputation/KHU/forKIS/01.format
+
+bcftools annotate --rename-chrs rm.chr whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz -Oz -o whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.vcf.gz
+whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.vcf.gz
+
+bcftools view whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.vcf.gz -O b -o ../01.format/minimac4_chr6/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.bcf
+
+
+-	Create m3vcf files
+Minimac3 --refHaps [input].vcf.gz --processReference --prefix m3vcfs/[output] --rsid
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.vcf.gz --processReference --prefix ../01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6 --rsid --chr chr6 --cpus 20
+
+- make header
+nano header
+id position a0 a1 all.aaf
+
+-	Create legend files
+#bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' [input].bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > [output].legend.gz 
+
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ../01.format/minimac4/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' |  bgzip > ../01.format/minimac4/legends/whole.eagle.phased.sampleQC.AC.legend.gz 
+
+
+bcftools query -f '%CHROM %POS %REF %ALT %AC %AN %ID\n' ../01.format/minimac4_chr6/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $7 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > ../01.format/minimac4_chr6/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.legend.gz 
+
+
+zip -r archive_name.zip folder_name/
+
+
+minimac4 --refHaps refPanel.m3vcf \
+         --haps targetStudy.vcf \
+         --prefix testRun \
+         --cpus 5
+
+
+
+
+
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz --processReference --prefix ../minimac4/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_test --chr 6 --rsid
+/BDATA/smkim/TOOLs/Minimac3/bin/Minimac3 --refHaps whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.vcf.gz --processReference --prefix ..//whole.eagle.phased.sampleQC.AC.variant_corrected_chr6 --chr chr6 --rsid
+
+Minimac3 --cpus 16 --refHaps ALL.chr\${CHR}_GRCh38.bcf --processReference --prefix ALL.chr\${CHR} --chr chr\${CHR}
+
+[INFO]   eagle.command: --vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX
+
+~/Downloads/Eagle_v2.4.1/eagle --vcfRef forKIS/01.format/minimac4_chr6/bcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.bcf \
+--vcfTarget KBAv2.0B_Autosome_merge_chr6vcf.reheader.vcf.gz \
+--geneticMapFile forKIS/01.format/minimac4/map/genetic_map_hg38_withX.txt.gz --outPrefix KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX --numThreads 60
+
+
+
+### imputation
+minimac4 --refHaps refPanel.m3vcf \
+         --haps targetStudy.vcf \
+         --prefix testRun \
+         --cpus 5
+
+[INFO]   minimac.command: --refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}
+
+
+00.rawDATA/whole.eagle.phased.sampleQC.AC.variant_corrected.vcf.gz
+
+01.format/minimac4/map/genetic_map_hg38_withX.txt.gz
+
+01.format/minimac4/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.m3vcf.gz
+
+../KBAv2.0B_Autosome_merge_chr6vcf.reheader.vcf.gz
+../KBAv2.0B_Autosome_merge_chr6vcf.vcf.gz
+
+genotype: 6, ref: 6 -> good
+./minimac4 --refHaps 01.format/minimac4/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.vcf.gz \
+         --mapFile 01.format/minimac4/map/genetic_map_hg38_withX.txt.gz \
+         --prefix testRun \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+genotype: chr6, ref: chr6, map: 6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.vcf.gz \
+         --mapFile 01.format/minimac4/map/genetic_map_hg38_withX.txt.gz \
+         --prefix testRun \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+genotype: chr6, ref: chr6, map: chr6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.vcf.gz \
+         --mapFile 01.format/minimac4_chr6/map/genetic_map_hg38_withX.addCHR.txt.gz \
+         --prefix testRun \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+##
+#genotype: chr6, ref: chr6, map: chr6 b38 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile chr6.b38.chr6.gmap.gz \
+         --prefix testRun_chr6 \
+         --ignoreDuplicates \
+         --cpus 20
+
+#genotype: chr6, ref: chr6, map: 6 b38 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile chr6.b38.gmap.gz \
+         --prefix testRun_6 \
+         --ignoreDuplicates \
+         --cpus 20
+
+#genotype: chr6, ref: chr6, map: chr6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile 01.format/minimac4_chr6/map/genetic_map_hg38_withX.addCHR.txt.gz \
+         --prefix testRun \
+         --ignoreDuplicates \
+         --cpus 20
+
+#genotype: chr6, ref: chr6, map: chr6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile 01.format/minimac4_chr6/map/genetic_map_hg38_withX.addCHR.txt.gz \
+         --prefix testRun \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --prefix testRun_nomap \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+
+--referenceEstimates
+
+
+#genotype: chr6, ref: chr6, map: chr6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile ./01.format/minimac4_chr6/map/genetic_map_hg38_withX.txt.gz \
+         --referenceEstimates OFF \
+         --prefix testRun_hg38_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+#genotype: chr6, ref: chr6, map: chr6 --> good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --mapFile ./chr6.b38.gmap.gz \
+         --referenceEstimates OFF \
+         --prefix testRun_b38_6_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --referenceEstimates OFF \
+         --mapFile ./chr6.b38.chr6.gmap.gz \
+         --prefix testRun_b38_chr6_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+## good
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --referenceEstimates OFF \
+         --mapFile 01.format/genetic_map_hg38_withX_3cols.tsv.gz \
+         --prefix testRun_hg38_withX_3cols_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --referenceEstimates OFF \
+         --mapFile chr6.b38.chr6.pro.gmap \
+         --prefix testRun_chr6.b38.chr6.pro_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+
+
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --referenceEstimates OFF \
+         --mapFile chr6.b38.chr6.pro.gmap \
+         --prefix testRun_chr6.b38.chr6.pro_refoff \
+         --ignoreDuplicates \
+         --cpus 20
+
+./minimac4 --refHaps 01.format/minimac4_chr6/m3vcfs/whole.eagle.phased.sampleQC.AC.variant_corrected_chr6.m3vcf.gz \
+         --haps ../KBAv2.0B_Autosome_merge_chr6vcf.reheader.phasing.vcf.gz \
+         --referenceEstimates OFF \
+         --mapFile chr6.b38.6.pro.gmap\
+         --prefix testRun_chr6.b38.6.pro_refoff \
+         --ignoreDuplicates \
+         --cpus 20
