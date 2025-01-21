@@ -75,3 +75,124 @@ m.header
 @PG	ID:lima	VN:2.7.1 (commit v2.7.1-1-gf067520)	CL:/opt/pacbio/tag-lima-current/bin/lima --movie-name m84067_230923_105227_s4 --kestrel-files-layout --quality hifi --output-missing-pairs --shared-prefix --hifi-preset SYMMETRIC-ADAPTERS --store-unbarcoded --split-named --reuse-source-uuid --reuse-biosample-uuids --stderr-json-log --alarms metadata/m84067_230923_105227_s4.hifi_reads.lima.alarms.json --log-file metadata/m84067_230923_105227_s4.hifi_reads.lima.log pb_formats/m84067_230923_105227_s4.hifi_reads.consensusreadset.primrose.xml metadata/m84067_230923_105227_s4.barcodes.fasta hifi_reads/m84067_230923_105227_s4.hifi_reads.demux.bam
 @PG	ID:primrose	VN:1.4.0 (commit v1.4.0)	CL:/opt/pacbio/tag-primrose-current/bin/primrose --movie-name m84067_230923_105227_s4 --kestrel-files-layout --quality hifi --reuse-source-uuid --stderr-json-log --log-file metadata/m84067_230923_105227_s4.hifi_reads.primrose.log --alarms metadata/m84067_230923_105227_s4.hifi_reads.primrose.alarms.json --keep-kinetics
 @PG	ID:samtools	PN:samtools	PP:primrose	VN:1.16.1	CL:samtools view -H NIH23J3016218_1.hifi_reads.bam
+
+
+## methyl
+    /XX/tools/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores --bam ${sample}_to_GRCh38.bam --output-prefix ${sample}_to_GRCh38 --model /XX/tools/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads ${THREAD}
+
+/BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores \
+--bam {}.bam \
+--output-prefix methytest/{}.pb_CpG \
+--model /BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads 48
+
+
+ls *.bam | sed 's/.bam//g' | xargs -I {} -P 2 bash -c "/BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores --bam {}.bam --output-prefix methytest/{}.pb_CpG --model /BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads 48"
+
+
+
+103: /BDATA/smkim/pangenome/methyl
+
+
+cd /BDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+ls *.bam | sed 's/.bam//g' | xargs -I {} -P 3 bash -c "/BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores --bam {}.bam --output-prefix /BDATA/smkim/pangenome/methyl/{}.pb_CpG --model /BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads 20"
+
+#14개
+cd /SDATA/smkim/pangenome/01.revio_kchip/01.mapping_withunmapped
+
+ls *.bam | sed 's/.bam//g' | xargs -I {} -P 3 bash -c "/BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores --bam {}.bam --output-prefix /BDATA/smkim/pangenome/methyl/{}.pb_CpG --model /BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads 20"
+
+#109
+ls *.bam | sed 's/.bam//g' | xargs -I {} -P 1 bash -c "/BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/bin/aligned_bam_to_cpg_scores --bam {}.bam --output-prefix methytest/{}.pb_CpG --model /BDATA/smkim/TOOLs/pb-CpG-tools-v2.3.2-x86_64-unknown-linux-gnu/models/pileup_calling_model.v1.tflite --threads 60"
+
+
+
+
+######3 make list
+
+python3
+
+import os,glob
+
+dfs = glob.glob("*bed")
+out = open("combination.Sample.list","w")
+
+for i in dfs:
+     if "sort" in i:
+          i_sample = i.split("_")[0]
+     else:
+          i_sample = i.split(".")[0]
+     for j in dfs:
+          if "sort" in j:
+               j_sample = j.split("_")[0]
+          else:
+               j_sample = j.split(".")[0]
+          out.write("%s\t%s\t%s\t%s\n"%(i,j,i_sample,j_sample))
+
+
+out.close()
+    
+ls *bed | xargs -I {} -P 22 bash -c "sort -k1,1 -k2,2n {} > sort/{}"
+
+###
+
+a=$1
+b=$2
+aid=$3
+bid=$4
+
+echo $3,$4
+#bedtools jaccard -a a.bed -b b.bed
+
+bedtools jaccard -a $a -b $b > jaccard/jaccard_correlation_$aid_$bid
+
+
+shuf combination.Sample.list  | xargs -I{} -P 50 bash -c "sh run.sh {}"
+
+
+##
+# bash 명령어를 통해 파일 이름과 jaccard 값을 추출하여 하나의 파일로 병합합니다.
+for file in jaccard_correlation.*; do
+    # 파일명에서 sample1과 sample2 추출
+    sample1=$(echo $file | cut -d'.' -f2)
+    sample2=$(echo $file | cut -d'.' -f3)
+    
+    # jaccard 값을 추출하고 파일명과 함께 출력
+    jaccard=$(awk 'NR==2 {print $3}' $file)
+    echo -e "$sample1\t$sample2\t$jaccard" >> jaccard_results.tsv
+done
+
+
+#R 
+# 라이브러리 로드
+library(tidyverse)
+library(reshape2)
+library(pheatmap)
+
+# 데이터 불러오기
+jaccard_data <- read.table("jaccard_results.tsv", header = FALSE, sep = "\t", col.names = c("sample1", "sample2", "jaccard"))
+
+# 데이터 전처리: 행렬 형태로 변환
+jaccard_matrix <- jaccard_data %>%
+  spread(key = sample2, value = jaccard, fill = NA) %>%
+  column_to_rownames(var = "sample1") %>%
+  as.matrix()
+
+# 대칭 행렬을 위한 상하 복사 (NA 대체)
+jaccard_matrix[lower.tri(jaccard_matrix)] <- t(jaccard_matrix)[lower.tri(jaccard_matrix)]
+
+# 히트맵 그리기
+pheatmap(jaccard_matrix,
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "euclidean",
+         clustering_method = "average",
+         display_numbers = TRUE,
+         main = "Jaccard Index Heatmap")
+
+
+###
+/BDATA/smkim/STR/db/Final.ref.20240829.txt
+
+sort -k1,1 -k2,2n ../../db/Final.ref.20240829.txt > Fianl.ref.sort.STR.bed
+
+bedtools intersect -a Fianl.ref.sort.STR.bed -b

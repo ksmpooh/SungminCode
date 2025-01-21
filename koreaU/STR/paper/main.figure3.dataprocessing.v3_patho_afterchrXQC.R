@@ -3,6 +3,10 @@ library(tidyverse)
 library(ggExtra)
 library(ggside)
 
+head(final_ref)
+dim(final_ref)
+final_ref %>% mutate(a= ifelse(str_detect(ID,"chr"),"normal","patho")) %>% count(a)
+final_ref %>% filter(!str_detect(ID,"chr")) %>% mutate(a = ifelse(str_detect(MOTIFS,","),"simple","complex")) %>% count(a)
 
 final_ref <- read.table("~/Desktop/KU/@research/STR/db/Final.ref.20240829.txt",header=T)
 venn_rawdata <- read.table("~/Desktop/KU/@research/STR/figure/STR_DB_withQC_PASSofEH_PASSofTRGT_forVenn_v2.txt",header = T)

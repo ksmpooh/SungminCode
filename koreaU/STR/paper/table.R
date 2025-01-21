@@ -145,4 +145,124 @@ anno.concordance %>% rbind(chrom.concordance) %>%
   rbind(cyto.gpos.concordance %>% mutate(name = str_replace_all(name,"G-positive ",""))) %>% mutate(arm = "NA") %>%
   rbind(chrom.arm.concordance) %>% write.table("~/Desktop/KU/@research/STR/figure/figure2_withchrX/f2.annotation.info.concordance.txt",col.names = T,row.names = F,quote = F,sep = "\t")
 
-#######  
+#######   allele count
+
+library(openxlsx)
+wb <- createWorkbook()
+
+eh_trgt_merge_simple_pass_intersect_forConcordance.afterchrXQC <- read_table("/Users/ksmpooh/Desktop/KU/@research/STR/figure/df_merge/eh_trgt_merge_simple_pass_intersect_forConcordance.afterchrXQC.withoutRFC1.txt")
+head(eh_trgt_merge_simple_pass_intersect_forConcordance.afterchrXQC)
+
+eh_trgt_merge_simple_pass_intersect_forConcordance.afterchrXQC %>%
+  mutate(check = ifelse(TRGT_STR == EH_STR,1,0)) %>% left_join(final_ref_pro) %>% #head()
+  mutate(STR_length = TRGT_STR * RU.length) -> basic.count.STRallele
+  
+
+
+head(simpleSTR_count_bylength)
+basic.count.STRallele %>% mutate(STR_length = case_when(
+  STR_length < 50 ~ "[0~50)",
+  STR_length < 100 ~ "[50~100)",
+  STR_length < 150 ~ "[100~150)",
+  TRUE ~ '[150~Inf)')) %>% count(check,STR_length) %>% 
+  pivot_wider(names_from = STR_length,values_from = n) %>% 
+  mutate(overall = rowSums(select(., `[0~50)`, `[50~100)`, `[100~150)`, `[150~Inf)`)))
+
+  
+
+head(simpleSTR_count_bylength)
+basic.count.STRallele %>% mutate(STR_length = case_when(
+  STR_length < 50 ~ "[0~50)",
+  STR_length < 100 ~ "[50~100)",
+  STR_length < 150 ~ "[100~150)",
+  TRUE ~ '[150~Inf)')) %>% count(check,STR_length) %>% 
+  pivot_wider(names_from = STR_length,values_from = n) %>% 
+  rename(match = check) %>%
+  select(match,"[0~50)","[50~100)","[100~150)",'[150~Inf)') -> a
+head(a)
+
+wb <- createWorkbook()
+
+addWorksheet(wb, "simpleSTR_basic_count")
+writeData(wb, "simpleSTR_basic_count", a)
+
+basic.count.STRallele %>% 
+  mutate(GC = case_when(
+    GC < 0.25 ~ "[0~0.25)",
+    GC < 0.5 ~ "[0.25~0.5)",
+    GC < 0.75 ~ "[0.5~0.75)",
+    TRUE ~ '[0.75~1]')) %>% count(check,GC) %>%
+  pivot_wider(names_from = GC,values_from = n) %>%
+  rename(match = check) %>%
+  select(match,"[0~0.25)","[0.25~0.5)","[0.5~0.75)",'[0.75~1]') -> b
+
+addWorksheet(wb, "simpleSTR_GC")
+writeData(wb, "simpleSTR_GC", b)
+
+
+basic.count.STRallele %>% mutate(STR_length = case_when(
+  STR_length < 50 ~ "[0~50)",
+  STR_length < 100 ~ "[50~100)",
+  STR_length < 150 ~ "[100~150)",
+  TRUE ~ '[150~Inf)')) %>% 
+  mutate(GC = case_when(
+    GC < 0.25 ~ "[0~0.25)",
+    GC < 0.5 ~ "[0.25~0.5)",
+    GC < 0.75 ~ "[0.5~0.75)",
+    TRUE ~ '[0.75~1]')) %>%  count(check,STR_length,GC) -> c
+  
+  
+head(c)
+
+c %>% 
+  pivot_wider(names_from = STR_length,values_from = n) %>%
+  rename(match = check) %>% mutate(GC = factor(GC,levels = c("[0~0.25)", "[0.25~0.5)", "[0.5~0.75)", "[0.75~1]"))) %>%
+  arrange(match, GC) %>%
+  select(match,GC,"[0~50)","[50~100)","[100~150)",'[150~Inf)') -> c
+
+addWorksheet(wb, "simpleSTR_STRlengthGC")
+writeData(wb, "simpleSTR_STRlengthGC", c)
+
+
+
+basic.count.STRallele %>%
+  mutate(TRGT_AP = case_when(
+    TRGT_AP < 0.25 ~ "[0~0.25)",
+    TRGT_AP < 0.5 ~ "[0.25~0.5)",
+    TRGT_AP < 0.75 ~ "[0.5~0.75)",
+    TRUE ~ '[0.75~1]')) %>%
+  count(check,TRGT_AP) %>% 
+  pivot_wider(names_from = TRGT_AP,values_from = n) %>%
+  rename(match = check) %>%
+  select(match,"[0~0.25)","[0.25~0.5)","[0.5~0.75)",'[0.75~1]') -> d
+
+head(d)
+addWorksheet(wb, "simpleSTR_AP")
+writeData(wb, "simpleSTR_AP", d)
+
+
+
+head(basic.count.STRallele)
+basic.count.STRallele %>%
+  mutate(STR_length = case_when(
+  STR_length < 50 ~ "[0~50)",
+  STR_length < 100 ~ "[50~100)",
+  STR_length < 150 ~ "[100~150)",
+  TRUE ~ '[150~Inf)')) %>%
+  mutate(TRGT_AP = case_when(
+    TRGT_AP < 0.25 ~ "[0~0.25)",
+    TRGT_AP < 0.5 ~ "[0.25~0.5)",
+    TRGT_AP < 0.75 ~ "[0.5~0.75)",
+    TRUE ~ '[0.75~1]')) %>%
+  count(check,STR_length,TRGT_AP) %>%
+  pivot_wider(names_from = STR_length,values_from = n) %>%
+  rename(match = check) %>% mutate(TRGT_AP = factor(TRGT_AP,levels = c("[0~0.25)", "[0.25~0.5)", "[0.5~0.75)", "[0.75~1]"))) %>%
+  rename(AP = TRGT_AP) %>%
+  arrange(match, AP) %>%
+  select(match,AP,"[0~50)","[50~100)","[100~150)",'[150~Inf)') -> e
+
+
+addWorksheet(wb, "simpleSTR_STRlengthAP")
+writeData(wb, "simpleSTR_STRlengthAP", e)
+
+saveWorkbook(wb, "~/Desktop/KU/@research/STR/table/basic_STRlength_count_byGC_AP.xlsx", overwrite = TRUE)

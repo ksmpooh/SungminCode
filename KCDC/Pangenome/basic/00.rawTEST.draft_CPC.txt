@@ -46,7 +46,6 @@ assembly-stats */*.fa > assembly-stat.txt
 
 ##############
 after_hifiasm
-
 cd /ADATA/pangenome/01.hifisam
 ###
 in=$1
@@ -58,7 +57,18 @@ ls -d NIH23* | xargs -I {} -P 30 bash -c "sh after_hifiasm.sh {}"
 
 assembly-stats */*.fa > assembly-stat.txt
 
+## extract hap1, 2 read name from gfa
+#awk '/^S/{print ">"$2;print $3}' ${PREFIX}*.hap2.*p_ctg.gfa > ${PREFIX}.h2.fa
 
+in=$1
+awk '/^A/{print $5}' $in/*.hap1.*p_ctg.gfa > hap.read/$in.h1.Hifi_reads
+awk '/^A/{print $5}' $in/*.hap2.*p_ctg.gfa > hap.read/$in.h2.Hifi_reads
+
+
+ls -d NIH23* | xargs -I {} -P 30 bash -c "sh extract.read.name.sh {}"
+
+
+###
 
 
 echo "Sample,Length,Type,Coverage,LengthSum" >> ../02.NGx/length.csv
@@ -104,7 +114,231 @@ cat $in | bioawk -c fastx -v sample="$in" 'OFS=","{print sample, length($seq)}' 
         > $in.length.csv
 
 ## busco
+in=$1
+busco -i $in/$in.h1.fa -c 32 -o ./busco_result/$in.h1 -m genome -l /ADATA/pangenome/01.hifisam/busco_downloads/lineages/mammalia_odb10 --offline
+busco -i $in/$in.h2.fa -c 32 -o ./busco_result/$in.h2 -m genome -l /ADATA/pangenome/01.hifisam/busco_downloads/lineages/mammalia_odb10 --offline
+mv ./busco_result/$in.* /BDATA/pangenome/03.Busco/
+
+ls -d NIH23* | tail -n 36 | xargs -I {} -P 3 bash -c "sh busco.sh {}"
+
+#python
+
+import sys
+import os
+
+def extract_numbers(file_path, output_file):
+    # 초기화
+    data = {"C": None, "S": None, "D": None, "F": None, "M": None, "total": None}
+
+    # 파일 읽기
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                line = line.strip()
+                if "Complete BUSCOs (C)" in line:
+                    data["C"] = int(line.split("\t")[0])
+                elif "Complete and single-copy BUSCOs (S)" in line:
+                    data["S"] = int(line.split("\t")[0])
+                elif "Complete and duplicated BUSCOs (D)" in line:
+                    data["D"] = int(line.split("\t")[0])
+                elif "Fragmented BUSCOs (F)" in line:
+                    data["F"] = int(line.split("\t")[0])
+                elif "Missing BUSCOs (M)" in line:
+                    data["M"] = int(line.split("\t")[0])
+                elif "Total BUSCO groups searched" in line:
+                    data["total"] = int(line.split("\t")[0])
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    # 결과 저장
+    try:
+        with open(output_file, "w") as output:
+            output.write("C\tS\tD\tF\tM\ttotal\n")
+            output.write(f"{data['C']}\t{data['S']}\t{data['D']}\t{data['F']}\t{data['M']}\t{data['total']}\n")
+    except Exception as e:
+        print(f"Error writing to file '{output_file}': {e}")
+        sys.exit(1)
+
+def main():
+    # 입력 파일 받기
+    if len(sys.argv) != 2:
+        print("Usage: python3 run.py [input_file]")
+        sys.exit(1)
+
+    input_file = sys.argv[1]
+    # 출력 파일 이름 설정
+    output_file = f"{os.path.splitext(input_file)[0]}.prep.txt"
+
+    # 데이터 추출 및 저장
+    extract_numbers(input_file, output_file)
+
+    # 완료 메시지
+    print(f"Output saved to: {output_file}")
+
+if __name__ == "__main__":
+    main()
+
+
+#####quast
+quast-lg.py NIH23F1013274/NIH23F1013274.h1.fa -t 72 -o NIH23F1013274.h1.quast --large --est-ref-size 3100000000 --no-icarus
+python /opt/quast/quast-5.0.2/quast-lg.py -t 16 -o <sample>.quast --large --est-ref-size 3100000000 --no-icarus
+
+ls -d NIH* | grep -v "\."
+
+in=$1
+quast-lg.py $in/$in.h1.fa -t 72 -o ../03.Quast/$in.h1.quast --large --est-ref-size 3100000000 --no-icarus
+quast-lg.py $in/$in.h2.fa -t 72 -o ../03.Quast/$in.h2.quast --large --est-ref-size 3100000000 --no-icarus
+
+###
+
+
+#######
+/CDATA/pangenome/04.assemlbypolish
+
+
+inspector.py -c ${sample_id}.asm.fa -r ${sample_id}.ccs.fastq.gz -o ${sample_id}.asm/ --datatype hifi -t 64
+inspector-correct.py -i ${sample_id}.asm/ --datatype pacbio-hifi -o ${sample_id}.asm.corrected/ --skip_structural -t 64
+
+
+ls -d NIH23* | 
+
+NIH23F1013274
+
+inspector.py -c NIH23F1013274/NIH23F1013274.h1.fa -r /CDATA/pangenome/2023.pro.KCHIP.Revio/ubamtobastq/NIH23F1013274/*gz -o NIH23F1013274.inspector.asm/ --datatype hifi -t 96
+inspector-correct.py -i  NIH23F1013274.inspector.asm/ --datatype pacbio-hifi -o NIH23F1013274.inspector.corrected/ --skip_structural -t 96
+
+/ADATA/pangenome/01.hifisam/
+
+
+cd /ADATA/pangenome/00.rawDATA/2023.pro.ref_panel.Revio/
+
+cat list.txt | xargs -I {} -P 1 bash -c "sh /ADATA/pangenome/SCRIPTs/04.inspector.sh {}"
+inspector.py -c ${sample_id}.asm.fa -r ${sample_id}.ccs.fastq.gz -o /CDATA/pangenome/04.assemlbypolish/$in.asm/ --datatype hifi -t 64
+
+in=$1
+inspector.py -c /ADATA/pangenome/01.hifisam/$in/$in.h1.fa -r $in\_*gz -o /CDATA/pangenome/04.assemlbypolish/$in.h1.asm/ --datatype hifi -t 96
+inspector.py -c /ADATA/pangenome/01.hifisam/$in/$in.h2.fa -r $in\_*gz -o /CDATA/pangenome/04.assemlbypolish/$in.h2.asm/ --datatype hifi -t 96
+inspector-correct.py -i /CDATA/pangenome/04.assemlbypolish/$in.h1.asm/ --datatype pacbio-hifi -o /CDATA/pangenome/04.assemlbypolish/$in.h1.asm.corrected/ --skip_structural -t 96
+inspector-correct.py -i /CDATA/pangenome/04.assemlbypolish/$in.h2.asm/ --datatype pacbio-hifi -o /CDATA/pangenome/04.assemlbypolish/$in.h2.asm.corrected/ --skip_structural -t 96
 
 
 
+
+
+
+seqtk subseq input.fastq read_names.txt > output.fastq
+
+
+
+#### contig id convert with NIH ID
+
+#sed 's/h1tg/testh1tg/g' test |less -NS
+#NIH23F1013274.h1.fa|sed 's/.h1.fa//g' | xargs -I{} -P 1 bash -c "sed 's/h1tg/{}_h1tg/g' {}.h1.fa > {}.test.h1.fa"
+
+ls -d NIH* | xargs -I {} -P 
+
+## run.sh
+
+in=$1
+sed s/h1tg/${in}_h1tg/g $in/$in.h1.fa > /BDATA/pangenome/01.hifiasm/contig_name_change/$in.h1.contig.change.fa
+sed s/h2tg/${in}_h2tg/g $in/$in.h2.fa > /BDATA/pangenome/01.hifiasm/contig_name_change/$in.h2.contig.change.fa
+##
+in=$1
+sed s/h1tg/${in}_h1tg/g $in.h1.pp.fa > $in.h1.pp.contig.change.fa
+sed s/h2tg/${in}_h2tg/g $in.h2.pp.fa > $in.h2.pp.contig.change.fa
+
+
+##
+ cat /ADATA/pangenome/01.hifisam/NIHlist.txt |xargs -I {} -P 10 bash -c "sh run.sh {}"
+
+## minigraph
+minigraph -cxggs -t 16 \
+$(for fasta in $(cut -f2 ${MYBUCKET}/${PREFIX}.seqfile); do echo $fasta; done) \
+> ${MYBUCKET}/${PREFIX}.minigraph.gfa
+
+/BDATA/smkim/TOOLs/pangenome/minigraph-0.21_x64-linux/minigraph -cxggs -t 96 \
+/ADATA/pangenome/00.rawDATA/HPRC/phaseI/assembly/CHM13Y.fa \
+/ADATA/pangenome/00.rawDATA/GRCh38/GRCh38.merge.placed.scaf.fna.gz \
+/BDATA/pangenome/01.hifiasm/contig_name_change/*fa > KPP.pilot.CHM13Y.minigraph.gfa
+
+
+
+
+### MC
+mkdir 07_Variant && cd 07_Variant
+
+ln -s ../sampleList.txt
+awk '$1=="Assembly"{print $2"_"$4"\t"$3}' sampleList.txt >> sequenceFile.tsv
+
+PREFIX=Set1
+REF=`head -1 sequenceFile.tsv | awk '{print $1}'`
+cactus-pangenome ./jobstorepath ./sequenceFile.tsv --outDir ${PREFIX} --outName ${PREFIX} --reference ${REF} --filter 9 --giraffe clip filter --vcf  --viz --odgi --chrom-vg clip filter --chrom-og --gbz clip filter full --gfa clip full --vcf --giraffe --gfa --gbz --chrom-vg --maxCores 8 --logFile ${PREFIX}.log
+
+mkdir DONE
+cd ..
+
+mkdir -p ${MYBUCKET}/fasta_pp
+cat ${MYBUCKET}/${PREFIX}.seqfile | sed "s\\/data/assembly\\${MYBUCKET}/fasta_pp\\g" > ${MYBUCKET}/${PREFIX}.pp.seqfile
+cactus-preprocess ${MYJOBSTORE} ${MYBUCKET}/${PREFIX}.seqfile ${MYBUCKET}/${PREFIX}.pp.seqfile --maskAlpha --minLength 100000 --brnnCores 16  --realTimeLogging --logFile ${MYBUCKET}/log/${PREFIX}.pp.log
+
+
+
+#cactus-pangenome <jobStorePath> <seqFile> --outDir <output directory> --outName <output file prefix> --reference <reference sample name>
+
+
+echo {}.h1 /ADATA/pangenome/01.hifisam/{}/{}.h1.fa;echo {}.h2 /ADATA/pangenome/01.hifisam/{}/{}.h2.fa
+####
+/ADATA/pangenome/asmlist.txt
+
+
+cd /BDATA/pangenome/05.graph
+mkdir -p ${MYBUCKET}/fasta_pp
+cat ${MYBUCKET}/${PREFIX}.seqfile | sed "s\\/data/assembly\\${MYBUCKET}/fasta_pp\\g" > ${MYBUCKET}/${PREFIX}.pp.seqfile
+cactus-preprocess ${MYJOBSTORE} ${MYBUCKET}/${PREFIX}.seqfile ${MYBUCKET}/${PREFIX}.pp.seqfile --maskAlpha --minLength 100000 --brnnCores 16  --realTimeLogging --logFile ${MYBUCKET}/log/${PREFIX}.pp.log
+./cactus-pangenome.sh -j ${MYJOBSTORE} -s ${MYBUCKET}/${PREFIX}.pp.seqfile -m ${MYBUCKET}/${PREFIX}.minigraph.gfa  -o ${MYBUCKET}  -n ${PREFIX}  -r CHM13v2  -g  -F -C -M 100000 -K 10000 -y 2 >> ${MYBUCKET}/log/${PREFIX}.MC_run.log > /dev/null
+
+#export MYBUCKET=/data/MC_graph/CHM13v2
+#export MYJOBSTORE=/data/tmp
+#export PREFIX=/data/MC_graph/CHM13v2/CPC.Phase1.CHM13v2
+
+
+# 설치 된것
+source /BDATA/smkim/TOOLs/pangenome/cactus-bin-v2.9.3/venv-cactus-v2.9.3/bin/activate
+
+
+
+ls *fa | awk '{split($1,a,"."); print a[1]"."a[2]"\t/BDATA/pangenome/01.hifiasm/contig_name_change/"$1}' > ../asmlist.contigmodi.txt
+
+
+cactus-preprocess /BDATA/pangenome/05.graph/MC asmlist.contigmodi.txt asmlist.qq.txt \
+--minLength 100000 --brnnCores 96 --realTimeLogging TRUE --logFile /BDATA/pangenome/05.graph/log
+
+
+cactus-pangenome ./jobstorepath ./sequenceFile.tsv --outDir ${PREFIX} --outName ${PREFIX} --reference ${REF} --filter 9 \
+--giraffe clip filter --vcf  --viz --odgi --chrom-vg clip filter --chrom-og --gbz clip filter full --gfa clip full --vcf --giraffe --gfa --gbz --chrom-vg --maxCores 8 --logFile ${PREFIX}.log
+
+
+## 이게 됫음
+export PATH=$PATH:/BDATA/smkim/TOOLs/pangenome/cactus-bin-v2.9.3/bin
+conda cacus
+
+cactus-pangenome ./js asmlist.contigmodi.haplotypemodi.txt --outDir /BDATA/pangenome/05.graph/MC --outName KPP.pilot.CHM13Y.MC --reference CHM13Y --filter 9 \
+--giraffe clip filter --vcf  --viz --odgi --chrom-vg clip filter --chrom-og --gbz clip filter full --gfa clip full --vcf --giraffe --gfa --gbz --chrom-vg --maxCores 96 --logFile KPP.pilot.CHM13Y.MC.log
+
+
+## 이건 안됨.... 이걸로 하긴 해봐야하는디...
+./cactus-pangenome.sh -j /BDATA/pangenome/05.graph/MC -s asmlist.qq.new.txt -m /BDATA/pangenome/05.graph/minigraph/KPP.pilot.CHM13Y.minigraph.gfa \
+-o /BDATA/pangenome/05.graph/MC -n KPP.pilot.CHM13Y.MC -r CHM13Y -g -F -C -M 100000 -K 10000 -y 2 >> mc_log/KPP.pilot.CHM13Y.MC_run.log > /dev/null
+
+
+
+
+
+
+####
+gfatools bubble ../minigraph/KPP.pilot.CHM13Y.minigraph.gfa > KPP.pilot.CHM13Y.minigraph.gfatools_bublle.vcf
 

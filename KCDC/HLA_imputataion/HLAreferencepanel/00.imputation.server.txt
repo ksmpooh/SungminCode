@@ -39,3 +39,25 @@ https://drive.google.com/file/d/1UAC-72YE_wdpG44-dEDcyZHUvVFER8zD/view?usp=shari
 
 
 gdown https://drive.google.com/uc?id=1UAC-72YE_wdpG44-dEDcyZHUvVFER8zD
+
+
+
+###
+https://drive.google.com/file/d/1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW/view?usp=share_link
+https://drive.google.com/file/d/1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW/view?usp=sharing
+
+pip install gdown
+pip install --upgrade --no-cache-dir gdown
+gdown https://drive.google.com/uc?id=1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW
+
+
+https://drive.google.com/file/d/1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW/view?usp=sharing
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW' -O 8K.ref.zip
+
+
+https://drive.google.com/file/d/1OCwS_tLuueXQ0w548KllMRoRDlSsA0pW/view?usp=share_link
+
+
+
+#8K
+hdfs dfs -ls /user/cloudgene/cloudgene/apps/kis-phase2-panel\(grch37/hg19\)@1.0.0/1.0.0

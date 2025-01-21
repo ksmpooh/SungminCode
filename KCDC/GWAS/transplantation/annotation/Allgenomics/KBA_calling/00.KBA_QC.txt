@@ -1,0 +1,49 @@
+#### 20241223
+KR(KD) + KR(KD) rep + extra 26 sample
+
+KR : 1,885 + 503 = 2,388
+KD : 1,178 + 321 = 1,499
+
+
+2,388 + 1,499 = 3,887
+
+
+
+
+
+### after genocall 
+
+plink --bfile Axiom_KBAv1.1_Original_call --merge-list merge.list --make-bed --out KOTRY.AR_2025_KRKD.1st
+
+
+# 1st QC
+# merge plink
+cd /BDATA/smkim/AR_2025/02.1stQC
+
+plink --bfile KOTRY.AR_2025_KRKD.1st --missing --out MISS
+plink --bfile KOTRY.AR_2025_KRKD.1st --het --out HET
+
+
+#R check
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("miss_het.pdf",height=7,width=10)
+plot(lowSample$HET,lowSample$F_MISS)
+dev.off()
+
+## 15~18
+
+Rscript --vanilla miss_het.R MISS.imiss HET.het miss_het_1st
+
+plink --bfile KOTRY.AR_2025_KRKD.1st --remove rmLQSamples.txt --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET
+plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET_prune
+flashpca_x86-64 --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET_prune -n 50 --outpc PCA.txt

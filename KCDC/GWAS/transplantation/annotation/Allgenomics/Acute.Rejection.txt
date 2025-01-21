@@ -1,0 +1,175 @@
+1. Classic HLA/B and T cells - EPLET mismatch between donor and recipients: combination of Match maker + PIRCH II combination (박금보래 교수님 통해 진행, Jabbour R et al, Nephrol Dial Transplant 2024;39 (5):808-817)
+2. Non-class HLA l: MICA mismatch between donor and recipients: 0, 1, 2
+3. NK cells: NK inhibitory receptor-HLA Class I mismatch number = Missing-self number (김형우 교수님 제공한 표 이용)
+4. Macrophage: SIRP-a genotype mismatch: genotype AA, AB, BB à outcomes: graft survival (donor-recipient match > A à B > B àA)
+Human genomic analysis identified 10 common haplotypes that segregated into two categories, A and B, encoding SIRPa variants with different CD47 binding interfaces.
+Transplantation 108(9S):, September 2024. | DOI: 10.1097/01.tp.0001065044.43751.b4
+
+
+- SIRalpha: Donor->Rec, Rec->Donor 형식으로 방향성이 있는 genotype 패턴 존재
+   양재석 교수님이 관련 연구자한테 문의하신 후에 알려주기로 하셨음
+- NK (missing self 관련): 김형우교수님, 양재석 교수님 논의하신 후에 알려주시기로 함
+- LIMS1 (PINCH)를 얘기하셨는데, 따로 말씀없으시면 그냥 패스
+- HLA-G 유전자 등 찾아서 보내드리기
+- AR GWAS top signal 정리해서, SNP data => AA, AB, BB 형식으로 드리기 (P < 1e-6)
+- 김형우 교수님한테 covariate 확정된 것을 알려주시면, GWAS를 다시 돌려서 드리겠다고 전달 => 이후 GWAS 분석
+
+
+Inhibitory	Receptor	Receptor ligand
+	KIR2DL1	C2
+	KIR2DL2	C1
+	KIR2DL3	C1
+	KIR2DL4	G
+	KIR3DL1	Bw4
+	KIR3DL2	A3, A11
+	KIR2DS1	C2
+	KIR2DS2	C1
+	CD94-NKG2A	E
+
+
+Activatory	Receptor	Receptor ligand
+	KIR2DS1	C2
+	KIR2DS2	C1
+	KIR2DS4	Cw4
+	KIR3DS1	Bw4
+	NKG2D	MICA, MICB, ULBP1, ULBP2, ULBP3
+
+
+NKG2A -> KLRC1
+CD94 -> KLRD1
+KIR2DS1
+KIR2DS2
+KIR2DS4
+KIR3DS1
+NKG2D
+MICA
+MICB
+ULBP1
+ULBP2
+ULBP3
+
+
+	KIR2DL1	C2
+	KIR2DL2	C1
+	KIR2DL3	C1
+	KIR2DL4	G
+	KIR3DL1	Bw4
+	KIR3DL2	A3, A11
+	KIR2DS1	C2
+	KIR2DS2	C1
+	CD94-NKG2A	E
+
+
+SIRPA
+KIR2DL1
+KIR2DL3
+KIR3DL1
+KIR2DL4
+KLRC1
+KLRD1
+KLRK1
+MICA
+MICB
+ULBP1
+ULBP2
+ULBP3
+LIMS1
+KIR3DL1
+KIR3DL2
+
+
+cd /BDATA/smkim/KR_allogenomics/05.AR_2025
+####
+df <-read.table("gene.list.txt")
+ref <- read.table("../refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt")
+out <- ref[ref$V3 %in% df$V1,]
+ref2 <- read.table("../00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant_onlyInpair_removeMonoSNP.bim")
+out1 <- out[out$V1 %in% ref2$V2,]
+write.table(out1,"AR_new_list.txt",col.names=F,row.names=F,quote=F)
+
+
+#gene target 해서 뽑기
+
+mkdir gene_extract
+
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.extract.variant.inGenelist_AA.AB.BB_formet.py ../00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant_onlyInpair_removeMonoSNP AR_new_list.txt
+
+cd ped_format
+mkdir merge
+
+ls *txt |sed 's/.txt//g' | xargs -I{} -P 10 bash -c "Rscript --vanilla ../../04.immune_cell_signal/03.data.Pair.matching.R {}.txt merge/{}.pairmerge.txt"
+cd merge
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.mergedf.after.extrract.AA.AB.BB.py *txt
+
+sed 's/.x/_KR/g' test.txt | sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' |less -NS
+
+
+# with monomorphic
+cd /BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic
+
+##r
+
+df <-read.table("../gene.list.txt")
+ref <- read.table("/BDATA/smkim/KR_allogenomics/refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt")
+out <- ref[ref$V3 %in% df$V1,]
+write.table(out,"AR_new_list.withmono.txt",col.names=F,row.names=F,quote=F)
+
+##
+python /BDATA/smkim/KR_allogenomics/04.immune_cell_signal/02.extract.py /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant_onlyInpair AR_new_list.withmono.txt
+python ../new_format.py /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant_onlyInpair AR_new_list.withmono.txt
+
+
+
+
+
+python test.py /BDATA/smkim/KR_allogenomics/00.oridata_plink/pair_merge/JG.KR.KD.merge_updateID_extractFuncVariant_onlyInpair AR_new_list.withmono.txt
+cd /BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic/ped_format
+mkdir merge
+ls *txt |sed 's/.txt//g' | xargs -I{} -P 10 bash -c "Rscript --vanilla /BDATA/smkim/KR_allogenomics/04.immune_cell_signal/03.data.Pair.matching.R {}.txt merge/{}.pairmerge.txt"
+
+cd merge
+python /BDATA/smkim/KR_allogenomics/05.AR_2025/AR.mergedf.genotypeAAABBB.py *txt
+
+sed 's/.x/_KR/g' AR.20250117.withMono.genotype.txt_ori| sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' > AR.20250117.withMono.genotype.txt
+
+
+
+cd /BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic/gene_extract
+
+rsync -avhP /BDATA/smkim/KR_allogenomics/SCRIPT/03* ./
+ls *raw | xargs -I{} -P 4 bash -c "python3 03.score_01.py {} ./"
+
+
+### R
+a <- list.files(pattern = "_ScoreTable_alleleMatching.txt")
+df = read.table(a[1],header = T)
+df = df[,c(1,2,ncol(df))]
+for (i in a[-1]) {
+  print(i)
+  tmp = read.table(i,header = T)
+  #t = as.data.frame(tmp[,3])
+  t = as.data.frame(tmp[,ncol(tmp)])
+  colnames(t) <- colnames(tmp)[ncol(tmp)]
+  df =cbind(df,t) 
+}
+
+write.table(df,"../KR.KD.AR_2025.alleleMatching01.Score_Sum.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+# python3
+
+import os, glob
+
+a = glob.glob("*_ScoreTable_alleleMatching.txt")
+##KR.KD.TMUB1_ScoreTable.txt
+out = open("variant.num.byGene.txt","w")
+out.write("gene\tN_snp\n")
+for i in a:
+    tmp = open(i,"r")
+    tmp = tmp.readline().split()
+    gene = i.replace("KR.KD.","").replace("_ScoreTable_alleleMatching.txt","")
+    n_snp = len(tmp) - 3
+    out.write("%s\t%s\n"%(gene,n_snp))
+
+out.close()

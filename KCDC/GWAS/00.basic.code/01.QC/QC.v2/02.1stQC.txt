@@ -1,0 +1,39 @@
+# after bash 01-1.snpolisher_marker_select.sh 
+
+
+# merge plink
+
+
+
+plink --bfile KOTRY.AR_2025_KRKD.1st --missing --out MISS
+plink --bfile KOTRY.AR_2025_KRKD.1st --het --out HET
+
+## 범위 설정
+Rscript --vanilla miss_het.R MISS.imiss HET.het miss_het_1st
+
+plink --bfile KOTRY.AR_2025_KRKD.1st --remove rmLQSamples.txt --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET
+plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET_prune
+flashpca_x86-64 --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET_prune -n 50 --outpc PCA.txt
+
+in=""
+plink --bfile $in --missing --out MISS
+plink --bfile $in --het --out HET
+
+## 범위 설정
+Rscript --vanilla miss_het.R MISS.imiss HET.het miss_het_1st
+
+plink --bfile $in --remove rmLQSamples.txt --make-bed --out $in\_rmCRHET
+plink --bfile $in\_rmCRHET --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile $in\_rmCRHET --extract  pruning.prune.in --not-chr 6,14 --make-bed --out $in\_rmCRHET_prune
+flashpca_x86-64 --bfile $in\_rmCRHET_prune -n 50 --outpc PCA.txt
+
+
+##R
+pca <- read.table("PCA.txt", header=T)
+
+pdf("./1st.QC_PCA.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2)
+dev.off()

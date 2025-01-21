@@ -12,3 +12,8 @@ cactus-pangenome ./jobstorepath ./sequenceFile.tsv --outDir ${PREFIX} --outName 
 
 mkdir DONE
 cd ..
+
+
+#mkdir -p ${MYBUCKET}/fasta_pp
+#cat ${MYBUCKET}/${PREFIX}.seqfile | sed "s\\/data/assembly\\${MYBUCKET}/fasta_pp\\g" > ${MYBUCKET}/${PREFIX}.pp.seqfile
+#cactus-preprocess ${MYJOBSTORE} ${MYBUCKET}/${PREFIX}.seqfile ${MYBUCKET}/${PREFIX}.pp.seqfile --maskAlpha --minLength 100000 --brnnCores 16  --realTimeLogging --logFile ${MYBUCKET}/log/${PREFIX}.pp.log

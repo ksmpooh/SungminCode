@@ -8,7 +8,7 @@ library(ggpubr)
 ###
 #version = 'v2'
 
-setwd('~/Desktop/KU/@research/STR/figure/figure4/')
+setwd('~/Desktop/KU/@research/STR/figure/figure4/old/')
 #setwd('~/Dropbox/SMC_AD_WGS_paper/Data/SMC_cwas_results_20240416/')
 # Set colors
 
@@ -46,7 +46,7 @@ final_ref %>% select(MOTIFS,ID) %>% rename(STR_ID = ID) %>%
 #concordance_bySTR_simpleSTR.bamQC.INFO.afterchrXQC <- read_table("~/Desktop/KU/@research/STR/figure/sup.figure/concordance_bySTR_simpleSTR.bamQC.INFO.afterchrXQC")
 
 ## AP
-concordance_byID <- read_table("../figure2_withchrX/concordance_rate_byID.afterchrXQC.txt")
+concordance_byID <- read_table("../../figure2_withchrX/concordance_rate_byID.afterchrXQC.txt")
 concordance_byID
 concordance_byID %>% #ungroup() %>%
   summarise(mean(concordance_rate),sd(concordance_rate))
@@ -165,7 +165,7 @@ concordance_bySTR_simpleSTR.bamQC.INFO.afterchrXQC %>%
   geom_density() + 
   labs(y="Density",x="Mean of BaseQ by STR") +
   theme_step1() + 
-  theme(legend.position = 'none') #-> p4
+  theme(legend.position = 'none') -> p4
 
 concordance_bySTR_simpleSTR.bamQC.INFO.afterchrXQC %>% 
   select(STR_ID,concordance_rate,trgt_meanmapq,eh_meanmapq) %>%

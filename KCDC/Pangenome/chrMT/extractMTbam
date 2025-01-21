@@ -24,3 +24,18 @@ mkdir /ADATA/smkim/pangenome/chrMT/shortread
 ls *bam | sed 's/.bam//g' | xargs -I {} -P 30 bash -c "samtools view -h -b {}.bam chrM > /ADATA/smkim/pangenome/chrMT/shortread/{}.chrM.bam"
 
 ls *bam |xargs -I{} -P 60 bash -c "samtools index {}"
+
+
+samtools view -h -T reference.fasta input.cram MT > output_MT.cram
+
+samtools view -h -b input.bam chrM
+
+
+samtools view -h -T reference.fasta input.cram MT > output_MT.cram
+
+
+ls *cram | sed 's/.cram//g' | xargs -I {} -P 2 bash -c "samtools view -h -b -T /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.cram chrM > /BDATA/smkim/MT/{}.chrM.bam"
+
+
+samtools view -h -b -T /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta   /RDATA6/HLAref/01.cram/NIH21D7966991.cram chrM > test.chrM.bam
+samtools view -h -b -T /RDATA6/HLAref/01.cram/NIH21D7966991.cram chrM > test1.chrM.bam

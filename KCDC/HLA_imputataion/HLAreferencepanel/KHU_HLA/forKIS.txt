@@ -257,3 +257,10 @@ genotype: chr6, ref: chr6, map: chr6 --> good
          --prefix testRun_chr6.b38.6.pro_refoff \
          --ignoreDuplicates \
          --cpus 20
+
+
+
+
+
+
+hdfs dfs -ls /user/cloudgene/cloudgene/apps/kis-phase2-panel\(grch37/hg19\)@1.0.0/1.0.0

@@ -7,3 +7,17 @@ ls *bam |sed 's/.bam//g' | xargs -I {} -P 2 bash -c "samtools bam2fq {}.bam | gz
 
 
 ls NIH23F1*/*bam | grep -v "NIH23F1013274" |sed 's/.bam//g' | xargs -I {} -P 40 bash -c "samtools bam2fq {}.bam | gzip > /CDATA/pangenome/2023.pro.KCHIP.Revio/ubamtobastq/{}.fastq.gz"
+
+
+## 이게 속도 제일 빠름
+ls */*bam | sed 's/.bam//g' | xargs -I {} -P 4 bash -c "samtools fastq -@ 4 {}.bam | gzip > {}.fastq.gz"
+ls -d RWGS-20-00* | xargs -I {} -P 3 bash -c "cat {}/*gz > {}\_2024_Rare_trio.Revio_hifi_reads.rawfastq.merge.fastq.gz"
+
+## 
+ls */*bam | awk '{split($1,a,"/"); print "samtools fastq -@ 4 "$1" | gzip > "a[1]"_2024_Rare_trio.Revio_hifi_reads.rawfastq.merge.fastq.gz"}' | xargs -I {} -P 6 bash -c "{}"
+
+ls RWGS-20-00*/*bam | sed 's/.bam//g' | xargs -I {} -P 4 bash -c "samtools fastq -@ 4 {}.bam | gzip > {}.fastq.gz"
+
+
+
+ls RWGS-15*/*bam | awk '{split($1,a,"/"); print "samtools fastq -@ 4 "$1" | gzip > "a[1]"_2024_Rare_trio.Revio_hifi_reads.rawfastq.merge.fastq.gz"}' | xargs -I {} -P 6 bash -c "{}"

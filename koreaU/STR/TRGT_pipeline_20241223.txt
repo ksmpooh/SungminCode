@@ -1,0 +1,82 @@
+#Pacbio Longread Tandem repeat analysis pipeline 20241223
+
+# 분석 순서: Algnment (pbmm2) -> TRGT (STR genotyping)
+
+## 1. Alignment (pbmm2)
+- pacbio 원시데이터는 uBAM이고, aligment할 때는 pbmm2 (conda 설치) 사용합니다.
+- fastq 데이터를 활용해도 되지만, methyl 정보가 uBAM 있기 때문에, ubam 사용을 권장합니다.(밑에도 ubam을 사용한다고 가정하고 작성했습니다.)
+- 한 샘플에 대하여, 1개의 raw data가 있는 경우와 2개 이상인 경우가 있어서 구분에서 분석하시면 됩니다.
+- pbmm2: https://github.com/PacificBiosciences/pbmm2
+
+
+### 1-0 indexing: 
+uBAM 파일은 indexing을 해도 되고 안해도 되긴합니다.
+reference fasta은 short-read와 동일하게 samtools index를 사용해서 indexing을 하시면 됩니다.
+samtools index [ref.fasta]
+(만약 안되면.. pbmm2를 사용)
+
+### 1-1 샘플 당 uBAM이 하나일 경우
+
+pbmm2 align ref.fasta input.bam output.bam --sort --preset hifi
+
+### 1-2 샘플 당 uBAM이 두개 이상일 경우
+
+ls *.bam > in.fofn
+pbmm2 align ref.fasta in.fofn output.bam --sort --preset hifi
+
+### 1-3 공통 옵션 값
+--log-level INFO --log-file test.log  (해도 되고 안해도됩니다)
+--unmapped : 이거는 이전에 ExpansionHunter 는 unmapped read를 사용해서 STR call 하기 때문에, 혹시 몰라서 롱리드도 이 옵션을 추가했습니다. 근데, 제가 했을때는 한거랑 안한거랑 차이가 없었습니다. (저장공간에 조금 차이가 있기 때문에, 사용을 안해도 무방합니다)
+-j [num] : thread 수, 기본적으로 8개 정도 잡히긴 하는데 40개 정도 해도 됩니다. 그럴때는 mem(-m)을 잘 설정해야합니다. pbmm2 가 메모리를 크게 잡아 먹진 않습니다. 그래서 -m 3G 옵션을 추가하면 잘 되긴 합니다.
+-m [num] : thread 당 mem 사용량
+
+
+###
+
+## 2. STR genotyping (TRGT)
+ - 사전 준비: bam file indexing: samtools index [mapped.bam]
+ - TRGT git 사이트에 binary 파일이 있는데, 그것 다운 받아서 사용하시면 됩니다. 관련 DB도 같이 있습니다.
+ - TRGT: https://github.com/PacificBiosciences/trgt
+
+
+###  2-1. TRGT
+./trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t [num] \ #thread 수
+    -k [XX or XY] \ # 성염색체 정보를 정확히 해야.. X 쪽 STR calling이 됨
+    --genome [ref.fasta] \ # mapping 할 때 사용한 refernece fasta 
+    --repeats [TRGT.bed] \ # STR bed, tool에서 기본적으로 제공하는 DB 사용
+    --reads [input.mapped.bam] \ 
+    --output-prefix [output] 
+
+
+###  2-2. QC after TRGT
+bcftools sort -Ob -o sample.sorted.vcf.gz sample.vcf.gz
+bcftools index sample.sorted.vcf.gz
+
+samtools sort -o sample.spanning.sorted.bam sample.spanning.bam
+samtools index sample.spanning.sorted.bam
+
+### 2-3 visualization
+
+./trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    --genome [ref.fasta] \ # mapping 할 때 사용한 refernece fasta 
+    --repeats [TRGT.bed] \
+    --vcf [TRGT 결과.vcf.gz] \
+    --spanning-reads [TRGT 결과.spanning.bam] \
+    --repeat-id [STR ID] \ # ex. HTT
+    --image [output.svg]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
