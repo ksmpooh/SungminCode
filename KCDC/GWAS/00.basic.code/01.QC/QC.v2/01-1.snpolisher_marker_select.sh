@@ -37,7 +37,7 @@ grep -v -f <(cat $1/classification/Recommended.ps $2/classification/Recommended.
 #plink --file Axiom_KBAv1.1 --extract ../classification/ --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out test
 
 plink --file $1/plink/Axiom_KBAv1.1 --extract $1/classification/Recommended.ps --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_Original_call
-plink --file $2/plink/Axiom_KBAv1.1 --extract ssp.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_SSP_call
+plink --file $2/plink/Axiom_KBAv1.1_SSP --extract ssp.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_SSP_call
 plink --file $3/plink/Axiom_KBAv1.1_adv --extract adv.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_adv_call
 
 echo "Axiom_KBAv1.1_SSP_call" > merge.list

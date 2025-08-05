@@ -76,7 +76,8 @@ def t_dataframe(df,gene):
     #print(df[0])
     tmp = df[0].strip().split()
     # ID_ID=0 나누기 -> ID header
-    tmp = [s.split("_")[0] for s in tmp[1:]]
+    #tmp = [s.split("_")[0] for s in tmp[1:]]
+    tmp = [s for s in tmp[1:]]
     '''
     if "_" in tmp[1:]:
         tmp = [s.split("_")[0] for s in tmp[1:]]

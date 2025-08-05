@@ -218,3 +218,149 @@ tabix -f -p vcf NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz
 
 time ensembletr --vcf NIH20N2000078.EH.dumpSTR.rmadd.vcf.gz \
 --out NIH20N2000078.EH.dumpSTR.rmadd.ensembleTR.vcf --ref /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+
+##############
+test
+cd /BDATA/smkim/STR/test/trgt_version
+###  2-1. TRGT
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt
+XX
+/BDATA/smkim/pangenome/01.revio_refpanel/01.mapping/NIH23J3016218_sorted.bam
+
+### new DB
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt \
+-v genotype -t 64 -k XX \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/STR/db/STRchive/data/STRchive-disease-loci.hg38.TRGT.bed \
+--reads /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping/NIH23J3016218_sorted.bam \
+--output-prefix NIH23J3016218.trgt.output
+
+
+bcftools sort -Ob -o NIH23J3016218.trgt.output.sorted.vcf.gz NIH23J3016218.trgt.output.vcf.gz
+bcftools index NIH23J3016218.trgt.output.sorted.vcf.gz
+
+samtools sort -o NIH23J3016218.trgt.output.spannin.sorted.bam NIH23J3016218.trgt.output.spanning.bam
+samtools index NIH23J3016218.trgt.output.spannin.sorted.bam
+
+### OLD db
+/BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt \
+-v genotype -t 64 -k XX \
+--genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+--repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed \
+--reads /BDATA/smkim/pangenome/01.revio_refpanel/01.mapping/NIH23J3016218_sorted.bam \
+--output-prefix NIH23J3016218.trgt_oldDB.output
+
+
+bcftools sort -Ob -o NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz NIH23J3016218.trgt_oldDB.output.vcf.gz
+bcftools index NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz 
+
+samtools sort -o NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam NIH23J3016218.trgt_oldDB.output.spanning.bam
+samtools index NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam
+
+
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed \
+    --vcf NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam \
+    --repeat-id HTT \
+    --image HTT_old.svg
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed \
+    --vcf NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam \
+    --repeat-id RFC1 \
+    --image RFC1_old.svg
+
+
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/db/STRchive/data/STRchive-disease-loci.hg38.TRGT.bed \
+    --vcf NIH23J3016218.trgt.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt.output.spannin.sorted.bam \
+    --repeat-id HD_HTT \
+    --image HTT.svg
+
+
+
+
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/db/STRchive/data/STRchive-disease-loci.hg38.TRGT.bed \
+    --vcf /BDATA/smkim/STR/trgt/01.trgt_genotype_gangstr.v13_new/02.sort/NIH23J3016218_sorted_trgt_genotype_gangstr.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt.output.spannin.sorted.bam \
+    --repeat-id CANVAS_RFC1 \
+    --image CANVAS_RFC1.svg
+
+
+
+
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/db/STRchive/data/STRchive-disease-loci.hg38.TRGT.bed \
+    --vcf NIH23J3016218.trgt.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt.output.spannin.sorted.bam \
+    --repeat-id JBS_CBL \
+    --image JBS_CBL.svg
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/db/STRchive/data/STRchive-disease-loci.hg38.TRGT.bed \
+    --vcf NIH23J3016218.trgt.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt.output.spannin.sorted.bam \
+    --repeat-id SCA37_DAB1 \
+    --image SCA37_DAB1.svg
+
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed \
+    --vcf NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam \
+    --repeat-id CBL \
+    --image CBL_old.svg
+
+/BDATA/smkim/TOOLs/trgt-v3.0.0-x86_64-unknown-linux-gnu/trgt plot \
+    --genome /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+    --repeats /BDATA/smkim/STR/trgt/db/pathogenic_repeats.hg38.bed \
+    --vcf NIH23J3016218.trgt_oldDB.output.sorted.vcf.gz \
+    --spanning-reads NIH23J3016218.trgt_oldDB.output.spanning.sorted.bam \
+    --repeat-id DAB1 \
+    --image DAB1_old.svg
+
+./trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    -v genotype \
+    -t [num] \ #thread 수
+    -k [XX or XY] \ # 성염색체 정보를 정확히 해야.. X 쪽 STR calling이 됨
+    --genome [ref.fasta] \ # mapping 할 때 사용한 refernece fasta 
+    --repeats [TRGT.bed] \ # STR bed, tool에서 기본적으로 제공하는 DB 사용
+    --reads [input.mapped.bam] \ 
+    --output-prefix [output] 
+
+
+###  2-2. QC after TRGT
+bcftools sort -Ob -o sample.sorted.vcf.gz sample.vcf.gz
+bcftools index sample.sorted.vcf.gz
+
+samtools sort -o sample.spanning.sorted.bam sample.spanning.bam
+samtools index sample.spanning.sorted.bam
+
+### 2-3 visualization
+
+./trgt-v1.0.0-x86_64-unknown-linux-gnu/trgt \
+    --genome [ref.fasta] \ # mapping 할 때 사용한 refernece fasta 
+    --repeats [TRGT.bed] \
+    --vcf [TRGT 결과.vcf.gz] \
+    --spanning-reads [TRGT 결과.spanning.bam] \
+    --repeat-id [STR ID] \ # ex. HTT
+    --image [output.svg]

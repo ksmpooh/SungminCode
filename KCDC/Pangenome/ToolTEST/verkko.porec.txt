@@ -1,0 +1,85 @@
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--local \
+--local-memory 400 \
+--local-cpus 96 \
+--snakeopts "--cores 96 --resources mem_mb=400000"
+
+ \
+--sto-run 64 128 4 \
+--ovb-run 64 128 6 \
+--ovs-run 64 128 3 \
+--red-run 64 128 4 \
+--mbg-run 64 128 6 \
+--utg-run 64 128 3 \
+--spl-run 64 128 2 \
+--ali-run 64 128 5 \
+--pop-run 64 128 2 \
+--utp-run 64 128 2 \
+--lay-run 64 128 2 \
+--sub-run 64 128 2 \
+--par-run 64 128 2 \
+--cns-run 64 128 6 \
+--ahc-run 64 128 4 \
+--fhc-run 64 128 4 \
+--shc-run 64 128 4
+
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection_poreC \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+--snakeopts "--cores 96 --resources mem_mb=400000 --keep-going" \
+--sto-run 64 256 4 \
+--ovb-run 64 256 6 \
+--ovs-run 64 256 3 \
+--red-run 64 256 4 \
+--mbg-run 64 256 6 \
+--utg-run 64 256 3 \
+--spl-run 64 256 2 \
+--ali-run 64 256 5 \
+--pop-run 64 256 2 \
+--utp-run 64 256 2 \
+--lay-run 64 256 2 \
+--sub-run 64 256 2 \
+--par-run 64 256 2 \
+--cns-run 64 256 6 \
+--ahc-run 64 256 4 \
+--fhc-run 64 256 4 \
+--shc-run 64 256 4
+
+
+
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection_cifi \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_CiFi.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--threads 96 \
+--mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+--snakeopts "--cores 96 --resources mem_mb=400000 --keep-going" \
+--sto-run 64 256 4 \
+--ovb-run 64 256 6 \
+--ovs-run 64 256 3 \
+--red-run 64 256 4 \
+--mbg-run 64 256 6 \
+--utg-run 64 256 3 \
+--spl-run 64 256 2 \
+--ali-run 64 256 5 \
+--pop-run 64 256 2 \
+--utp-run 64 256 2 \
+--lay-run 64 256 2 \
+--sub-run 64 256 2 \
+--par-run 64 256 2 \
+--cns-run 64 256 6 \
+--ahc-run 64 256 4 \
+--fhc-run 64 256 4 \
+--shc-run 64 256 4

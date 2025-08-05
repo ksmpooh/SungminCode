@@ -1,0 +1,92 @@
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+cd ~/Desktop/pangenome/00.rawDATA
+
+
+
+## Hi-C 추가하여 제분석
+#/BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap #수정
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+Job stats:
+job                   count
+------------------  -------
+HiC_rdnascaff             1
+copyFiles                 1
+hicPhasing                1
+indexBWA                  1
+mergeBWA                  1
+prepareScaffolding        1
+runMashMap                1
+runRukkiHIC               1
+run_seqtktelo             1
+splitHIC                  1
+transformBWA              1
+total                    11
+
+
+
+
+
+#7 8 지우고 다시 시작
+
+./snakemake.sh -s snakefile --cores 96 --keep-going --rerun-triggers mtime
+
+##
+cd 8-hicPipeline
+
+grep -v 'na_unused_utig4-' unitigs.telo > unitigs.telo.filtered
+mv unitigs.telo.filtered unitigs.telo
+
+./snakemake.sh -s snakefile --cores 96 --keep-going --rerun-triggers mtime
+
+job              count
+-------------  -------
+HiC_rdnascaff        1
+total                1
+
+
+#### bash 수정 후 재 실행
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+
+
+verkko -d /BDATA/pangenome/verkko_5down \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+  --snakeopts "--cores 96 --resources mem_mb=400000 --dry-run" \
+  --threads 96

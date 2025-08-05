@@ -1,0 +1,56 @@
+# --dry-run
+# 106
+cd /CDATA/pangenome/verkko/test_data
+
+verkko -d verkko_5down \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --sto-run 64 128 4 \
+  --ovb-run 64 128 6 \
+  --ovs-run 64 128 3 \
+  --red-run 64 128 4 \
+  --mbg-run 64 128 6 \
+  --utg-run 64 128 3 \
+  --spl-run 64 128 2 \
+  --ali-run 64 128 5 \
+  --pop-run 64 128 2 \
+  --utp-run 64 128 2 \
+  --lay-run 64 128 2 \
+  --sub-run 64 128 2 \
+  --par-run 64 128 2 \
+  --cns-run 64 128 6 \
+  --ahc-run 64 128 4 \
+  --fhc-run 64 128 4 \
+  --shc-run 64 128 4 \
+  --threads 96
+
+verkko -d verkko_5down_noporec \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+  --snakeopts "--cores 96 --resources mem_mb=400000 --keep-going --rerun-incomplet" \
+  --sto-run 64 128 4 \
+  --ovb-run 64 128 6 \
+  --ovs-run 64 128 3 \
+  --red-run 64 128 4 \
+  --mbg-run 64 128 6 \
+  --utg-run 64 128 3 \
+  --spl-run 64 128 2 \
+  --ali-run 64 128 5 \
+  --pop-run 64 128 2 \
+  --utp-run 64 128 2 \
+  --lay-run 64 128 2 \
+  --sub-run 64 128 2 \
+  --par-run 64 128 2 \
+  --cns-run 64 128 6 \
+  --ahc-run 64 128 4 \
+  --fhc-run 64 128 4 \
+  --shc-run 64 128 4 \
+  --threads 96
+
+
+  

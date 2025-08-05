@@ -348,10 +348,10 @@ ru %>% select(MOTIFS) %>% mutate(RU.length = str_length(MOTIFS)) %>%
 
 
 combined_plot <- ggdraw() +
-  draw_plot(p1, 0, 0, 1, 1) +           # p1À» ¿øº» Å©±â·Î ¹èÄ¡
-  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2¸¦ ¿À¸¥ÂÊ À§¿¡ ÀÛ°Ô ¹èÄ¡
+  draw_plot(p1, 0, 0, 1, 1) +           # p1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Û°ï¿½ ï¿½ï¿½Ä¡
 
-# °á°ú Ãâ·Â
+# ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 print(combined_plot)
 
 head(ru)
@@ -399,10 +399,10 @@ p2
 #p2
 
 combined_plot <- ggdraw() +
-  draw_plot(p1, 0, 0, 1, 1) +           # p1À» ¿øº» Å©±â·Î ¹èÄ¡
-  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2¸¦ ¿À¸¥ÂÊ À§¿¡ ÀÛ°Ô ¹èÄ¡
+  draw_plot(p1, 0, 0, 1, 1) +           # p1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+  draw_plot(p2, 0.5, 0.5, 0.5, 0.5)     # p2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Û°ï¿½ ï¿½ï¿½Ä¡
 
-# °á°ú Ãâ·Â
+# ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 print(combined_plot)
 
 
@@ -521,7 +521,7 @@ trgt_pass_common_meanMC %>% rename(RU = MOTIFS) %>% left_join(eh_pass_common_mea
   #ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",color = "GC",size='RU.length',
   ggscatter(.,x='mean_MC_TRGT',y="mean_MC_EH",size = "GC",color='RU.length',
             add = "reg.line",
-            conf.int = TRUE, # Add confidence interval
+            conf.int = TRUE, # Add confidence intervanamel
             cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
             #xlim = c(0,0.5),
             #ylim = c(0,0.5),
@@ -646,7 +646,7 @@ a %>% count(n) %>% #head()
   ylab("# of STR")
 
 
-## str1 | str2 µÑÁß ÇÏ³ª¶óµµ 0ÀÎ°Å
+## str1 | str2 ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ 0ï¿½Î°ï¿½
 b %>% count(n) %>% #head()
   ggplot(aes(x=n,y=nn)) + 
   geom_bar(stat='identity') + 
@@ -654,7 +654,7 @@ b %>% count(n) %>% #head()
   xlab("# of Sample") +
   ylab("# of STR")
 
-## str1, str2 µÑ´Ù 0ÀÎ°Å
+## str1, str2 ï¿½Ñ´ï¿½ 0ï¿½Î°ï¿½
 c %>% count(n) %>% #head()
   ggplot(aes(x=n,y=nn)) + 
   geom_bar(stat='identity') + 

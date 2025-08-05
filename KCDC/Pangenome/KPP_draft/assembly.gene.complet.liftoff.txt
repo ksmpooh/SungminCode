@@ -1,0 +1,513 @@
+##? 20250311 liftoff
+
+###############################
+## Script by nak
+conda activate liftoff_env
+
+TARGET=KPPD.hap.fa
+REFERENCE=/db/gencode/GRCh38.primary_assembly.genome.fa
+GFF=/db/gencode/gencode.v47.primary_assembly.annotation.gff3
+OUTPUT=KPPD.hap.liftoff.gff3
+UNMAP=KPPD.hap.unMap.liftoff.txt
+THREADS=100
+
+liftoff -g $GFF -o $OUTPUT -u $UNMAP -p $THREADS -copies $TARGET $REFERENCE
+rm DIR_TARGET/*.fai DIR_TARGET/*.mmi $(pwd)/intermediate_files/reference_all_to_target_all.sam
+
+# GRCh38 + gencode.v47 liftoff results
+10.20.30.204:/BDATA/pangenome/work_liftoff/
+
+# DB data
+10.20.30.206:/ADATA/pangenome/db/chm13
+10.20.30.206:/ADATA/pangenome/db/gencode
+
+#chm13v2 data : https://github.com/marbl/CHM13
+
+
+/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa
+
+/ADATA/pangenome/db/chm13/chm13v2.0_RefSeq_Liftoff_v5.2.gff3
+/ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3
+
+
+
+liftoff -g $GFF -o $OUTPUT -u $UNMAP -p $THREADS -copies $TARGET $REFERENCE  
+liftoff -g /ADATA/pangenome/db/chm13/chm13v2.0_RefSeq_Liftoff_v5.2.gff3 -o test/KPPD001.1.liftoff.gff3 \
+-u KPPD001.1.fa.unMap.liftoff.txt -p 64 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa
+
+
+liftoff -g [gene_anntation_DB.gff] -o [output name.gff3] -dir [tmp_folder] -sc 0.9 -polish\
+-u [unmapped gene list] -p [threads] -copies [input.fasta] [reference genome]
+
+
+
+db
+
+nohup time liftoff -g /ADATA/pangenome/db/chm13/db_test/chm13v2.0_RefSeq_Liftoff_v5.2.gff3 -o db_test/KPPD001.1.liftoff.refSeq.gff3 -dir db_test/inter_refSeq \
+-u db_test/KPPD001.1.fa.unMap.liftoff.gene.txt -p 64 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa > db_test/refseq.log &
+
+
+nohup time liftoff -db /ADATA/pangenome/db/chm13/db_test/chm13.draft_v2.0.gene_annotation.gff3_db -o db_test/KPPD001.1.liftoff.refSeq.gff3 -dir db_test/inter_refSeq_db \
+-u db_test/KPPD001.1.fa.unMap.liftoff.gene.txt -p 64 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa > db_test/refseq_db.log &
+
+
+
+nohup time liftoff -g /ADATA/pangenome/db/chm13/db_test/chm13.draft_v2.0.gene_annotation.gff3 -o db_test/KPPD001.1.liftoff.gene.gff3 -dir db_test/inter_gencode \
+-u db_test/KPPD001.1.fa.unMap.liftoff.gene.txt -p 64 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa > db_test/gencode.log &
+
+
+nohup time liftoff -db /ADATA/pangenome/db/chm13/db_test/chm13.draft_v2.0.gene_annotation.gff3_db -o db_test/KPPD001.1.liftoff.gene_db.gff3 -dir db_test/inter_gencode_db \
+-u db_test/KPPD001.1.fa.unMap.liftoff.gene_db.txt -p 64 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa > db_test/gencode_db.log &
+
+### new
+liftoff -p 10 -sc 0.90 -copies -db <GENCODE_V38_DATABASE> -u
+<UNMAPPED_FILE> -o <OUTPUT_GFF3> -polish <GENOME_FASTA>
+< GRCh38_FASTA>
+
+
+
+liftoff -db /ADATA/pangenome/db/chm13/db_test/chm13.draft_v2.0.gene_annotation.gff3_db -o {} -dir db_test/inter_gencode_db \
+-u db_test/KPPD001.1.fa.unMap.liftoff.gene_db.txt -p 16 -copies KPPD001.1.fa /ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa > db_test/gencode_db.log &
+###
+REFERENCE=/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa
+
+theme=gencode
+GFF_gencode=/ADATA/pangenome/db/chm13/db_test/chm13.draft_v2.0.gene_annotation.gff3_db
+TARGET=$1.fa
+OUTPUT=$theme/$1.chm13v2_$theme.liftoff.gff3
+UNMAP=$theme/$1.chm13v2_$theme.unMap.liftoff.txt
+THREADS=16
+
+liftoff -sc 0.90 -copies -db $GFF_gencode -o $OUTPUT -u $UNMAP -p $THREADS -dir $theme/$1 -polish $TARGET $REFERENCE
+#rm $TARGET.mmi $theme/$1/reference_all_to_target_all.sam
+rm -rf $theme/$1
+
+
+
+ls *fa |sed 's/.fa//g' | xargs -I{} -P 6 bash -c "sh liftoff.sh {}"
+###
+
+
+
+
+awk '$3=="gene"{print $0}' KPPD001.1.chm13v2_gencode.liftoff.gff3 |sed 's/gene_biotype=/\t/g' | awk '{print $10}' | sed 's/;/\t/g' | awk '{print $1}' | sort | uniq -c > gene_biotype_gene
+
+awk '$3=="gene"{print $0}' chm13.draft_v2.0.gene_annotation.gff3 |sed 's/gene_biotype=/\t/g' | awk '{print $10}' | sed 's/;/\t/g' | awk '{print $1}' | sort | uniq -c > gene_biotype_gene
+
+
+awk -v fname="count.txt" '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,"\nother",other}' count.txt
+awk -v fname="gene_biotype_gene" '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,fname,"\nother",other,fname}' gene_biotype_gene
+
+
+## shell for geon_biotype
+mkdir gene_biotype
+input=$1
+awk '$3=="gene"{print $0}' $input |sed 's/gene_biotype=/\t/g' | awk '{print $10}' | sed 's/;/\t/g' | awk '{print $1}' | sort | uniq -c | awk -v fname=$input '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,fname,"\nother",other,fname}' > gene_biotype/$input.gene
+awk '$3=="transcript"{print $0}' $input |sed 's/gene_biotype=/\t/g' | awk '{print $10}' | sed 's/;/\t/g' | awk '{print $1}' | sort | uniq -c | awk -v fname=$input '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,fname,"\nother",other,fname}' > gene_biotype/$input.transcript
+
+
+awk '$3=="gene"{print $0}' $input |sed 's/gene_biotype=/\t/g' | awk '{print $10}' | sed 's/;/\t/g' | awk '{print $1}' | sort | uniq -c | awk -v fname=$input '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,fname,"\nother",other,fname}' > gene_biotype/$input.gene
+
+
+1                   2       3       4       5       6   7   8
+KPPD001_h1tg000001l	Liftoff	gene	123176	141759	.	+	.	
+9
+ID=CHM13_G0003663;source_gene_common_name=FCGR2A;source_gene=ENSG00000143226.15;	
+10: gene_biotype
+protein_coding;gene_id=CHM13_G0003663;	
+11: gene_name
+FCGR2A;transcript_modes=transMap;Name=FCGR2A;source_transcript=N/A;alternative_source_transcripts=N/A;collapsed_gene_ids=N/A;collapsed_gene_names=N/A;paralogy=N/A;unfiltered_paralogy=N/A;alignment_id=N/A;frameshift=N/A;exon_anotation_support=N/A;intron_annotation_support=N/A;transcript_class=N/A;valid_start=N/A;valid_stop=N/A;proper_orf=N/A;extra_paralog=False;	
+12: coverage
+0.999;sequence_ID=0.998;valid_ORFs=4;	
+13: copy number
+0;copy_num_ID=CHM13_G0003663_0
+
+
+###
+awk '{print $1,$2}' KPPD132.2.chm13v2_gencode.liftoff.gff3_polished.afterliftoff_gene | sort | uniq -c | head
+awk '{if ($2 == "protein_coding") {pc += $1} else {other += $1}}END {print "protein_coding",pc,,"\nother",other,fname}' KPPD132.2.chm13v2_gencode.liftoff.gff3_polished.afterliftoff_gene
+
+awk '$3=="gene" {attr = $NF;gene_name = "NA";gene_biotype = "NA";extra_copy_number = "NA";coverage = "NA";print $attr}' KPPD001.1.chm13v2_gencode.liftoff.gff3 | head
+
+awk '$3=="transcript" {
+    attr = $NF  # 속성 필드는 보통 마지막 열에 있음
+    gene_name = "NA"
+    gene_biotype = "NA"
+    extra_copy_number = "NA"
+    coverage = "NA"
+    
+    # 속성 필드를 ";"를 구분자로 배열에 저장
+    n = split(attr, fields, ";")
+    for (i = 1; i <= n; i++) {
+        # 앞뒤 공백 제거 (선택사항)
+        gsub(/^[ \t]+|[ \t]+$/, "", fields[i])
+        if (fields[i] ~ /^gene_name=/) {
+            split(fields[i], a, "=")
+            gene_name = a[2]
+        }
+        else if (fields[i] ~ /^gene_biotype=/) {
+            split(fields[i], a, "=")
+            gene_biotype = a[2]
+        }
+        else if (fields[i] ~ /^extra_copy_number=/) {
+            split(fields[i], a, "=")
+            extra_copy_number = a[2]
+        }
+        else if (fields[i] ~ /^coverage=/) {
+            split(fields[i], a, "=")
+            coverage = a[2]
+        }
+    }
+    # $1은 보통 염색체 또는 시퀀스 ID
+    print $1, gene_name, gene_biotype, extra_copy_number, coverage
+}' chm13.draft_v2.0.gene_annotation.gff3 > chm13.draft_v2.0.gene_annotation.gff3_transcript
+
+
+
+
+### chm13
+awk '$3=="gene" {
+    attr = $NF  # 속성 필드는 보통 마지막 열에 있음
+    gene_name = "NA"
+    gene_biotype = "NA"
+    extra_copy_number = "NA"
+    coverage = "NA"
+    
+    # 속성 필드를 ";"를 구분자로 배열에 저장
+    n = split(attr, fields, ";")
+    for (i = 1; i <= n; i++) {
+        # 앞뒤 공백 제거 (선택사항)
+        gsub(/^[ \t]+|[ \t]+$/, "", fields[i])
+        if (fields[i] ~ /^gene_name=/) {
+            split(fields[i], a, "=")
+            gene_name = a[2]
+        }
+        else if (fields[i] ~ /^gene_biotype=/) {
+            split(fields[i], a, "=")
+            gene_biotype = a[2]
+        }
+        else if (fields[i] ~ /^extra_copy_number=/) {
+            split(fields[i], a, "=")
+            extra_copy_number = a[2]
+        }
+        else if (fields[i] ~ /^coverage=/) {
+            split(fields[i], a, "=")
+            coverage = a[2]
+        }
+    }
+    # $1은 보통 염색체 또는 시퀀스 ID
+    print $1, gene_name, gene_biotype, extra_copy_number, coverage
+}' chm13.draft_v2.0.gene_annotation.gff3 > chm13.draft_v2.0.gene_annotation.gff3_gene
+
+awk '$3=="transcript" {
+    attr = $NF  # 속성 필드는 보통 마지막 열에 있음
+    gene_name = "NA"
+    gene_biotype = "NA"
+    source_transcript = "NA"
+    source_transcript_name = "NA"
+    
+    # 속성 필드를 ";"를 구분자로 배열에 저장
+    n = split(attr, fields, ";")
+    for (i = 1; i <= n; i++) {
+        # 앞뒤 공백 제거 (선택사항)
+        gsub(/^[ \t]+|[ \t]+$/, "", fields[i])
+        if (fields[i] ~ /^gene_name=/) {
+            split(fields[i], a, "=")
+            gene_name = a[2]
+        }
+        else if (fields[i] ~ /^gene_biotype=/) {
+            split(fields[i], a, "=")
+            gene_biotype = a[2]
+        }
+        else if (fields[i] ~ /^source_transcript=/) {
+            split(fields[i], a, "=")
+            source_transcript = a[2]
+        }
+        else if (fields[i] ~ /^source_transcript_name=/) {
+            split(fields[i], a, "=")
+            source_transcript_name = a[2]
+        }
+    }
+    # $1은 보통 염색체 또는 시퀀스 ID
+    print $2, gene_name, gene_biotype, source_transcript, source_transcript_name
+}' chm13.draft_v2.0.gene_annotation.gff3 > chm13.draft_v2.0.gene_annotation.gff3_transcript
+
+
+### GRCh38
+awk '$3=="gene" {
+    attr = $NF  # 속성 필드는 보통 마지막 열에 있음
+    gene_name = "NA"
+    gene_type = "NA"
+    extra_copy_number = "NA"
+    coverage = "NA"
+    
+    # 속성 필드를 ";"를 구분자로 배열에 저장
+    n = split(attr, fields, ";")
+    for (i = 1; i <= n; i++) {
+        # 앞뒤 공백 제거 (선택사항)
+        gsub(/^[ \t]+|[ \t]+$/, "", fields[i])
+        if (fields[i] ~ /^gene_name=/) {
+            split(fields[i], a, "=")
+            gene_name = a[2]
+        }
+        else if (fields[i] ~ /^gene_type=/) {
+            split(fields[i], a, "=")
+            gene_type = a[2]
+        }
+        else if (fields[i] ~ /^extra_copy_number=/) {
+            split(fields[i], a, "=")
+            extra_copy_number = a[2]
+        }
+        else if (fields[i] ~ /^coverage=/) {
+            split(fields[i], a, "=")
+            coverage = a[2]
+        }
+    }
+    # $1은 보통 염색체 또는 시퀀스 ID
+    print $1, gene_name, gene_type, extra_copy_number, coverage
+}' gencode.v47.primary_assembly.annotation.gff3 > gencode.v47.primary_assembly.annotation.gff3_gene
+
+awk '$3=="transcript" {
+    attr = $NF  # 속성 필드는 보통 마지막 열에 있음
+    gene_name = "NA"
+    transcript_type = "NA"
+    Parent = "NA"
+    transcript_id = "NA"
+    
+    # 속성 필드를 ";"를 구분자로 배열에 저장
+    n = split(attr, fields, ";")
+    for (i = 1; i <= n; i++) {
+        # 앞뒤 공백 제거 (선택사항)
+        gsub(/^[ \t]+|[ \t]+$/, "", fields[i])
+        if (fields[i] ~ /^gene_name=/) {
+            split(fields[i], a, "=")
+            gene_name = a[2]
+        }
+        else if (fields[i] ~ /^transcript_type=/) {
+            split(fields[i], a, "=")
+            transcript_type = a[2]
+        }
+        else if (fields[i] ~ /^Parent=/) {
+            split(fields[i], a, "=")
+            Parent = a[2]
+        }
+        else if (fields[i] ~ /^transcript_id=/) {
+            split(fields[i], a, "=")
+            transcript_id = a[2]
+        }
+    }
+    # $1은 보통 염색체 또는 시퀀스 ID
+    print $1, gene_name, transcript_type, Parent, transcript_id
+}' gencode.v47.primary_assembly.annotation.gff3 > gencode.v47.primary_assembly.annotation.gff3_transcript
+
+
+#gene : T2T -> GRCh38
+#gene_name = "NA" ->  gene_name
+#gene_biotype = "NA" -> gene_type
+#extra_copy_number = "NA" -> extra_copy_number
+#coverage = "NA" -> coverage
+
+
+#T2T -> GRCh38
+#source_gene -> Parent
+#transcript_biotype = "NA" -> transcript_type
+#source_transcript = "NA" -> transcript_id
+
+
+# gene
+genome@genome205:/ADATA/pangenome/db/chm13$ awk '{print $2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene | sort |uniq -c |grep protein_coding |wc -l
+19866
+genome@genome205:/ADATA/pangenome/db/chm13$ awk '{print $2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene | sort |uniq -c |grep -v protein_coding |wc -l
+39626
+
+
+# transcript
+75345 notpro.1.txt
+154726 pro.1.txt
+
+###
+# KPPD T2T
+/ADATA/pangenome/assembly/gencode
+bash /BDATA/smkim/SCRIPTs/liftoff.after.sh
+#ls *polished | xargs -I {} -P 80 bash -c "bash /BDATA/smkim/SCRIPTs/liftoff.after.sh {} CHM13"
+
+# KPPD GRCh38
+/BDATA/smkim/pangenome/gencode_GRCh38/gencode_GRCh38
+ls *polished | xargs -I {} -P 80 bash -c "bash /BDATA/smkim/SCRIPTs/liftoff.after.sh {} GRCh38"
+
+# HPRC CHM13
+/CDATA/pangenome/HPRC/annotation/gencode_CHM13
+ls *polished | xargs -I {} -P 80 bash -c "bash /BDATA/smkim/SCRIPTs/liftoff.after.sh {} CHM13"
+
+# HPRC GRCh38
+cd /CDATA/pangenome/HPRC/annotation/gencode_GRCh38
+ls *polished | xargs -I {} -P 20 bash -c "bash /BDATA/smkim/SCRIPTs/liftoff.after.sh {} GRCh38"
+
+# CPC GRCh38
+cd /ADATA/pangenome/00.rawDATA/CPC/annotation/
+ls *gz | xargs -I {} -P 40 bash -c "bash /BDATA/smkim/SCRIPTs/liftoff.after.forCPCgz.sh {} GRCh38"
+
+
+for file in *.gff3.afterliftoff_gene; do
+  name=$(echo "$file" | sed 's/.gff3.afterliftoff_gene//g' | sed 's/\./#/g')
+  awk -v name="$name" '{print name"#"$0}' "$file" > modi.$file
+done
+
+
+###
+
+#205:/ADATA/pangenome/assembly/gencode/liftoff_processing
+
+cd /ADATA/pangenome/annotation
+
+cat KPPD/T2T_CHM13/gene/*gene > merge/KPPD_T2T_gene_merge.txt
+cat KPPD/T2T_CHM13/transcript/*transcript > merge/KPPD_T2T_transcripts_merge.txt
+cat KPPD/GRCh38/gene/*gene > merge/KPPD_GRCh38_gene_merge.txt
+cat KPPD/GRCh38/transcript/*transcript > merge/KPPD_GRCh38_transcript_merge.txt
+
+cat HPRC/T2T_CHM13/gene/*gene > merge/HPRC_T2T_gene_merge.txt
+cat HPRC/T2T_CHM13/transcript/*transcript > merge/HPRC_T2T_transcripts_merge.txt
+cat HPRC/GRCh38/gene/*gene > merge/HPRC_GRCh38_gene_merge.txt
+cat HPRC/GRCh38/transcript/*transcript > merge/HPRC_GRCh38_transcript_merge.txt
+
+
+cat CPC/GRCh38/gene/*gene > merge/CPC_GRCh38_gene_merge.txt
+
+cd /ADATA/pangenome/annotation/merge
+awk '$5>=0.9{print $0}' CPC_GRCh38_gene_merge.txt > CPC_GRCh38_gene_merge.cov0.9.txt
+
+cd /ADATA/pangenome/annotation/merge
+
+
+##
+HPRC_GRCh38_gene_merge.txt
+HPRC_GRCh38_transcript_merge.txt
+HPRC_T2T_gene_merge.txt
+HPRC_T2T_transcripts_merge.txt
+KPPD_GRCh38_gene_merge.txt
+KPPD_GRCh38_transcript_merge.txt
+KPPD_T2T_gene_merge.txt
+KPPD_T2T_transcripts_merge.txt
+
+
+###
+cd /ADATA/pangenome/db/gencode
+
+## GRCh38
+
+awk '$3=="protein_coding"{print $1,$2,$3}' gencode.v47.primary_assembly.annotation.gff3_gene |sort |uniq -c | wc -l
+20107
+
+awk '$3=="protein_coding"{print $2,$3}' gencode.v47.primary_assembly.annotation.gff3_gene |sort |uniq -c | wc -l
+20089
+
+awk '$3!="protein_coding"{print $2,$3}' gencode.v47.primary_assembly.annotation.gff3_gene |sort |uniq -c | wc -l
+57606
+awk '$3!="protein_coding"{print $1,$2,$3}' gencode.v47.primary_assembly.annotation.gff3_gene |sort |uniq -c | wc -l
+57818
+
+
+awk '$3!="protein_coding"{print $0}' gencode.v47.primary_assembly.annotation.gff3_transcript |sort |uniq -c | wc -l
+298083
+
+awk '$3!="protein_coding"{print $2,$3,$4,$5}' gencode.v47.primary_assembly.annotation.gff3_transcript |sort |uniq -c | wc -l
+298083
+
+awk '$3=="protein_coding"{print $0}' gencode.v47.primary_assembly.annotation.gff3_transcript |sort |uniq -c | wc -l
+89861
+
+awk '$3=="protein_coding"{print $2,$3,$4,$5}' gencode.v47.primary_assembly.annotation.gff3_transcript |sort |uniq -c | wc -l
+89861
+
+
+## T2T-CHM13
+### chr 까지 중복 확인
+awk '$3=="protein_coding"{print $1,$2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene |sort |uniq -c | wc -l
+19891
+awk '$3!="protein_coding"{print $1,$2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene |sort |uniq -c | wc -l
+40763
+
+### chr 까지 중복 확인 안함
+awk '$3=="protein_coding"{print $2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene |sort |uniq -c | wc -l
+19866
+awk '$3!="protein_coding"{print $2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene |sort |uniq -c | wc -l
+39626
+
+
+awk '$3=="protein_coding"{print $2,$3,$4}' chm13.draft_v2.0.gene_annotation.gff3_transcript |sort |uniq -c | wc -l
+154726
+
+awk '$3!="protein_coding"{print $2,$3,$4}' chm13.draft_v2.0.gene_annotation.gff3_transcript |sort |uniq -c | wc -l
+75345
+
+awk '$3=="protein_coding"{print $1,$2,$3,$4}' chm13.draft_v2.0.gene_annotation.gff3_transcript |sort |uniq -c | wc -l
+154949
+
+awk '$3!="protein_coding"{print $1,$2,$3,$4}' chm13.draft_v2.0.gene_annotation.gff3_transcript |sort |uniq -c | wc -l
+76425
+
+
+###
+R
+library(tidyverse)
+df <- read_table("gene.merge.txt",col_names=F)
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein coding genes","Noncoding genes")) %>%
+  group_by(ID) %>% count(ID,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.protein_coding_count.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+df %>% filter(X5 >=0.9) %>%
+  mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein coding genes","Noncoding genes")) %>%
+  group_by(ID) %>% count(ID,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.protein_coding_count.coverge0.9.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+df_tr <- read_table("transcript.merge.txt",col_names=F)
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein coding genes","Noncoding genes")) %>%
+  group_by(ID) %>% count(ID,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.protein_coding_count.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+df %>% filter(X5 >=0.9) %>%
+  mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  group_by(ID) %>% count(ID,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.protein_coding_count.coverge0.9.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+df_tr %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  group_by(ID) %>% count(ID,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.protein_coding_count_transcript.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  mutate(copy_count = ifelse(X4==0,0,1)) %>% count(coding_type,copy_count)
+'''
+  coding_type          copy_count        n
+  <chr>                     <dbl>    <int>
+1 Noncoding genes               0 11119093
+2 Noncoding genes               1   635441
+3 Protein coding genes          0  5172626
+4 Protein coding genes          1    30299
+'''
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coverage = ifelse(X5>=0.9,1,0)) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  filter(X4 != 0) %>% count(X2,X3,coverage,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.change_copy_number_count.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+  #mutate(copy_count = ifelse(X4==0,0,1)) %>% count(X2) %>% dim()
+
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  filter(X4 != 0) %>% count(X2,X3,coverage,coding_type) %>% write.table("KPPD.liftoff_genecode_chm13.change_copy_number_count.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  filter(X4 != 0) %>% rename(contig = X1,gene = X2,gene_type = X3,copy_num=X4,coverage=X5) %>%
+  select(-contig) %>%
+  write.table("KPPD.liftoff_genecode_chm13.change_copy_number_INFO.txt",col.names = T,row.names = F,quote = F,sep = "\t")

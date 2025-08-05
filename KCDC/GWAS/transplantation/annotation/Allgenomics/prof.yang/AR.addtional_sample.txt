@@ -1,0 +1,223 @@
+### 20250131 first 31 sample
+
+
+/BDATA/smkim/AR_2025/06.AR_byYS/00.sampleINFO
+
+awk '{print $1"_KR\t"$7;print $1"_KD\t"$8}' sampleinfo.requ.byYS.20250131.txt > ../01.plink/20250131_sampleCEL.list.txt
+awk '{print $1"_KR\t"$1"_KD\t"}' sampleinfo.requ.byYS.20250131.txt > KR.KD.31pair.ID.txt
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS/01.plink
+awk '{print $2,$2}' 20250131_sampleCEL.list.txt > KR.KD.samplepair.31sample.txt
+
+
+plink --bfile /BDATA/smkim/AR_2025/02.1stQC/KOTRY.AR_2025_KRKD.1st --keep KR.KD.samplepair.31sample.txt --make-bed --out KOTRY.AR_2025_KRKD.1st_YSpair
+
+plink --bfile KOTRY.AR_2025_KRKD.1st_YSpair --update-name /BDATA/smkim/KR_allogenomics/refDATA/AX_posID.change.list_withoutN.txt --make-bed --out KOTRY.AR_2025_KRKD.1st_YSpair_updateSNPid
+awk '{print $1}' /BDATA/smkim/KR_allogenomics/refDATA/KBAv1_1_ref_VEP_func_rform.txt > function.variant.txt
+
+plink --bfile KOTRY.AR_2025_KRKD.1st_YSpair_updateSNPid --extract function.variant.txt --make-bed --out KOTRY.AR_2025_KRKD.1st.YSpair_updateSNPid_onlyFuncvariant
+
+awk '{print $2,$2,$1,$1}' 20250131_sampleCEL.list.txt > updateid.txt
+
+plink --bfile KOTRY.AR_2025_KRKD.1st.YSpair_updateSNPid_onlyFuncvariant --update-ids updateid.txt --make-bed --out KOTRY.AR_2025_KRKD.1st.YSpair_updateSNPid_onlyFuncvariant_updatename
+
+
+
+## AR 이전에 뽑은 리스트와 동일하게
+
+cd /BDATA/smkim/KR_allogenomics/05.AR_2025
+#### 이전에 한거
+df <-read.table("../gene.list.txt")
+ref <- read.table("/BDATA/smkim/KR_allogenomics/refDATA/KBAv1_1_ref_VEP_func_rform_splitGENE.txt")
+out <- ref[ref$V3 %in% df$V1,]
+write.table(out,"AR_new_list.withmono.txt",col.names=F,row.names=F,quote=F)
+####
+
+/BDATA/smkim/KR_allogenomics/05.AR_2025/AR_new_list.txt
+/BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic/AR_new_list.withmono.txt
+
+#gene target 해서 뽑기
+cd /BDATA/smkim/AR_2025/06.AR_byYS/02.AR_NKcell
+mkdir gene_extract
+
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.extract.variant.inGenelist_AA.AB.BB_formet.py /BDATA/smkim/AR_2025/06.AR_byYS/01.plink/KOTRY.AR_2025_KRKD.1st.YSpair_updateSNPid_onlyFuncvariant_updatename /BDATA/smkim/KR_allogenomics/05.AR_2025/AR_new_list.txt
+
+rsync -avhP /BDATA/smkim/KR_allogenomics/04.immune_cell_signal/03.data.Pair.matching.R ./
+# 약간 수정 matching table
+cp /BDATA/smkim/AR_2025/06.AR_byYS/00.sampleINFO/KR.KD.31pair.ID.txt ./
+
+cd ped_format
+mkdir merge
+
+ls *txt |sed 's/.txt//g' | xargs -I{} -P 10 bash -c "Rscript --vanilla ../03.data.Pair.matching_modi.R {}.txt merge/{}.pairmerge.txt"
+cd merge
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.mergedf.after.extrract.AA.AB.BB.py *txt
+
+sed 's/.x/_KR/g' test.txt | sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' |less -NS
+
+
+
+
+
+## with monomorphic
+/BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic/AR_new_list.withmono.txt
+cd /BDATA/smkim/AR_2025/06.AR_byYS/02.AR_NKcell/with_mono
+
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.extract.variant.inGenelist_AA.AB.BB_formet.py \
+/BDATA/smkim/AR_2025/06.AR_byYS/01.plink/KOTRY.AR_2025_KRKD.1st.YSpair_updateSNPid_onlyFuncvariant_updatename \
+/BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic/AR_new_list.withmono.txt
+
+cp /BDATA/smkim/AR_2025/06.AR_byYS/00.sampleINFO/KR.KD.31pair.ID.txt ./
+
+cd ped_format
+mkdir merge
+
+ls *txt |sed 's/.txt//g' | xargs -I{} -P 10 bash -c "Rscript --vanilla /BDATA/smkim/AR_2025/06.AR_byYS/02.AR_NKcell/03.data.Pair.matching_modi.R {}.txt merge/{}.pairmerge.txt"
+cd merge
+python /BDATA/smkim/KR_allogenomics/SCRIPT/02.mergedf.after.extrract.AA.AB.BB.py *txt
+
+sed 's/.x/_KR/g' test.txt | sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' |less -NS
+sed 's/.x/_KR/g' test.txt | sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' > KR.KD.YS_31samples.NKcell.genotype.withmono.txt
+
+
+
+
+#### extract add 4 sample
+
+33 pairs
+
+NIH: 18 * 2(KRKD)
+YS: 15 * 2 (KRKD) 
+
+36 YS.list_inNIH.txt
+30 YS.list.txt
+
+cd genome@genome109:/BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall$ 
+sh geno.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/YS.celfiles.txt /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/1st/
+sh geno.ssp.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/YS.celfiles.txt /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/1st/SSP
+
+
+#### extract add 4 sample : 33 pair + final KOTRY AR QC sample for genocall
+sh geno.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/cel_files_forYS.withotherKOTRY.txt /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/
+
+sh geno.ssp.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/cel_files_forYS.withotherKOTRY.txt /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/SSP
+
+
+sh adv.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/SSP /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/SSP/adv
+
+
+bash call.sh /BDATA/smkim/AR_2025/01.genocall/2nd/ /BDATA/smkim/AR_2025/01.genocall/2nd/SSP/ /BDATA/smkim/AR_2025/01.genocall/2nd/SSP/adv/ KOTRY.AR_2025_KRKD.2nd
+bash call.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/ /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/SSP/ /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/with_otherNIH/SSP/adv/ /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink/YS_v2_with_KOTRY.AR_2025.all
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink
+bash /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/call.sh /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/final_add2sample /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/final_add2sample/SSP /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/final_add2sample/SSP/adv KOTRY.with_YSsample.AR_2025_all
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all 
+plink --bfile KOTRY.with_YSsample.AR_2025_all --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out KOTRY.with_YSsample.AR_2025_all.fill
+plink --bfile KOTRY.with_YSsample.AR_2025_all --geno 0.05 --maf 0.01 --make-bed --out KOTRY.with_YSsample.AR_2025_all.fill_nohwe
+
+
+/BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/change.id.celtoid.txt
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all --update-ids /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/change.id.celtoid.v2.txt --make-bed --out KOTRY.with_YSsample.AR_2025_all.updateids
+
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all.updateids --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out KOTRY.with_YSsample.AR_2025_all.updateids.fill
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all.updateids.fill --chr 20 --double-id --recode vcf --out sirp_hla/KOTRY.with_YSsample.AR_2025_all.updateids.fill.sirp
+plink --bfile KOTRY.with_YSsample.AR_2025_all.updateids.fill --chr 6 --double-id --recode vcf --out sirp_hla/KOTRY.with_YSsample.AR_2025_all.updateids.fill.HLA
+
+
+NIH19KT6010
+NIH19KT5932
+
+
+## after imp
+
+awk -F"_" '{
+    if ($0 ~ /^NIH/) {
+        print $1 "_" $1, $1
+    } else {
+        print $0, $1 "_" $2 "_" $3
+    }
+}' sample.list > formatted_sample_table.txt
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS_v2/03.SIRP_HLA/SIRP
+
+
+bcftools reheader -s formatted_sample_table.txt -o chr20.dose.idchange.vcf chr20.dose.vcf.gz
+bcftools view -S /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/ys.vcf.extract.list chr20.dose.idchange.vcf -Oz -o chr20.dose.idchange.onlyYS.vcf.gz
+
+
+
+
+
+bcftools reheader -s ../SIRP/formatted_sample_table.txt -o chr6.dose.idchange.vcf chr6.dose.vcf.gz
+bcftools view -S /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/ys.vcf.extract.list chr6.dose.idchange.vcf -Oz -o chr6.dose.idchange.onlyYS.vcf.gz
+
+
+########################################
+# 20250718
+plink geno -> vcf -> plink -> re QC...
+
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS_v2/01.genocall/final_add2sample
+mkdir vcf
+
+/BDATA/smkim/TOOL/apt_2.11.8_linux_64_x86_binaries/bin/apt-format-result \
+ --calls-file AxiomGT1.calls.txt \
+ --annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+ --export-vcf-file vcf/Axiom_KBAv1.1_convert.vcf \
+ --log-file vcf/Axiom_KBAv1.1_convert.log
+
+/BDATA/smkim/TOOL/apt_2.11.8_linux_64_x86_binaries/bin/apt-format-result \
+ --calls-file SSP/AxiomGT1.calls.txt \
+ --annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+ --export-vcf-file vcf/SSP_Axiom_KBAv1.1_convert.vcf \
+ --log-file vcf/SSP_Axiom_KBAv1.1_convert.log
+
+
+/BDATA/smkim/TOOL/apt_2.11.8_linux_64_x86_binaries/bin/apt-format-result \
+ --calls-file SSP/adv/AxiomGT1.calls.txt \
+ --annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+ --export-vcf-file vcf/adv_Axiom_KBAv1.1_convert.vcf \
+ --log-file vcf/adv_Axiom_KBAv1.1_convert.log
+
+
+
+plink --vcf .vcf.gz --make-bed --out [Output] --double-id --allow-extra-chr
+
+ls *vcf | sed 's/.vcf//g' | xargs -I {} -P 3 bash -c "plink --vcf {}.vcf --make-bed --out /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.genoVCFtoplink/{}.plink --double-id --allow-extra-chr"
+
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.genoVCFtoplink
+plink --bfile Axiom_KBAv1.1_convert.plink --extract /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink/Axiom_KBAv1.1_Original_call.bim --make-bed --out Axiom_KBAv1.1_Original_call
+plink --bfile SSP_Axiom_KBAv1.1_convert.plink --extract /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink/Axiom_KBAv1.1_SSP_call.bim --make-bed --out Axiom_KBAv1.1_SSP_call
+plink --bfile adv_Axiom_KBAv1.1_convert.plink --extract /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink/Axiom_KBAv1.1_adv_call.bim --make-bed --out Axiom_KBAv1.1_adv_call
+
+plink --bfile Axiom_KBAv1.1_Original_call --merge-list ../02.plink/merge.list --make-bed --out KOTRY.with_YSsample.AR_2025_all
+
+head /RDATA6/KBAv1/KoGES/OPEN/KBAv1_quality_control_input_v1_202406.txt
+grep REMOVE /RDATA6/KBAv1/KoGES/OPEN/KBAv1_quality_control_input_v1_202406.txt | awk '{print $2}' > rmdup.txt
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all --exclude rmdup.txt --make-bed --out KOTRY.with_YSsample.AR_2025_all.rmdup
+
+#awk '{print $2"\t"$3}' /RDATA6/KBAv1/KoGES/OPEN/KBAv1_quality_control_input_v1_202406.txt > updateSNP.txt
+
+
+#plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup --update-name updateSNP.txt --make-bed --out KOTRY.with_YSsample.AR_2025_all.rmdup.updateSNP
+
+
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup --update-ids /BDATA/smkim/AR_2025/06.AR_byYS_v2/00.sampleINFO/change.id.celtoid.v2.txt --make-bed --out KOTRY.with_YSsample.AR_2025_all.rmdup.updateid
+
+plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup.updateid --maf 0.01 --geno 0.05 --make-bed --out KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill
+#awk '{split($2,a,":"); print $2"\t"a[3]}' KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill.bim > a2.allele
+for chr in {1..22}
+do
+  plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill \
+        --chr $chr \
+        --a2-allele /BDATA/smkim/GWAS/a2.allele \
+        --recode vcf-iid \
+        --out forKIS/KOTRY.AR_2025.finalQC.chr${chr}
+done

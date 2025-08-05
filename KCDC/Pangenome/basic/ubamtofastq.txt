@@ -21,3 +21,15 @@ ls RWGS-20-00*/*bam | sed 's/.bam//g' | xargs -I {} -P 4 bash -c "samtools fastq
 
 
 ls RWGS-15*/*bam | awk '{split($1,a,"/"); print "samtools fastq -@ 4 "$1" | gzip > "a[1]"_2024_Rare_trio.Revio_hifi_reads.rawfastq.merge.fastq.gz"}' | xargs -I {} -P 6 bash -c "{}"
+
+## 4 sample ONT ubam to fastq
+
+
+ls *ULK*bam | sed 's/.bam//g' | xargs -I {} -P 8 bash -c "samtools fastq -@ 4 {}.bam | gzip > fastq/{}.fastq.gz"
+ls *LSK*bam | sed 's/.bam//g' | xargs -I {} -P 8 bash -c "samtools fastq -@ 4 {}.bam | gzip > fastq/{}.fastq.gz"
+
+ls *bam | sed 's/.bam//g' | xargs -I {} -P 32 bash -c "samtools fastq -@ 4 {}.bam | gzip > /ADATA/pangenome/00.rawDATA/ONT_UL/fastq/{}.fastq.gz"
+
+
+#PG240007_LCL.Revio_hifi_reads.rawfastq.merge.fastq.gz
+# ID.platfrom.rawdqtq.merge.fastq.gz

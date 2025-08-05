@@ -1,0 +1,41 @@
+cd /ADATA/pangenome/db/chm13
+awk '{print $2,$3}' chm13.draft_v2.0.gene_annotation.gff3_gene | sort |uniq -c | awk '{print $3}' | sort |uniq -c > count/chm13.draft_v2.0.gene_annotation.gff3_gene_biotype
+
+awk '{if ($2 == "protein_coding") a += $1; else b += $1} END {print a,b,a + b}' count/chm13.draft_v2.0.gene_annotation.gff3_gene_biotype
+
+19866 39626 59492
+
+
+
+awk '{print $2,$3,$4}' chm13.draft_v2.0.gene_annotation.gff3_transcript | sort |uniq -c |  awk '{print $3}' | sort |uniq -c > count/chm13.draft_v2.0.gene_annotation.gff3_transcript_biotype
+awk '{if ($2 == "protein_coding") a += $1; else b += $1} END {print a,b,a + b}' count/chm13.draft_v2.0.gene_annotation.gff3_transcript_biotype
+
+
+awk '{if ($2 == "protein_coding") a += $1; else b += $1} END {print a,b,a + b}' count/chm13.draft_v2.0.gene_annotation.gff3_transcript_biotype
+
+154726 75345 230071
+
+
+cd /ADATA/pangenome/db/gencode
+
+
+awk '{print $2,$3}' gencode.v47.primary_assembly.annotation.gff3_gene | sort |uniq -c | awk '{print $3}' | sort |uniq -c > count/gencode.v47.primary_assembly.annotation.gff3_gene_biotype
+
+awk '{if ($2 == "protein_coding") a += $1; else b += $1} END {print a,b,a + b}' count/gencode.v47.primary_assembly.annotation.gff3_gene_biotype
+
+20089 57606 77695
+## ENST ID 사용
+
+awk '{print $2,$3,$5}' gencode.v47.primary_assembly.annotation.gff3_transcript | sort |uniq -c |  awk '{print $3}' | sort |uniq -c > count/gencode.v47.primary_assembly.annotation.gff3_transcript_biotype
+awk '{if ($2 == "protein_coding") a += $1; else b += $1} END {print a,b,a + b}' count/gencode.v47.primary_assembly.annotation.gff3_transcript_biotype
+
+
+
+  89861 protein_coding
+  26555 protein_coding_CDS_not_defined
+     74 protein_coding_LoF
+
+89861 298083 387944
+
+awk '{if ($2 == "protein_coding" || $2 == "protein_coding_CDS_not_defined" || $2 == "protein_coding_LoF") a += $1; else b += $1} END {print a, b, a + b}' count/gencode.v47.primary_assembly.annotation.gff3_transcript_biotype
+116490 271454 387944

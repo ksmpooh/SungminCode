@@ -1,0 +1,330 @@
+
+
+
+verkko –d asm \ 
+--hifi corrected_ulk_reads.fasta \ 
+--nano uncorrected_ulk_reads.fastq \  
+--porec porec_reads.fastq \
+--no-correction
+
+
+medaka_consensus_joint \ 
+   -i "${APK_BAM}" -v apk -i "${ULK_BAM}" -v ulk \ 
+   -t ${THREADS} -o "${OUTPUT}" \ 
+   -m r1041_e82_260bps_joint_apk_ulk_v5.0.0 \ 
+   -d "${VERKKO_ASSEMBLY}"
+
+
+verkko -d /BDATA/pangenome/verkko --hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz --nano PG240004_LCL_ULK.merge.corrected.fasta.gz --porec PG240004_PoreC_pass.fastq --no-correction \
+--threads 96 \
+--local-memory 400 --local-cpus 96
+
+
+verkko -d /BDATA/pangenome/verkko \
+  --hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  --nano PG240004_LCL_ULK.merge.corrected.fasta.gz \
+  --porec PG240004_PoreC_pass.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+  verkko \
+  -d /BDATA/pangenome/verkko \
+  --hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  --nano PG240004_LCL_ULK.merge.corrected.fasta.gz \
+  --porec PG240004_PoreC_pass.fastq.gz \
+  --no-correction \
+  --local \
+  --local-memory 400 \
+  --local-cpus 96 \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --sto-run 64 128 4 \
+  --ovb-run 64 128 6 \
+  --ovs-run 64 128 3 \
+  --red-run 64 128 4 \
+  --mbg-run 64 128 6 \
+  --utg-run 64 128 3 \
+  --spl-run 64 128 2 \
+  --ali-run 64 128 5 \
+  --pop-run 64 128 2 \
+  --utp-run 64 128 2 \
+  --lay-run 64 128 2 \
+  --sub-run 64 128 2 \
+  --par-run 64 128 2 \
+  --cns-run 64 128 6 \
+  --ahc-run 64 128 4 \
+  --fhc-run 64 128 4 \
+  --shc-run 64 128 4
+
+
+
+/BDATA/pangenome/verkko/8-hicPipeline$ python /home/genome/miniconda3/envs/verkko/lib/verkko/scripts/launch_scaffolding.py . True
+
+
+
+grep -A1 "^>haplotype1_" paths.hpc.fasta > hap1_scaffold.fasta
+grep -A1 "^>haplotype2_" paths.hpc.fasta > hap2_scaffold.fasta
+
+
+grep -A1 -E "^>haplotype[12]_" paths.hpc.fasta > hap_scaffold_all.fasta
+
+
+
+
+
+verkko \
+  -d /BDATA/pangenome/verkko/rukki_consensus \
+  --paths /BDATA/pangenome/verkko/8-hicPipeline/rukki.paths.tsv \
+  --assembly /BDATA/pangenome/verkko \
+  --hifi ~/Desktop/pangenome/00.rawDATA/PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  --local \
+  --local-cpus 96 \
+  --local-memory 400 \
+  --snakeopts "--cores 96 --resources mem_mb=400000"
+  --snakeopts "--latency-wait 60 --rerun-incomplete --keep-going --unlock" 
+
+
+
+
+
+
+
+
+
+
+--dry-run 
+
+verkko \
+  --paths ../8-hicPipeline/rukki.paths.tsv \
+  --assembly .. \
+  --hifi /home/genome/Desktop/pangenome/00.rawDATA/PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  -d ./ \
+  --no-correction \
+  --local \
+  --local-cpus 96 \
+  --local-memory 400 \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --sto-run 64 128 4 \
+--ovb-run 64 128 6 \
+--ovs-run 64 128 3 \
+--red-run 64 128 4 \
+--mbg-run 64 128 6 \
+--utg-run 64 128 3 \
+--spl-run 64 128 2 \
+--ali-run 64 128 5 \
+--pop-run 64 128 2 \
+--utp-run 64 128 2 \
+--lay-run 64 128 2 \
+--sub-run 64 128 2 \
+--par-run 64 128 2 \
+--cns-run 64 128 6 \
+--ahc-run 64 128 4 \
+--fhc-run 64 128 4 \
+--shc-run 64 128 4
+
+cd /BDATA/pangenome/verkko/rukki_final/7-consensus
+
+
+bash buildPackages.sh > buildPackages.out 2> buildPackages.err
+
+####
+
+
+####
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--local \
+--local-memory 400 \
+--local-cpus 96 \
+--snakeopts "--cores 96 --resources mem_mb=400000"
+
+ \
+--sto-run 64 128 4 \
+--ovb-run 64 128 6 \
+--ovs-run 64 128 3 \
+--red-run 64 128 4 \
+--mbg-run 64 128 6 \
+--utg-run 64 128 3 \
+--spl-run 64 128 2 \
+--ali-run 64 128 5 \
+--pop-run 64 128 2 \
+--utp-run 64 128 2 \
+--lay-run 64 128 2 \
+--sub-run 64 128 2 \
+--par-run 64 128 2 \
+--cns-run 64 128 6 \
+--ahc-run 64 128 4 \
+--fhc-run 64 128 4 \
+--shc-run 64 128 4
+
+
+verkko \
+-d /BDATA/pangenome/verkko_basic \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--no-correction
+
+
+
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection_poreC \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--snakeopts "--cores 96 --resources mem_mb=400000"
+
+verkko \
+-d /ADATA/smkim/verkko_withcorrection_CiFI \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_CiFi.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--snakeopts "--cores 96 --resources mem_mb=400000"
+
+
+verkko -d asm_conda --hifi ./hifi.fastq.gz --nano ./ont.fastq.gz --local \
+  --local-memory 400 --local-cpus 96 --snakeopts "--latency-wait 60 --rerun-incomplete --keep-going"
+
+
+verkko -d asm_conda --hifi ./hifi.fastq.gz --nano ./ont.fastq.gz --local \
+  --local-memory 400 --local-cpus 96 --snakeopts "--latency-wait 60 --rerun-incomplete --keep-going --unlock"
+
+verkko -d asm_conda --hifi ./hifi.fastq.gz --nano ./ont.fastq.gz --local \
+  --local-memory 400 --local-cpus 96 --snakeopts "--latency-wait 3600 --rerun-incomplete --keep-going --unlock"
+
+verkko -d asm_conda --hifi ./hifi.fastq.gz --nano ./ont.fastq.gz --local \
+  --local-memory 400 --local-cpus 96 --snakeopts "--latency-wait 3600 --rerun-incomplete --keep-going --dry-run --unlock"
+
+
+verkko \
+  -d ./verkko_paths_run \
+  --paths ./manual.paths.gaf \
+  --assembly ./assembly_folder \
+  --hifi ./hifi.fastq.gz \
+  --nano ./ont.fastq.gz \
+  --local \
+  --local-cpus 96 \
+  --local-memory 400 \
+  --snakeopts "--rerun-incomplete --keep-going"
+
+
+seqtk sample -s100 PG240004_PoreC_pass.fastq.gz 0.1 > porec_sampled.10down.fastq
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.1 > hifi_sampled.10down.fastq
+seqtk sample -s100 PG240004-LCL_ULK.merge.fastq.gz 0.1 > ont_sampled.10down.fastq
+
+seqtk sample -s100 PG240004_PoreC_pass.fastq.gz 0.5 > porec_sampled.5down.fastq
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.5 > hifi_sampled.5down.fastq
+seqtk sample -s100 PG240004-LCL_ULK.merge.fastq.gz 0.5 > ont_sampled.5down.fastq
+
+
+
+
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.1 > hifi_sampled.10down.fastq
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.5 > hifi_sampled.5down.fastq
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.01 > hifi_sampled.fastq
+  ### down sampling
+
+
+
+  verkko -d asm \
+  --hifi hifi_sampled.fastq \
+  --nano ont_sampled.fasta \
+  --porec porec_sampled.10down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+  verkko -d asm_down10_noporc \
+  --hifi hifi_sampled.10down.fastq \
+  --nano ont_sampled.10down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+  verkko -d /BDATA/pangenome/verkko_5down \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+verkko -d /BDATA/pangenome/verkko_10down_noporeC \
+  --hifi hifi_sampled.10down.fastq \
+  --nano ont_sampled.10down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+seqtk sample -s100 PG240004_PoreC_pass.fastq.gz 0.5 > porec_sampled.5down.fastq
+seqtk sample -s100 PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz 0.5 > hifi_sampled.5down.fastq
+seqtk sample -s100 PG240004-LCL_ULK.merge.fastq.gz 0.5 > ont_sampled.5down.fastq
+
+## 오 이건 잘됨....
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+## Hi-C 추가하여 제분석
+verkko -d /BDATA/pangenome/verkko_5down \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000 --dry-run" \
+  --threads 96
+
+
+  8-hicPipeline/index_bwa.err:
+        [bwa_index] Pack forward-only FASTA... 12.87 sec
+        [bwa_index] Construct SA from BWT and Occ... 1505.20 sec
+        [main] Version: 0.7.18-r1243-dirty
+        [main] CMD: /home/genome/miniconda3/envs/verkko/bin/bwa index ../8-hicPipeline/unitigs.fasta
+        [main] Real time: 5505.447 sec; CPU: 5478.200 sec
+
+## mashhap 다시 셋팅
+
+snakemake -s snakefile --cores 96 --rerun-incomplete
+
+(verkko) genome@genome205:/BDATA/pangenome/verkko_5down$ ./snakemake.sh -s snakefile --cores 96 --rerun-incomplete
+
+
+
+######## hap1,2 안생김 재분석 수행
+#verkko.xml 파일 수정
+
+haplotyping:
+  enable: true
+
+
+verkko -d . \
+  --hifi /home/genome/Desktop/pangenome/00.rawDATA/hifi_sampled.5down.fastq \
+  --nano /home/genome/Desktop/pangenome/00.rawDATA/ont_sampled.5down.fastq \
+  --porec /home/genome/Desktop/pangenome/00.rawDATA/porec_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+
+
+python3 /home/genome/miniconda3/envs/verkko/lib/verkko/scripts/combineConsensus.py \
+  --consensusDir 7-consensus \
+  --paths 8-hicPipeline/rukki.paths.tsv \
+  --output . \
+  --minLen 0
+

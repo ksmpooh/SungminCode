@@ -47,3 +47,14 @@ plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --maf 0.1 --geno 0.01 --hwe 0.001 -
 
 plink --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET_prune
 flashpca_x86-64 --bfile KOTRY.AR_2025_KRKD.1st_rmCRHET_prune -n 50 --outpc PCA.txt
+
+
+awk '$3>=0.05 || $4>0.5{print $1,$3,$4}' PCA.txt  | grep -v "NIH20KT1604" |grep "NIH" |
+awk '{print $1}' > rmPCA.txt
+
+at rmLQSamples.txt rmPCA.txt | awk '{print $1}' > 1stQC.rmlist.txt
+
+## YS 데이터 살리기
+
+
+

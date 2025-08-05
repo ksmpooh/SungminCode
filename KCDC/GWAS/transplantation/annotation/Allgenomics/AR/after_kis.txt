@@ -1,0 +1,535 @@
+##
+
+cd /DATA/smkim/AR/imp_kis2
+
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools reheader -s idchange/id.change.txt -o idchange/KOTRY.AR_2025.{}.idchange.vcf.gz {}.vcf.gz"
+
+#bcftools reheader -h ../new_header_forKKY.6h.txt -o ./FINAL/KBA.KNHANES.6th.Imputed_MINIMAC4.{}.filter_INFO0.8.vcf.gz KKY.6th.imputation_MINIMAC4.{}.filter.vcf.gz
+
+bcftools +fill-tags {}.dose.vcf.gz -- -t HWE | bcftools view -i \'HWE>=1e-6 & R2>=0.8\' | bgzip -c > {}_dose_HWE1E-6_R20.8.vcf.gz
+
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools reheader -s idchange/id.change.txt -o idchange/KOTRY.AR_2025.{}.idchange.vcf.gz {}.vcf.gz"
+cd idchange
+ls *vcf.gz | xargs -I {} -P 22 bash -c "tabix -f -p vcf {}"
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools +fill-tags {}.vcf.gz -- -t HWE | bcftools view -i 'HWE>=1e-6 & R2>=0.8 & MAF>=0.01' | bgzip -c > filter/{}.MAF0.01_HWE1E-6_R20.8.vcf.gz"
+
+
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools +fill-tags {}.vcf.gz -- -t HWE | bcftools view -i 'HWE>=1e-6 & MAF>=0.01' | bgzip -c > filter/{}.MAF0.01_HWE1E-6.vcf.gz"
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools +fill-tags {}.vcf.gz -- -t HWE,MAF | bcftools view -i 'HWE>=1e-6 & MAF>=0.01' | bgzip -c > new_filter/{}.MAF0.01_HWE1E-6.vcf.gz"
+
+
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools view -i 'R2>=0.8 & MAF>=0.01' {}.vcf.gz | bgzip -c > filter_INFO_MAF/{}.MAF0.01_R20.8.vcf.gz"
+
+cd /DATA/smkim/AR/imp_kis2/idchange/filter_INFO_MAF
+ls *vcf.gz | xargs -I {} -P 22 bash -c "tabix -f -p vcf {}"
+mkdir plink
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}.covertPLINK"
+mkdir pgen
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink2 --vcf {}.vcf.gz --make-bpgen --out pgen/{}.covertPGEN"
+
+
+plink --vcf {} --make-bpgen --out
+
+
+cd /DATA/smkim/AR/imp_kis2/idchange/filter
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}.covertPLINK"
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink2 --vcf {}.vcf.gz --make-bpgen --out pgen/{}.covertPGEN"
+
+
+cd /DATA/smkim/AR/imp_kis2/idchange
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools view -i 'R2>=0.8' {}.vcf.gz | bgzip -c > INFO0.8/{}.R20.8.vcf.gz"
+
+cd /DATA/smkim/AR/imp_kis2/idchange/INFO0.8
+ls *vcf.gz | xargs -I {} -P 22 bash -c "tabix -f -p vcf {}"
+mkdir plink
+
+
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink --vcf {}.vcf.gz --make-bed --out plink/{}.covertPLINK --keep-allele-order"
+mkdir pgen
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "plink2 --vcf {}.vcf.gz --make-bpgen --out pgen/{}.covertPGEN"
+
+cd /DATA/smkim/AR/imp_kis2/idchange/INFO0.8
+
+/BDATA/smkim/AR_2025/00.rawDATA/AR.pairIN.txt
+
+awk '{print $1}' /BDATA/smkim/AR_2025/00.rawDATA/AR.pairIN.txt > AR_only/KR.only.QCin.list.txt
+
+ls *gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools view -S AR_only/KR.only.QCin.list.txt -Oz -o AR_only/{}.AR_KRonly.vcf.gz {}.vcf.gz --force-samples"
+
+
+ls *bed | sed 's/.bed//g' | xargs -I {} -P 22 bash -c "plink --bfile {} --keep AR_KRonly/AR_KRonly.list.txt --make-bed -out AR_KRonly/{}.AR_KRonly --keep-allele-order"
+
+AR_KRonly
+
+cd /DATA/smkim/AR/imp_kis2/idchange/INFO0.8/plink/AR_KRonly
+
+filter_MAF0.01_HWE1e6
+ls *bed | sed 's/.bed//g' | xargs -I {} -P 22 bash -c "plink --bfile {} --maf 0.01 --hwe 1e-6 --make-bed -out filter_MAF0.01_HWE1e6/{}.filter_MAF0.01_HWE1e6 --keep-allele-order"
+
+cd /DATA/smkim/AR/imp_kis2/idchange/INFO0.8/plink/AR_KRonly/filter_MAF0.01_HWE1e6
+ls *bim | grep -v '.chr1.dose' |sed 's/.bim//g' > merge/merge.list
+
+plink --bfile KOTRY.AR_2025.chr1.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --merge-list merge/merge.list --keep-allele-order --make-bed --out merge/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6
+
+
+## PCA for asso
+cd /BDATA/smkim/AR_2025/03.2ndQC
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update --keep /DATA/smkim/AR/imp_kis2/idchange/INFO0.8/plink/AR_KRonly/AR_KRonly.list.txt --make-bed --out PCA_foronlyAR_KR_Asso/KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR
+
+cd /BDATA/smkim/AR_2025/03.2ndQC/PCA_foronlyAR_KR_Asso
+
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR --geno 0.01 --hwe 1e-3 --indep-pairwise 50 5 0.2 --maf 0.05 --chr 1-5,7-13,15-22 --out Asso.PCA.output
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR --extract Asso.PCA.output.prune.in --make-bed --out Asso.PCA.plink
+
+## fastLMM
+cd /BDATA/smkim/AR_2025/00.rawDATA/pheno
+cut -f1-3 coxph.residuals.forAR.forFastLMM.txt > AR_TREAT.pheno.txt
+
+awk '{print $1, $2, $3}' coxph.residuals.forAR.forFastLMM.txt > AR_TREAT.pheno.txt
+awk '{print $1, $2, $4}' coxph.residuals.forAR.forFastLMM.txt > AR_BX.pheno.txt
+awk '{print $1, $2, $5}' coxph.residuals.forAR.forFastLMM.txt > GF.pheno.txt
+
+
+##
+cd /DATA/smkim/AR/imp_kis2/04.AR_1141_SNPQC/plink/merge
+
+seq 1 22 | xargs -n 1 -P 22 -I {} bash -c '
+plink --bfile KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 \
+      --not-chr {} \
+      --keep-allele-order \
+      --make-bed \
+      --out not_chr/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6.notchr{}'
+
+
+## /DATA/smkim/AR/asso_fastLMM/00.rawDATA
+
+cd /DATA/smkim/AR/asso_fastLMM/asso
+
+
+seq 1 22 | xargs -I {} -P 1 bash -c "echo chr{}
+
+plink --bfile /DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --chr 1 --make-bed --out test.chr1
+plink --bfile /DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --not-chr 1 --make-bed --out test.notchr1
+
+fastlmmc -bfile test.chr1 \
+             -pheno /DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt \
+             -out test_fastlmm \
+             -loco test.notchr1
+
+
+
+
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+# 파일 경로 설정
+plink_prefix = "test.chr1"  # 분석할 염색체 1번 파일 prefix
+loco_prefix = "test.notchr1"  # LOCO 파일 prefix
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt"
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+# Step 1. Phenotype 데이터 읽기
+pheno = pd.read_csv("/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt", delim_whitespace=True)
+
+# Step 2. 분석할 염색체 번호
+chrom = 1
+
+# Step 3. FaST-LMM 실행
+results = single_snp(
+    test_snps = f"KOTRY.AR_2025.chr{chrom}.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6",  # genotype 파일 prefix
+    pheno = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt",
+    K0 = f"KOTRY.AR_2025.loco_chr{chrom}",  # LOCO 파일 prefix
+    leave_out_one_chromosome = True
+)
+pheno = pd.read_csv("/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt", delim_whitespace=True)
+
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+# 파일 경로 설정
+#geno_file = "test.chr1"  # PLINK .bed/.bim/.fam 의 prefix (확장자 없이)
+#geno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6"  # PLINK .bed/.bim/.fam 의 prefix (확장자 없이)
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt"  # PLINK format phenotype file (.txt)
+#/DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6
+# LOCO 분석 실행
+results = single_snp(
+    test_snps=geno_file,
+    pheno=pheno_file,
+    leave_out_one_chrom=True,  # LOCO
+    output_file_name="fastlmm_results.txt",  # 선택: 파일 저장
+    show_snp_fract_var_exp=True  # SNP별 분산 기여도 출력
+    #count_A1=False
+)
+
+
+
+
+
+
+## keep order
+import pandas as pd
+from fastlmm.association import single_snp
+
+
+geno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6"  # PLINK .bed/.bim/.fam 의 prefix (확장자 없이)
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt"  # PLINK format phenotype file (.txt)
+
+
+
+results = single_snp(
+    test_snps=geno_file,
+    pheno=pheno_file,
+    leave_out_one_chrom=True,  # LOCO
+    output_file_name="fastlmm_results.keep.order.txt",  # 선택: 파일 저장
+    show_snp_fract_var_exp=True,  # SNP별 분산 기여도 출력
+    count_A1=False,  # A2 = reference 맞췄으므로!
+)
+
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+
+geno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6"  # PLINK .bed/.bim/.fam 의 prefix (확장자 없이)
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_BX.pheno.txt"  # PLINK format phenotype file (.txt)
+
+
+
+results = single_snp(
+    test_snps=geno_file,
+    pheno=pheno_file,
+    leave_out_one_chrom=True,  # LOCO
+    output_file_name="AR_BX.fastlmm_results.keep.order.txt",  # 선택: 파일 저장
+    show_snp_fract_var_exp=True,  # SNP별 분산 기여도 출력
+    count_A1=False  # A2 = reference 맞췄으므로!
+)
+
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+geno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6"  # PLINK .bed/.bim/.fam 의 prefix (확장자 없이)
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/GF.pheno.txt"  # PLINK format phenotype file (.txt)
+
+results = single_snp(
+    test_snps=geno_file,
+    pheno=pheno_file,
+    leave_out_one_chrom=True,  # LOCO
+    output_file_name="GF.fastlmm_results.keep.order.txt",  # 선택: 파일 저장
+    show_snp_fract_var_exp=True,  # SNP별 분산 기여도 출력
+    count_A1=False,  # A2 = reference 맞췄으므로!
+)
+
+
+
+
+
+
+# 결과 확인
+print(results.head())
+
+
+
+for chr in {1..22}; do
+  for pheno in AR_BX AR_TREAT GF; do
+    echo "$pheno $chr"
+  done
+done | xargs -n 2 -P 22 -I {} bash -c 'python run.py {}'
+
+###
+import sys
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+
+
+# 입력 인자: phenotype 이름, chromosome 번호
+pheno = sys.argv[1]
+chr = sys.argv[2]
+
+# phenotype 파일 경로 설정
+pheno_inDir = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/"
+
+if pheno == "AR_BX":
+    pheno_file = pheno_inDir + "AR_BX.pheno.txt"
+elif pheno == "AR_TREAT":
+    pheno_file = pheno_inDir + "AR_TREAT.pheno.txt"
+elif pheno == "GF":
+    pheno_file = pheno_inDir + "GF.pheno.txt"
+else:
+    print("❌ error: phenotype info wrong")
+    exit()
+print(pheno_file)
+# 입력 파일 경로 설정
+geno_file = "/DATA/smkim/AR/imp_kis2/04.AR_1141_SNPQC/plink/chr_split/KOTRY.AR_2025.chr%s.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6"%chr
+loco_file = "/DATA/smkim/AR/imp_kis2/04.AR_1141_SNPQC/plink/merge/not_chr/KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6.notchr%s"%chr
+
+# 출력 파일명 설정
+output_file = f"./{pheno}.chr{chr}.fastLMM_single_snp.result.txt"
+
+# FastLMM 실행
+results = single_snp(
+    test_snps=geno_file,
+    pheno=pheno_file,
+    K0=loco_file,
+    leave_out_one_chrom=False,
+    count_A1=False,  # A2 = reference 맞췄으므로!
+    output_file_name=output_file,
+    show_snp_fract_var_exp=True
+)
+###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####
+
+
+
+import pandas as pd
+from fastlmm.association import single_snp
+
+
+
+pheno_file = "/DATA/smkim/AR/asso_fastLMM/00.rawDATA/AR_TREAT.pheno.txt"  # PLINK format phenotype file (.txt)
+test_snps = "test.chr1"
+loco_snps = "test.notchr1"
+output_file = "chr1.usingK0.keeporder.type2.txt"
+
+results = single_snp(
+    test_snps=test_snps,
+    pheno=pheno_file,
+    K0=loco_snps,
+    leave_out_one_chrom=False,
+    count_A1=False,  # A2 = reference 맞췄으므로!
+    output_file_name=output_file,
+    show_snp_fract_var_exp=True
+)
+
+
+
+
+
+
+
+
+
+##
+
+qctool -g input.vcf.gz \
+       -snp-stats \
+       -osnp snp_stats.txt
+
+
+-snp-stats-columns allele-frequencies, HWE, missingness, info
+
+### snp -stats check
+/BDATA/smkim/TOOLs/qctool \
+-g KOTRY.AR_2025.chr22.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.vcf.gz \
+-snp-stats \
+-osnp snp_stats.txt
+
+
+/BDATA/smkim/TOOLs/qctool -g {}.vcf.gz -snp-stats -osnp /DATA/smkim/AR/asso_fastLMM/asso/qctools_snpstats/{}.qctools.snpstats.txt
+
+
+ls *txt | sed 's/.txt//g' | xargs -I {} -P 22 bash -c 'grep -v "#" {}.txt | cut -d" " -f 2,3,4,5,6,14,17,18 > check/{}.query.txt'
+
+grep -v "#" {}.txt | cut -d" " -f 2,3,4,5,6,14,17,18 > check/{}.query.txt
+grep -v "#" KOTRY.AR_2025.chr5.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.qctools.snpstats.txt |cut -d" " -f 2-6,14,17,18
+
+
+cd new_filter
+ls *vcf.gz | xargs -I {} -P 22 bash -c "tabix -f -p vcf {}"
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "/BDATA/smkim/TOOLs/qctool -g {}.vcf.gz -snp-stats -osnp {}.qctools.snpstats.txt"
+
+# vcf to bgen
+mkdir bgen
+ls *gz|sed 's/.vcf.gz//g' | xargs -I{} -P 22 bash -c "./qctool -g {}.vcf.gz -vcf-genotype-field GP -ofiletype bgen -og bgen/{}.bgen -os bgen/{}.sample"
+
+mkdir check
+ls *txt | sed 's/.txt//g' | xargs -I {} -P 22 bash -c 'grep -v "#" {}.txt | cut -d" " -f 2,3,4,5,6,14,17,18 > check/{}.query.txt'
+
+
+
+
+
+
+cd /DATA/smkim/AR/asso_fastLMM/00.rawDATA
+
+plink --bfile your_data --freq --out freq_out --keep-allele-order
+plink --bfile your_data --hardy --out hwe_out --keep-allele-order
+plink --bfile your_data --missing --out missing_out --keep-allele-order
+
+
+KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6
+stats
+
+
+plink --bfile KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --freq --out stats/KOTRY.AR_1441.freq --keep-allele-order
+plink --bfile KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --hardy --out stats/KOTRY.AR_1441.hwe --keep-allele-order
+plink --bfile KOTRY.AR_2025.allCHR.dose.idchange.R20.8.covertPLINK.AR_KRonly.filter_MAF0.01_HWE1e6 --missing --out stats/KOTRY.AR_1441.missing --keep-allele-order
+
+cd
+
+/BDATA/smkim/TOOLs/snptest_v2.5.2 \
+-summary_stats_only \
+-data KOTRY.AR_2025.chr21.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.bgen KOTRY.AR_2025.chr21.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.sample \
+-o test_snptest.stats.txt
+
+ls *bgen | sed 's/.bgen//g' | xargs -I {} -P 22 bash -c "/BDATA/smkim/TOOLs/snptest_v2.5.2 -summary_stats_only -data {}.bgen {}.sample -o snptest_stats/{}.snptest.stat"
+
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 22 bash -c "bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t%TYPE\t%R2\t%IMPUTED\t%HWE\n' {}.vcf.gz > query/{}.bcftools_query"
+
+
+rm KOTRY.AR_2025.bcftools.query.merge
+for i in {1..22}; do cat KOTRY.AR_2025.chr$i.dose.* >> KOTRY.AR_2025.bcftools.query.merge
+
+
+
+
+cat KOTRY.AR_2025.chr6.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.snptest.stat | grep -v "#" | head -n 1 > KOTRY.AR_2025.snptest_state.query.merge
+for i in {1..22}; do cat KOTRY.AR_2025.chr$i.dose.* | grep -v "#" | tail -n+2 >> KOTRY.AR_2025.snptest_state.query.merge; done
+
+
+
+cat KOTRY.AR_2025.chr1.dose.idchange.R20.8.AR_KRonly.MAF0.01_HWE1E-6.qctools.snpstats.txt | grep -v "#" | head -n 1 > KOTRY.AR_2025.qctools_state.query.merge
+for i in {1..22}; do cat KOTRY.AR_2025.chr$i.dose.*qctools.snpstats.txt | grep -v "#" | tail -n+2 >> KOTRY.AR_2025.qctools_state.query.merge; done
+
+
+
+### liftover
+/FDATA/minjin/PMDA/05_Phasing/REF/
+
+
+
+# 헤더 추가
+echo -e "##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO" > KOTRY.AR.vcf.forliftover.addCHR.vcf
+
+
+# 본문 변환
+awk -F':' '{
+  chrom = $1;
+  pos = $2;
+  ref = $3;
+  alt = $4;
+  id = $1":"$2":"$3":"$4;
+  printf("chr%s\t%s\t%s\t%s\t%s\t.\tPASS\t.\n", chrom, pos, id, ref, alt);
+}' list.txt >> KOTRY.AR.vcf.forliftover.addCHR.vcf
+
+# 압축 및 인덱스 생성
+bgzip KOTRY.AR.vcf.forliftover.addCHR.vcf
+tabix -p vcf KOTRY.AR.vcf.forliftover.addCHR.vcf.gz
+
+
+
+
+#snp만
+bcftools view -v snps KOTRY.AR.vcf.forliftover.addCHR.chr.vcf.gz -Oz -o KOTRY.AR.vcf.forliftover.addCHR.chr_onlySNP.vcf.gz
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.fasta
+/FDATA/minjin/PMDA/TOOLs/gatk-4.2.3.0/gatk LiftoverVcf --java-options "-Xmx500G" \
+
+
+/FDATA/minjin/PMDA/TOOLs/gatk-4.2.3.0/gatk LiftoverVcf --java-options "-Xmx500G" \
+  --INPUT KOTRY.AR.vcf.forliftover.addCHR.vcf.gz \
+  --OUTPUT KOTRY.AR.vcf.forliftover.addCHR.liftover_tohg38.vcf.gz \
+  --REJECT reject.vcf.gz \
+  --REFERENCE_SEQUENCE /FDATA/minjin/PMDA/05_Phasing/REF/GRCh38/GRCh38.primary_assembly.genome.fa \
+  --CHAIN hg19ToHg38.no_alt.chain \
+  --ALLOW_MISSING_FIELDS_IN_HEADER true
+
+
+
+ gatk CreateSequenceDictionary -R GRCh38.primary_assembly.genome.fa
+gatk CreateSequenceDictionary -R 
+
+
+ /FDATA/minjin/PMDA/TOOLs/gatk-4.2.3.0/gatk CreateSequenceDictionary -R human_GRCh38_no_alt_analysis_set.basic.fasta
+
+
+bcftools view -v snps list_liftover_hg38.vcf.gz -Oz -o list_liftover_hg38.onlySNP.vcf.gz
+
+
+bcftools query -f "%CHROM\t%POS\t%ID\n" KOTRY.AR.vcf.forliftover.addCHR.liftover_tohg38.vcf.gz | sed 's/chr//g' > liftover.check
+
+
+
+ ###########
+ cd /DATA/smkim/AR/asso_fastLMM/asso_result/02.processing_result
+
+for file in AR_BX.fastLMM.Result.processing.txt AR_TREAT.fastLMM.Result.processing.txt GF.fastLMM.Result.processing.txt
+do
+    echo "Processing $file ..."
+    # 헤더만 복사
+    head -n 1 "$file" > "${file%.txt}.sorted.txt"
+
+    # 본문 필터링 및 정렬 후 이어붙이기
+    awk 'NR>1 && $2 ~ /^[0-9]+$/ && $2 >= 1 && $2 <= 22 && $3 != "NA"' "$file" \
+    | sort -k2,2n -k3,3n >> "${file%.txt}.sorted.txt"
+done
+
+
+cd /DATA/smkim/AR/asso_fastLMM/asso_result/02.processing_result/onlySNP
+
+mkdir -p manhattan_input
+
+for file in AR_BX.fastLMM.Result.processing.sorted.txt AR_TREAT.fastLMM.Result.processing.sorted.txt GF.fastLMM.Result.processing.sorted.txt
+do
+    base=$(basename "$file" .txt)
+    cut -f1,2,3,9 "$file" > "manhattan_input/${base}.manhattan.txt"
+done
+
+
+########
+
+head -1 matched.chr1.txt > matched_output.final.txt
+for i in {1..22}; do
+    tail -n +2 matched.chr$i.txt >> matched_output.final.txt
+done
+
+
+## topmed 매칭후
+ cd /DATA/smkim/AR/asso_fastLMM/asso_result/02.processing_result
+
+for file in AR_BX.fastLMM.Result.processing.txt AR_TREAT.fastLMM.Result.processing.txt GF.fastLMM.Result.processing.txt
+do
+    echo "Processing $file ..."
+    # 헤더 추출
+    head -n 1 "$file" > "${file%.txt}.sorted.txt"
+    
+    # 본문만 정렬하여 이어붙이기
+    tail -n +2 "$file" | sort -k2,2n -k3,3n >> "${file%.txt}.sorted.txt"
+done
+
+
+mkdir -p manhattan_input
+
+for file in AR_BX.fastLMM.Result.processing.sorted.txt AR_TREAT.fastLMM.Result.processing.sorted.txt GF.fastLMM.Result.processing.sorted.txt
+do
+    base=$(basename "$file" .txt)
+    cut -f1,2,3,9 "$file" > "manhattan_input/${base}.manhattan.txt"
+done

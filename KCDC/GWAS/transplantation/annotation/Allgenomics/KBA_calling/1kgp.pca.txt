@@ -1,0 +1,22 @@
+cd /BDATA/smkim/AR_2025/03.2ndQC/PCA_foronlyAR_KR_Asso
+
+
+mkdir ethnic 
+cd ethnic
+plink --bfile ../KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR --maf 0.01 --geno 0.05 --hwe 0.001 --make-bed --out KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/02.updateSNPIDtype.py KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/Axiom_KOR.annot.extract.addINDEL.Final.REF.txt
+
+
+cat KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic.updateSNPID.bim /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic.updateSNPID --extract intersectSNP.txt --make-bed --out KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic.updateSNPID_intersect
+plink --bfile /BDATA/smkim/GWAS/01.QCed_INPUTs/1KGP/1kgp_merge --extract intersectSNP.txt  --make-bed --out 1kpg_merge_intersect
+
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update.AR_onlyAR_forEthnic.updateSNPID_intersect --bmerge 1kpg_merge_intersect --allow-no-sex --make-bed --out MERGE
+
+python2 /BDATA/smkim/GWAS/01.QCed_INPUTs/SCRIPTs/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+flashpca_x86-64 --bfile MERGE_500K --outpc PCA_ethnic.txt
+

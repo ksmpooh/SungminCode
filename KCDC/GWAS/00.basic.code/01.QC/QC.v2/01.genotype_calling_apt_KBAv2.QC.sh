@@ -56,3 +56,9 @@ fi
 
 
 
+#######
+apt-format-result \
+ --calls-file AxiomGT1.calls.txt \
+ --annotation-file /home/genome/Downloads/apt-v1.1/Axiom_KORV1.1_Analysis/Axiom_KORV1_1.na35.annot.db \
+ --export-vcf-file [Output].vcf \
+ --log-file apt-format-result.log

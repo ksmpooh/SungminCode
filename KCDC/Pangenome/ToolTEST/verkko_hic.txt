@@ -1,0 +1,118 @@
+
+--mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap
+--hic1 hic/*R1*fastq.gz
+--hic2 hic/*R2*fastq.gz
+
+
+verkko \
+-d /BDATA/pangenome/verkko_omniC \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--hic1 PG240004_R2_trim.fastq.gz \
+--hic2 PG240004_R1_trim.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+--snakeopts "--cores 96 --resources mem_mb=400000" \
+--sto-run 64 256 4 \
+--ovb-run 64 256 6 \
+--ovs-run 64 256 3 \
+--red-run 64 256 4 \
+--mbg-run 64 256 6 \
+--utg-run 64 256 3 \
+--spl-run 64 256 2 \
+--ali-run 64 256 5 \
+--pop-run 64 256 2 \
+--utp-run 64 256 2 \
+--lay-run 64 256 2 \
+--sub-run 64 256 2 \
+--par-run 64 256 2 \
+--cns-run 64 256 6 \
+--ahc-run 64 256 4 \
+--fhc-run 64 256 4 \
+--shc-run 64 256 4
+
+
+### 메모리 에러?
+
+#--rerun-incomplete --keep-going --unlock
+
+
+
+verkko \
+-d /BDATA/pangenome/verkko_omniC \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--hic1 PG240004_R2_trim.fastq.gz \
+--hic2 PG240004_R1_trim.fastq.gz \
+--local-memory 400 \
+--local-cpus 96 \
+--mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap \
+--snakeopts "--cores 96 --resources mem_mb=400000 --jobs 8 --rerun-incomplete --keep-going" \
+--sto-run 64 256 4 \
+--ovb-run 64 256 6 \
+--ovs-run 64 256 3 \
+--red-run 64 256 4 \
+--mbg-run 64 256 6 \
+--utg-run 64 256 3 \
+--spl-run 64 256 2 \
+--ali-run 64 256 5 \
+--pop-run 64 256 2 \
+--utp-run 64 256 2 \
+--lay-run 64 256 2 \
+--sub-run 64 256 2 \
+--par-run 64 256 2 \
+--cns-run 64 256 6 \
+--ahc-run 64 256 4 \
+--fhc-run 64 256 4 \
+--shc-run 64 256 4
+
+
+
+
+
+#/BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap #수정
+verkko -d /BDATA/pangenome/verkko_5down_noporeC \
+  --hifi hifi_sampled.5down.fastq \
+  --nano ont_sampled.5down.fastq \
+  --porec porec_sampled.5down.fastq \
+  --no-correction \
+  --snakeopts "--cores 96 --resources mem_mb=400000" \
+  --threads 96
+
+PG240004_R1_trim.fastq.gz
+PG240004_R2_trim.fastq.gz
+verkko \
+-d /BDATA/pangenome/verkko_withcorrection \
+--hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+--nano PG240004-LCL_ULK.merge.fastq.gz \
+--porec PG240004_PoreC_pass.fastq.gz \
+--local \
+--local-memory 400 \
+--local-cpus 96 \
+--snakeopts "--cores 96 --resources mem_mb=400000"
+
+ \
+--sto-run 64 128 4 \
+--ovb-run 64 128 6 \
+--ovs-run 64 128 3 \
+--red-run 64 128 4 \
+--mbg-run 64 128 6 \
+--utg-run 64 128 3 \
+--spl-run 64 128 2 \
+--ali-run 64 128 5 \
+--pop-run 64 128 2 \
+--utp-run 64 128 2 \
+--lay-run 64 128 2 \
+--sub-run 64 128 2 \
+--par-run 64 128 2 \
+--cns-run 64 128 6 \
+--ahc-run 64 128 4 \
+--fhc-run 64 128 4 \
+--shc-run 64 128 4
+
+### hiC는 한번에 잘됨
+verkko -d /BDATA/pangenome/verkko_omniC --hifi PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz --nano PG240004-LCL_ULK.merge.fastq.gz --hic1 PG240004_R2_trim.fastq.gz --hic2 PG240004_R1_trim.fastq.gz --local-memory 400 --local-cpus 96 --mashmap /BDATA/smkim/TOOLs/MashMap-3.1.3/build/bin/mashmap --snakeopts "--cores 96 --resources mem_mb=400000 --jobs 8 --rerun-incomplete --keep-going" --sto-run 64 256 4 --ovb-run 64 256 6 --ovs-run 64 256 3 --red-run 64 256 4 --mbg-run 64 256 6 --utg-run 64 256 3 --spl-run 64 256 2 --ali-run 64 256 5 --pop-run 64 256 2 --utp-run 64 256 2 --lay-run 64 256 2 --sub-run 64 256 2 --par-run 64 256 2 --cns-run 64 256 6 --ahc-run 64 256 4 --fhc-run 64 256 4 --shc-run 64 256 4
+
+
+###

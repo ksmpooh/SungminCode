@@ -1,0 +1,263 @@
+
+
+library(tidyverse)
+df <- read_tab
+
+df <- read_table("/BDATA/smkim/pangenome/kppd.variant.check/unique/KPP_unique_snps_extracted.tab")
+colnames(df) <- c("CHROM","POS","TYPE","REF","ALT","AC","AN","NS","AF","MAF","F_MISSING")
+df %>% filter(AC!=0) -> df_noZero
+
+ref <- read_table("/BDATA/smkim/pangenome/kppd.variant.check/dbsnp/GCF_000001405.40.contig_change.snps.chr1.tab")
+ref_sub <- ref %>% select(1,2,16,17)
+
+colnames(ref_sub) <- c("CHROM","POS","INFO","FREQ")
+ref_sub %>% mutate(ID = paste0(CHROM,":",POS)) -> ref_sub
+
+df_noZero %>% mutate(ID = paste0(CHROM,":",POS)) -> df_noZero
+
+df_noZero %>% filter(CHROM =="chr1") %>% filter(ID %in% ref_sub$ID)
+df_noZero %>% filter(CHROM =="chr1") %>% count(ID %in% ref_sub$ID)
+
+
+
+
+
+--threads 50 
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/ori/compare
+
+bcftools view -i 'INFO/F_MISSING != 0' input.vcf -Ob -o filtered.bcf
+
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.bcf
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.bcf
+
+bcftools view -i 'INFO/F_MISSING != 1 | INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.bcf -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.bcf
+bcftools view -i 'INFO/F_MISSING != 1 | INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.bcf -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.bcf
+
+bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.bcf -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.bcf --threads 24
+bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.bcf -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.bcf --threads 24
+
+ls *filtered.bcf | xargs -I {} -P 2 bash -c "bcftools stats {} > {}.stats"
+
+
+
+bcftools view -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.noCHM13v2.vcf.gz -Oz -o KPPD132.GRCh38.noAT.noCHM13v2.filtered.vcf.gz
+
+
+bcftools view -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.noCHM13v2.vcf.gz -Oz -o KPPD132.GRCh38.noAT.noCHM13v2.filtered.vcf.gz
+
+
+bcftools view -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.bcf -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.ACnoZero.bcf
+
+
+bcftools view -i 'INFO/AC != 0' KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.bcf -Oz -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.ACnoZero.bcf
+
+fill-tags -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.bcf -- KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.bcf -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+
+bcftools +fill-tags -Oz -o KPPD132.GRCh38.noAT.noCHM13v2.filtered.filTag.vcf.gz -- KPPD132.GRCh38.noAT.noCHM13v2.filtered.vcf.gz -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+KPPD132.GRCh38.noAT.noCHM13v2.filtered.vcf.gz
+
+
+bcftools +fill-tags -Oz -o KPPD132.GRCh38.noAT.noCHM13v2.filTag.vcf.gz -- KPPD132.GRCh38.noAT.noCHM13v2.vcf.gz -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+KPPD132.GRCh38.noAT.noCHM13v2.vcf.gz
+
+bcftools view -i 'INFO/F_MISSING != 0' KPPD132.GRCh38.noAT.noCHM13v2.filTag.vcf.gz -Oz -o KPPD132.GRCh38.noAT.noCHM13v2.filTag.filtered.vcf.gz
+
+CHM13v2
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.vcf.gz
+
+
+
+
+
+bcftools view -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY -Ob -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.filTag.filtered.main_contig.bcf 
+
+
+bcftools view -s ^CHM13v2 -Oz -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.vcf.gz KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.vcf.gz --threads 36
+bcftools +fill-tags -Oz -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.filTag.vcf.gz -- KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.vcf.gz -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' -Oz -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.filTag.filtered.vcf.gz KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.filTag.vcf.gz --threads 36
+
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.noCHM13v2.filTag.filtered.vcf.gz
+ls *noCHM13v2* | xargs -I {} -P 3 bash -c "bcftools stats {} > {}.stats"
+
+
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.bcf
+KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.bcf
+
+norm -m-both -Ob -o
+view -v snps -Ob -o
+view -v indels -Ob -o
+ls *maincontig.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c 'bcftools norm -m-both -Ob -o {}.multi.bcf {}.bcf'
+ls *maincontig.multi.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c 'bcftools view -v snps -Ob -o {}.snps.bcf {}.bcf'
+ls *maincontig.multi.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c 'bcftools view -v indels -Ob -o {}.indels.bcf {}.bcf'
+ls *maincontig.multi.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c 'bcftools view -v other -Ob -o {}.other.bcf {}.bcf'
+ls *maincontig.multi.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c 'bcftools view -v mnps -Ob -o {}.mnps.bcf {}.bcf'
+
+
+ls *.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c "bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' -Ob -o {}.filtered.bcf {}.bcf --threads 36"
+
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.maincontig.filtered.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.maincontig.filtered.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o {}.tab {}.bcf
+ls *.filtered.bcf | sed 's/.bcf//g' | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o {}.tab {}.bcf"
+
+
+ls *.bcf | sed 's/.bcf//g' | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o {}.tab {}.bcf"
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.bcf
+
+
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.indels.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.indels.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.bcf
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.multi.indels.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.multi.indels.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.multi.snps.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.hprcV1.filTag.filtered.multi.snps.bcf
+
+ls *filtered*bcf | xargs -I {} -P 10 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\n' -o query/{}.query {}"
+
+ls *filtered.multi*bcf | xargs -I {} -P 10 bash -c "bcftools query --print-header -f '%CHROM\_%POS\_%REF\_%ALT\n' -o query/{}.ID {}"
+
+%CHROM_%POS_%REF_%ALT
+
+
+ ls *filtered*.bcf | sed 's/.bcf//g' | xargs -I {} -P 10 bash -c "bcftools view -R main.contig.txt -Ob -o main_contig/{}.maincontig.bcf {}.bcf"
+
+
+ls *filtered*.bcf | sed 's/.bcf//g' | xargs -I {} -P 10 bash -c "bcftools view -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY -Ob -o main_contig/{}.maincontig.bcf {}.bcf"
+chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY
+
+ls *filtered.multi*bcf | xargs -I {} -P 10 bash -c "bcftools query --print-header -f '%CHROM\_%POS\_%REF\_%ALT\n' -o query/{}.ID {}"
+
+
+ls *.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c "bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' -Ob -o {}.filtered.bcf {}.bcf --threads 36"
+ls *snps.maincontig.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c "bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' -Ob -o {}.filtered.bcf {}.bcf --threads 36"
+
+
+ls *.filtered.bcf | xargs -I {} -P 10 bash -c "bcftools query --print-header -f '%CHROM\_%POS\_%REF\_%ALT\n' -o query/{}.ID {}"
+ls *.filtered.bcf | xargs -I {} -P 10 bash -c "bcftools query --print-header -f '%CHROM\_%POS\_%REF\_%ALT\n' -o query/{}.ID {}"
+
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.maincontig.filtered.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.maincontig.filtered.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.indels.maincontig.filtered.tab KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.filtered.multi.snps.maincontig.filtered.bcf
+
+
+
+
+awk '{print $14}' Hprc_only_variants_no_cut.annotated.tsv | tail -n+2 |sort | uniq -c > hprc.mrg.list
+
+KPP_only_variants_no_cut.annotated.tsv
+
+awk '{print $14}' KPP_only_variants_no_cut.annotated.tsv | tail -n+2 |sort | uniq -c > kpp.mrg.list
+
+
+awk '$14!="NA"{print $0}' Hprc_only_variants_no_cut.annotated.tsv > hprc.mrg.info
+awk '$14!="NA"{print $0}' Hprc_only_variants_no_cut.annotated.tsv > hprc.mrg.info
+
+awk '$14 != "NA"{print $0}' KPP_only_variants_no_cut.annotated.tsv > KPP_only_variants_no_cut.annotated.rmNA.tsv
+awk '$14 != "NA"{print $0}' Hprc_only_variants_no_cut.annotated.tsv > Hprc_only_variants_no_cut.annotated.rmNA.tsv
+
+
+PTPRN2
+DLGAP2
+PRY
+DIP2C
+PWRN1
+ADAMTSL2
+GSE1
+RBPJ
+CSMD1
+GALNT9
+
+
+wget https://pog.fudan.edu.cn/cpc/download//CPC.HPRC.Phase1.GRCh38-MAF01.cactus264/CPC_HPRC_reconstruct_GRCh38ref_T2Tplus_CN1plus.d21.snarls
+wget https://pog.fudan.edu.cn/cpc/download//CPC.HPRC.Phase1.GRCh38-MAF01.cactus264/CPC_HPRC_reconstruct_GRCh38ref_T2Tplus_CN1plus.d21.min
+wget https://pog.fudan.edu.cn/cpc/download//CPC.HPRC.Phase1.GRCh38-MAF01.cactus264/CPC_HPRC_reconstruct_GRCh38ref_T2Tplus_CN1plus.d21.gbz
+wget https://pog.fudan.edu.cn/cpc/download//CPC.HPRC.Phase1.GRCh38-MAF01.cactus264/CPC_HPRC_reconstruct_GRCh38ref_T2Tplus_CN1plus.d21.dist
+
+
+
+##cpc
+
+bcftools view -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.vcf.gz CPC.Phase1.CHM13v2.contig_change.vcf.gz
+
+
+gatk LiftoverVcf \
+   -I CPC.Phase1.CHM13v2.contig_change.maincontig.vcf.gz \
+   -O CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.vcf.gz \
+   -CHAIN hs1ToHg38.over.chain.gz \
+   -REJECT rejects.vcf.gz \
+   -R /BDATA/smkim/HLA_seq/REF/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna \
+   --WARN_ON_MISSING_CONTIG true
+
+
+gatk LiftoverVcf \
+   -I CPC.Phase1.CHM13v2.contig_change.maincontig.vcf.gz \
+   -O CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.vcf.gz \
+   -CHAIN hs1ToHg38.over.chain.gz \
+   -REJECT rejects.vcf.gz \
+   -R /BDATA/smkim/HLA_seq/REF/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna \
+   --WARN_ON_MISSING_CONTIG true
+
+
+gatk LiftoverVcf \
+   -I CPC.Phase1.CHM13v2.contig_change.maincontig.vcf.gz \
+   -O CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverchm13v2_grch38.vcf.gz \
+   -CHAIN chm13v2-grch38.chain \
+   -REJECT rejects.vcf.gz \
+   -R /BDATA/smkim/HLA_seq/REF/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna \
+   --WARN_ON_MISSING_CONTIG true
+
+
+
+### CPC
+
+CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.vcf.gz
+
+
+
+bcftools +fill-tags -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.vcf.gz -- CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.vcf.gz -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+
+
+
+bcftools norm -m-both -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.vcf.gz
+
+
+
+bcftools +fill-tags -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.vcf.gz -- CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.vcf.gz -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+bcftools index CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.vcf.gz
+
+
+
+
+bcftools view -i 'INFO/F_MISSING != 1' -i 'INFO/AC != 0' -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.vcf.gz --threads 36
+
+
+
+
+bcftools norm -m +both -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+
+bcftools index CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz
+bcftools index CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+
+
+bcftools view -v snps -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.snps.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz
+bcftools view -v indels -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.indels.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz
+bcftools view -v other -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.other.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz
+bcftools view -v mnps -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.mnps.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.bothnorm.vcf.gz
+
+
+bcftools view -v snps -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.snps.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+bcftools view -v indels -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.indels.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+bcftools view -v other -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.other.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+bcftools view -v mnps -Oz -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.mnps.vcf.gz CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.vcf.gz
+
+
+
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.snps.tab CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.snps.vcf.gz 
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.indels.tab CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.indels.vcf.gz
+
+
+

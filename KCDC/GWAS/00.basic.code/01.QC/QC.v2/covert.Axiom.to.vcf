@@ -1,0 +1,8 @@
+apt-format-result \
+ --calls-file AxiomGT1.calls.txt \
+ --annotation-file .annot.db \
+ --export-vcf-file [Output].vcf \
+ --log-file apt-format-result.log
+
+
+ 

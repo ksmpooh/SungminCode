@@ -1,0 +1,88 @@
+
+
+
+
+###liftover 19 to 38 : chr번호 잇어야함!!!  104번에서 수행
+/SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --INPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.vcf.gz --OUTPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.vcf.gz --REJECT reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh38/hg38.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh38/hg19ToHg38.over.chain.gz
+
+
+/SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --INPUT KOTRY.with_YSsample.AR_2025_all.updateids.convertVCF.rechr.vcf.gz --OUTPUT KOTRY.with_YSsample.AR_2025_all.updateids.convertVCF.rechr.hg19to38.vcf.gz --REJECT reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh38/hg38.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh38/hg19ToHg38.over.chain.gz
+/SDATA/KBAv2.0/1stVCF/gatk-4.2.3.0/gatk LiftoverVcf --INPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.vcf.gz --OUTPUT WGS_8062_joint_normMulti_recal_rmVQSR_LA_annotated_FIL_final_rmLQ_Phased_rmCHR_rmAC_17sample_reheaderid.rechr.hg19to38.vcf.gz --REJECT reject.vcf.gz --REFERENCE_SEQUENCE /SDATA/KBAv2.0/1stVCF/GRCh38/hg38.fa --CHAIN /SDATA/KBAv2.0/1stVCF/GRCh38/hg19ToHg38.over.chain.gz
+
+
+bcftools view -r 19:54400000-55100000
+bcftools view -r 19:54400000-55100000 -Oz -o chr19.dose.KIRregion.vcf.gz chr19.dose.vcf.gz
+
+
+
+
+###
+
+plink2 --pgen ./test/1kG_data/chr19_phase3.pgen \
+       --pvar ./test/1kG_data/chr19_phase3.pvar \
+       --psam ./test/1kG_data/phase3_orig.psam \
+       --rm-dup exclude-all \
+       --set-all-var-ids @_# \
+       --chr 19 --from-mb 54.4 --to-mb 55.1 \
+       --max-alleles 2 \
+       --make-bed \
+       --out ./test/1kG_data/chr19_phase3_KIR
+
+
+plink --bfile test \
+      --recode-allele /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models/plink_allele_ref \
+      --recode A \
+      --out test_KIR
+
+
+#/BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R
+
+mkdir test_KIR_imputation
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./test_KIR.raw \
+        ./test.bim \
+        ./test_KIR_imputation
+
+mkdir ./test/1kG_models
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/train_models.R \
+        ./test.bim \
+        ./test_KIR.raw \
+        ./test/1kG_KIR_testpheno.tsv \
+        ./test/1kG_models
+
+
+
+### extract KIR variant by annotation file
+
+cd /BDATA/smkim/AR_2025/06.AR_byYS_v2/02.plink/KIR/kir_annotaiotn
+
+plink2 --pgen ./test/1kG_data/chr19_phase3.pgen \
+       --pvar ./test/1kG_data/chr19_phase3.pvar \
+       --psam ./test/1kG_data/phase3_orig.psam \
+       --rm-dup exclude-all \
+       --set-all-var-ids @_# \
+       --chr 19 --from-mb 54.4 --to-mb 55.1 \
+       --max-alleles 2 \
+       --make-bed \
+       --out ./test/1kG_data/chr19_phase3_KIR
+
+plink2 --bfile ../../KOTRY.with_YSsample.AR_2025_all.updateids \
+       --rm-dup exclude-all \
+       --extract KIR.variant.txt \
+       --max-alleles 2 \
+       --make-bed \
+       --out KIR_annotationINFO
+#       --set-all-var-ids @_# \
+
+plink --bfile KIR_annotationINFO \
+      --recode-allele /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models/plink_allele_ref \
+      --recode A \
+      --out KIR_annotationINFO.KIR
+
+mkdir KIR_annotationINFO.KIR_imputation
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KIR_annotationINFO.KIR.raw \
+        ./KIR_annotationINFO.bim \
+        ./KIR_annotationINFO.KIR_imputation

@@ -1,0 +1,142 @@
+#### 20250310
+
+#cd /BDATA/smkim/AR_2025/01.genocall
+
+##1st
+KR(KD) + KR(KD) rep + extra 26 sample
+
+KR : 1,885 + 503 = 2,388
+KD : 1,178 + 321 = 1,499
+
+
+2,388 + 1,499 = 3,887
+
+## 2nd rm sample : 32
+# rmLQSamples : 26
+# rm PCA : 6
+
+## 2nd
+3855 + 26 = 2882
+
+####
+
+cd /BDATA/smkim/AR_2025/01.genocall
+sh geno.sh /BDATA/smkim/AR_2025/01.genocall/filtered_f1.txt /BDATA/smkim/AR_2025/01.genocall/2nd/
+
+
+### after genocall 
+
+cd /BDATA/smkim/AR_2025/03.2ndQC
+bash call.sh /BDATA/smkim/AR_2025/01.genocall/2nd/ /BDATA/smkim/AR_2025/01.genocall/2nd/SSP/ /BDATA/smkim/AR_2025/01.genocall/2nd/SSP/adv/ KOTRY.AR_2025_KRKD.2nd
+
+# 1st QC
+# merge plink
+cd /BDATA/smkim/AR_2025/02.1stQC
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd --missing --out MISS
+plink --bfile KOTRY.AR_2025_KRKD.2nd --het --out HET
+
+#R check
+miss <-read.table("MISS.imiss",header = T)
+het <- read.table("HET.het", header = T)
+
+
+miss <- cbind(miss, CR=((1 - miss$F_MISS)*100))
+het <- cbind(het, HET=((het$N.NM. - het$O.HOM.)/het$N.NM.)*100)
+
+lowSample <- merge(miss, het, by="FID")
+
+pdf("2nd.miss_het.pdf",height=7,width=10)
+plot(lowSample$HET,lowSample$F_MISS)
+dev.off()
+
+## 15~18
+
+Rscript --vanilla miss_het.R MISS.imiss HET.het miss_het_1st
+
+#plink --bfile KOTRY.AR_2025_KRKD.1st --remove rmLQSamples.txt --make-bed --out KOTRY.AR_2025_KRKD.1st_rmCRHET
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.AR_2025_KRKD.2nd_prune
+flashpca_x86-64 --bfile KOTRY.AR_2025_KRKD.2nd_prune -n 50 --outpc PCA.txt
+
+
+awk '$3>=0.05 || $4>0.5{print $1,$3,$4}' PCA.txt  | grep -v "NIH20KT1604" |grep "NIH" |
+awk '{print $1}' > rmPCA.txt
+
+
+awk '$3>=0.1 || $3<=-0.1 ||$4>=0.1 || $4<=-0.1 {print $1,$3,$4}' PCA.txt
+
+awk '$3>=0.1 || $3<=-0.1 ||$4>=0.1 || $4<=-0.1 {print $1,$3,$4}' PCA.txt > pca_th/pca.0.1all.rmPAC.txt
+awk '$3>=0.1 || $3<=-0.06 ||$4>=0.1 || $4<=-0.1 {print $1,$3,$4}' PCA.txt > pca_th/pca.0.06.rmPAC.txt
+
+
+
+at rmLQSamples.txt rmPCA.txt | awk '{print $1}' > 1stQC.rmlist.txt
+
+
+
+
+
+## YS 데이터 살리기
+pca <- read.table("PCA.txt", header=T)
+pdf("PCA_2nd.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+               #xlim=c(-0.5, 0.5), ylim=c(-0.5,0.5),
+     xlab="PC1", ylab="PC2", main="PREG 2ndQC PCA", cex=0.7, pch=16)
+dev.off()
+
+##
+
+pca <- read.table("PCA.txt", header=T)
+
+pdf("PCA_2nd.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+               #xlim=c(-0.5, 0.5), ylim=c(-0.5,0.5),
+     xlab="PC1", ylab="PC2", main="2ndQC PCA", cex=0.7, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=0.7, pch=16)
+
+dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+
+
+
+
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd --maf 0.2 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.1 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.AR_2025_KRKD.2nd --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.AR_2025_KRKD.2nd_prune
+flashpca_x86-64 --bfile KOTRY.AR_2025_KRKD.2nd_prune -n 50 --outpc PCA.txt
+
+ awk '{print $1,$1}' change.ID.finalQCin.list.txt  > final.keep.list
+ 
+plink --bfile KOTRY.AR_2025_KRKD.2nd --keep final.keep.list --make-bed --out KOTRY.AR_2025_KRKD.2nd_sampleQC
+
+awk '{print $1,$1,$2,$2}' change.ID.finalQCin.list.txt > update.ids
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC --update-ids update.ids --make-bed --out KOTRY.AR_2025_KRKD.2nd_sampleQC_update
+
+
+cd /BDATA/smkim/AR_2025/04.phsing_imp/
+plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update --maf 0.01 --geno 0.05 --make-bed --out KOTRY.AR_2025_KRKD.2nd_sampleQC_update_SNPqc
+
+for i in {1..22}; do   plink --bfile KOTRY.AR_2025_KRKD.2nd_sampleQC_update_SNPqc --chr $i --recode vcf --out vcf_for8K/KOTRY.AR_2025_KRKD.2nd_sampleQC_update_SNPqc_chr$i; done
+
+cd /BDATA/smkim/AR_2025/04.phsing_imp/vcf_for8K
+ls *vcf | xargs -I {} -P 22 bash -c "bgzip {}"
+
+
+
+
+##########

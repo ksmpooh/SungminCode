@@ -104,7 +104,7 @@ python /BDATA/smkim/KR_allogenomics/SCRIPT/02.mergedf.after.extrract.AA.AB.BB.py
 sed 's/.x/_KR/g' test.txt | sed 's/KR.KD.//g'|sed 's/.y/_KD/g' |sed 's/\_X/\_chr/g' |less -NS
 
 
-# with monomorphic
+# with monomorphic -> new format py  이상함 위에걸로 하면 됨
 cd /BDATA/smkim/KR_allogenomics/05.AR_2025/with_monomorphic
 
 ##r
