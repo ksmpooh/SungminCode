@@ -13,8 +13,12 @@
 bcftools view -r 19:54400000-55100000
 bcftools view -r 19:54400000-55100000 -Oz -o chr19.dose.KIRregion.vcf.gz chr19.dose.vcf.gz
 
+## michiange imp -> switch allele -> re format
+/BDATA/smkim/GWAS/annotation/KBAv1.probeID.refallele.txt
 
-
+cd  /BDATA/smkim/AR_2025/07.final_QC/02.genoVCFtoplink
+seq 1 22 | xargs -I {} -P 22 bash -c "plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill --a2-allele /BDATA/smkim/GWAS/annotation/KBAv1.probeID.refallele.txt --chr {} --recode vcf-iid --out forKIS/KOTRY.AR_2025.finalQC.chr{}"
+plink --bfile KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill --a2-allele /BDATA/smkim/GWAS/annotation/KBAv1.probeID.refallele.txt --chr {} --recode vcf-iid --out forKIS/KOTRY.AR_2025.finalQC.chr{}
 
 ###
 
@@ -86,3 +90,249 @@ Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
         ./KIR_annotationINFO.KIR.raw \
         ./KIR_annotationINFO.bim \
         ./KIR_annotationINFO.KIR_imputation
+
+
+### geno VCF to plink
+
+#KIR 
+cd /BDATA/smkim/AR_2025/07.final_QC/KIR
+
+plink2 --bfile /BDATA/smkim/AR_2025/07.final_QC/QCed.plink/KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill \
+--rm-dup exclude-all \
+--set-all-var-ids @_# \
+--chr 19 --from-mb 54.4 --to-mb 55.1 \
+       --max-alleles 2 \
+       --make-bed \
+       --out KOTRY.KIRregionQC
+
+
+
+
+plink --bfile KOTRY.KIRregionQC \
+      --recode-allele /BDATA/smkim/GWAS/annotation/KIR.ref.allele.txt \
+      --recode A \
+      --out KOTRY.KIRregionQC.recodeA
+
+
+mkdir KIR_imputation
+
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KOTRY.KIRregionQC.recodeA.raw \
+        ./KOTRY.KIRregionQC.bim \
+        ./KIR_imputation
+
+
+##
+plink --bfile KOTRY.KIRregionQC \
+      --recode-allele /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models/plink_allele_ref \
+      --recode A \
+      --out KOTRY.KIRregionQC.recodeA_plink_allele_ref
+
+mkdir KIR_imputation_plink_allele_ref
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KOTRY.KIRregionQC.recodeA_plink_allele_ref.raw \
+        ./KOTRY.KIRregionQC.bim \
+        ./KIR_imputation_plink_allele_ref
+
+
+
+
+#after KIS imp
+#103
+cd /BDATA/smkim/AR/KIS
+
+plink2 --vcf chr19.dose.vcf.gz \
+--rm-dup exclude-all \
+--set-all-var-ids @_# \
+--chr 19 --from-mb 54.4 --to-mb 55.1 \
+       --max-alleles 2 \
+       --make-bed \
+       --out KOTRY.KIRregionQC_afterKISimp
+
+
+plink --bfile KOTRY.KIRregionQC_afterKISimp \
+      --recode-allele KIR_ref.allele \
+      --recode A \
+      --out KOTRY.KIRregionQC_afterKISimp.recodeA
+
+# 109
+/BDATA/smkim/AR_2025/07.final_QC/KIR/after_KIS
+
+mkdir KIR_imputation
+
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KOTRY.KIRregionQC_afterKISimp.recodeA.raw \
+        ./KOTRY.KIRregionQC_afterKISimp.bim \
+        ./KIR_imputation
+
+
+plink --bfile KOTRY.KIRregionQC_afterKISimp \
+      --recode-allele /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models/plink_allele_ref \
+      --recode A \
+      --out KOTRY.KIRregionQC_afterKISimp.recodeA_plink_allele_ref
+
+mkdir KIR_imputation_plink_allele_ref
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KOTRY.KIRregionQC_afterKISimp.recodeA_plink_allele_ref.raw \
+        ./KOTRY.KIRregionQC_afterKISimp.bim \
+        ./KIR_imputation_plink_allele_ref
+
+
+
+
+
+### after michiang imp
+cd /BDATA/smkim/AR/michigan_chr19_basic
+
+plink2 --vcf chr19.dose.vcf.gz \
+--rm-dup exclude-all \
+--set-all-var-ids @_# \
+--chr 19 --from-mb 54.4 --to-mb 55.1 \
+       --max-alleles 2 \
+       --make-bed \
+       --out KOTRY.KIRregionQC_afterMichiangImp
+
+plink --bfile KOTRY.KIRregionQC_afterMichiangImp \
+      --recode-allele plink_allele_ref \
+      --recode A \
+      --out KOTRY.KIRregionQC_afterMichiangImp.recodeA
+
+## copy to 109
+/BDATA/smkim/AR_2025/07.final_QC/KIR/after_michigan
+
+
+mkdir KIR_imputation
+
+Rscript /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/src/run_KIR_imputation.R \
+        /BDATA/smkim/TOOLs/KIR_IMP/KIR-imputation/models \
+        ./KOTRY.KIRregionQC_afterMichiangImp.recodeA.raw \
+        ./KOTRY.KIRregionQC_afterMichiangImp.bim \
+        ./KIR_imputation > log.txt
+
+
+
+
+
+
+### MICA
+cd /BDATA/smkim/AR_2025/07.final_QC/MICA
+plink2 --bfile /BDATA/smkim/AR_2025/07.final_QC/QCed.plink/KOTRY.with_YSsample.AR_2025_all.rmdup.updateid.fill \
+--rm-dup exclude-all \
+--chr 6 --from-mb 25 --to-mb 35 \
+       --max-alleles 2 \
+       --make-bed \
+       --out KOTRY.HLAregionQC
+
+
+awk '{print $2,$3}' /BDATA/smkim/GWAS/annotation/KBAv2_annotation_v1_202411.selectbysm.txt | sed 's/:/\t/g' | awk '{print $1,$2,$3}' > probeID.hg38pos.txt
+
+plink --bfile KOTRY.HLAregionQC --update-map probeID.hg38pos.txt 3 1 --make-bed --out KOTRY.HLAregionQC.hg38
+
+# functions and libraries
+source('/BDATA/smkim/TOOLs/MICA/HLA_EFG_MICAB_imputation/src/functions.R')
+
+# computing nodes
+cl <- makeCluster(4)
+
+
+## Read MHC genotype data
+
+genotypes <- hlaBED2Geno(bed.fn='KOTRY.HLAregionQC.hg38.bed',
+                          bim.fn='KOTRY.HLAregionQC.hg38.bim',
+                          fam.fn='KOTRY.HLAregionQC.hg38.fam',
+                          assembly='hg38')
+
+## imputation
+
+# load models
+model_MICA <- hlaModelFromObj(get(load('/BDATA/smkim/TOOLs/MICA/HLA_EFG_MICAB_imputation/models/path_to_model_MICA.RData')))
+model_MICB <- hlaModelFromObj(get(load('/BDATA/smkim/TOOLs/MICA/HLA_EFG_MICAB_imputation/models/path_to_model_MICB.RData')))
+
+# run imputation
+imputed_MICA  <- predict(model_MICA, genotypes, type='response+prob', match.type='Position', cl=cl)
+imputed_MICB  <- predict(model_MICB, genotypes, type='response+prob', match.type='Position', cl=cl)
+
+# save results in table format
+write.table(imputed_MICA$value, 'results/MICA_imputed.tsv', quote=F, sep='\t', row.names=F)
+write.table(imputed_MICB$value, 'results/MICB_imputed.tsv', quote=F, sep='\t', row.names=F)
+
+# save full results
+saveRDS(imputed_MICA, file='results/MICA_imputed.rds')
+saveRDS(imputed_MICB, file='results/MICB_imputed.rds')
+
+
+## convert imputed data to dosage with imputation PP info
+
+# imputed_MICA <- readRDS('results/MICA_imputed.rds')
+# imputed_MICB <- readRDS('results/MICB_imputed.rds')
+# imputed_HLA_E <- readRDS('results/HLA_E_imputed.rds')
+# imputed_HLA_F <- readRDS('results/HLA_F_imputed.rds')
+# imputed_HLA_G <- readRDS('results/HLA_G_imputed.rds')
+# imputed_HLA_G_3UTR <- readRDS('results/HLA_G_3UTR_imputed.rds')
+# imputed_HLA_G_5UTR <- readRDS('results/HLA_G_5UTR_imputed.rds')
+
+imputation2dosage(imputed_MICA, 'MICA', 'results/MICA_imputed')
+imputation2dosage(imputed_MICB, 'MICB', 'results/MICB_imputed')
+
+
+##3 after michiang imp
+cd /BDATA/smkim/AR/michigan_chr19to83
+plink2 --vcf chr6.dose.vcf.gz \
+--rm-dup exclude-all \
+--chr 6 --from-mb 25 --to-mb 35 \
+       --max-alleles 2 \
+       --make-bed \
+       --out KOTRY.HLAregionQC_michiangImp
+
+
+
+
+#
+shapeit4 --input KOTRY.KIRregionQC.covert.vcf.gz --region 19 --map /BDATA/smkim/TOOLs/shapeit4/maps/chr19.b37.gmap.gz --output KOTRY.KIRregionQC.covert.shapeit4phased --thread 32
+
+
+shapeit4 \
+  --input KOTRY.snps.vcf.gz \
+  --map /BDATA/smkim/TOOLs/shapeit4/maps/chr19.b37.gmap.gz \
+  --region 19 \
+  --output KOTRY.chr19.phased.vcf.gz \
+  --thread 32
+
+shapeit4 \
+  --input KOTRY.snps.vcf.gz \
+  --map /BDATA/smkim/TOOLs/shapeit4/maps/chr19.b37.gmap.gz \
+  --region 19 \
+  --output KOTRY.chr19.phased.vcf.gz \
+  --thread 32
+
+
+
+
+shapeit4 \
+  --input KOTRY.AR_2025.finalQC.chr19.vcf.gz \
+  --map /BDATA/smkim/TOOLs/shapeit4/maps/chr19.b37.gmap.gz \
+  --region 19:55000000-56000000 \
+  --output KOTRY.AR_2025.finalQC.chr19.phased.vcf.gz \
+  --thread 64
+
+
+  bcftools convert \
+  --haplegendsample KOTRY.AR_2025.finalQC.chr19.phased.convert \
+  --vcf-ids \
+  KOTRY.AR_2025.finalQC.chr19.phased.vcf.gz
+
+
+  bcftools convert \
+  --hapsample KOTRY.AR_2025.finalQC.chr19.phased.convert \
+  --vcf-ids \
+  KOTRY.AR_2025.finalQC.chr19.phased.vcf.gz
+
+
+/BDATA/smkim/TOOLs/qctool/qctool \
+  -g KOTRY.AR_2025.finalQC.chr19.phased.vcf.gz \
+  -og cohort.haps \
+  -os cohort.sample

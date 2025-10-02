@@ -1,0 +1,30 @@
+cd /CDATA/pangenome/flagger_test
+
+
+cat KPPD019.1.fa.fai | awk '{print $1"\t0\t"$2}' > whole_genome.bed
+
+echo "{" > annotations_path.json
+echo \"whole_genome\" : \"whole_genome.bed\" >> annotations_path.json
+echo "}" >> annotations_path.json
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  bam2cov --bam /wdir/NIH23F1013274/m84065_231124_080536.hifi_reads.bam \
+                  --output /wdir/coverage_file.cov.gz \
+                  --annotationJson /wdir/annotations_path.json \
+                  --threads 16 \
+                  --baselineAnnotation whole_genome
+
+
+
+export WORKING_DIR=/CDATA/pangenome/flagger_test
+
+docker run -it --rm \
+  -v ${WORKING_DIR}:${WORKING_DIR} \
+  mobinasri/flagger:v1.1.0 \
+  flagger \
+    --reads ${WORKING_DIR}/NIH23F1013274.Revio_hifi_reads.fastq.gz \
+    --asm1 ${WORKING_DIR}/KPPD019.1.fa \
+    --asm2 ${WORKING_DIR}/KPPD019.2.fa \
+    --genome-size 3g \
+    --out-dir ${WORKING_DIR}/flagger_full_output \
+    --threads 16

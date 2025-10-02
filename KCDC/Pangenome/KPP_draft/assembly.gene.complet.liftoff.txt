@@ -511,3 +511,52 @@ df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>%
   filter(X4 != 0) %>% rename(contig = X1,gene = X2,gene_type = X3,copy_num=X4,coverage=X5) %>%
   select(-contig) %>%
   write.table("KPPD.liftoff_genecode_chm13.change_copy_number_INFO.txt",col.names = T,row.names = F,quote = F,sep = "\t")
+
+
+
+
+### re 20250806 
+liftoff -p 64 -sc 0.90 -copies -g GENCODE.V38.gff3 -u unmapped.txt
+-o gene_dup.gff3 -polish {$ASSEMBLY} {$REFERENCE}
+-exclude_partial
+
+
+liftoff -p 32 -sc 0.90 -copies -db /BDATA/pangenome/00.db/gencode/gencode.v47.primary_assembly.annotation.gff3_db -u unmapped.txt \
+-exclude_partial -o test_excludepartial -polish /ADATA/pangenome/assembly/KPPD001.1.fa /BDATA/pangenome/00.db/gencode/GRCh38.primary_assembly.genome.fa
+
+liftoff -p 32 -sc 0.90 -copies -db /BDATA/pangenome/00.db/gencode/gencode.v47.primary_assembly.annotation.gff3_db -u unmapped.txt \
+-exclude_partial -o test_excludepartial -polish /ADATA/pangenome/assembly/KPPD001.1.fa.mmi /BDATA/pangenome/00.db/gencode/GRCh38.primary_assembly.genome.fa
+
+
+liftoff -p 32 -sc 0.90 -copies -db /ADATA/smkim/pangenome/db/gencode/gencode.v47.primary_assembly.annotation.gff3_db -u unmapped.txt \
+-exclude_partial -o test_excludepartial -polish KPPD001.1.fa /ADATA/smkim/pangenome/db/gencode/GRCh38.primary_assembly.genome.fa
+
+
+
+df %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  mutate(copy_count = ifelse(X4==0,0,1)) %>% count(coding_type,copy_count)
+
+
+ref %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>% 
+  mutate(coding_type = ifelse(X3=="protein_coding","Protein_coding_genes","Noncoding_genes")) %>%
+  mutate(copy_count = ifelse(X4==0,0,1)) %>% count(coding_type,copy_count)
+
+
+
+#### panscan
+
+panscan make_dup_mtx --gencode_gff3 gencode.gff3 --fofn assemblies.fofn --ref_fa hg38_ref.fa --threads 64
+
+
+panscan make_dup_mtx --gencode_gff3 /ADATA/smkim/pangenome/db/gencode/gencode.v47.primary_assembly.annotation.gff3 --fofn test.fa.fn --ref_fa /ADATA/smkim/pangenome/db/gencode/GRCh38.primary_assembly.genome.fa --threads 64
+
+panscan gene_dup --csv_file gene-dup-matrix.csv --ip1 gene_dup/hprc-matrix.csv --ip2 gene_dup/cpc-matrix.csv 
+panscan gene_dup --csv_file gene-dup-matrix-final.csv --ip1 /BDATA/smkim/TOOLs/panscan/gene_dup/hprc-matrix.csv --ip2 /BDATA/smkim/TOOLs/panscan/gene_dup/cpc-matrix.csv
+
+
+/BDATA/smkim/TOOLs/panscan/gene_dup/hprc-matrix.csv
+/BDATA/smkim/TOOLs/panscan/gene_dup/cpc-matrix.csv
+
+hprc-matrix.csv
+cpc-matrix.csv
