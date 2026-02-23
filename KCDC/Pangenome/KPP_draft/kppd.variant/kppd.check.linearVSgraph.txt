@@ -1,0 +1,55 @@
+bcftools view -i 'QUAL>=30' KPPD.norm.vcf.gz -Oz > KPPD.pass30.vcf.gz
+
+
+bcftools view -i 'QUAL>=30' KPPD.norm.vcf.gz -Oz > KPPD.pass30.vcf.gz
+
+
+ls *gz | xargs -I {} -P 4 bash -c "bcftools query -f '%ID\t%QUAL\n' {} > {}.QUAL"
+
+
+
+
+
+
+###########################
+#207
+
+cd /ADATA/smkim/pangenome/graph/01.graph_varint_count
+awk '$7>0{print $12}' kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.tab | sort |uniq -c
+
+8945965 INDEL
+ 398308 MNP
+  27839 OTHER
+16550729 SNP
+
+awk '$7>0{print $12}' kor132.chm13v2.wave.clean.norm.sort.tag.bcf.tab | sort |uniq -c
+
+10128266 INDEL
+ 545598 MNP
+  29669 OTHER
+17758700 SNP
+
+
+awk '$7>0{print $12}' kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.tab > kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC0.tab
+awk '$7>0{print $12}' kor132.chm13v2.wave.clean.norm.sort.tag.bcf.tab >  kor132.chm13v2.wave.clean.norm.sort.tag.bcf.noAC0.tab
+
+ls -1 *.tab \
+| xargs -I {} -P 4 bash -lc '
+  in="{}"
+  base="${in%.tab}"
+  awk -F"\t" '"'"'NR==1 || $7>0 {print $0}'"'"' "$in" > "noAC0/${base}.noAC.tab"
+'
+
+
+awk -F'\t' 'NR==1 || $1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y|M)$/ {print}' OFS='\t' \
+   kor132.chm13v2.GRCh38.d26.wave.clean.norm.sort.tag.bcf.noAC.tab \
+   > kor132.chm13v2.GRCh38.d26.wave.clean.norm.sort.tag.bcf.noAC.maincontig.tab
+
+
+awk -F'\t' 'NR==1 || $1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y|M)$/ {print}' OFS='\t' \
+   kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.tab \
+   > kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.tab
+
+
+
+/ADATA/smkim/pangenome/graph/01.graph_varint_count/noAC0

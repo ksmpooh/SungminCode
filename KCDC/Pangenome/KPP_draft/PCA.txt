@@ -1,0 +1,256 @@
+#######
+VCF=KPPD060.dip.vcf.gz
+ID=$(basename "$VCF" .dip.vcf.gz)
+
+# 1) SNP + biallelic  => 임시 BCF
+bcftools view -v snps -m2 -M2 -Ob -o "${ID}.tmp1.bcf" "$VCF"
+bcftools index -c "${ID}.tmp1.bcf"
+
+# 2) sample 이름 변경(파일로 출력)
+bcftools query -l "${ID}.tmp1.bcf" | awk -v id="$ID" '{print $1"\t"id}' > "${ID}.rename.txt"
+bcftools reheader -s "${ID}.rename.txt" -o "${ID}.tmp2.bcf" "${ID}.tmp1.bcf"
+bcftools index -c "${ID}.tmp2.bcf"
+
+# 3) setID => 최종 BCF
+bcftools annotate --set-id '%CHROM:%POS:%REF:%ALT' -Ob -o "${ID}.qc.snps.biallelic.setid.bcf" "${ID}.tmp2.bcf"
+bcftools index -c "${ID}.qc.snps.biallelic.setid.bcf"
+
+# (옵션) 임시파일 정리
+rm -f "${ID}.tmp1.bcf" "${ID}.tmp1.bcf.csi" "${ID}.tmp2.bcf" "${ID}.tmp2.bcf.csi" "${ID}.rename.txt"
+
+
+
+
+
+
+#######
+ls *.qc.snps.biallelic.setid.bcf > bcf.list
+
+bcftools merge \
+  -Ob -o ../merged.bcf \
+  -l bcf.list
+
+bcftools index -c ../merged.bcf
+
+bcftools +fill-tags merged.bcf -Ob -o merged.tags.bcf -- -t F_MISSING
+bcftools index -c merged.tags.bcf
+
+
+bcftools view -i 'F_MISSING<=0.05' -Ob -o merged.callrate0.95.bcf merged.tags.bcf
+bcftools index -c merged.callrate0.95.bcf
+
+
+
+bcftools view -h merged.callrate0.95.bcf \
+| grep '^##contig' \
+| sed -E 's/.*ID=chr([^,>]+).*/chr\1\t\1/' > chr2num.map
+
+bcftools annotate \
+  --rename-chrs chr2num.map \
+  -Ob -o merged.callrate0.95.nochr.bcf \
+  merged.callrate0.95.bcf
+
+bcftools index -c merged.callrate0.95.nochr.bcf
+
+
+
+bcftools annotate \
+  --set-id '%CHROM:%POS:%REF:%ALT' \
+  -Ob -o merged.callrate0.95.nochr.setid.bcf \
+  merged.callrate0.95.nochr.bcf
+
+bcftools index -c merged.callrate0.95.nochr.setid.bcf
+
+
+plink --bcf merged.callrate0.95.nochr.setid.bcf --make-bed --out merged.callrate0.95.nochr.setid.covertPLINK
+
+plink --bcf merged.callrate0.95.nochr.setid.bcf --make-bed --out HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK
+
+
+#######
+
+bcftools view -v snps --threads 32 \
+  kor132_hprc47_cpc58.chm13v2.GRCh38.wave.vcf.gz -Ob \
+  -o kor132_hprc47_cpc58.chm13v2.GRCh38.wave.snps.bcf
+
+  bcftools view \
+  -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
+  kor132_hprc47_cpc58.chm13v2.GRCh38.wave.snps.bcf \
+  -Ob \
+  -o kor132_hprc47_cpc58.chm13v2.GRCh38.wave.snps.mainchr.bcf
+
+
+
+
+
+
+/BDATA/smkim/pangenome/PCA/script
+
+plink2 --bcf kor132_hprc47_cpc58.chm13v2.GRCh38.wave.snps.mainchr.setid.bcf --make-bed --out pangenome.plink --vcf-half-call m
+
+
+
+cp pangenome.plink.bim pangenome.plink.bim_ori
+
+sed 's/chr//g' pangenome.plink.bim_ori > pangenome.plink.bim
+
+plink --bfile pangenome.plink --maf 0.01 --geno 0.0001 --hwe 1e-6 --make-bed --out pangenome.plink.QC
+
+#/BDATA/smkim/pangenome/PCA/1kgp/plink/1kgp.merge
+
+
+cat pangenome.plink.QC.bim 1kgp/plink/1kgp.merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+
+plink --bfile 1kgp/plink/1kgp.merge --extract intersectSNP.txt --make-bed --out 1kgp.merge.intersect
+plink --bfile pangenome.plink.QC --extract intersectSNP.txt  --make-bed --out pangenome.plink.QC.intersect
+
+
+plink --bfile 1kgp.merge.intersect --bmerge pangenome.plink.QC.intersect --allow-no-sex --make-bed --out MERGE
+
+python2 script/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+plink --bfile MERGE_500K --remove revmo.tx --make-bed --out MERGE_500K_nott2t
+./flashpca_x86-64 --bfile MERGE_500K_nott2t --outpc PCA_ethnic.txt
+
+
+rsync -avhP PCA_ethnic.txt ksmpooh@10.20.30.110:/Users/ksmpooh/pangenome/kppd/
+
+rsync -avhP ksmpooh@223.171.87.36:/Users/ksmpooh/pangenome/kppd/PCA_ethnic.txt ./
+
+#### KPP HPRC CPC VCF
+
+
+#### HPRC 
+dip 
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 64 -m kppd041 \
+  /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  /ADATA/pangenome/assembly/KPPD041.1.fa \
+  /ADATA/pangenome/assembly/KPPD041.2.fa \
+  | make -j 32 -f -
+
+
+
+  /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.1.fa {}.2.fa | make -j 32 -f -
+  /ADATA/pangenome/assembly/KPPD041.2.fa \
+  | make -j 32 -f -
+
+ls *1.fa | sed 's/.1.fa//g' | xargs -I {} -P 3 bash -c "/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 64 -m {} /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.1.fa {}.2.fa | make -j 32 -f -"
+
+#####
+
+
+
+
+
+
+###
+IN=KPPD.longread_pbmm2_GRCh38.deepvariant.glnexus_131samples.vcf.gz
+
+bcftools view \
+  -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
+  -v snps -m2 -M2 \
+  -i 'QUAL>=20' \
+  -Ob -o KPPD.glnexus.chr1_22.snps.biallelic.Q20.bcf \
+  "$IN"
+
+
+bcftools index -c KPPD.glnexus.chr1_22.snps.biallelic.Q20.bcf
+
+bcftools view -h KPPD.glnexus.chr1_22.snps.biallelic.Q20.bcf \
+| grep '^##contig' \
+| sed -E 's/.*ID=chr([^,>]+).*/chr\1\t\1/' > chr2num.map
+
+bcftools annotate \
+  --rename-chrs chr2num.map \
+  -Ob -o KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.bcf \
+  KPPD.glnexus.chr1_22.snps.biallelic.Q20.bcf
+
+bcftools index -c KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.bcf
+
+bcftools annotate \
+  --set-id '%CHROM:%POS:%REF:%ALT' \
+  -Ob -o KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.setid.bcf \
+  KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.bcf
+
+bcftools index -c KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.setid.bcf
+
+
+plink --bcf KPPD.glnexus.chr1_22.snps.biallelic.Q20.nochr.bcf --make-bed --out kppd.131.longread --allow-extra-chr --chr 1-22
+
+plink --bfile kppd.131.longread --maf 0.01 --geno 0.001 --hwe 1e-6 --make-bed --out kppd.131.longread.QC
+
+##
+
+### PCA second PCA
+/CDATA/pangenome/STR/01.dipcall/merge.vcf/merged.callrate0.95.nochr.setid.covertPLINK
+
+cd /BDATA/smkim/pangenome/PCA/dip
+
+/BDATA/smkim/pangenome/PCA/kppd/kppd.131.longread.QC.fixed
+
+cat /CDATA/pangenome/STR/01.dipcall/merge.vcf/merged.callrate0.95.nochr.setid.covertPLINK.bim /BDATA/smkim/pangenome/PCA/1kgp/plink/1kgp.merge.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==2 {print $2}' > intersectSNP.txt
+
+
+plink --bfile /BDATA/smkim/pangenome/PCA/1kgp/plink/1kgp.merge --extract intersectSNP.txt --make-bed --out 1kgp.merge.intersect
+plink --bfile /CDATA/pangenome/STR/01.dipcall/merge.vcf/merged.callrate0.95.nochr.setid.covertPLINK --extract intersectSNP.txt  --make-bed --out kppd.dip.plink.QC.intersect
+
+
+plink --bfile 1kgp.merge.intersect --bmerge kppd.dip.plink.QC.intersect --allow-no-sex --make-bed --out MERGE
+
+python /BDATA/smkim/pangenome/PCA/script/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+../flashpca_x86-64 --bfile MERGE_500K --outpc PCA_ethnic.kppdip.txt
+
+
+rsync -avhP PCA_ethnic.kppdip.txt ksmpooh@10.20.30.110:/Users/ksmpooh/pangenome/kppd/
+
+rsync -avhP ksmpooh@223.171.87.36:/Users/ksmpooh/pangenome/kppd/PCA_ethnic.kppdip.txt ./
+
+
+
+### vs kppd vs hprc
+/ADATA/pangenome/00.rawDATA/hprc/dip.call/HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK
+/ADATA/pangenome/00.rawDATA/hprc/dip.call
+
+
+HG002
+HG00741
+HG03486
+
+
+cd /BDATA/smkim/pangenome/PCA/three
+plink --bfile /ADATA/pangenome/00.rawDATA/hprc/dip.call/HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK --maf 0.01 --geno 0.0001 --make-bed --out HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK.qc
+
+awk '{print $1,$2,$1"_HPRC",$1"_HPRC"}' HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK.qc.fam > change.hprc.id
+plink --bfile HPRCv1.merged.callrate0.95.nochr.setid.covertPLINK.qc --update-ids change.hprc.id --make-bed --out hprc.dip.plink.QC
+
+
+
+cat hprc.dip.plink.QC.bim /CDATA/pangenome/STR/01.dipcall/merge.vcf/merged.callrate0.95.nochr.setid.covertPLINK.bim /BDATA/smkim/pangenome/PCA/1kgp/plink/1kgp.merge.noHPRC.bim | awk '{print $2}' | sort | uniq -c | awk '$1 ==3 {print $2}' > intersectSNP.txt
+
+
+
+plink --bfile /BDATA/smkim/pangenome/PCA/1kgp/plink/1kgp.merge.noHPRC --extract intersectSNP.txt --make-bed --out 1kgp.merge.noHPRC.intersect
+plink --bfile /CDATA/pangenome/STR/01.dipcall/merge.vcf/merged.callrate0.95.nochr.setid.covertPLINK --extract intersectSNP.txt  --make-bed --out kppd.dip.plink.QC.intersect
+plink --bfile hprc.dip.plink.QC --extract intersectSNP.txt  --make-bed --out hprc.dip.plink.QC.intersect
+
+
+
+#echo "kppd.dip.plink.QC.intersect" > merge.list
+#echo "hprc.dip.plink.QC.intersect" >> merge.list
+
+plink --bfile 1kgp.merge.noHPRC.intersect --merge-list merge.list --allow-no-sex --make-bed --out MERGE
+
+python /BDATA/smkim/pangenome/PCA/script/03.select_snpID_500K_distance.py MERGE.bim
+plink --bfile MERGE --extract 500K_distance_SNP_list.txt --make-bed --out MERGE_500K
+
+../flashpca_x86-64 --bfile MERGE_500K --outpc PCA_ethnic.kppdip_hprcdip.txt
+
+
+rsync -avhP PCA_ethnic.kppdip_hprcdip.txt ksmpooh@10.20.30.110:/Users/ksmpooh/pangenome/kppd/
+
+rsync -avhP ksmpooh@223.171.87.36:/Users/ksmpooh/pangenome/kppd/PCA_ethnic.kppdip_hprcdip.txt ./
+

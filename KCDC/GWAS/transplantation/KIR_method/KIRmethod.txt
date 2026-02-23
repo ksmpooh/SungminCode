@@ -1,0 +1,98 @@
+103
+/BDATA/smkim/TOOLs/Immuannot
+
+
+HLA-A,HLA-B,HLA-C,HLA-DMA,HLA-DMB,HLA-DOA,HLA-DOB,HLA-DPA1,HLA-DPA2,HLA-DPB1,HLA-DPB2,HLA-DQA1,HLA-DQA2,HLA-DQB1,HLA-DQB2,HLA-DRA,HLA-DRB1,HLA-DRB3,HLA-DRB4,HLA-DRB5,HLA-E,HLA-F,HLA-G,HLA-HFE,HLA-H,HLA-J,HLA-K,HLA-L,HLA-N,HLA-P,HLA-S,HLA-T,HLA-U,HLA-V,HLA-W,HLA-Y,MICA,MICB,TAP1,TAP2,C4A,C4B
+KIR2DL1,KIR2DL2,KIR2DL3,KIR2DL4,KIR2DL5A,KIR2DL5B,KIR2DP1,KIR2DS1,KIR2DS2,KIR2DS3,KIR2DS4,KIR2DS5,KIR3DL1,KIR3DL2,KIR3DL3,KIR3DP1,KIR3DS1
+
+
+## check the file path before running, take a few minutes
+ctg=/BDATA/smkim/pangenome/assembly/KPPD001.1.fa
+script=/BDATA/smkim/TOOLs/Immuannot/scripts.pub.v3/immuannot.sh
+refdir=/BDATA/smkim/TOOLs/Immuannot/Data-2024Feb02
+outpref=KPPD001.1_immuannot
+bash ${script} -c ${ctg} -r ${refdir} -o ${outpref} -t 32
+
+
+ctg=/BDATA/smkim/pangenome/assembly/KPPD001.2.fa
+script=/BDATA/smkim/TOOLs/Immuannot/scripts.pub.v3/immuannot.sh
+refdir=/BDATA/smkim/TOOLs/Immuannot/Data-2024Feb02
+outpref=KPPD001.2_immuannot
+bash ${script} -c ${ctg} -r ${refdir} -o ${outpref} -t 32
+
+
+python3 kir_report.py \
+  --hap1 KPPD001.1_immuannot.gtf.gz \
+  --hap2 KPPD001.2_immuannot.gtf.gz \
+  --sample KPPD001 \
+  --outdir kir_out
+
+
+## kir mapper
+NIH23J3178611
+/BDATA/smkim/pangenome/02.revio_refpanel/01.mapped_fromfastq/NIH23J3178611.pbmm2_hg38_withunmapped.bam
+samtools view -b input.bam chr19 > chr19.bam
+
+cd /BDATA/smkim/pangenome/kir
+
+samtools view -b /BDATA/smkim/pangenome/02.revio_refpanel/01.mapped_fromfastq/NIH23J3178611.pbmm2_hg38_withunmapped.bam chr19 > KPP001.chr19.bam
+samtools index KPP001.chr19.bam
+
+
+docker run -it -v /BDATA/smkim/pangenome/kir:/data -v /BDATA/smkim/pangenome/02.revio_refpanel/01.mapped_fromfastq:/input kir-mapper
+
+kir-mapper map -bam HG00403.KIR.bam -sample HG00403 -output /home/USER/output 
+kir-mapper map -bam /data/KPP001.chr19.bam -sample KPP001 -output /data/KPP001_kir_mapper
+kir-mapper ncopy -output /data/KPP001_kir_mapper
+kir-mapper genotype -output /data/KPP001_kir_mapper
+kir-mapper haplotype -output /data/KPP001_kir_mapper --centromeric
+
+
+docker run -it -v /BDATA/smkim/pangenome/kir:/data -v /BDATA/smkim/pangenome/02.revio_refpanel/01.mapped_fromfastq:/input kir-mapper
+
+
+kir-mapper map -bam /input/NIH23J3178611.pbmm2_hg38_withunmapped.bam -sample KPP001 -output /data/KPP001_kir_mapper_wgs
+kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs
+kir-mapper genotype -output kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs
+kir-mapper haplotype -output kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs --centromeric
+
+
+kir-mapper map -bam /data/NIH20N2526920.bam -sample KPP001 -output /data/KPP001_kir_mapper_wgs_shortread
+kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs_shortread
+kir-mapper genotype -output kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs_shortread
+kir-mapper haplotype -output kir-mapper ncopy -output /data/KPP001_kir_mapper_wgs_shortread
+
+
+
+
+docker run -it -v /BDATA/smkim/TOOLs/kir-mapper/samples:/data -v /BDATA/smkim/pangenome/02.revio_refpanel/01.mapped_fromfastq:/input kir-mapper
+
+kir-mapper map -bam /data/HG00403.KIR.bam -sample HG00403 -output /data/HG00403
+kir-mapper ncopy -output /data/HG00403
+kir-mapper genotype -output kir-mapper ncopy -output /data/HG00403
+kir-mapper haplotype -output kir-mapper ncopy -output /data/HG00403
+
+
+ Processing 5UPKIR ...
+ > Processing HLA-E ...
+ > Processing HLA-G ...
+ > Processing KIR2DL1 ...
+ > Processing KIR2DL2 ...
+ > Processing KIR2DL3 ...
+ > Processing KIR2DL4 ...
+ > Processing KIR2DL5AB ...
+ > Processing KIR2DP1 ...
+ > Processing KIR2DS1 ...
+ > Processing KIR2DS2 ...
+ > Processing KIR2DS3 ...
+ > Processing KIR2DS4 ...
+ > Processing KIR2DS5 ...
+ > Processing KIR3DL1 ...
+ > Processing KIR3DL2 ...
+ > Processing KIR3DL3 ...
+ > Processing KIR3DP1 ...
+ > Processing KIR3DS1 ...
+ > Processing LILRB1 ...
+ > Processing LILRB2 ...
+ > Processing LILRB3 ...
+ > Processing LILRB4 ...

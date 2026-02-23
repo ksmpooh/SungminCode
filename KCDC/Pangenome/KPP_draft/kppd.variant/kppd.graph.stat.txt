@@ -1,0 +1,44 @@
+한국인만 그래프 VCF 위치
+/DDATA/pangenome/graph/kor2_vcf/kor132.chm13v2.wave.vcf.gz #T2TCHM13v2
+/DDATA/pangenome/graph/kor2_vcf/kor132.chm13v2.GRCh38.wave.vcf.gz #GRCh38
+3집단 그래프 VCF 위치
+/DDATA/pangenome/graph/merge_vcf/kor132_hprc47_cpc58.chm13v2.wave.vcf.gz #T2TCHM13v2
+/DDATA/pangenome/graph/merge_vcf/kor132_hprc47_cpc58.chm13v2.GRCh38.wave.vcf.gz #GRCh38
+
+hprc v1 그래프 VCF 위치
+/RDATA1/Pangenome/00.db/graph/hprc/hprc-v1.0-mc-grch38.vcf.gz
+/RDATA1/Pangenome/00.db/graph/hprc/hprc-v1.1-mc-chm13.GRCh38.vcfbub.a100k.wave.vcf.gz
+
+/RDATA1/Pangenome/00.db/graph/hprc2/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.wave.vcf.gz
+
+CPC v1 그래프 VCF 위치
+/RDATA1/Pangenome/00.db/graph/cpc/CPC.Phase1.CHM13v2.vcf.gz
+
+1KGP high coverage VCF 위치
+/RDATA1/Pangenome/00.db/1kgp/errorFix/1kGP_high_coverage_Illumina.chr#.filtered.SNV_INDEL_SV_phased_panel.fix.vcf.gz
+
+
+
+
+## 207
+### ghraoph stats
+ori data
+/RDATA1/Pangenome/work/vcfanno/vcf
+#/ADATA/smkim/pangenome/graph/00.rawVCF
+
+ls *vcf.gz | sed 's/.vcf.gz//g' | xargs -I {} -P 10 bash -c "bcftools view -Ob -o {}.bcf {}.vcf.gz;bcftools index {}.bcf;bcftools stats {}.bcf > {}.bcf.stats"
+
+
+ls *vcfanno.vcf | sed 's/.vcfanno.vcf//g' | xargs -I {} -P 10 bash -c "bcftools view -Ob -o {}.vcfanno.bcf {}.vcfanno.vcf;bcftools index {}.vcfanno.bcf;bcftools stats {}.vcfanno.bcf > {}.vcfanno.bcf.stats"
+
+
+
+
+/ADATA/smkim/pangenome/graph/01.graph_varint_count
+
+ls *.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\t%INFO/TYPE\n' -o /ADATA/smkim/pangenome/graph/01.graph_varint_count/{}.tab {}"
+
+
+ls *.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\t%INFO/TYPE\n' -o /ADATA/smkim/pangenome/graph/01.graph_varint_count/{}.tab {}"
+
+LEN

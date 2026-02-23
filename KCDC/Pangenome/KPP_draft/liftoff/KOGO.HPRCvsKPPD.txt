@@ -1,0 +1,88 @@
+### HPRC
+
+/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/ori
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/merge/HPRC.gene.merge.genecode.v38.txt"
+JOBS=16
+TMPDIR="$(mktemp -d)"
+
+# 입력: KPPD*_polished 아래 파일들(경로들이 파일이라고 가정)
+# 만약 디렉토리라면 find로 바꿔야 함
+ls *_polished \
+| xargs -n 1 -P "${JOBS}" bash -c '
+  f="$1"
+  b="$(basename "$f")"
+  awk -F"\t" '"'"'($3=="gene"){print}'"'"' "$f" > "'"${TMPDIR}"'/${b}.gene.tsv"
+' _
+
+# 병합 (원하면 정렬도 가능)
+cat "${TMPDIR}"/*.gene.tsv > "${OUT}"
+
+rm -rf "${TMPDIR}"
+echo "Wrote: ${OUT}"
+
+
+##
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/merge/HPRC.gene.merge.genecode.v38_transcript.v38.txt"
+JOBS=64
+TMPDIR="$(mktemp -d)"
+
+# KPPD*_polished 가 "파일"이라고 가정 (ls가 파일 경로를 뱉는 상황)
+ls *_polished \
+| xargs -n 1 -P "${JOBS}" bash -c '
+  f="$1"
+  b="$(basename "$f")"
+  awk -F"\t" '"'"'NR==1{next} ($3=="transcript"){print}'"'"' "$f" > "'"${TMPDIR}"'/${b}.transcript.tsv"
+' _
+
+cat "${TMPDIR}"/*.transcript.tsv > "${OUT}"
+rm -rf "${TMPDIR}"
+
+echo "Wrote: ${OUT}"
+
+##
+
+
+
+
+ls *polished | xargs -n 1 -P 10 -I {} sh -c '
+  awk -F"\t" '"'"'$3=="gene"{print}'"'"' "{}" > "../gene/{}.gene"
+'
+
+mkdir ../transcript
+ls *polished | xargs -n 1 -P 10 -I {} sh -c '
+  awk -F"\t" '"'"'$3=="transcript"{print}'"'"' "{}" > "../transcript/{}.transcript"
+'
+
+ls *.gene | xargs -I {} -P 20 bash -c "bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.sh {} ../prep/{}.prep"
+
+ls *.transcript | xargs -I {} -P 20 bash -c "bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff_fortranscript.sh {} ../prep/trans/{}.prep"
+/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/prep/trans
+
+
+
+cd /CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial
+
+awk 'FNR==1 && NR!=1 {next} {print}' prep/gene/*prep > merge/merge.HPRC.liftoff_afterprep.gene.txt
+awk 'FNR==1 && NR!=1 {next} {print}' prep/trans/*prep > merge/merge.HPRC.liftoff_afterprep.trans.txt
+
+### 
+
+
+
+CPC: 
+/CDATA/pangenome/liftoff/merge/CPC/CPC.all.merge.with_flagger.gene_protein_coding.selected_withhgnc.txt
+
+/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/merge/merge.HPRC.liftoff_afterprep.gene.txt
+/CDATA/pangenome/liftoff/hprc/gencode_GRCh38.v38_partial/merge/merge.HPRC.liftoff_afterprep.trans.txt
+
+
+/ADATA/pangenome/liftoff/02.annotation/merge.genecode.v38.prep.txt_forR

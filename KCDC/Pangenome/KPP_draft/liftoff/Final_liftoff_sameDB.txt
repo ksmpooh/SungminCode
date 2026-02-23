@@ -1,0 +1,174 @@
+
+
+ls KPPD*_polished | xargs -n 1 -P 16 sh -c '
+  awk '\''$5=="gene"{print $0}'\'' "$0" |
+' > /ADATA/pangenome/liftoff/02.annotation/merge.genecode.v38.txt
+
+ls KPPD*_polished | xargs -n 1 -P 16 sh -c '
+  awk '\''$5=="transcript"{print $0}'\'' "$0" |
+' > /ADATA/pangenome/liftoff/02.annotation/merge.genecode_transcript.v38.txt
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="/ADATA/pangenome/liftoff/02.annotation/merge.genecode.v38.txt"
+JOBS=16
+TMPDIR="$(mktemp -d)"
+
+# 입력: KPPD*_polished 아래 파일들(경로들이 파일이라고 가정)
+# 만약 디렉토리라면 find로 바꿔야 함
+ls KPPD*_polished \
+| xargs -n 1 -P "${JOBS}" bash -c '
+  f="$1"
+  b="$(basename "$f")"
+  awk -F"\t" '"'"'($3=="gene"){print}'"'"' "$f" > "'"${TMPDIR}"'/${b}.gene.tsv"
+' _
+
+# 병합 (원하면 정렬도 가능)
+cat "${TMPDIR}"/*.gene.tsv > "${OUT}"
+
+rm -rf "${TMPDIR}"
+echo "Wrote: ${OUT}"
+
+
+##
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="/ADATA/pangenome/liftoff/02.annotation/merge.genecode_transcript.v38.txt"
+JOBS=64
+TMPDIR="$(mktemp -d)"
+
+# KPPD*_polished 가 "파일"이라고 가정 (ls가 파일 경로를 뱉는 상황)
+ls KPPD*_polished \
+| xargs -n 1 -P "${JOBS}" bash -c '
+  f="$1"
+  b="$(basename "$f")"
+  awk -F"\t" '"'"'NR==1{next} ($3=="transcript"){print}'"'"' "$f" > "'"${TMPDIR}"'/${b}.transcript.tsv"
+' _
+
+cat "${TMPDIR}"/*.transcript.tsv > "${OUT}"
+rm -rf "${TMPDIR}"
+
+echo "Wrote: ${OUT}"
+
+##
+
+#!/usr/bin/env bash
+set -euo pipefail
+# bash run.sh input.txt output.txt
+IN="$1"
+OUT="$2"
+
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "contig","gene_name","hgnc_id","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; hgnc_id="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($11, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "hgnc_id") hgnc_id = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, gene_name, hgnc_id, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' "$IN" > "$OUT"
+
+echo "Wrote: $OUT"
+
+
+ls *polished | xargs -n 1 -P 10 -I {} sh -c '
+  awk -F"\t" '"'"'$3=="gene"{print}'"'"' "{}" > "gene/{}.gene"
+'
+
+
+ls *.gene | xargs -I {} -P 20 bash -c "bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.sh {} ../prep/{}.prep"
+
+
+seq 1 132 | awk '{printf "KPPD%03d\n", $1}' | xargs -I {} -P 40 bash -c \
+"python /ADATA/pangenome/liftoff/with_flagger/merge/run.2.py /CDATA/pangenome/flagger_test/03.result/contig_change/{}.winnowmap.sorted.corrected.downsample_1.0.hmm_flagger_prediction.bed \
+/ADATA/pangenome/liftoff/01.liftoff/gencode_GRCh38.v38_partial/gene/ori/{}.1.gencode_GRCh38.v38_partial.liftoff.gff3_polished.gene \
+/ADATA/pangenome/liftoff/01.liftoff/gencode_GRCh38.v38_partial/gene/ori/{}.2.gencode_GRCh38.v38_partial.liftoff.gff3_polished.gene \
+/ADATA/pangenome/liftoff/01.liftoff/gencode_GRCh38.v38_partial/gene/with_flagger/{}.liffoff_with_flaggerregion.txt"
+
+#/ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.sh
+
+bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.sh merge.genecode.v38.txt merge.genecode.v38.prep.txt
+bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff_fortranscript.sh merge.genecode_transcript.v38.txt merge.genecode_transcript.v38.prep.txt
+
+
+bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.sh gencode.v38.primary_assembly.annotation.gff3_gene gencode.v38.primary_assembly.annotation.gff3_gene_prep
+bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff_fortranscript.sh gencode.v38.primary_assembly.annotation.gff3 gencode.v38.primary_assembly.annotation.gff3_trans
+
+
+cd /ADATA/pangenome/liftoff/01.liftoff/gencode_GRCh38.v38_partial/gene/with_flagger/ori
+ls *txt | xargs -I {} -P 50 bash -c "bash /ADATA/pangenome/liftoff/SCIPRTs/extract.info_fromLiftoff.withFLAGGER.sh {} ../prep/{}.prep"
+
+head -n 1 *.prep | head -n 1 > ../merge.liftoff.gene.withflagger.txt
+tail -n +2 -q *.prep >> ../merge.liftoff.gene.withflagger.txt
+
+awk 'FNR==1 && NR!=1 {next} {print}' /ADATA/pangenome/liftoff/01.liftoff/gencode_GRCh38.v38_partial/gene/with_flagger/prep/*.prep > ./merge.liftoff.gene.withflagger.txt
+
+
+
+cd /CDATA/pangenome/liftoff/db
+
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 hprc.gene.list hprc.inDB.info.txt
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 cpc.gene.list cpc.inDB.info.txt
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 arab.gene.list arab.inDB.info.txt
+
+awk '{print $2}' hprc.inDB.info.txt  |sort |uniq -c
+      1 gene_type
+      5 IG_C_gene
+      1 IG_V_gene
+      2 lncRNA
+      1 polymorphic_pseudogene
+   1105 protein_coding
+      1 TR_C_gene
+
+awk '$2 !="protein_coding"{print $0}' hprc.inDB.info.txt  
+awk '$5<2{print $0}' hprc.inDB.info.tx
+
+awk '$2 !="protein_coding"{print $0}' hprc.inDB.info.txt
+gene_name	gene_type	level	tag	exon_count
+GSTT2	polymorphic_pseudogene	2	NA	16
+IGHA1	IG_C_gene	2	NA	8
+IGHD	IG_C_gene	2	NA	7
+IGHE	IG_C_gene	2	overlapping_locus	10
+IGHG1	IG_C_gene	2	NA	15
+IGHM	IG_C_gene	2	NA	10
+IGLV3-21	IG_V_gene	2	NA	3
+LINC02203	lncRNA	2	overlapping_locus	21
+SPATA13	lncRNA	2	overlapping_locus	96
+TRGC1	TR_C_gene	2	NA	3
+
+
+
+awk '{print $2}' cpc.inDB.info.txt | sort |uniq -c
+      1 gene_type
+      1 NA
+   1254 protein_coding
+awk '$5<2{print $0}' cpc.inDB.info.txt
+
+awk '{print $2}' arab.inDB.info.txt | sort |uniq -c
+      1 gene_type
+   1338 protein_coding
+
+awk '$5<2{print $0}' arab.inDB.info.txt
+
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 hprc.gene.list hprc.inDB.info.txt
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 cpc.gene.list.txt cpc.inDB.info.txt
+bash extract_geneinfo.fromDB.sh /BDATA/smkim/pangenome/liftoff/db/gencode.v38.primary_assembly.annotation.gff3 arab.gene.list arab.inDB.info.txt

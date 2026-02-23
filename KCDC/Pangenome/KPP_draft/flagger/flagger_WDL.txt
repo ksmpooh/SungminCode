@@ -1,0 +1,446 @@
+java -jar ../womtool-85.jar \
+   inputs ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+   > inputs.json
+
+{
+  "HMMFlaggerEndToEndWithMapping.sampleName": "KPPD001",
+  "HMMFlaggerEndToEndWithMapping.suffixForMapping": "hifi_winnowmap_v2.03",
+  "HMMFlaggerEndToEndWithMapping.suffixForFlagger": "hifi_flagger_v1.1.0",
+
+  "HMMFlaggerEndToEndWithMapping.hap1AssemblyFasta": "/path/hap1.fa",
+  "HMMFlaggerEndToEndWithMapping.hap2AssemblyFasta": "/path/hap2.fa",
+
+  "HMMFlaggerEndToEndWithMapping.readFiles": ["/path/reads_1.fastq.gz","/path/reads_2.fastq.gz"],
+  "HMMFlaggerEndToEndWithMapping.aligner": "winnowmap",
+  "HMMFlaggerEndToEndWithMapping.presetForMapping": "map-pb",
+  "HMMFlaggerEndToEndWithMapping.kmerSize": 15,
+  "HMMFlaggerEndToEndWithMapping.alignerOptions": "--eqx --cs -Y -L -y",
+
+  "HMMFlaggerEndToEndWithMapping.windowLen": 16000,
+  "HMMFlaggerEndToEndWithMapping.alphaTsv": "https://raw.githubusercontent.com/mobinasri/flagger/refs/heads/main/misc/alpha_tsv/HiFi_DC_1.2/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv",
+
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBigWig": true,
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBam": true
+}
+
+
+/CDATA/pangenome/flagger_test/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv
+
+sample ID KPPD019
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+
+"HMMFlaggerEndToEndWithMapping.readFiles" = /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz
+
+
+
+
+
+
+{
+  "HMMFlaggerEndToEndWithMapping.readFiles": "Array[File]",
+  "HMMFlaggerEndToEndWithMapping.readExtractionOptions": "String (optional, default = \"-TMM,ML,Mm,Ml\")",
+  "HMMFlaggerEndToEndWithMapping.hap1AssemblyFasta": "File",
+  "HMMFlaggerEndToEndWithMapping.annotationsBedArray": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.secphaseOptions": "String (optional, default = \"--hifi\")",
+  "HMMFlaggerEndToEndWithMapping.enableDecomposingCntrBed": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.sexBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.SDBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.dockerImage": "String (optional, default = \"mobinasri/bio_base:v0.4.0\")",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseOptions": "String (optional, default = \"--hifi\")",
+  "HMMFlaggerEndToEndWithMapping.alignmentTask.preemptible": "Int (optional, default = 2)",
+  "HMMFlaggerEndToEndWithMapping.flaggerDockerImage": "String (optional, default = \"mobinasri/flagger:v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.labelNames": "String (optional, default = \"Err,Dup,Hap,Col\")",
+  "HMMFlaggerEndToEndWithMapping.minReadLengthForMapping": "Int (optional, default = 0)",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseVersion": "String (optional, default = \"v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.cntrBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.alignerThreadCount": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.includeContigListText": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.convergenceToleranceForFlagger": "Float (optional, default = 0.001)",
+  "HMMFlaggerEndToEndWithMapping.biasAnnotationsBedArray": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBigWig": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.flaggerThreadCount": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.enableRunningSecphase": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.secphaseVersion": "String (optional, default = \"v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.trackName": "String (optional, default = \"hmm_flagger_v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.flaggerMoreOptions": "String? (optional)",
+  "HMMFlaggerEndToEndWithMapping.alignerDockerImage": "String (optional, default = \"mobinasri/long_read_aligner:v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.cntrBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.projectionReferenceFasta": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.truthBedForMisassemblies": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.secphaseDockerImage": "String (optional, default = \"mobinasri/secphase:v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.alignerMemSize": "Int (optional, default = 48)",
+  "HMMFlaggerEndToEndWithMapping.modelType": "String (optional, default = \"trunc_exp_gaussian\")",
+  "HMMFlaggerEndToEndWithMapping.chunkLen": "Int (optional, default = 20000000)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.threadCount": "Int (optional, default = 4)",
+  "HMMFlaggerEndToEndWithMapping.correctBamOptions": "String (optional, default = \"--primaryOnly --minReadLen 5000 --minAlignment 5000 --maxDiv 0.1\")",
+  "HMMFlaggerEndToEndWithMapping.flaggerMinimumBlockLenArray": "Array[Int] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.SDBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.enableAddingMDTag": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.flaggerMemSize": "Int (optional, default = 32)",
+  "HMMFlaggerEndToEndWithMapping.numberOfIterationsForFlagger": "Int (optional, default = 100)",
+  "HMMFlaggerEndToEndWithMapping.presetForMapping": "String",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.memSize": "Int (optional, default = 8)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.preemptible": "Int (optional, default = 2)",
+  "HMMFlaggerEndToEndWithMapping.alignmentTask.zones": "String (optional, default = \"us-west2-a\")",
+  "HMMFlaggerEndToEndWithMapping.binSizeArrayTsv": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.sexBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.hap2AssemblyFasta": "File",
+  "HMMFlaggerEndToEndWithMapping.annotationsBedArrayToBeProjected": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.enableRunningCorrectBam": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.referenceFastaForReadExtraction": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.enableSplittingReadsEqually": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.suffixForMapping": "String",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseDockerImage": "String (optional, default = \"mobinasri/secphase:v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.alignerOptions": "String (optional, default = \"--eqx --cs -Y -L -y\")",
+  "HMMFlaggerEndToEndWithMapping.minHighMapqRatio": "Float (optional, default = 0.75)",
+  "HMMFlaggerEndToEndWithMapping.suffixForFlagger": "String",
+  "HMMFlaggerEndToEndWithMapping.windowLen": "Int (optional, default = 4000)",
+  "HMMFlaggerEndToEndWithMapping.maxHighMapqRatio": "Float (optional, default = 0.25)",
+  "HMMFlaggerEndToEndWithMapping.biasAnnotationsBedArrayToBeProjected": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.downSamplingRateForFlagger": "Float (optional, default = 1.0)",
+  "HMMFlaggerEndToEndWithMapping.sampleName": "String",
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBam": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.alphaTsv": "File",
+  "HMMFlaggerEndToEndWithMapping.splitNumber": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.kmerSize": "Int (optional, default = 15)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.diskSize": "Int (optional, default = 32)",
+  "HMMFlaggerEndToEndWithMapping.cntrCtBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.aligner": "String (optional, default = \"winnowmap\")",
+  "HMMFlaggerEndToEndWithMapping.cntrCtBed": "File? (optional)"
+}
+
+
+위에 파일을 내 상황에 맞게 변경 하려고 한다.
+
+
+
+/CDATA/pangenome/flagger_test/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv
+
+sample ID KPPD019
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+
+"HMMFlaggerEndToEndWithMapping.readFiles" = /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz
+
+
+aliner 는 minimap2 를 사용한 것이다.
+
+내 docker는 이렇게 있다.
+
+이거를 직접 설정해줘야 한다.
+
+그리고 모든 작업 thread는 72로
+memory는 256G 까지 사용이 가능하니 최대한 자원을 많이 활용하게 해야한다.
+
+REPOSITORY                     TAG       IMAGE ID       CREATED         SIZE
+mobinasri/secphase             v0.4.4    3dee67d756b7   11 months ago   3.02GB
+mobinasri/flagger              v1.1.0    f790d1306afc   11 months ago   5.12GB
+mobinasri/long_read_aligner    v1.1.0    62da105eebc4   12 months ago   3.06GB
+mobinasri/bio_base             v0.4.0    02e6bceac2fa   20 months ago   2.29GB
+
+Reference 관련 DB 경로는
+
+genome@genome106:/BDATA/smkim/TOOLs/flagger/misc$ ls */*
+potential_biases/chm13v2.0_bsat.bed  potential_biases/chm13v2.0_hsat1A.bed  potential_biases/chm13v2.0_hsat2.bed
+potential_biases/chm13v2.0_hor.bed   potential_biases/chm13v2.0_hsat1B.bed  potential_biases/chm13v2.0_hsat3.bed
+
+alpha_tsv/HiFi_DC_1.2:
+alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv
+
+alpha_tsv/ONT_R1041_Dorado:
+alpha_optimum_trunc_exp_gaussian_w_8000_n_50.ONT_R1041_Dorado_DEC_2024.v1.1.0.tsv
+
+alpha_tsv/ONT_R941_Guppy6.3.7:
+alpha_optimum_trunc_exp_gaussian_w_16000_n_50.ONT_R941_Guppy6.3.7_DEC_2024.v1.1.0.tsv
+
+stratifications/censat:
+chm13v2.0_bsat.bed    chm13v2.0_gsat.bed  chm13v2.0_hsat1A.bed  chm13v2.0_hsat2.bed  chm13v2.0_mon.bed    chm13v2.0_only_ct.bed
+chm13v2.0_censat.bed  chm13v2.0_hor.bed   chm13v2.0_hsat1B.bed  chm13v2.0_hsat3.bed  chm13v2.0_no_ct.bed
+
+stratifications/repeat_masker:
+chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed  chm13v2.0_RM_4.1.2p1_le6_STR.bed
+
+stratifications/sd:
+chm13v2.0_SD.all.bed  chm13v2.0_SD.g90_le98.bed  chm13v2.0_SD.g98_le99.bed  chm13v2.0_SD.g99.bed  chm13v2.0_SD.le90.bed
+
+stratifications/sex:
+chm13v2.0_sex.bed
+
+reference file: /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa
+
+
+위와 같이 셋팅 하고 WDL를 돌릴것이다!
+
+
+
+
+
+
+
+
+
+cd /CDATA/pangenome/flagger_test/WDL/test1
+
+
+
+java -Dconfig.file=cromwell.conf \
+  -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i new_inputs.json \
+  -m outputs.json
+
+
+java -Dconfig.file=/CDATA/pangenome/flagger_test/WDL/test1/cromwell.conf \
+  -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i /CDATA/pangenome/flagger_test/WDL/test1/new_inputs.json \
+  -m outputs.json
+
+
+
+  ./flagger_manual_cli.sh \
+  --sample KPPD019 \
+  --asm /CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa \
+  --reads /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  --ref /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+  --chm13db /BDATA/smkim/TOOLs/flagger/misc \
+  --threads 72
+
+
+
+##### toy
+
+java -jar ../womtool-85.jar validate ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl -i input.toy.json
+
+
+
+java -Xmx32g -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.toy.json
+
+java -Xmx256g -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.toy.json -m outputs.toy.json \
+  > run.toy.log 2>&1 &
+
+
+java -Xmx256g -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json \
+  > run.toy.log 2>&1 &
+
+
+
+
+
+
+find cromwell-executions/HMMFlaggerEndToEndWithMapping/6fb78250-4075-446a-b80b-7dac8028f245/ -maxdepth 8 -type f -name "stderr" -path "*longReadAlignmentScattered*" -print
+
+
+java -jar ../womtool-85.jar validate ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl -i input.json
+
+java -Xmx256g -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.secphase.json \
+  > run.secphase.log 2>&1 &
+
+
+
+
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat1A.bed -> hsa1A
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_bsat.bed -> bsat
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat2.bed -> hsa2
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat3.bed -> hsa3
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hor.bed -> hor
+/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat1B.bed -> hsa1B
+/BDATA/smkim/TOOLs/flagger/misc/stratifications
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/sd
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/sd/chm13v2.0_SD.all.bed ->SD
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/sex
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/sex/chm13v2.0_sex.bed -> SEX
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/repeat_masker
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_le6_STR.bed -> STR
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed -> VNTR
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_hsat1A.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_censat.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_bsat.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_hsat2.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_hsat3.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_gsat.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_hor.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_mon.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_hsat1B.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_no_ct.bed
+/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_only_ct.bed
+
+
+
+
+
+
+java -Xmx256g -jar /toolpath/cromwell-85.jar run \
+  /toolpath/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.secphase.json \
+  > run.secphase.log 2>&1 &
+
+DBannotation: /DBpath/
+potential_biases/chm13v2.0_bsat.bed  potential_biases/chm13v2.0_hsat1A.bed  potential_biases/chm13v2.0_hsat2.bed
+potential_biases/chm13v2.0_hor.bed   potential_biases/chm13v2.0_hsat1B.bed  potential_biases/chm13v2.0_hsat3.bed
+
+alpha_tsv/HiFi_DC_1.2:
+alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv
+
+stratifications/censat:
+chm13v2.0_bsat.bed    chm13v2.0_gsat.bed  chm13v2.0_hsat1A.bed  chm13v2.0_hsat2.bed  chm13v2.0_mon.bed    chm13v2.0_only_ct.bed
+chm13v2.0_censat.bed  chm13v2.0_hor.bed   chm13v2.0_hsat1B.bed  chm13v2.0_hsat3.bed  chm13v2.0_no_ct.bed
+
+stratifications/repeat_masker:
+chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed  chm13v2.0_RM_4.1.2p1_le6_STR.bed
+
+stratifications/sd:
+chm13v2.0_SD.all.bed  chm13v2.0_SD.g90_le98.bed  chm13v2.0_SD.g98_le99.bed  chm13v2.0_SD.g99.bed  chm13v2.0_SD.le90.bed
+
+stratifications/sex:
+chm13v2.0_sex.bed
+
+
+
+reference file: /REFdir/chm13v2.0_maskedY_rCRS.fa
+
+
+
+python make_flagger_input.py \
+  --sample-id SAMPLE01 \
+  --hap1 test.1.fa \
+  --hap2 test.2.fa \
+  --reads test.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  --tool-path /toolpath/flagger-1.1.0 \
+  --ref-path /REFdir/chm13v2.0_maskedY_rCRS.fa \
+  --out-root /analysis/flagger_runs
+
+
+python input.py \
+  --sample-id SAMPLE01 \
+  --hap1 /CDATA/pangenome/flagger_test/WDL/toy/KPPD019.hap1.fa \
+  --hap2 /CDATA/pangenome/flagger_test/WDL/toy/KPPD019.hap2.fa \
+  --reads /CDATA/pangenome/flagger_test/WDL/toy/selected_reads.fastq.gz \
+  --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 \
+  --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+  --out-root ./
+
+
+python /CDATA/pangenome/flagger_test/hprc/input.v3_minimap2.py \
+  --sample-id test_unk \
+  --hap1 /CDATA/pangenome/flagger_test/WDL/toy/KPPD019.hap1.fa \
+  --hap2 /CDATA/pangenome/flagger_test/WDL/toy/KPPD019.hap2.fa \
+  --reads /CDATA/pangenome/flagger_test/WDL/toy/selected_reads.fastq.gz \
+  --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 \
+  --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+  --out-root ./
+
+
+
+java -jar ../womtool-85.jar validate ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl -i SAMPLE01/input.json
+
+java -Xmx256g -jar ../cromwell-85.jar run \
+  ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json \
+  > run.toy.log 2>&1 &
+
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json \
+  > run.log 2>&1 &
+
+
+
+java -jar /CDATA/pangenome/flagger_test/WDL/womtool-85.jar validate \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json
+
+java -jar /CDATA/pangenome/flagger_test/WDL/womtool-85.jar inputs /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl > inputs.json
+
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar input \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json
+
+
+
+usage: input.v2.py [-h] --sample-id SAMPLE_ID --hap1 HAP1 --hap2 HAP2 --reads READS --tool-path TOOL_PATH --ref-path REF_PATH
+                   --out-root OUT_ROOT
+
+  
+python input.v2.py --sample-id NA18747 --hap1 /CDATA/pangenome/flagger_test/hprc/NA18747_hap1_hprc_r2_v1.0.1.fa.gz --hap2 /CDATA/pangenome/flagger_test/hprc/NA18747_hap2_hprc_r2_v1.0.1.fa.gz --reads /CDATA/pangenome/flagger_test/hprc/NA18747.rawhifi.fastq.gz --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+                   --out-root ./
+
+
+
+python input.v2.withcov.py --sample-id NA18747_covmod --hap1 /CDATA/pangenome/flagger_test/hprc/NA18747_hap1_hprc_r2_v1.0.1.fa.gz --hap2 /CDATA/pangenome/flagger_test/hprc/NA18747_hap2_hprc_r2_v1.0.1.fa.gz --reads /CDATA/pangenome/flagger_test/hprc/NA18747.rawhifi.fastq.gz --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+                   --out-root ./
+
+
+python input.v3.py --sample-id NA18747_covmod --hap1 /CDATA/pangenome/flagger_test/hprc/NA18747_hap1_hprc_r2_v1.0.1.fa.gz --hap2 /CDATA/pangenome/flagger_test/hprc/NA18747_hap2_hprc_r2_v1.0.1.fa.gz --reads /CDATA/pangenome/flagger_test/hprc/NA18747.rawhifi.fastq.gz --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+                   --out-root ./
+
+
+
+
+python input.v3_minimap2.py --sample-id NA18747_minimap2 --hap1 /CDATA/pangenome/flagger_test/hprc/NA18747_hap1_hprc_r2_v1.0.1.fa.gz --hap2 /CDATA/pangenome/flagger_test/hprc/NA18747_hap2_hprc_r2_v1.0.1.fa.gz --reads /CDATA/pangenome/flagger_test/hprc/NA18747.rawhifi.fastq.gz --tool-path /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0 --ref-path /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+                   --out-root ./
+
+java -jar /CDATA/pangenome/flagger_test/WDL/womtool-85.jar validate \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json
+
+
+
+java -jar /CDATA/pangenome/flagger_test/WDL/womtool-85.jar validate \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json
+
+java -Dconfig.file=/CDATA/pangenome/flagger_test/hprc/cromwell.conf \
+  -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl \
+  -i input.json -m outputs.json \
+  > run.log 2>&1 &
+
+
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run \
+  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl \
+  -i input.minhigh05.json -m outputs.minhigh05.json
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run   /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl   -i input.minhigh05.json -m outputs.minhigh05.json
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl   -i input.minhigh05.json -m outputs.minhigh05.json
+
+
+java -jar /CDATA/pangenome/flagger_test/WDL/womtool-85.jar validate ../../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl -i input.json
+
+
+java -Xmx256g -jar /CDATA/pangenome/flagger_test/WDL/cromwell-85.jar run  /CDATA/pangenome/flagger_test/WDL/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl   -i input.json -m outputs.minhigh05_withannotaiton.json
+
+
+
+grep whole */call-makeSummaryTable/execution/output/KPPD019.sorted.corrected.downsample_1.0.augmented.stats.tsv  | grep percentage |  grep base_level
+
+
+/BDATA/smkim/TOOLs/seqkit sort -nN asm.fa > asm.sorted.fa
+
+/BDATA/smkim/TOOLs/seqkit sort -nN KPPD019.assembly.merge.fa > KPPD019.assembly.merge.sorted.fa
+
+java -jar /CDATA/pangenome/flagger_test/cromwell-85.jar run /CDATA/pangenome/flagger_test/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl -i input.winnowmap.json -m output.winnowmap_base.json

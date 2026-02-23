@@ -1,0 +1,18 @@
+cd /ADATA/pangenome/assembly/repeat_finder
+
+awk '{v=$1; sum+=v; if(NR==1){min=v; max=v} else{if(v<min)min=v; if(v>max)max=v}} END{printf "mean=%f\nmin=%d\nmax=%d\n", sum/NR, min, max}' merge_all_count.txt
+mean=3882033.984848
+min=3603316
+max=4192012
+
+
+# length
+ls *bed | sed 's/.bed//g' | xargs -I {} -P 20 bash -c "awk '{ print length($4) }' {}.bed | sort -n | uniq -c  | awk 'BEGIN{print "length\tcount"}{print $2"\t"$1}' > count/{}.length_count.txt"
+
+ls *bed | sed 's/.bed//g' | xargs -I {} -P 40 bash -c "awk '{print $4}' {}.bed | sort | uniq -c | awk 'BEGIN{print "motif\tcount"}{print $2"\t"$1}' > count/{}.count_by_motif.txt"
+
+
+ls *.bed | sed 's/\.bed//' \
+  | xargs -I {} -P 40 bash -c 'awk "{print \$4}" {}.bed | sort | uniq -c | awk "BEGIN{print \"motif\tcount\"}{print \$2\"\t\"\$1}" > count/{}.count_by_motif.txt'
+
+  

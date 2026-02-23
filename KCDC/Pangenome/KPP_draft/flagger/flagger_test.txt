@@ -1,0 +1,1268 @@
+cd /CDATA/pangenome/flagger_test
+
+NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz
+
+cat KPPD019.1.fa.fai | awk '{print $1"\t0\t"$2}' > whole_genome.bed
+
+echo "{" > annotations_path.json
+echo \"whole_genome\" : \"whole_genome.bed\" >> annotations_path.json
+echo "}" >> annotations_path.json
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  bam2cov --bam /wdir/NIH23F1013274/m84065_231124_080536.hifi_reads.bam \
+                  --output /wdir/coverage_file.cov.gz \
+                  --annotationJson /wdir/annotations_path.json \
+                  --threads 16 \
+                  --baselineAnnotation whole_genome
+
+
+
+export WORKING_DIR=/CDATA/pangenome/flagger_test
+
+docker run -it --rm \
+  -v ${WORKING_DIR}:${WORKING_DIR} \
+  mobinasri/flagger:v1.1.0 \
+  flagger \
+    --reads ${WORKING_DIR}/NIH23F1013274.Revio_hifi_reads.fastq.gz \
+    --asm1 ${WORKING_DIR}/KPPD019.1.fa \
+    --asm2 ${WORKING_DIR}/KPPD019.2.fa \
+    --genome-size 3g \
+    --out-dir ${WORKING_DIR}/flagger_full_output \
+    --threads 16
+
+
+####
+# h2 assembly 예시
+samtools faidx assembly.h2.fa
+awk '{print $1 "\t0\t" $2}' assembly.h2.fa.fai > whole_genome.bed
+
+pbmm2 align assembly.h2.fa raw.hifi.fastq.gz h2.aligned.bam --sort --preset CCS --sample h2
+pbmm2 align assembly.h2.fa raw.hifi.fastq.gz h2.aligned.bam --sort --preset CCS --sample h2
+
+
+echo "{" > annotations_path.json
+echo "\"whole_genome\" : \"$(pwd)/whole_genome.bed\"" >> annotations_path.json
+echo "}" >> annotations_path.json
+
+
+docker run -it --rm \
+  -v $(pwd):$(pwd) mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam $(pwd)/h2.aligned.bam \
+    --output $(pwd)/h2.coverage.cov.gz \
+    --annotationJson $(pwd)/annotations_path.json \
+    --threads 16 \
+    --baselineAnnotation whole_genome
+
+mkdir -p ${WORKING_DIR}/hmm_flagger_outputs
+docker run -it --rm -v${WORKING_DIR}:${WORKING_DIR} mobinasri/flagger:v1.1.0 \
+        hmm_flagger \
+            --input ${WORKING_DIR}/coverage_file.cov.gz \
+            --outputDir ${WORKING_DIR}/hmm_flagger_outputs  \
+            --alphaTsv /home/programs/config/alpha_optimum_trunc_exp_gaussian_w_4000_n_50.tsv \
+            --labelNames Err,Dup,Hap,Col \
+            --threads 16
+
+
+
+
+/ADATA/smkim/test/NIH23F1013274.h2.Revio_hifi_reads.rawfastq.merge.fastq.gz
+/ADATA/smkim/test/NIH23F1013274.h2.Revio_hifi_reads.rawfastq.merge.fastq.gz
+
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+
+samtools faidx KPPD019.1.fa
+samtools faidx KPPD019.2.fa
+
+awk '{print $1 "\t0\t" $2}' KPPD019.1.fa.fai > KPPD019.1.bed
+awk '{print $1 "\t0\t" $2}' KPPD019.2.fa.fai > KPPD019.2.bed
+
+
+pbmm2 align /CDATA/pangenome/flagger_test/KPPD019.1.fa /ADATA/smkim/test/NIH23F1013274.h1.Revio_hifi_reads.rawfastq.merge.fastq.gz NIH23F1013274_h1.aligned_KPPD019_h2.bam --sort --preset CCS --sample KPPD019_h1
+pbmm2 align /CDATA/pangenome/flagger_test/KPPD019.2.fa /ADATA/smkim/test/NIH23F1013274.h2.Revio_hifi_reads.rawfastq.merge.fastq.gz NIH23F1013274_h2.aligned_KPPD019_h2.bam --sort --preset CCS --sample KPPD019_h2
+
+
+# HiFi → h1
+minimap2 -t 16 -ax map-hifi --MD --cs=short /CDATA/pangenome/flagger_test/KPPD019.1.fa /ADATA/smkim/test/NIH23F1013274.h1.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@16 -o h1.aln.bam
+samtools index h1.aln.bam
+
+# HiFi → h2
+minimap2 -t 16 -ax map-hifi --MD --cs=short /CDATA/pangenome/flagger_test/KPPD019.2.fa /ADATA/smkim/test/NIH23F1013274.h2.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@16 -o h2.aln.bam
+samtools index h2.aln.bam
+
+
+/ADATA/smkim/test/NIH23F1013274_h1.aligned_KPPD019_h2.bam
+/ADATA/smkim/test/NIH23F1013274_h2.aligned_KPPD019_h2.bam
+
+echo "{" > annotations_path_h1.json
+echo "\"whole_genome\" : \"/wdir/KPPD019.1.bed\"" >> annotations_path_h1.json
+echo "}" >> annotations_path_h1.json
+
+echo "{" > annotations_path_h2.json
+echo "\"whole_genome\" : \"/wdir/KPPD019.2.bed\"" >> annotations_path_h2.json
+echo "}" >> annotations_path_h2.json
+
+
+
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir \
+-v /ADATA/smkim/test:/bam_dir mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h1.aln.bam \
+    --output /wdir/h1.coverage.cov.gz \
+    --annotationJson /wdir/annotations_path_h1.json \
+    --threads 48 \
+    --baselineAnnotation whole_genome
+
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir \
+-v /ADATA/smkim/test:/bam_dir mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h2.aln.bam \
+    --output /wdir/h2.coverage.cov.gz \
+    --annotationJson /wdir/annotations_path_h2.json \
+    --threads 32 \
+    --baselineAnnotation whole_genome
+
+
+
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+        hmm_flagger \
+            --input /wdir/h1.coverage.cov.gz \
+            --outputDir /wdir/hmm_flagger_outputs \
+            --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+            --labelNames Err,Dup,Hap,Col \
+            --threads 48
+
+
+mkdir -p ${WORKING_DIR}/hmm_flagger_outputs
+docker run -it --rm -v${WORKING_DIR}:${WORKING_DIR} mobinasri/flagger:v1.1.0 \
+        hmm_flagger \
+            --input ${WORKING_DIR}/coverage_file.cov.gz \
+            --outputDir ${WORKING_DIR}/hmm_flagger_outputs  \
+            --alphaTsv /home/programs/config/alpha_optimum_trunc_exp_gaussian_w_4000_n_50.tsv \
+            --labelNames Err,Dup,Hap,Col \
+            --threads 16
+
+
+
+# 0) BAM 정렬/색인 확인
+samtools sort -@ 32 -o /ADATA/smkim/test/h1.aln.sorted.bam /ADATA/smkim/test/h1.aln.bam
+samtools index /ADATA/smkim/test/h1.aln.sorted.bam
+
+# 1) cov 재생성 (bin=16000 고정)
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /ADATA/smkim/test:/bam_dir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h1.aln.sorted.bam \
+    --output /wdir/h1.w16000.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path_h1.json \
+    --baselineAnnotation whole_genome \
+    --minAlignmentLength 16000      # ← 실제 옵션명 확인 후 적용
+
+# 2) 이전 index 제거(있다면)
+rm -f /wdir/h1.w16000.cov.gz.index
+
+# 3) HMM 실행(우선 baseline 영향 배제 테스트)
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/h1.w16000.cov.gz \
+    --outputDir /wdir/hmm_flagger_outputs \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 16
+
+
+###
+minimap2 --cs -L -Y -t 32 -ax map-hifi
+
+cd /ADATA/smkim/test
+
+/CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz
+### asembly to all reads
+# all HiFi → h1
+minimap2 --cs -L -Y -t 32 -ax map-hifi /CDATA/pangenome/flagger_test/KPPD019.1.fa /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@ 16 -o h1.aln_allread.bam
+samtools index h1.aln_allread.bam
+
+# all HiFi → h2
+minimap2 --cs -L -Y -t 32 -ax map-hifi /CDATA/pangenome/flagger_test/KPPD019.2.fa /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@ 16 -o h2.aln_allread.bam
+samtools index h2.aln_allread.bam
+
+
+# h1 HiFi → h1
+minimap2 --cs -L -Y -t 32 -ax map-hifi /CDATA/pangenome/flagger_test/KPPD019.1.fa /ADATA/smkim/test/NIH23F1013274.h1.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@ 16 -o h1.aln.bam
+samtools index h1.aln.bam
+
+# h2 HiFi → h2
+minimap2 --cs -L -Y -t 32 -ax map-hifi /CDATA/pangenome/flagger_test/KPPD019.2.fa /ADATA/smkim/test/NIH23F1013274.h2.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@ 16 -o h2.aln.bam
+samtools index h2.aln.bam
+
+
+
+cd /CDATA/pangenome/flagger_test
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+
+samtools faidx KPPD019.1.fa
+samtools faidx KPPD019.2.fa
+
+awk '{print $1 "\t0\t" $2}' KPPD019.1.fa.fai > KPPD019.1.bed
+awk '{print $1 "\t0\t" $2}' KPPD019.2.fa.fai > KPPD019.2.bed
+
+
+
+echo "{" > annotations_path_h1.json
+echo "\"whole_genome\" : \"/wdir/KPPD019.1.bed\"" >> annotations_path_h1.json
+echo "}" >> annotations_path_h1.json
+
+echo "{" > annotations_path_h2.json
+echo "\"whole_genome\" : \"/wdir/KPPD019.2.bed\"" >> annotations_path_h2.json
+echo "}" >> annotations_path_h2.json
+
+mkdir compare_pipeline
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /ADATA/smkim/test:/bam_dir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h1.aln.bam \
+    --output /wdir/compare_pipeline/h1.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path_h1.json \
+    --baselineAnnotation whole_genome
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /ADATA/smkim/test:/bam_dir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h2.aln.bam \
+    --output /wdir/compare_pipeline/h2.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path_h2.json \
+    --baselineAnnotation whole_genome
+
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /ADATA/smkim/test:/bam_dir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h1.aln_allread.bam \
+    --output /wdir/compare_pipeline/h1_aln_allread.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path_h1.json \
+    --baselineAnnotation whole_genome
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /ADATA/smkim/test:/bam_dir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /bam_dir/h2.aln_allread.bam \
+    --output /wdir/compare_pipeline/h2_aln_allread.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path_h2.json \
+    --baselineAnnotation whole_genome
+
+
+
+#### flagger
+mkdir h1_hmm_flagger_result
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/compare_pipeline/h1.cov.gz \
+    --outputDir /wdir/compare_pipeline/h1_hmm_flagger_result \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 32
+
+
+mkdir h2_hmm_flagger_result
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/compare_pipeline/h2.cov.gz \
+    --outputDir /wdir/compare_pipeline/h2_hmm_flagger_result \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 32
+
+
+mkdir h1_all_hmm_flagger_result
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/compare_pipeline/h1_aln_allread.cov.gz \
+    --outputDir /wdir/compare_pipeline/h1_all_hmm_flagger_result \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 32
+
+
+mkdir h2_all_hmm_flagger_result
+
+docker run -it --rm -v /CDATA/pangenome/flagger_test:/wdir mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/compare_pipeline/h2_aln_allread.cov.gz \
+    --outputDir /wdir/compare_pipeline/h2_all_hmm_flagger_result \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 32
+
+
+
+### merged assmebly fastq + maiing merged read 
+minimap2 --cs -L -Y -t 64 -ax map-hifi /CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa /CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+  | samtools sort -@ 16 -o all_hap.aln_allread.bam
+samtools index all_hap.aln_allread.bam
+
+/CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa
+awk '{print $1 "\t0\t" $2}' /CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa.fai > /CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.bed
+
+echo "{" > annotations_path.json
+echo "\"whole_genome\" : \"/ref/KPPD019.assembly.merge.bed\"" >> annotations_path.json
+echo "}" >> annotations_path.json
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /CDATA/pangenome/flagger_test/new_pipe/:/ref \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/compare_pipeline/all_hap.aln_allread.bam \
+    --output /wdir/compare_pipeline/all_hap.aln_allread.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/compare_pipeline/annotations_path.json \
+    --baselineAnnotation whole_genome
+
+mkdir merge_hap.aln_allread
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test:/wdir \
+  -v /CDATA/pangenome/flagger_test/new_pipe:/ref \
+  mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /wdir/compare_pipeline/all_hap.aln_allread.cov.gz \
+    --outputDir /wdir/compare_pipeline/merge_hap.aln_allread \
+    --alphaTsv /wdir/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 48
+
+
+
+
+
+
+
+
+##
+cd /CDATA/pangenome/flagger_test/workdir
+wget https://github.com/broadinstitute/cromwell/releases/download/85/cromwell-85.jar
+wget https://github.com/broadinstitute/cromwell/releases/download/85/womtool-85.jar
+
+# Get version 1.1.0 of HMM-Flagger
+wget https://github.com/mobinasri/flagger/archive/refs/tags/v1.1.0.zip
+
+unzip v1.1.0.zip
+
+
+# make a directory for saving outputs and json files
+mkdir workdir 
+
+cd workdir
+
+
+java -jar ../womtool-85.jar inputs ../flagger-1.0.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl > inputs.json
+
+
+grep -E '(sampleName|suffixForFlagger|suffixForMapping|hap1AssemblyFasta|hap2AssemblyFasta|readFiles|presetForMapping|HMMFlaggerEndToEndWithMapping.alphaTsv)' inputs.json
+
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+/CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz
+
+KPPD019
+
+
+
+
+
+sampleName, suffixForFlagger, suffixForMapping, hap1AssemblyFasta, hap2AssemblyFasta, readFiles, presetForMapping
+
+
+"HMMFlaggerEndToEndWithMapping.createDipAsm.dockerImage": "mobinasri/flagger:v1.1.0"
+
+
+java -jar ../cromwell-85.jar run ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end_with_mapping.wdl -i new_input.json -m outputs.json
+
+
+
+meryl count k=15 output MERYL_DIR ASSEMBLY.fasta
+meryl count k=15 output MERYL_DIR KPPD019.assembly.merge.fa
+
+meryl count k=15 output merylDB KPPD019.assembly.merge.fa threads=48
+meryl print greater-than distinct=0.9998 merylDB threads=48 > REP_K15.txt
+
+
+meryl print greater-than distinct=0.9998 MERYL_DIR > REP_K15.txt
+
+winnowmap -W REP_K15.txt -t 48 -I 10G -Y -ax map-pb --MD --cs -L --eqx KPPD019.assembly.merge.fa ../NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz > KPPD019.winnowmap_asm.sam
+
+
+winnowmap -W REP_K15.txt -t 48 -I 10G -Y -ax map-pb --MD --cs -L --eqx \
+  KPPD019.assembly.merge.fa ../NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz \
+| samtools sort -@ 8 -b -o KPPD019.winnowmap_asm.sorted.bam \
+&& samtools index KPPD019.winnowmap_asm.sorted.bam
+
+
+
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+
+#
+## assembly to ref : GRCh38
+minimap2 -a -x asm20 --cs --eqx -t 48 \
+  -R "@RG\tID:KPPD019\tSM:KPPD019" \
+  /BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna \
+  /CDATA/pangenome/flagger_test/KPPD019.1.fa \
+| samtools view -@ 8 -F 1540 -b - \
+| samtools sort -@ 8 -o KPPD019.1_to_GRCh38.sorted.bam && samtools index KPPD019.1_to_GRCh38.sorted.bam
+
+
+minimap2 -a -x asm20 --cs --eqx -t 48 \
+  -R "@RG\tID:KPPD019\tSM:KPPD019" \
+  /BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna \
+  /CDATA/pangenome/flagger_test/KPPD019.2.fa \
+| samtools view -@ 8 -F 1540 -b - \
+| samtools sort -@ 8 -o KPPD019.2_to_GRCh38.sorted.bam && samtools index KPPD019.2_to_GRCh38.sorted.bam
+
+
+## assembly to ref : T2T
+minimap2 -a -x asm20 --cs --eqx -t 48 \
+  -R "@RG\tID:KPPD019\tSM:KPPD019" \
+  /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+  /CDATA/pangenome/flagger_test/KPPD019.1.fa \
+| samtools view -@ 8 -F 1540 -b - \
+| samtools sort -@ 8 -o KPPD019.1_to_chm13v2.sorted.bam && samtools index KPPD019.1_to_chm13v2.sorted.bam
+
+
+minimap2 -a -x asm20 --cs --eqx -t 48 \
+  -R "@RG\tID:KPPD019\tSM:KPPD019" \
+  /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+  /CDATA/pangenome/flagger_test/KPPD019.2.fa \
+| samtools view -@ 8 -F 1540 -b - \
+| samtools sort -@ 8 -o KPPD019.2_to_chm13v2.sorted.bam && samtools index KPPD019.2_to_chm13v2.sorted.bam
+
+
+
+
+
+
+/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+
+
+java -jar cromwell.jar run flagger_end_to_end.wdl --input INPUT.json --metadata-output OUTPUT.json
+
+
+{
+  "FlaggerEndToEnd.refSDBed": "REF_SD.bed",
+  "FlaggerEndToEnd.preprocess.variantCallingMemory": 48,
+  "FlaggerEndToEnd.sampleName": "SAMPLE_NAME",
+  "FlaggerEndToEnd.fai": "CONCAT_ASSEMBLY.fasta.gz.fai",
+  "FlaggerEndToEnd.stats.threadCount": 4,
+  "FlaggerEndToEnd.refBiasedRegionFactorArray": [1.25, 0.75],
+  "FlaggerEndToEnd.flagger_alt_removed.isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.threadCount": 4,
+  "FlaggerEndToEnd.flagger_isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.memSize": 4,
+  "FlaggerEndToEnd.maxReadDivergence": 0.02,
+  "FlaggerEndToEnd.refCntrCtBed": "REF_CENTROMERE_TRANSITION.bed",
+  "FlaggerEndToEnd.refSexBed": "REF_SEX_CHROMS.bed",
+  "FlaggerEndToEnd.variantCaller": "dv",
+  "FlaggerEndToEnd.stats.memSize": 4,
+  "FlaggerEndToEnd.secphaseOptions": "--hifi",
+  "FlaggerEndToEnd.project.isAssemblySplit": false,
+  "FlaggerEndToEnd.assemblyFastaGz": "CONCAT_ASSEMBLY.fasta.gz",
+  "FlaggerEndToEnd.suffix": "",
+  "FlaggerEndToEnd.refBiasedBlocksBedArray": [
+    "REF_HIFI_R1_BIASED.bed",
+    "REF_HIFI_R2_BIASED.bed"
+  ],
+  "FlaggerEndToEnd.refCntrBed": "REF_CENTROMERIC_SATELLITES.bed",
+  "FlaggerEndToEnd.refBiasedRegionNameArray": [
+    "hifi_biased_high",
+    "hifi_biased_low"
+  ],
+  "FlaggerEndToEnd.refName": "hs1",
+  "FlaggerEndToEnd.readAlignmentBam": "HIFI_READS_TO_ASSEMBLY.bam",
+  "FlaggerEndToEnd.hap1ToRefBam": "HAP1_ASSEMBLY_TO_REF.bam",
+  "FlaggerEndToEnd.hap2ToRefBam": "HAP2_ASSEMBLY_TO_REF.bam"
+}
+
+
+docker run \
+	-v ${INPUT_DIR}:${INPUT_DIR} \
+	-v ${OUTPUT_DIR}:${OUTPUT_DIR}
+	mobinasri/secphase:v0.4.4 \
+	secphase --hifi \
+	-i ${INPUT_DIR}/${BAM_PREFIX}.sorted.bam \
+	-f ${INPUT_DIR}/${FASTA_PREFIX}.fa \
+	--outDir ${OUTPUT_DIR} \
+	--prefix ${SAMPLE_NAME} \
+	--threads ${THREAD_COUNT}
+
+
+docker run \
+	-v /CDATA/pangenome/flagger_test/new_pipe:/inDir \
+	mobinasri/secphase:v0.4.4 \
+	secphase --hifi \
+	-i /inDir/KPPD019.winnowmap_asm.sorted.bam \
+	-f /inDir/KPPD019.assembly.merge.fa \
+	--outDir /inDir/secphase/ \
+	--prefix KPPD019 \
+	--threads 64
+
+
+#"whole_genome" : "/wdir/KPPD019.2.bed"
+#/CDATA/pangenome/flagger_test/new_pipe
+/wdir/new_pipe/
+/wdir/KPPD019.assembly.merge.fa.fai
+
+/refdir/stratifications/censat/chm13v2.0_only_ct.bed
+/refdir/
+{
+  "FlaggerEndToEnd.refSDBed": "/refdir/stratifications/sd/stratifications/sd/chm13v2.0_SD.all.bed",
+  "FlaggerEndToEnd.preprocess.variantCallingMemory": 48,
+  "FlaggerEndToEnd.sampleName": "KPPD019",
+  "FlaggerEndToEnd.fai": "/wdir/KPPD019.assembly.merge.fa.fai",
+  "FlaggerEndToEnd.stats.threadCount": 48,
+  "FlaggerEndToEnd.refBiasedRegionFactorArray": [1.25, 0.75],
+  "FlaggerEndToEnd.flagger_alt_removed.isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.threadCount": 4,
+  "FlaggerEndToEnd.flagger_isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.memSize": 4,
+  "FlaggerEndToEnd.maxReadDivergence": 0.02,
+  "FlaggerEndToEnd.refCntrCtBed": "/refdir/stratifications/censat/chm13v2.0_only_ct.bed",
+  "FlaggerEndToEnd.refSexBed": "/refdir/stratifications/sex/chm13v2.0_sex.bed",
+  "FlaggerEndToEnd.variantCaller": "dv",
+  "FlaggerEndToEnd.stats.memSize": 4,
+  "FlaggerEndToEnd.secphaseOptions": "--hifi",
+  "FlaggerEndToEnd.project.isAssemblySplit": false,
+  "FlaggerEndToEnd.assemblyFastaGz": "/wdir/KPPD019.assembly.merge.fa",
+  "FlaggerEndToEnd.suffix": "KPPD.flaggger_test",
+  "FlaggerEndToEnd.refBiasedBlocksBedArray": [
+    "/refdir/potential_biases/chm13v2.0_hsat1A.bed",
+    "/refdir/potential_biases/chm13v2.0_hsat2.bed"
+  ],
+  "FlaggerEndToEnd.refCntrBed": "/refdir/stratifications/censat/chm13v2.0_censat.bed",
+  "FlaggerEndToEnd.refBiasedRegionNameArray": [
+    "hifi_biased_high",
+    "hifi_biased_low"
+  ],
+  "FlaggerEndToEnd.refName": "CHM13",
+  "FlaggerEndToEnd.readAlignmentBam": "/wdir/new_pipe/KPPD019.winnowmap_asm.sorted.bam",
+  "FlaggerEndToEnd.hap1ToRefBam": "/wdir/new_pipe/KPPD019.1_to_chm13v2.sorted.bam",
+  "FlaggerEndToEnd.hap2ToRefBam": "/wdir/new_pipe/KPPD019.2_to_chm13v2.sorted.bam"
+}
+
+
+
+
+{
+  "FlaggerEndToEnd.refSDBed": "/BDATA/smkim/TOOLs/flagger/misc/stratifications/sd/stratifications/sd/chm13v2.0_SD.all.bed",
+  "FlaggerEndToEnd.preprocess.variantCallingMemory": 48,
+  "FlaggerEndToEnd.sampleName": "KPPD019",
+  "FlaggerEndToEnd.fai": "/CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa.fai",
+  "FlaggerEndToEnd.stats.threadCount": 48,
+  "FlaggerEndToEnd.refBiasedRegionFactorArray": [1.25, 0.75],
+  "FlaggerEndToEnd.flagger_alt_removed.isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.threadCount": 4,
+  "FlaggerEndToEnd.flagger_isDiploid": true,
+  "FlaggerEndToEnd.stats_alt_removed.memSize": 4,
+  "FlaggerEndToEnd.maxReadDivergence": 0.02,
+  "FlaggerEndToEnd.refCntrCtBed": "/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_only_ct.bed",
+  "FlaggerEndToEnd.refSexBed": "/BDATA/smkim/TOOLs/flagger/misc/stratifications/sex/chm13v2.0_sex.bed",
+  "FlaggerEndToEnd.variantCaller": "dv",
+  "FlaggerEndToEnd.stats.memSize": 4,
+  "FlaggerEndToEnd.secphaseOptions": "--hifi",
+  "FlaggerEndToEnd.project.isAssemblySplit": false,
+  "FlaggerEndToEnd.assemblyFastaGz": "/CDATA/pangenome/flagger_test/new_pipe/KPPD019.assembly.merge.fa",
+  "FlaggerEndToEnd.suffix": "KPPD.flaggger_test",
+  "FlaggerEndToEnd.refBiasedBlocksBedArray": [
+    "/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat1A.bed",
+    "/BDATA/smkim/TOOLs/flagger/misc/potential_biases/chm13v2.0_hsat2.bed"
+  ],
+  "FlaggerEndToEnd.refCntrBed": "/BDATA/smkim/TOOLs/flagger/misc/stratifications/censat/chm13v2.0_censat.bed",
+  "FlaggerEndToEnd.refBiasedRegionNameArray": [
+    "hifi_biased_high",
+    "hifi_biased_low"
+  ],
+  "FlaggerEndToEnd.refName": "CHM13",
+  "FlaggerEndToEnd.readAlignmentBam": "/CDATA/pangenome/flagger_test/new_pipe/KPPD019.winnowmap_asm.sorted.bam",
+  "FlaggerEndToEnd.hap1ToRefBam": "/CDATA/pangenome/flagger_test/new_pipe/KPPD019.1_to_chm13v2.sorted.bam",
+  "FlaggerEndToEnd.hap2ToRefBam": "/CDATA/pangenome/flagger_test/new_pipe/KPPD019.2_to_chm13v2.sorted.bam"
+}
+
+
+java -jar cromwell.jar run flagger_end_to_end.wdl --input INPUT.json --metadata-output OUTPUT.json
+
+
+java -jar /CDATA/pangenome/flagger_test/cromwell-91.jar run ../flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl --inputs flagger_input.json --metadata-output OUTPUT.json
+
+
+{
+  "HMMFlaggerEndToEndWithMapping.readFiles": "Array[/CDATA/pangenome/flagger_test/NIH23F1013274.Revio_hifi_reads.rawfastq.merge.fastq.gz]",
+  "HMMFlaggerEndToEndWithMapping.readExtractionOptions": "String (optional, default = \"-TMM,ML,Mm,Ml\")",
+  "HMMFlaggerEndToEndWithMapping.hap1AssemblyFasta": "/CDATA/pangenome/flagger_test/KPPD019.1.fa",
+  "HMMFlaggerEndToEndWithMapping.annotationsBedArray": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.secphaseOptions": "String (optional, default = \"--hifi\")",
+  "HMMFlaggerEndToEndWithMapping.enableDecomposingCntrBed": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.sexBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.SDBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.dockerImage": "String (optional, default = \"mobinasri/bio_base:v0.4.0\")",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseOptions": "String (optional, default = \"--hifi\")",
+  "HMMFlaggerEndToEndWithMapping.alignmentTask.preemptible": "Int (optional, default = 2)",
+  "HMMFlaggerEndToEndWithMapping.flaggerDockerImage": "String (optional, default = \"mobinasri/flagger:v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.labelNames": "String (optional, default = \"Err,Dup,Hap,Col\")",
+  "HMMFlaggerEndToEndWithMapping.minReadLengthForMapping": "Int (optional, default = 0)",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseVersion": "String (optional, default = \"v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.cntrBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.alignerThreadCount": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.includeContigListText": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.convergenceToleranceForFlagger": "Float (optional, default = 0.001)",
+  "HMMFlaggerEndToEndWithMapping.biasAnnotationsBedArray": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBigWig": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.flaggerThreadCount": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.enableRunningSecphase": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.secphaseVersion": "String (optional, default = \"v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.trackName": "String (optional, default = \"hmm_flagger_v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.flaggerMoreOptions": "String? (optional)",
+  "HMMFlaggerEndToEndWithMapping.alignerDockerImage": "String (optional, default = \"mobinasri/long_read_aligner:v1.1.0\")",
+  "HMMFlaggerEndToEndWithMapping.cntrBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.projectionReferenceFasta": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.truthBedForMisassemblies": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.secphaseDockerImage": "String (optional, default = \"mobinasri/secphase:v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.alignerMemSize": "Int (optional, default = 48)",
+  "HMMFlaggerEndToEndWithMapping.modelType": "String (optional, default = \"trunc_exp_gaussian\")",
+  "HMMFlaggerEndToEndWithMapping.chunkLen": "Int (optional, default = 20000000)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.threadCount": "Int (optional, default = 4)",
+  "HMMFlaggerEndToEndWithMapping.correctBamOptions": "String (optional, default = \"--primaryOnly --minReadLen 5000 --minAlignment 5000 --maxDiv 0.1\")",
+  "HMMFlaggerEndToEndWithMapping.flaggerMinimumBlockLenArray": "Array[Int] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.SDBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.enableAddingMDTag": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.flaggerMemSize": "Int (optional, default = 32)",
+  "HMMFlaggerEndToEndWithMapping.numberOfIterationsForFlagger": "Int (optional, default = 100)",
+  "HMMFlaggerEndToEndWithMapping.presetForMapping": "String",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.memSize": "Int (optional, default = 8)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.preemptible": "Int (optional, default = 2)",
+  "HMMFlaggerEndToEndWithMapping.alignmentTask.zones": "String (optional, default = \"us-west2-a\")",
+  "HMMFlaggerEndToEndWithMapping.binSizeArrayTsv": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.sexBed": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.hap2AssemblyFasta": "/CDATA/pangenome/flagger_test/KPPD019.2.fa",
+  "HMMFlaggerEndToEndWithMapping.annotationsBedArrayToBeProjected": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.enableRunningCorrectBam": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.referenceFastaForReadExtraction": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.enableSplittingReadsEqually": "Boolean (optional, default = false)",
+  "HMMFlaggerEndToEndWithMapping.suffixForMapping": "String",
+  "HMMFlaggerEndToEndWithMapping.hmmFlaggerTask.secphaseDockerImage": "String (optional, default = \"mobinasri/secphase:v0.4.4\")",
+  "HMMFlaggerEndToEndWithMapping.alignerOptions": "String (optional, default = \"--eqx --cs -Y -L -y\")",
+  "HMMFlaggerEndToEndWithMapping.minHighMapqRatio": "Float (optional, default = 0.75)",
+  "HMMFlaggerEndToEndWithMapping.suffixForFlagger": "String",
+  "HMMFlaggerEndToEndWithMapping.windowLen": "Int (optional, default = 4000)",
+  "HMMFlaggerEndToEndWithMapping.maxHighMapqRatio": "Float (optional, default = 0.25)",
+  "HMMFlaggerEndToEndWithMapping.biasAnnotationsBedArrayToBeProjected": "Array[File] (optional, default = [])",
+  "HMMFlaggerEndToEndWithMapping.downSamplingRateForFlagger": "Float (optional, default = 1.0)",
+  "HMMFlaggerEndToEndWithMapping.sampleName": "String",
+  "HMMFlaggerEndToEndWithMapping.enableOutputtingBam": "Boolean (optional, default = true)",
+  "HMMFlaggerEndToEndWithMapping.alphaTsv": "File",
+  "HMMFlaggerEndToEndWithMapping.splitNumber": "Int (optional, default = 16)",
+  "HMMFlaggerEndToEndWithMapping.kmerSize": "Int (optional, default = 15)",
+  "HMMFlaggerEndToEndWithMapping.createDipAsm.diskSize": "Int (optional, default = 32)",
+  "HMMFlaggerEndToEndWithMapping.cntrCtBedToBeProjected": "File? (optional)",
+  "HMMFlaggerEndToEndWithMapping.aligner": "String (optional, default = \"winnowmap\")",
+  "HMMFlaggerEndToEndWithMapping.cntrCtBed": "File? (optional)"
+}
+
+
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' final_flagger_prediction.bed | sort -k2,2nr
+
+grep KPPD019_h1 h1_hmm_flagger_result/final_flagger_prediction.bed | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+
+
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' merge_hap.aln_allread/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h1_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h1_all_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h2_all_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h2_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+
+grep KPPD019_h1 merge_hap.aln_allread/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h1_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h1_all_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+
+grep KPPD019_h2 merge_hap.aln_allread/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h2_all_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+awk 'NR>1 {len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}' h2_hmm_flagger_result/final_flagger_prediction.bed | sort -k2,2nr
+
+
+grep KPPD019_h2 /CDATA/pangenome/flagger_test/test/T2T_annotation/flagger_output/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+grep -v KPPD019_h2 /CDATA/pangenome/flagger_test/test/T2T_annotation/flagger_output/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+
+grep KPPD019_h2 /CDATA/pangenome/flagger_test/test/flagger_output/KPPD019_flagger_out/final_results/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+grep -v KPPD019_h2 /CDATA/pangenome/flagger_test/test/flagger_output/KPPD019_flagger_out/final_results/final_flagger_prediction.bed  | awk '{len=$3-$2; sum[$4]+=len} END {for (k in sum) print k, sum[k]}'
+
+
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/ref:/ref \
+  -v /CDATA/pangenome/flagger_test/test/test:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/flagger_output/KPPD019_flagger_out/KPPD019.sorted.bam \
+    --output /outdir/KPPD019.test.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path.ori.json \
+    --baselineAnnotation whole_genome
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/ref:/ref \
+  -v /CDATA/pangenome/flagger_test/test/test/:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/flagger_output/KPPD019_flagger_out/KPPD019.sorted.bam \
+    --output /outdir/KPPD019.test.cov.gz \
+    --threads 48 \
+    --annotationJson /wdir/annotations_path.json \
+    --baselineAnnotation whole_genome \
+    --runBiasDetection
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/ref/:/ref \
+  -v /CDATA/pangenome/flagger_test/test/test:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /outdir/KPPD019.test.cov.gz \
+    --outputDir /outdir \
+    --alphaTsv /ref/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 48
+
+
+
+
+
+
+
+#####
+# 1) 조립체(ASSEMBLY.fa) vs CHM13 정렬(PAF 생성)
+minimap2 -x asm20 -t 32 ../ref/chm13v2.0_maskedY_rCRS.fa /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa > ref2asm.paf
+
+minimap2 -x asm20 -t 32 /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa ref/chm13v2.0_maskedY_rCRS.fa > T2T_annotation/ref2asm_corrected.paf
+
+minimap2 -x asm20 -c -t 32 /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa ref/chm13v2.0_maskedY_rCRS.fa > T2T_annotation/ref2asm_corrected.paf
+
+minimap2 -x asm20 -c -t 32 ref/chm13v2.0_maskedY_rCRS.fa \
+  /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa \
+  > ref/ref2asm.paf
+
+mkdir T2T_annotation/lifted
+
+for bed in \
+  ref/potential_biases/chm13v2.0_bsat.bed \
+  ref/potential_biases/chm13v2.0_hsat1A.bed \
+  ref/potential_biases/chm13v2.0_hsat1B.bed \
+  ref/potential_biases/chm13v2.0_hsat2.bed \
+  ref/potential_biases/chm13v2.0_hsat3.bed \
+  ref/potential_biases/chm13v2.0_hor.bed \
+  ref/stratifications/censat/chm13v2.0_censat.bed \
+  ref/stratifications/sd/chm13v2.0_SD.all.bed \
+  ref/stratifications/sex/chm13v2.0_sex.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_le6_STR.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed
+do
+  base=$(basename "$bed" .bed)
+  paftools.js liftover T2T_annotation/ref2asm_corrected.paf "$bed" > T2T_annotation/lifted/${base}.lifted.bed
+done
+
+
+{
+  "whole_genome": "/wdir/flagger_output/KPPD019_flagger_out/KPPD019.bed",
+
+  "sex":      "/ref_lifted/chm13v2.0_sex.lifted.bed",
+  "sd_all":   "/ref_lifted/chm13v2.0_SD.all.lifted.bed",
+  "censat":   "/ref_lifted/chm13v2.0_censat.lifted.bed",
+
+  "bsat":     "/ref_lifted/chm13v2.0_bsat.lifted.bed",
+  "hsat1A":   "/ref_lifted/chm13v2.0_hsat1A.lifted.bed",
+  "hsat1B":   "/ref_lifted/chm13v2.0_hsat1B.lifted.bed",
+  "hsat2":    "/ref_lifted/chm13v2.0_hsat2.lifted.bed",
+  "hsat3":    "/ref_lifted/chm13v2.0_hsat3.lifted.bed",
+  "hor":      "/ref_lifted/chm13v2.0_hor.lifted.bed",
+
+  "rm_str":   "/ref_lifted/chm13v2.0_RM_4.1.2p1_le6_STR.lifted.bed",
+  "rm_vntr":  "/ref_lifted/chm13v2.0_RM_4.1.2p1_ge7_VNTR.lifted.bed"
+}
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/ref_lifted \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/flagger_output/KPPD019_flagger_out/KPPD019.sorted.bam \
+    --output /outdir/KPPD019.test.cov.gz \
+    --threads 48 \
+    --annotationJson /outdir/new_pipe.json \
+    --baselineAnnotation whole_genome \
+    --runBiasDetection
+
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/ref:/ref \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/ref_lifted \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /outdir/KPPD019.test.cov.gz \
+    --outputDir /outdir/flagger_output \
+    --alphaTsv /ref/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 48
+
+
+#####
+
+
+mkdir T2T_annotation/lifted_assemblytochm13
+
+for bed in \
+  ref/potential_biases/chm13v2.0_bsat.bed \
+  ref/potential_biases/chm13v2.0_hsat1A.bed \
+  ref/potential_biases/chm13v2.0_hsat1B.bed \
+  ref/potential_biases/chm13v2.0_hsat2.bed \
+  ref/potential_biases/chm13v2.0_hsat3.bed \
+  ref/potential_biases/chm13v2.0_hor.bed \
+  ref/stratifications/censat/chm13v2.0_censat.bed \
+  ref/stratifications/sd/chm13v2.0_SD.all.bed \
+  ref/stratifications/sex/chm13v2.0_sex.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_le6_STR.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed
+do
+  base=$(basename "$bed" .bed)
+  paftools.js liftover T2T_annotation/ref2asm.paf "$bed" > T2T_annotation/lifted_assemblytochm13/${base}.lifted.bed
+done
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/lifted_assemblytochm13 \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/flagger_output/KPPD019_flagger_out/KPPD019.sorted.bam \
+    --output /outdir/KPPD019.test.assembtoref.cov.gz \
+    --threads 48 \
+    --annotationJson /outdir/new_pipe.json \
+    --baselineAnnotation whole_genome \
+    --runBiasDetection
+
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/ref:/ref \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/ref_lifted \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /outdir/KPPD019.test.cov.gz \
+    --outputDir /outdir/flagger_output \
+    --alphaTsv /ref/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 48
+
+
+
+############
+minimap2 -x asm20 -c -t 32 /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa ref/chm13v2.0_maskedY_rCRS.fa > T2T_annotation/ref2asm_corrected.paf
+
+mkdir T2T_annotation/lifted
+
+for bed in \
+  ref/potential_biases/chm13v2.0_bsat.bed \
+  ref/potential_biases/chm13v2.0_hsat1A.bed \
+  ref/potential_biases/chm13v2.0_hsat1B.bed \
+  ref/potential_biases/chm13v2.0_hsat2.bed \
+  ref/potential_biases/chm13v2.0_hsat3.bed \
+  ref/potential_biases/chm13v2.0_hor.bed \
+  ref/stratifications/censat/chm13v2.0_censat.bed \
+  ref/stratifications/sd/chm13v2.0_SD.all.bed \
+  ref/stratifications/sex/chm13v2.0_sex.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_le6_STR.bed \
+  ref/stratifications/repeat_masker/chm13v2.0_RM_4.1.2p1_ge7_VNTR.bed
+do
+  base=$(basename "$bed" .bed)
+  paftools.js liftover T2T_annotation/ref2asm_corrected.paf "$bed" > T2T_annotation/lifted/${base}.lifted.bed
+done
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/ref_lifted \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  bam2cov \
+    --bam /wdir/flagger_output/KPPD019_flagger_out/KPPD019.sorted.bam \
+    --output /outdir/KPPD019.test.cov.gz \
+    --threads 48 \
+    --annotationJson /outdir/new_pipe.json \
+    --baselineAnnotation whole_genome \
+    --runBiasDetection
+
+
+
+docker run -it --rm \
+  -v /CDATA/pangenome/flagger_test/test:/wdir \
+  -v /CDATA/pangenome/flagger_test/test/ref:/ref \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation/lifted:/ref_lifted \
+  -v /CDATA/pangenome/flagger_test/test/T2T_annotation:/outdir \
+  mobinasri/flagger:v1.1.0 \
+  hmm_flagger \
+    --input /outdir/KPPD019.test.cov.gz \
+    --outputDir /outdir/flagger_output \
+    --alphaTsv /ref/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+    --labelNames Err,Dup,Hap,Col \
+    --threads 48
+
+
+### flagger 부ㄴ석 후 merge 작업
+cd /CDATA/pangenome/flagger_test/final_result/
+
+
+# contig name 변경 : KPPD033#1#h1tg000001l의 #숫자# 부분만 _로 치환.
+
+
+ls -d *annotation \
+| sed 's/_annotation$//' \
+| xargs -I{} -P 8 bash -c '
+  awk -v name="{}" '"'"'BEGIN{OFS="\t"}
+  /^track/ {print; next}
+  {
+    if ($1 ~ "^" name "#[0-9]+#") sub("^" name "#[0-9]+#", name "_", $1)
+    print
+  }'"'"' \
+  "{}_annotation/final_results/final_flagger_prediction.bed" \
+  > "contig_name_change/{}.flagger_prediction.contig_change.bed"
+'
+
+/CDATA/pangenome/flagger_test/final_result/contig_name_change/{}.flagger_prediction.contig_change.bed
+
+
+/ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished
+
+
+for i in $(seq -w 1 132); do echo "KPPD${i}"; done | xargs -I{} -P 20 bash -c "python3 run.2.py /CDATA/pangenome/flagger_test/final_result/contig_name_change/{}.flagger_prediction.contig_change.bed /ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished {}.liftoff_with_flagger.gff3"
+
+
+
+cat *gff3 > merge.liftoff_with_flagger.txt
+
+
+awk -F'\t' 'BEGIN{
+    OFS="\t";
+    print "Flagger","Flagger_fraction","Contig","Start","End","Strand","gene_type","gene_name","tag",,"coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    # 1,2,3,6,7,9번 컬럼 그대로
+    hap=$1; col2=$2; contig=$3; start=$6; end=$7; strand=$9;
+
+    # 11번째 컬럼 파싱
+    split($11, attrs, ";");
+    gene_type=gene_name=tag=coverage=sequence_ID=valid_ORFs=extra_copy_number="NA";
+    for(i in attrs){
+        split(attrs[i], kv, "=");
+        key=kv[1]; val=kv[2];
+        if(key=="gene_type") gene_type=val;
+        else if(key=="gene_name") {
+            if(val=="X") gene_name="X"; else gene_name=val;
+        }
+        else if(key=="tag") tag=val;
+        else if(key=="coverage") coverage=val;
+        else if(key=="sequence_ID") sequence_ID=val;
+        else if(key=="valid_ORFs") valid_ORFs=val;
+        else if(key=="extra_copy_number") extra_copy_number=val;
+    }
+
+    print hap,col2,contig,start,end,strand,gene_type,gene_name,tag,coverage,sequence_ID,valid_ORFs,extra_copy_number;
+}' merge.liftoff_with_flagger.txt > merge.liftoff_with_flagger.parsed.tsv
+
+
+###
+awk -F'\t' 'BEGIN{
+    OFS="\t";
+    print "Flagger","Flagger_fraction","Contig","Start","End","Strand",
+          "gene_type","gene_name","tag","level","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    # 1,2,3,6,7,9번 컬럼 그대로 유지
+    hap=$1; col2=$2; contig=$3; start=$6; end=$7; strand=$9;
+
+    # 11번째 컬럼(attribute) 파싱
+    split($11, attrs, ";");
+    gene_type=gene_name=tag=level=coverage=sequence_ID=valid_ORFs=extra_copy_number="NA";
+
+    for(i in attrs){
+        split(attrs[i], kv, "=");
+        key=kv[1]; val=kv[2];
+        if(key=="gene_type") gene_type=val;
+        else if(key=="gene_name") gene_name=val;
+        else if(key=="tag") tag=val;
+        else if(key=="level") level=val;
+        else if(key=="coverage") coverage=val;
+        else if(key=="sequence_ID") sequence_ID=val;
+        else if(key=="valid_ORFs") valid_ORFs=val;
+        else if(key=="extra_copy_number") extra_copy_number=val;
+    }
+
+    print hap,col2,contig,start,end,strand,
+          gene_type,gene_name,tag,level,coverage,sequence_ID,valid_ORFs,extra_copy_number;
+}' merge.liftoff_with_flagger.txt > merge.liftoff_with_flagger.parsed.tsv
+
+
+####
+cd /ADATA/pangenome/assembly
+
+ls *fa | sed 's/.fa//g' | xargs -I {} -P 10 bash -c "minimap2 -x asm20 -c -t 8 /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa {}.fa > chm13_annotation/{}.T2TCHM13_align.paf"
+minimap2 -x asm20 -c -t 8 /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa > ref2asm.paf
+
+
+find /ADATA/pangenome/assembly/chm13_annotation/all -type f -name "*.paf" -print0 \
+| xargs -0 -I {} -P 30 bash -c '
+  in="{}"
+  out="$(dirname "$in")/$(basename "$in" .paf).only_P_I.paf"
+  awk -v TAB=$'\''\t'\'' '"'"'$0 ~ (TAB "tp:A:P") || $0 ~ (TAB "tp:A:I")'"'"' "$in" > "$out"
+'
+
+
+/ADATA/pangenome/assembly/chm13_annotation/P_I_contig/KPPD039.2.T2TCHM13_align.only_P_I.paf
+
+/CDATA/pangenome/flagger_test/final_result/contig_name_change/only_dup/KPPD126.flagger_prediction.contig_change.only_dup.bed
+
+
+
+cd /ADATA/pangenome/assembly/chm13_annotation/P_I_contig/
+
+.T2TCHM13_align.only_P_I.paf
+paftools.js liftover asm_vs_ref.PI.paf assembly_TR.bed > ref_TR.bed
+
+KPPD001.1 KPPD001
+KPPD001.2 KPPD001
+KPPD002.1 KPPD002
+KPPD002.2 KPPD002
+...
+KPPD132.1 KPPD132
+KPPD132.2 KPPD132
+
+for i in $(seq -w 1 132); do
+  echo "KPPD${i}.1 KPPD${i}"
+  echo "KPPD${i}.2 KPPD${i}"
+done > list.txt
+
+
+
+while read id sample; do
+  bash -c "paftools.js liftover \
+    /ADATA/pangenome/assembly/chm13_annotation/P_I_contig/${id}.T2TCHM13_align.only_P_I.paf \
+    /CDATA/pangenome/flagger_test/final_result/contig_name_change/only_dup/${sample}.flagger_prediction.contig_change.only_dup.bed \
+    > 01.T2TCHM13_liftover_VS_flagger_dupRegion/${id}.T2TCHM13_liftover_VS_flagger_dupRegion.bed" &
+  ((++n % 30 == 0)) && wait
+done < list.txt
+wait
+
+
+
+
+
+#######
+Usage: hmm_flagger  -i <INPUT_FILE> -o <OUTPUT_DIR>
+Options:
+         --input, -i
+                           Path to the input file (cov/cov.gz or binary output of create_bin_chunks)
+         --outputDir, -o
+                           Directory for saving output files.
+         --modelType, -m
+                           Model type can be either 'gaussian', 'negative_binomial', or
+                           'trunc_exp_gaussian' [Default = 'trunc_exp_gaussian']
+         --trackName, -N
+                           The track name that will appear in the final BED.[Default = 'final_flagger']
+         --chunkLen, -C
+                           Chunk length. Each chunk is the length of the genome (in bases) for which
+                           forward/backward algorithm will be performed once in each iteration. Splitting
+                           genome into chunks is mainly for enabling multi-threading and running
+                           this algorithm for multiple parts of the genome simultaneously.
+                           [Default = 20000000 (20Mb)]
+         --windowLen, -W
+                           Window length. Coverage information will be averaged along each window
+                           (non-overlapping) and the average value of each window will be regarded
+                           as one observation for the EM algorithm. Having larger windows will lead
+                           to lower resolution but faster runtime. (default = 4000)
+         --labelNames, -l
+                           (Optional) (For naming rows in the final benchmarking tsv file) A
+                           comma-delimited string of label names (for example
+                           'Err,Dup,Hap,Col'). It should match the number of labels in the
+                           header of the input file.[default: none]
+         --iterations, -n
+                           Maximum number of iterations [Default = 100]
+         --contigsList, -c
+                           (Optional) Path to a file with a list of contig names to include (one
+                           contig name per line) [Optional]
+         --convergenceTol, -t
+                           Convergence tolerance. The EM iteration will stop once the difference
+                           between all model parameter values in two consecutive iterations is
+                           less than this value. [Default = 0.001]
+         --maxHighMapqRatio, -q
+                           Maximum ratio of high mapq coverage for duplicated state [Default=0.25]
+         --minHighMapqRatio, -Q
+                           Minimum ratio of high mapq coverage for collapsed state [Default=0.75]
+         --alphaTsv, -A
+                           (Optional) The dependency factors of the current emission density
+                           to the previous emission. This parameter is a tsv file with 4 rows
+                           and 4 columns with no header line. All numbers should be between
+                           0 and 1.
+                           [Default = all alpha factors set to 0]
+         --collapsedComps, -p
+                           (Optional) Force the number of components of the collapsed state
+                           to this positive integer number (Only for testing purposes)
+                           [Default = it will automatically detect the best number of
+                           components by taking the maximum observed coverage.]
+         --writeParameterStatsPerIteration, -w
+                           (Optional) Write emission, transition statistics per
+                           each iteration (For only investigating how the model
+                           is improved over EM iterations) [Default = disabled].
+         --writeBenchmarkingStatsPerIteration, -k
+                           (Optional) Write benchmarking (precision/recall/f1score)
+                           statistics per each iteration (For only investigating how
+                           the model is improved over EM iterations) [Default = disabled].
+         --writePosteriorProbs, -P
+                           (Optional) Recommended only for development.
+                           Write posterior probabilities in tsv format [Default = disabled].
+         --binArrayFile, -b
+                           (Optional) A tsv file (tab-delimited) that contains bin arrays
+                           for stratifying results by event size. Bin intervals can have overlap.
+                           It should contain three columns.
+                           1st column is the closed start of the bin and the 2nd
+                           column is the open end. The 3rd column has a name for each bin.
+                           For example one row can be '0	100	[0-100)'
+                           If no file is passed it will consider one large bin as the default value.
+                           (Default = [0,1e9) with the name 'ALL_SIZES')
+         --overlapRatioThreshold, -v
+                           Minimum overlap ratio in calculating overlap-based metrics for
+                           considering a hit between a ref label (for example truth label for
+                           recall) and query label (for example prediction label for recall)
+                           [default: 0.4]
+         --initialRandomDev, -D
+                           Randomly deviate the initial mean values for EM algorithm.
+                           This is only for experimenting how much HMM-Flagger is tolerant to
+                           starting with approximate values. It should be greater than or equal
+                           to 0 and less than 0.5 . [default: 0.0]
+         --threads, -@
+                           Number of threads [default: 4]
+         --dumpBin, -B
+                           Dump chunks in binary format in the output dir (it will make
+                           later runs faster by skipping chunk creation part if using the
+                           same bin file) [default: disabled]
+         --accelerate, -s
+                           Run EM in accelerated mode. Each iteration will run 3 rounds
+                           of EM internally so each iteration will take longer in the
+                           acceleration mode but it will have a boosted update for
+                           parameters. The whole run should converge faster
+                           [default: disabled]
+         --minimumLengths, -M
+                           Comma-delimited list of minimum lengths for converting
+                           non-Hap short blocks into Hap blocks. Given numbers should be
+                           related to states Err, Dup and Col respectively.
+                           [default: '0,0,0']
+
+
+bash run.test.sh /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa /CDATA/pangenome/flagger_test/test/ref /CDATA/pangenome/flagger_test/test/flagger_output KPPD019
+
+
+
+
+bash run.reftohap.test.sh /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa /CDATA/pangenome/flagger_test/test/ref /CDATA/pangenome/flagger_test/test/flagger_output KPPD019
+
+
+bash run.sh \
+   /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa \
+   /CDATA/pangenome/flagger_test/test/KPPD019.raw.hifi.fastq.gz \
+   /CDATA/pangenome/flagger_test/test/ref \
+   /CDATA/pangenome/flagger_test/test/flagger_output \
+   KPPD019_kmer
+
+
+bash run.v2.onlyhsat.sh \
+   /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa \
+   /CDATA/pangenome/flagger_test/test/ref \
+   /CDATA/pangenome/flagger_test/test/flagger_output \
+   KPPD019
+
+
+
+bash run.onlyhmm.sh\
+   /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa \
+   /CDATA/pangenome/flagger_test/KPPD019.raw.hifi.fastq.gz \
+   /CDATA/pangenome/flagger_test/test/ref \
+   /CDATA/pangenome/flagger_test/test/flagger_output \
+   KPPD019
+
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+
+bash run.arab.pipe.test.sh \
+   /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa \
+   /CDATA/pangenome/flagger_test/KPPD019.raw.hifi.fastq.gz \
+   /CDATA/pangenome/flagger_test/KPPD019.1.fa \
+   /CDATA/pangenome/flagger_test/KPPD019.2.fa \
+   /CDATA/pangenome/flagger_test/test/ref \
+   /CDATA/pangenome/flagger_test/test/flagger_output \
+   KPPD019
+
+
+
+awk '
+BEGIN {
+    OFS="\t"
+}
+{
+    len = $3 - $2
+    type = $4
+    sum[type] += len
+    total += len
+}
+END {
+    printf "Type\tLength(bp)\tPercent(%%)\n"
+    for (t in sum) {
+        printf "%s\t%d\t%.4f\n", t, sum[t], (sum[t]/total)*100
+    }
+}' input.bed

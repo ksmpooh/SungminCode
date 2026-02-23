@@ -1,0 +1,294 @@
+ls *bed | xargs -I {} -P 40 bash -c "sed 's/#1#/\_/g' {} | sed 's/#2#/\_/g' > contig_change/{}"
+
+
+#Usage: python run.py [flagger input] [liftoff.h1.input] [liftoff.h2.input] [output]
+seq 1 132 | awk '{printf "KPPD%03d\n", $1}' | xargs -I {} -P 40 bash -c "python run.2.py /CDATA/pangenome/flagger_test/03.result/contig_change/{}.winnowmap.sorted.corrected.downsample_1.0.hmm_flagger_prediction.bed /ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/with_flagger/{}.liffoff_with_flaggerregion.txt"
+
+
+/ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished
+/ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished
+
+cd /ADATA/pangenome/liftoff/with_flagger
+
+# merge
+awk '$5=="gene"{print $0}' *txt | grep -E "gene_type=protein_coding" | grep Hap > merge.with_flagger.gene_protein_coding.Hap.txt
+
+awk '$5=="gene"{print $0}' KPPD*txt | grep -E "gene_type=protein_coding" > merge.with_flagger.gene_protein_coding.txt
+
+ls KPPD*.txt | xargs -n 1 -P 16 sh -c '
+  awk '\''$5=="gene"{print $0}'\'' "$0" | grep -E "gene_type=protein_coding"
+' > all_merge/merge.with_flagger.gene_protein_coding.txt
+
+
+# prop
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "Flagger","Flagger_prop","contig","gene_name","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($11, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, $2, $3, gene_name, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' merge.with_flagger.gene_protein_coding.txt \
+> merge.with_flagger.gene_protein_coding.selected.txt
+
+
+## with ghnc
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "Flagger","Flagger_prop","contig","gene_name","hgnc_id","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; hgnc_id="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($11, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "hgnc_id") hgnc_id = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, $2, $3, gene_name, hgnc_id, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' merge.with_flagger.gene_protein_coding.txt \
+> merge.with_flagger.gene_protein_coding.selected_withhgnc.txt
+
+
+
+
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "Flagger","Flagger_prop","contig","gene_name","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($11, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, $2, $3, gene_name, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' merge.with_flagger.gene_protein_coding.txt \
+> merge.with_flagger.gene_protein_coding.selected.txt
+
+
+
+
+
+
+
+
+
+
+awk -F'\t' '
+NR==1 {print; next}
+$1=="Hap"
+' merge.with_flagger.gene_protein_coding.Hap.selected.txt \
+> merge.with_flagger.gene_protein_coding.onlyHap.txt
+
+
+awk -F'\t' '
+NR==1 {print; next}
+$1 ~ /^Hap,/ 
+' merge.with_flagger.gene_protein_coding.Hap.selected.txt \
+> merge.with_flagger.gene_protein_coding.HapPlusOther.txt
+
+awk -F'\t' '
+NR==1 {print; next}
+{
+  split($2, p, ",");
+  if (p[1] + 0 >= 0.5) print;
+}
+' merge.with_flagger.gene_protein_coding.HapPlusOther.txt \
+> merge.with_flagger.gene_protein_coding.HapPlusOther.hapGE50.txt
+
+
+####
+merge.with_flagger.gene_protein_coding.Hap.selected.txt
+merge.with_flagger.gene_protein_coding.HapPlusOther.hapGE50.txt 
+merge.with_flagger.gene_protein_coding.onlyHap.txt
+merge.with_flagger.gene_protein_coding.HapPlusOther.txt
+
+awk 'NR==1{print; next} FNR>1{print}' \
+  merge.with_flagger.gene_protein_coding.onlyHap.txt \
+  merge.with_flagger.gene_protein_coding.HapPlusOther.hapGE50.txt \
+> merge.with_flagger.gene_protein_coding.onlyHap.HapPlusOther.hapGE50.merged.txt
+
+awk 'NR==1{print; next} FNR>1{print}' \
+  merge.with_flagger.gene_protein_coding.onlyHap.txt \
+  merge.with_flagger.gene_protein_coding.HapPlusOther.txt \
+> merge.with_flagger.gene_protein_coding.onlyHap.HapPlusOther.merged.txt
+
+bash run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.onlyHap.txt
+bash run.v2.for.kppd.sh
+bash run.v2.for.kppd.sh
+bash run.v2.for.kppd.sh
+
+bash run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.Hap.selected.txt combi.Hap.select.txt 36
+
+bash run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.onlyHap.txt combi.onlyHap.select.txt 36
+
+bash run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.onlyHap.HapPlusOther.hapGE50.merged.txt combi.HapPlusOther.hapGE50.select.txt 36
+bash run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.onlyHap.HapPlusOther.merged.txt combi.HapPlusOther.select.txt 36
+
+
+
+
+bash ../merge/run.v2.for.kppd.sh merge.with_flagger.gene_protein_coding.selected.txt combi.all_merge.txt 72
+
+
+## CPC
+cd /CDATA/pangenome/liftoff/merge/CPC
+
+zcat HIFI*gz | awk '$3=="gene"{print $0}' | grep -E "gene_type=protein_coding" > CPC.merge.with_flagger.gene_protein_coding.txt
+
+zcat *gz | awk '$3=="gene"{print $0}' | grep -E "gene_type=protein_coding" > CPC.all.merge.with_flagger.gene_protein_coding.txt
+
+
+
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "contig","gene_name","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($9, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, gene_name, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' CPC.merge.with_flagger.gene_protein_coding.txt  > CPC.merge.with_flagger.gene_protein_coding.select.txt
+
+
+## with hgnc_id
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "contig","gene_name","hgnc_id","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; hgnc_id="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($9, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "hgnc_id") hgnc_id = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, gene_name, hgnc_id, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' CPC.all.merge.with_flagger.gene_protein_coding.txt \
+> CPC.all.merge.with_flagger.gene_protein_coding.selected_withhgnc.txt
+
+
+
+python3 all.run.py -o CPC.all.merge.with_flagger.gene_protein_coding.txt --jobs 32
+
+
+
+
+
+
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "contig","gene_name","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($9, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, gene_name, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' CPC.all.merge.with_flagger.gene_protein_coding.txt  > CPC.all.merge.with_flagger.gene_protein_coding.select.txt
+
+
+bash run.sh CPC.merge.with_flagger.gene_protein_coding.select.txt cpc_condition_grid.summary.tsv
+
+bash run.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt cpc_all_condition_grid.summary.tsv 36
+
+
+bash run.v2.sh CPC.merge.with_flagger.gene_protein_coding.select.txt cpc_condition_grid.summary.tsv 36
+
+bash run.v2.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt cpc_all_condition_grid.summary.tsv 36
+
+bash run.v3.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt cpc_all_condition_grid.summary.v3.tsv 36
+
+bash run.v3.sh \
+  CPC.all.merge.with_flagger.gene_protein_coding.select.txt \
+  cpc_all_v3.condition_grid.summary.sampleID.tsv \
+  36
+
+bash run.gene.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt GAGE12B
+
+bash run.gene.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt GAGE12B 1 1 1 0 1
+
+bash run.gene.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt GAGE12B gage12b.grid.tsv
+
+bash run.v4.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt genes.head.txt cpc_head_counts.tsv

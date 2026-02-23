@@ -1,0 +1,1098 @@
+python3 python/perfect_repeat_finder.py \
+  --min-span 9 \
+  --min-repeats 3 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --interval chr1:1-10000000 \
+  --show-progress-bar \
+  /path/to/hg38.fa
+
+
+python3 /BDATA/smkim/TOOLs/tandem-repeat-catalog/colab-repeat-finder/perfect_repeat_finder.py \
+  --min-span 9 \
+  --min-repeats 3 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --interval KPPD019_h1tg000601l:1-500000 \
+  --show-progress-bar KPPD019.1.fa
+
+
+python3 /BDATA/smkim/TOOLs/tandem-repeat-catalog/colab-repeat-finder/perfect_repeat_finder.py \
+  --min-span 9 \
+  --min-repeats 3 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --interval 0 \
+  --show-progress-bar KPPD019.1.fa
+
+
+python3 /BDATA/smkim/TOOLs/tandem-repeat-catalog/colab-repeat-finder/perfect_repeat_finder.py \
+  --min-span 9 \
+  --min-repeats 3 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --interval 0 \
+  --show-progress-bar input.assembly.fa
+
+
+
+####
+
+# 1) assembly vs GRCh38 whole-genome alignment (PAF)
+minimap2 -x asm5-c -t 32 GRCh38.fa assembly.fa > asm.paf
+ls *fa | sed 's/.fa//g' | xargs -I {} -P 8 bash -c "minimap2 -x asm5 -c -t 10 --secondary=no /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.fa > GRCh38_annotation/01.paf/{}.asm_to_GRCh38.paf"
+
+
+# 2) PAF 정렬
+sort -k6,6 -k8,8n asm.paf > asm.sorted.paf
+
+cd /ADATA/pangenome/assembly/GRCh38_annotation/01.paf
+
+ls *paf | sed 's/.paf//g' | xargs -I {} -P 16 bash -c "sort -k6,6 -k8,8n {}.paf > ../02.sorted/{}.sorted.paf"
+
+
+# 3) repeat 결과 → BED (1-based라고 가정) - 1 -> +1 로 변경
+awk 'NR>1 {start0=$2+1; print $1"\t"start0"\t"$3"\t"$1":"$2"-"$3"_"$4}' repeats.tsv > repeats.bed
+
+ls *bed | sed 's/.bed.bed//g' | xargs -I {} -P 22 bash -c "awk 'NR>1 {start0=$2-1; print $1"\t"start0"\t"$3"\t"$1":"$2"-"$3"_"$4}' {}.bed.bed > /ADATA/pangenome/assembly/GRCh38_annotation/00.new_bed.start-1/{}.start-1.bed"
+
+ls *.bed.bed | sed 's/\.bed\.bed$//' | xargs -P22 -I {} bash -c '
+  infile="{}.bed.bed"
+  outfile="/ADATA/pangenome/assembly/GRCh38_annotation/00.new_bed.start_plus1/{}.start_plus1.bed"
+  awk '\''NR>1 {
+      if (NF < 4) next
+      start0 = $2 + 1
+      if (start0 < 0) start0 = 0
+      #printf("%s\t%d\t%s\t%s:%s-%s_%s\n", $1, start0, $3, $1, $2, $3, $4)
+      #printf("%s\t%d\t%s\t%s\n", $1, start0, $3, $1, $4)
+      printf("%s\t%d\t%s\t%s\n", $1, start0, $3, $4)
+  }'\'' "$infile" > "$outfile"
+'
+
+# 4) liftover
+paftools.js liftover asm.sorted.paf repeats.bed > repeats.GRCh38.bed
+
+/ADATA/pangenome/assembly/GRCh38_annotation/03.liftover
+
+/ADATA/pangenome/assembly/GRCh38_annotation/00.new_bed.start-1/KPPD124.1.repeat_finder.start-1.bed
+
+
+/ADATA/pangenome/assembly/GRCh38_annotation/02.sorted/KPPD124.2.asm_to_GRCh38.sorted.paf
+
+
+seq -w 1 132 | awk '{print "KPPD"$1".1\nKPPD"$1".2"}' | xargs -I {} -P 32 bash -c "paftools.js liftover /ADATA/pangenome/assembly/GRCh38_annotation/02.sorted/{}.asm_to_GRCh38.sorted.paf /ADATA/pangenome/assembly/GRCh38_annotation/00.new_bed.start-1/{}.repeat_finder.start-1.bed > {}.liftover.GRCh38.bed"
+
++1
+seq -w 1 132 | awk '{print "KPPD"$1".1\nKPPD"$1".2"}' | xargs -I {} -P 64 bash -c "paftools.js liftover /ADATA/pangenome/assembly/GRCh38_annotation/02.sorted/{}.asm_to_GRCh38.sorted.paf /ADATA/pangenome/assembly/GRCh38_annotation/00.new_bed.start_plus1/{}.repeat_finder.start_plus1.bed > {}.liftover.GRCh38.bed"
+
+
+
+
+########
+
+
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+
+cd /ADATA/pangenome/assembly/
+ls *fa
+
+ls *fa | sed 's/.fa//g' | xargs -I {} -P 4 bash -c 
+
+ls *fa | sed 's/.fa//g' | head -n 1 | xargs -I {} -P 4 bash -c "minimap2 -x asm5 -c -t 64 --secondary=no /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.fa > GRCh38_annotation/{}.asm_to_GRCh38.paf"
+minimap2 -x asm5 -c -t 64 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.fa > GRCh38_annotation/{}.asm_to_GRCh38.paf
+minimap2 -x asm20 -c
+
+cd GRCh38_annotation
+sort -k6,6 -k8,8n KPPD001.1.asm_to_GRCh38.paf > KPPD001.1.asm_to_GRCh38.sorted.paf
+
+paftools.js liftover KPPD001.1.asm_to_GRCh38.sorted.paf KPPD001.1.repeat_finder.bed.bed > repeats.GRCh38.bed
+
+
+samtools faidx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta chr1:535274-535283
+grep KPPD001_h1tg000246l KPPD001.1.repeat_finder.bed.bed | grep 886464
+chr1	535274	535283	KPPD001_h1tg000246l_886455_886464	0	-
+
+
+paftools.js liftover KPPD001.1.T2TCHM13_align.paf KPPD001.1.repeat_finder.bed.bed > repeats.T2T.bed
+
+
+ls *fa | sed 's/.fa//g' | head -n 1 | xargs -I {} -P 4 bash -c "minimap2 -x asm5 -c -t 64 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta {}.fa > GRCh38_annotation/{}.asm_to_GRCh38.all.paf"
+
+cd GRCh38_annotation
+sort -k6,6 -k8,8n KPPD001.1.asm_to_GRCh38.all.paf > KPPD001.1.asm_to_GRCh38.all.sorted.paf
+
+paftools.js liftover KPPD001.1.asm_to_GRCh38.all.sorted.paf KPPD001.1.repeat_finder.bed.bed > repeats.GRCh38.all.bed
+
+KPPD001_h1tg000246l
+KPPD001_h1tg000246l_889287_889296
+
+t2t :   chr9	150506527	150506536
+grch38: chr9	138243618	138243627
+
+samtools faidx ../KPPD001.1.fa KPPD001_h1tg000246l:886455-886464
+
+samtools faidx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta chr1:532449-532458
+
+grep KPPD001_h1tg000246l *bed | grep 889296
+grep KPPD001_h1tg000246l_889287_889296 *bed
+samtools faidx /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa chr1:200809-200818
+samtools faidx /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa chr9:150506527-150506536
+samtools faidx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta chr9:138243618-138243627
+
+samtools faidx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta chr10:100001400-100001411
+
+
+cat *bed | awk '{print $1,$2,$3}' | sort | uniq -c > ../merge.sort.GRCh38.uniq.bed
+
+
+
+
+### 다시 찾기
+cd /ADATA/pangenome/assembly/GRCh38_annotation/04.QC 
+sort -k2,2 -k3,3n merge.sort.GRCh38.uniq.bed > merge.sort.GRCh38.uniq.sorted.bed
+
+
+python cluster_tr.py \
+  --tol 3 \
+  merge.sort.GRCh38.uniq.sorted.bed > merge.TRcluster.GRCh38.tol3.bed
+
+./annotate_tr_with_motif.py \
+  -i merge.TRcluster.GRCh38.tol3.bed \
+  -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  -o merge.TRcluster.GRCh38.tol3.with_motif.bed \
+  -p 32 \
+  --min-motif-size 2 \
+  --max-motif-size 6
+
+
+
+
+python3 cluster_tr_with_top_interval.py \
+  merge.sort.GRCh38.uniq.sorted.bed \
+  --tol 3 > merge.TRcluster.GRCh38.tol3.with_top.bed
+
+
+chmod +x compare_cluster_top_tr.py
+
+./compare_cluster_top_tr.py \
+  -i merge.TRcluster.GRCh38.tol3.with_top.bed \
+  -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  -o merge.TRcluster.GRCh38.tol3.with_top.motif_comp.bed \
+  -p 64 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --min-repeats 3
+
+
+output 파일은 4개를 만들것이다.
+우선 1~3 colmn과 4~6이 같은거 중에서 purity score가 1인거 파일 하나
+두번째는 우선 1~3 colmn과 4~6가 다른데 purity score가 1인거
+1~3 colmn과 4~6이 같은거 purity score가 1이 아닌가
+그리고 나머지 파일 하나
+
+
+
+awk '{
+  same = ($1==$5 && $2==$6 && $3==$7)
+  # 부동소수점 오차 방지하고 싶으면 0.999/1.001 같은 범위 써도 됨
+  pur1 = ($14 == 1.000)
+
+  if (same && pur1) {
+    # 1) 위치 동일 + purity 1
+    print > "TRcatalog.samePos.purity1.bed"
+  } else if (!same && pur1) {
+    # 2) 위치 다름 + purity 1
+    print > "TRcatalog.diffPos.purity1.bed"
+  } else if (same && !pur1) {
+    # 3) 위치 동일 + purity 1이 아님
+    print > "TRcatalog.samePos.purityNot1.bed"
+  } else {
+    # 4) 나머지
+    print > "TRcatalog.others.bed"
+  }
+}' merge.TRcluster.GRCh38.tol3.with_top.motif_comp.bed
+
+
+
+chmod +x refine_tr_coords_from_seq.py
+
+# 3) samePos.purityNot1
+./refine_tr_coords_from_seq.py \
+  -i TRcatalog.samePos.purityNot1.bed \
+  -o TRcatalog.samePos.purityNot1.refined.bed \
+  -p 16 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --min-repeats 3
+
+# 4) others
+./refine_tr_coords_from_seq.py \
+  -i TRcatalog.others.bed \
+  -o TRcatalog.others.refined.bed \
+  -p 64 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --min-repeats 3
+
+
+
+chmod +x refine_tr_with_colab_style.py
+
+./refine_tr_with_colab_style.py \
+  -i merge.TRcluster.GRCh38.tol3.with_top.motif_comp.bed \
+  -o merge.TRcluster.GRCh38.tol3.with_top.colabRefined.bed \
+  -p 64 \
+  --min-motif-size 2 \
+  --max-motif-size 6 \
+  --min-repeats 3
+
+
+mkdir -p pre_TRcatalog
+
+awk '{
+  pur_old = $14 + 0;   # 기존 purity
+  pur_new = $20 + 0;   # new purity
+
+  if (pur_old == 1 && pur_new == 1) {
+    # 1) 14번, 20번 둘 다 1
+    print > "pre_TRcatalog/TRcatalog.old1_new1.bed"
+  } else if (pur_old != 1 && pur_new == 1) {
+    # 2) 20번만 1이고, 14번은 1이 아님
+    print > "pre_TRcatalog/TRcatalog.oldNot1_new1.bed"
+  } else {
+    # 3) 나머지
+    print > "pre_TRcatalog/TRcatalog.others.bed"
+  }
+}' merge.TRcluster.GRCh38.tol3.with_top.colabRefined.bed
+
+
+
+
+
+###
+TR_IN="TRcatalog.old1_new1.after15.bed"
+
+# DB 경로 (절대경로)
+DB_SUPERDUP="/ADATA/pangenome/assembly/GRCh38_annotation/99.db/db_merged/SuperDup_SimpleRepeat.merged.bed"
+DB_REPEAT_V1="/BDATA/smkim/TOOLs/tandem-repeat-catalog/db/repeat_catalog_v1.hg38.1_to_1000bp_motifs.bed.gz"
+DB_TRGT_V1="/BDATA/smkim/TOOLs/tandem-repeat-catalog/db/variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed.gz"
+
+echo "[1] repeat_catalog_v1 bed3 만들기..."
+zcat "${DB_REPEAT_V1}" \
+  | cut -f1-3 \
+  > repeat_catalog_v1.hg38.1_to_1000bp_motifs.bed3
+
+echo "[2] TRGT v1 bed3 만들기..."
+zcat "${DB_TRGT_V1}" \
+  | cut -f1-3 \
+  > variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed3
+
+echo "[3] SuperDup+SimpleRepeat와 80% 이상 겹치는 TR (원본 라인 그대로) 추출..."
+bedtools intersect \
+  -a "${TR_IN}" \
+  -b "${DB_SUPERDUP}" \
+  -f 0.8 -u \
+  > removed.by.superdup.raw.bed
+
+echo "[4] 그 중에서 repeat_catalog_v1에 없는 것만 제거 대상 (SuperDup 기준)..."
+bedtools intersect \
+  -a removed.by.superdup.raw.bed \
+  -b repeat_catalog_v1.hg38.1_to_1000bp_motifs.bed3 \
+  -v \
+  > removed.by.SuperDupMask.bed
+# → SuperDup/SimpleRepeat에 80% 이상 걸리면서, 기존 repeat_catalog_v1에는 없는 TR
+
+echo "[5] TRGT v1에 의해 제거될 TR 추출..."
+bedtools intersect \
+  -a "${TR_IN}" \
+  -b variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed3 \
+  -u \
+  > removed.by.TRGTv1.bed
+# → variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed.gz와 겹치는 TR
+
+echo "[6] 두 조건 중 하나라도 걸린 TR 전체(중복 제거 후) 합치기..."
+cat removed.by.SuperDupMask.bed removed.by.TRGTv1.bed \
+  | sort | uniq \
+  > removed.by.anyDB.bed
+
+echo "[7] 최종 필터링: 위에서 표시된 TR들을 모두 제거한 최종 TR 카탈로그 생성..."
+bedtools intersect \
+  -a "${TR_IN}" \
+  -b removed.by.anyDB.bed \
+  -v \
+  > TRcatalog.old1_new1.filtered.final.bed
+
+echo "[8] (옵션) 실제 제거된 TR만 따로 보고 싶으면 이미 만들어진 removed.by.anyDB.bed 사용."
+echo "     - SuperDup+SimpleRepeat 영향만: removed.by.SuperDupMask.bed"
+echo "     - TRGT v1 영향만:              removed.by.TRGTv1.bed"
+echo "     - 두 DB 중 하나라도 걸린 전체:  removed.by.anyDB.bed"
+
+echo "[9] 중간 파일 정리하고 싶으면:"
+echo "rm removed.by.superdup.raw.bed repeat_catalog_v1.hg38.1_to_1000bp_motifs.bed3 variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed3"
+
+
+###
+USCS DB
+genomicSuperDups.txt.gz
+simpleRepeat.txt.gz
+
+
+TR catalog : https://github.com/broadinstitute/trexplorer-catalog/releases/tag/v1.0
+repeat_catalog_v1.hg38.1_to_1000bp_motifs.bed.gz
+variation_clusters_and_isolated_TRs_v1.hg38.TRGT.bed.gz
+
+
+
+#paftools.js call -f ref.fa hap1.ref.paf > hap1.paf.vcf
+
+cd /ADATA/pangenome/assembly/GRCh38_annotation/01.paf/test
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+
+minimap2 -x asm5 -t 32 ref.fa hap1.fa > hap1.ref.paf
+
+minimap2 -x asm5 -t 64 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /ADATA/pangenome/assembly/KPPD041.1.fa > hap1.ref.paf
+
+minimap2 -x asm5 -t 64 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /ADATA/pangenome/assembly/KPPD041.2.fa > hap2.ref.paf
+
+minimap2 -x asm5 -t 32 ref.fa hap1.fa > hap1.ref.paf
+/ADATA/pangenome/assembly/KPPD041.1.fa
+
+
+paftools.js call -f ref.fa hap1.ref.paf > hap1.paf.vcf
+paftools.js call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta hap1.ref.paf > hap1.paf.vcf
+paftools.js call -f /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta hap2.ref.paf > hap2.paf.vcf
+
+
+
+run-dipcall -t 32 -m sample1 ref.fa hap1.fa hap2.fa
+run-dipcall -t 32 -m sample1 ref.fa hap1.fa hap2.fa
+
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall
+
+
+/ADATA/pangenome/assembly/GRCh38_annotation/01.paf/test
+
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 64 -m kppd041 /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /ADATA/pangenome/assembly/KPPD041.1.fa /ADATA/pangenome/assembly/KPPD041.2.fa
+
+
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall
+
+
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 64 -m kppd041 \
+  /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  /ADATA/pangenome/assembly/KPPD041.1.fa \
+  /ADATA/pangenome/assembly/KPPD041.2.fa \
+  > kppd041.mak
+make -j 32 -f kppd041.mak
+
+
+/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 64 -m kppd041 \
+  /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  /ADATA/pangenome/assembly/KPPD041.1.fa \
+  /ADATA/pangenome/assembly/KPPD041.2.fa \
+  | make -j 32 -f -
+
+/BDATA/smkim/TOOLs/str_tool/str-analysis
+python /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/filter_vcf_to_STR_variants.py \
+  -R /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  --allow-interruptions only-if-pure-repeats-not-found \
+  --min-str-length 9 \
+  --min-str-repeats 3 \
+  --min-repeat-unit-length 2 \
+  --max-repeat-unit-length 50 \
+  --write-bed-file \
+  --write-fasta \
+  kppd041.dip.vcf.gz
+
+
+filter_vcf_to_STR_variants -R /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  --allow-interruptions only-if-pure-repeats-not-found \
+  --min-str-length 9 \
+  --min-str-repeats 3 \
+  --min-repeat-unit-length 2 \
+  --max-repeat-unit-length 50 \
+  --write-bed-file \
+  --write-fasta \
+  kppd041.dip.vcf.gz
+
+
+
+seq -w 1 132 | awk '{print "KPPD"$1}' | xargs -I {} -P 20 bash -c "/BDATA/smkim/TOOLs/dipcall.kit/run-dipcall -t 32 -m {} \
+  /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  /ADATA/pangenome/assembly/{}.1.fa \
+  /ADATA/pangenome/assembly/{}.2.fa > {}.mak"
+
+
+
+
+ls *mak | xargs -I {} -P 2 bash -c "make -j 4 -f {}"
+
+ls *dip.vcf.gz | xargs -I {} -P 48 bash -c "filter_vcf_to_STR_variants -R /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  --allow-interruptions only-if-pure-repeats-not-found \
+  --min-str-length 9 \
+  --min-str-repeats 3 \
+  --min-repeat-unit-length 2 \
+  --max-repeat-unit-length 50 \
+  --write-bed-file \
+  --write-fasta {}"
+
+
+##### recheck
+ls KPPD001*dip.vcf.gz | xargs -I {} -P 48 bash -c "/BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/filter_vcf_to_STR_variants.py \
+-R /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  --allow-interruptions only-if-pure-repeats-not-found \
+  --min-str-length 9 \
+  --min-str-repeats 3 \
+  --min-repeat-unit-length 2 \
+  --max-repeat-unit-length 50 \
+  --write-bed-file \
+  -o test/{}.test {}"
+
+
+
+
+
+
+
+
+seq -w 1 132 | awk '{print "KPPD"$1}'  | xargs -I {} -P 60 bash -c "tabix -p vcf {}.dip.vcf.gz;bcftools view -R {}.dip.bed -Oz -o high_conf/{}.dip.highconf.vcf.gz {}.dip.vcf.gz;tabix -p vcf high_conf/{}.dip.highconf.vcf.gz"
+
+cd /CDATA/pangenome/STR/01.dipcall/high_conf
+
+ls *dip.highconf.vcf.gz | xargs -I {} -P 48 bash -c "filter_vcf_to_STR_variants -R /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
+  --allow-interruptions only-if-pure-repeats-not-found \
+  --min-str-length 9 \
+  --min-str-repeats 3 \
+  --min-repeat-unit-length 2 \
+  --max-repeat-unit-length 50 \
+  --write-bed-file \
+  --write-vcf-with-filtered-out-variants \
+  --write-fasta {}"
+
+
+
+
+
+BASE=/CDATA/pangenome/STR/downstream
+IN_DIR=/CDATA/pangenome/STR/01.dipcall/high_conf
+
+mkdir -p $BASE/01.split_tsv/ref
+mkdir -p $BASE/01.split_tsv/nonref
+mkdir -p $BASE/02.bed/ref
+mkdir -p $BASE/02.bed/nonref_anchor
+mkdir -p $BASE/03.merge
+
+
+
+
+
+ls $BASE/01.split_tsv/nonref/*.nonref.variants.tsv.gz \
+| xargs -I {} -P 48 bash -c '
+  in="{}"
+  sample=$(basename "$in" .nonref.variants.tsv.gz)
+  out="'$BASE'/02.bed/nonref_anchor/${sample}.nonref.anchor1bp.sorted.bed.gz"
+
+  zcat "$in" \
+  | awk -F"\t" '"'"'
+      BEGIN{OFS="\t"}
+      NR==1{
+        for(i=1;i<=NF;i++) h[$i]=i;
+        next
+      }
+      {
+        chr=$(h["Chrom"]);
+        s=$(h["Start1Based"]);
+        e=$(h["End1Based"]);
+
+        if(chr=="") next;
+        if(s=="" || s !~ /^[0-9]+$/) next;
+
+        # 핵심 처리
+        # Start > End (non-ref insertion locus)
+        if(e=="" || e !~ /^[0-9]+$/ || s > e){
+          s0 = s - 1;
+          if(s0 < 0) s0 = 0;
+          e0 = s0 + 1;
+        } else {
+          s0 = s - 1;
+          if(s0 < 0) s0 = 0;
+          e0 = e;
+          if(e0 <= s0) e0 = s0 + 1;
+        }
+
+        print chr, s0, e0;
+      }
+  '"'"' \
+  | bedtools sort -i - \
+  | bgzip -c > "$out" \
+  && tabix -f -p bed "$out"
+'
+
+
+
+
+
+1) (QC) 샘플별 ref/nonref 기본 통계 만들기
+
+목표: 샘플마다 결과가 정상인지, outlier 있는지 빠르게 확인.
+
+추천 지표
+	•	ref variant 개수 (행 수-1)
+	•	nonref variant 개수
+	•	motif size 분포(1–6, 7–20, 21+)
+	•	IsPureRepeat, IsMultiallelic 비율
+	•	HET_or_HOM_or_HEMI_or_MULTI 분포
+	•	반복수 변화량(NumRepeatsLong - NumRepeatsInReference 등)
+
+echo -e "Sample\tref_n\tnonref_n" > $BASE/qc_counts.tsv
+for f in $BASE/01.split_tsv/ref/*.ref.variants.tsv.gz; do
+  s=$(basename "$f" .ref.variants.tsv.gz)
+  ref_n=$(zcat "$f" | awk 'END{print NR-1}')
+  nonf="$BASE/01.split_tsv/nonref/${s}.nonref.variants.tsv.gz"
+  non_n=$(zcat "$nonf" | awk 'END{print NR-1}')
+  echo -e "${s}\t${ref_n}\t${non_n}" >> $BASE/qc_counts.tsv
+done
+
+
+
+
+
+A. REF 전용 BED 재생성 (merge_loci 입력용, 4컬럼)
+
+목표
+	•	IsFoundInReference=True 레코드만 사용
+	•	BED는 반드시 4컬럼: chrom  start0  end1  motif
+	•	motif는 CanonicalMotif(권장) 또는 Motif 사용
+	•	merge_loci.py는 4번째 컬럼을 motif로 받아 (motif)* 구조로 카탈로그 레코드를 만들어 병합합니다.
+
+BASE=/CDATA/pangenome/STR/downstream
+
+mkdir -p $BASE/02.bed/ref
+
+ls $BASE/01.split_tsv/ref/*.ref.variants.tsv.gz \
+| xargs -I {} -P 48 bash -c '
+  in="{}"
+  sample=$(basename "$in" .ref.variants.tsv.gz)
+  out="'$BASE'/02.bed/ref/${sample}.ref.sorted.bed.gz"
+
+  zcat "$in" \
+  | awk -F"\t" '"'"'
+      BEGIN{OFS="\t"}
+      NR==1{
+        for(i=1;i<=NF;i++) h[$i]=i;
+        # 필수 컬럼 체크
+        if(!h["Chrom"]||!h["Start1Based"]||!h["End1Based"]||!h["CanonicalMotif"]){
+          print "Missing required columns in header" > "/dev/stderr";
+          exit 1
+        }
+        next
+      }
+      {
+        chr=$(h["Chrom"]);
+        s=$(h["Start1Based"]);
+        e=$(h["End1Based"]);
+        motif=$(h["CanonicalMotif"]);
+
+        if(chr==""||motif=="") next;
+        if(s=="" || s !~ /^[0-9]+$/) next;
+        if(e=="" || e !~ /^[0-9]+$/) next;
+
+        s0=s-1; if(s0<0) s0=0;
+        e0=e;
+
+        # 0-length/역전 방지 (merge_loci Null interval 방지)
+        if(e0<=s0) e0=s0+1;
+
+        # motif에 탭/공백 있으면 BED 깨지므로 방어
+        gsub(/[ \t\r\n]/,"",motif);
+        if(motif=="") next;
+
+        print chr, s0, e0, motif;
+      }
+    '"'"' \
+  | bedtools sort -i - \
+  | bgzip -c > "$out" \
+  && tabix -f -p bed "$out"
+'
+
+
+mkdir -p $BASE/02.bed/nonref_anchor
+
+ls $BASE/01.split_tsv/nonref/*.nonref.variants.tsv.gz \
+| xargs -I {} -P 48 bash -c '
+  in="{}"
+  sample=$(basename "$in" .nonref.variants.tsv.gz)
+  out="'$BASE'/02.bed/nonref_anchor/${sample}.nonref.anchor1bp.sorted.bed.gz"
+
+  zcat "$in" \
+  | awk -F"\t" '"'"'
+      BEGIN{OFS="\t"}
+      NR==1{for(i=1;i<=NF;i++) h[$i]=i; next}
+      {
+        chr=$(h["Chrom"]);
+        s=$(h["Start1Based"]);
+        e=$(h["End1Based"]);
+        motif=$(h["CanonicalMotif"]);
+
+        if(chr=="") next;
+        if(s=="" || s !~ /^[0-9]+$/) next;
+
+        # insertion/nonref에서 Start>End가 자주 발생 => 1bp anchor
+        s0=s-1; if(s0<0) s0=0;
+        e0=s0+1;
+
+        gsub(/[ \t\r\n]/,"",motif);
+        if(motif=="") motif="NA";
+
+        print chr, s0, e0, motif;
+      }
+    '"'"' \
+  | bedtools sort -i - \
+  | bgzip -c > "$out" \
+  && tabix -f -p bed "$out"
+'
+
+
+
+
+for f in $BASE/01.split_tsv/nonref/*.nonref.variants.tsv.gz; do
+  s=$(basename "$f" .nonref.variants.tsv.gz)
+  n=$(zcat "$f" | tail -n +2 | wc -l)
+  echo -e "${s}\t${n}"
+done | sort -k2,2nr | head
+
+zcat $BASE/01.split_tsv/nonref/*.nonref.variants.tsv.gz \
+| awk -F"\t" 'NR==1{for(i=1;i<=NF;i++)h[$i]=i; next} {m=$(h["CanonicalMotif"]); if(m!="") cnt[m]++} END{for(m in cnt) print cnt[m], m}' \
+| sort -nr | head
+
+
+
+
+
+코드 수정
+
+sed -i 's/^\s*stats = collections\.Counter()$/    stats = collections.defaultdict(collections.Counter)/' \
+  /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/merge_loci.py
+
+sed -i 's/len(current_motifs)/len(existing_record_motifs)/g' \
+>   /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/merge_loci.py
+
+
+python3 /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/merge_loci.py \
+  -f 0.8 \
+  --overlapping-loci-action merge \
+  --output-format BED \
+  --output-prefix $BASE/03.merge/KPPD.panSTR.highconf.refonly \
+  --show-progress-bar \
+  $BASE/02.bed/ref/*.ref.sorted.bed.gz
+
+
+python3 /BDATA/smkim/TOOLs/str_tool/str-analysis/str_analysis/merge_loci.py \
+  -f 0.8 \
+  --overlapping-loci-action merge \
+  --write-merge-stats-tsv \
+  --output-format BED \
+  --output-prefix $BASE/03.merge/KPPD.panSTR.highconf.refonly \
+  --show-progress-bar \
+  $BASE/02.bed/ref/*.ref.sorted.bed.gz  
+
+KPPD.panSTR.highconf.refonly.bed.gz
+chrom   start0   end1    motif   value(NumRepeatsInReference (float))
+)
+
+KPPD.panSTR.highconf.refonly.merge_stats.tsv
+Catalog 입력된 샘플 BED
+Added 최종 catalogue에 실제로 추가된 locus 수
+Total 해당 샘플이 가진 전체 ref STR 수
+exact same LocusStructure 좌표+motif 완전 동일 → 그대로 merge
+same canonical motif -> motif만 같고 구조 차이 → merge
+motif contained -> 예: AC ⊂ ACAC 관계
+
+
+
+#(1) 총 locus 수
+zcat KPPD.panSTR.highconf.refonly.bed.gz | wc -l
+
+#(2) motif별 locus 수
+zcat KPPD.panSTR.highconf.refonly.bed.gz \
+| awk '{print $4}' | sort | uniq -c | sort -nr | head
+
+
+#(3) motif 길이 분포
+zcat KPPD.panSTR.highconf.refonly.bed.gz \
+| awk '{print length($4)}' \
+| sort | uniq -c
+
+#(4) reference repeat length 분포
+zcat KPPD.panSTR.highconf.refonly.bed.gz \
+| awk '{print $5}' | sort -n | uniq -c
+
+
+### non ref
+zcat $BASE/01.split_tsv/nonref/*.nonref.variants.tsv.gz \
+| awk 'NR==1 || FNR>1' \
+| bgzip -c > $BASE/all_samples.nonref.variants.tsv.gz
+tabix -s 1 -b 2 -e 3 $BASE/all_samples.nonref.variants.tsv.gz 2>/dev/null || true
+
+
+python3 - << 'PY' "$BASE/all_samples.nonref.variants.tsv.gz" 5 > $BASE/nonref.hotspots.bin5.tsv
+import gzip, sys
+from collections import defaultdict
+
+tsv_gz = sys.argv[1]
+bin_size = int(sys.argv[2])
+
+def to_int(x):
+    try: return int(x)
+    except: return None
+
+samples = defaultdict(set)
+rep = {}
+
+bad = 0
+total = 0
+
+with gzip.open(tsv_gz, "rt") as f:
+    header = f.readline().rstrip("\n").split("\t")
+    idx = {k:i for i,k in enumerate(header)}
+    ncol = len(header)
+
+    required = ["Chrom","Start1Based","End1Based","VcfPos","CanonicalMotif","Motif","SampleId","SummaryString"]
+    missing = [k for k in required if k not in idx]
+    if missing:
+        raise SystemExit(f"Missing columns: {missing}\nAvailable: {header}")
+
+    for line_no, line in enumerate(f, start=2):
+        total += 1
+        t = line.rstrip("\n").split("\t")
+
+        # 핵심: 컬럼 수 부족 방어
+        if len(t) < ncol:
+            bad += 1
+            continue
+
+        chrom = t[idx["Chrom"]].strip()
+        sid   = t[idx["SampleId"]].strip()
+        if not chrom or not sid:
+            continue
+
+        s = to_int(t[idx["Start1Based"]])
+        v = to_int(t[idx["VcfPos"]])
+
+        # nonref에서 anchor는 Start1Based 우선, 없으면 VcfPos
+        anchor = s if s is not None else v
+        if anchor is None or anchor < 1:
+            continue
+
+        if bin_size > 1:
+            anchor = (anchor // bin_size) * bin_size
+
+        cmotif = t[idx["CanonicalMotif"]].strip()
+        motif  = t[idx["Motif"]].strip()
+        m = cmotif if cmotif else motif
+        if not m:
+            continue
+
+        key = (chrom, anchor, m)
+        samples[key].add(sid)
+        if key not in rep:
+            rep[key] = t[idx["SummaryString"]].strip()
+
+# 출력
+print("\t".join(["Chrom","Anchor1Based","CanonicalMotif","NSamples","ExampleSummary"]))
+for (chrom, anchor, m), sset in sorted(samples.items(),
+                                      key=lambda kv: (-len(kv[1]), kv[0][0], kv[0][1], kv[0][2])):
+    print("\t".join([chrom, str(anchor), m, str(len(sset)), rep[(chrom, anchor, m)]]))
+
+# stderr 리포트
+print(f"[INFO] total_lines={total} bad_short_lines={bad}", file=sys.stderr)
+PY
+
+
+###
+1) 생성된 파일 설명
+
+A. all_samples.nonref.variants.clean.tsv.gz
+	•	무엇: 모든 샘플의 IsFoundInReference=False 레코드를 한 파일로 병합한 “클린 버전” TSV (헤더 기준 컬럼 수가 맞는 라인만 보존).
+	•	왜: 원본 병합 파일(all_samples.nonref.variants.tsv.gz)에는 컬럼이 부족한 라인(NF mismatch) 이 섞여 있어서 파이썬 후속분석이 깨졌고, 이를 제거해 안정적으로 처리하기 위함.
+	•	용도
+	•	non-ref 이벤트의 원천 데이터 마스터 테이블
+	•	샘플별 burden(건수), 모티프별 분포, 특정 hotspot의 샘플 리스트 추출 등에 사용
+
+B. nonref.hotspots.bin5.tsv.gz
+	•	무엇: non-ref 이벤트를 (Chrom, Anchor(5bp bin), CanonicalMotif) 기준으로 묶어서 몇 개 샘플에서 반복 관측되는지(NSamples) 를 계산한 “핫스팟 요약 테이블”.
+	•	왜: non-ref insertion은 start/end가 뒤집히는 등 좌표 표현이 불안정해서, anchor 기반(그리고 binning) 으로 “같은 자리에서 반복되는 이벤트”를 잡아내기 좋습니다.
+	•	용도
+	•	non-ref hotspot 랭킹/우선순위
+	•	흔히 반복되는 오류/아티팩트 자리(전 샘플에서 뜨는 자리) 파악
+	•	후보 hotspot을 IGV로 확인하기 위한 입력(→ 아래 BED)
+
+C. nonref.hotspots.topNS10.bed.gz
+	•	무엇: nonref.hotspots.bin5.tsv.gz에서 NSamples ≥ 10 같은 기준으로 상위 hotspot만 골라 만든 1bp anchor BED.
+	•	용도
+	•	IGV/JBrowse 등에서 “non-ref hotspot 위치”를 트랙으로 로딩해서 빠르게 확인
+	•	특정 hotspot 주변 정렬/assembly/VcfAlt 서열 확인
+
+⸻
+
+2) nonref.hotspots.bin5.tsv.gz 컬럼 설명
+
+zcat nonref.hotspots.bin5.tsv.gz | head 헤더:
+
+Chrom    Anchor1Based    CanonicalMotif    NSamples    ExampleSummary
+
+각 컬럼 의미는 아래와 같습니다.
+
+Chrom
+	•	해당 non-ref hotspot이 관측된 염색체 (예: chr10)
+
+Anchor1Based
+	•	hotspot의 대표 위치(1-based) 입니다.
+	•	원래 nonref에서는 Start1Based > End1Based 형태가 흔하므로, 이벤트를 “좌표 구간”이 아니라 anchor(기준점) 으로 대표시키는 전략을 쓴 것입니다.
+	•	여기서는 추가로 binning(예: 5bp bin) 을 적용했기 때문에,
+	•	Anchor1Based = (anchor // 5) * 5 형태로 5bp 단위로 내림된 값입니다.
+	•	즉, 실제 이벤트가 1–4bp 정도 흔들려도 같은 bin으로 묶이게 됩니다.
+
+CanonicalMotif
+	•	이벤트에서 추출된 반복 모티프를 canonicalized(회전/표준화) 한 값입니다.
+	•	샘플마다 ATATAT vs TATATA 같은 표기가 달라도 같은 반복 단위로 묶이도록 하기 위한 키입니다.
+	•	non-ref 정리에서 가장 중요한 grouping 키 중 하나입니다.
+
+NSamples
+	•	해당 (Chrom, AnchorBin, CanonicalMotif) 조합이 관측된 샘플 수입니다.
+	•	예: 132면 132개 샘플 모두에서 해당 hotspot이 관측된 것.
+	•	이런 경우는 (1) 진짜 공통 non-ref motif일 수도 있지만,
+	•	경험적으로는 (2) 특정 반복/저복잡도 영역에서 dipcall/정렬/표현 방식 때문에 반복적으로 생기는 시스템성 이벤트(아티팩트/표현 문제)일 가능성도 높아 우선 점검 대상입니다.
+
+ExampleSummary
+	•	그 hotspot 그룹에서 대표로 하나 저장해둔 SummaryString 예시입니다.
+	•	포맷 예: 4bp:GGAT:INS:0=>3:HOM:pure
+	•	“대충 어떤 타입의 이벤트인지(INS/DEL, repeats 변화량, genotype, pure 여부)”를 사람이 빠르게 스캔하기 위한 참고용 요약 문자열입니다.
+	•	주의: 예시 1개라서, 해당 hotspot의 모든 샘플이 정확히 같은 summary를 가진다고 보장하진 않습니다.
+
+  ##
+  all_samples.nonref.variants.clean.tsv.gz에서 **각 hotspot별로 “샘플 리스트”, “VcfAlt 길이/반복수 분포”, “pure/not-pure 비율”**까지 뽑는 요약 스크립트(그리고 QC 리포트 형태)도 같이 정리해드리겠습니다.
+
+
+  BASE=/CDATA/pangenome/STR/downstream
+IN=$BASE/all_samples.nonref.variants.clean.tsv.gz
+
+OUTDIR=$BASE/qc_nonref_hotspots
+mkdir -p $OUTDIR
+
+# 설정
+BIN=5          # hotspot anchor bin size (bp)
+TOP_SAMPLES=100  # 샘플 리스트를 저장할 hotspot 상위 개수(=NSamples 기준)
+
+python3 - << 'PY' "$IN" "$OUTDIR" "$BIN" "$TOP_SAMPLES" 2> "$OUTDIR/run.log"
+import gzip, sys, math
+from collections import defaultdict, Counter
+
+tsv_gz   = sys.argv[1]
+outdir   = sys.argv[2]
+bin_size = int(sys.argv[3])
+topN     = int(sys.argv[4])
+
+def to_int(x):
+    try:
+        return int(x)
+    except:
+        return None
+
+def safe_len(s):
+    return len(s) if s is not None else 0
+
+# hotspot key = (Chrom, AnchorBin1Based, CanonicalMotif)
+samples = defaultdict(set)
+
+# QC accumulators per hotspot
+cnt_total = Counter()
+cnt_pure  = Counter()     # IsPureRepeat==True
+cnt_notpure = Counter()   # IsPureRepeat==False
+
+alt_len_hist = defaultdict(Counter)    # per hotspot: alt_len -> count
+rep_long_hist = defaultdict(Counter)   # per hotspot: NumRepeatsLongAllele -> count (int로 떨어질 때만)
+
+example = {}  # per hotspot representative SummaryString
+
+total_lines = 0
+short_lines = 0
+
+with gzip.open(tsv_gz, "rt") as f:
+    header = f.readline().rstrip("\n").split("\t")
+    idx = {k:i for i,k in enumerate(header)}
+    ncol = len(header)
+
+    required = ["Chrom","Start1Based","End1Based","VcfPos","CanonicalMotif","Motif",
+                "SampleId","SummaryString","IsPureRepeat","VcfAlt","NumRepeatsLongAllele"]
+    missing = [k for k in required if k not in idx]
+    if missing:
+        raise SystemExit(f"Missing columns: {missing}\nAvailable: {header}")
+
+    for line_no, line in enumerate(f, start=2):
+        total_lines += 1
+        t = line.rstrip("\n").split("\t")
+        if len(t) < ncol:
+            short_lines += 1
+            continue
+
+        chrom = t[idx["Chrom"]].strip()
+        sid   = t[idx["SampleId"]].strip()
+        if not chrom or not sid:
+            continue
+
+        s = to_int(t[idx["Start1Based"]])
+        v = to_int(t[idx["VcfPos"]])
+
+        # nonref: Start>End 흔함. anchor는 Start1Based 우선, 없으면 VcfPos
+        anchor = s if s is not None else v
+        if anchor is None or anchor < 1:
+            continue
+
+        if bin_size > 1:
+            anchor = (anchor // bin_size) * bin_size
+
+        cmotif = t[idx["CanonicalMotif"]].strip()
+        motif  = t[idx["Motif"]].strip()
+        m = cmotif if cmotif else motif
+        if not m:
+            continue
+
+        key = (chrom, anchor, m)
+        samples[key].add(sid)
+        cnt_total[key] += 1
+
+        # pure / not-pure
+        pure = t[idx["IsPureRepeat"]].strip()
+        if pure == "True":
+            cnt_pure[key] += 1
+        elif pure == "False":
+            cnt_notpure[key] += 1
+
+        # VcfAlt length histogram (comma-separated ALT 가능)
+        alt = t[idx["VcfAlt"]].strip()
+        if alt:
+            # ALT가 "A,C" 같은 multi-allelic 형태일 수 있어 분리 후 최대 길이를 대표로 사용(보수적)
+            alts = alt.split(",")
+            alt_l = max(len(a) for a in alts if a)
+            alt_len_hist[key][alt_l] += 1
+
+        # repeat count (NumRepeatsLongAllele): float로도 올 수 있어 int로 깔끔히 떨어질 때만 사용
+        rl_raw = t[idx["NumRepeatsLongAllele"]].strip()
+        rl = None
+        if rl_raw:
+            try:
+                # 3, 3.0, 3.5 등 가능 → 정수면 사용
+                val = float(rl_raw)
+                if abs(val - round(val)) < 1e-9:
+                    rl = int(round(val))
+            except:
+                rl = None
+        if rl is not None:
+            rep_long_hist[key][rl] += 1
+
+        if key not in example:
+            example[key] = t[idx["SummaryString"]].strip()
+
+# helper: counter -> compact string
+def top_k(counter, k=8):
+    if not counter:
+        return ""
+    items = sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
+    return ",".join([f"{a}:{c}" for a,c in items])
+
+# build summary rows sorted by NSamples desc
+rows = []
+for key, sset in samples.items():
+    chrom, anchor, m = key
+    ns = len(sset)
+    tot = cnt_total[key]
+    pure_n = cnt_pure[key]
+    notpure_n = cnt_notpure[key]
+    pure_rate = (pure_n / tot) if tot else 0.0
+
+    # distribution summaries (top bins)
+    alt_hist_str = top_k(alt_len_hist[key], k=8)
+    rep_hist_str = top_k(rep_long_hist[key], k=8)
+
+    rows.append(( -ns, chrom, anchor, m,
+                  ns, tot, pure_n, notpure_n, pure_rate,
+                  alt_hist_str, rep_hist_str, example.get(key,"") ))
+
+rows.sort()
+
+# write summary
+out_sum = f"{outdir}/hotspot_summary.bin{bin_size}.tsv.gz"
+with gzip.open(out_sum, "wt") as w:
+    w.write("\t".join([
+        "Chrom","Anchor1BasedBin","CanonicalMotif",
+        "NSamples","NRecords",
+        "NPure","NNotPure","PureRate",
+        "AltLenHistTop","NumRepeatsLongHistTop",
+        "ExampleSummary"
+    ]) + "\n")
+    for r in rows:
+        _, chrom, anchor, m, ns, tot, pure_n, notpure_n, pure_rate, alt_hist, rep_hist, ex = r
+        w.write("\t".join([
+            chrom, str(anchor), m,
+            str(ns), str(tot),
+            str(pure_n), str(notpure_n), f"{pure_rate:.4f}",
+            alt_hist, rep_hist, ex
+        ]) + "\n")
+
+# write top100 convenience file
+out_top = f"{outdir}/hotspot_summary.bin{bin_size}.top100.tsv.gz"
+with gzip.open(out_top, "wt") as w:
+    with gzip.open(out_sum, "rt") as r:
+        for i, line in enumerate(r):
+            w.write(line)
+            if i >= 100:  # header + 100 lines
+                break
+
+# write samples list for topN hotspots
+out_samp = f"{outdir}/hotspot_samples.top{topN}.tsv.gz"
+with gzip.open(out_samp, "wt") as w:
+    w.write("\t".join(["Chrom","Anchor1BasedBin","CanonicalMotif","NSamples","SampleIds"]) + "\n")
+    for i, r in enumerate(rows[:topN]):
+        _, chrom, anchor, m, ns, *_ = r
+        sids = sorted(samples[(chrom, anchor, m)])
+        w.write("\t".join([chrom, str(anchor), m, str(ns), ",".join(sids)]) + "\n")
+
+print(f"[INFO] total_lines={total_lines} short_lines_skipped={short_lines}", file=sys.stderr)
+print(f"[INFO] wrote: {out_sum}", file=sys.stderr)
+print(f"[INFO] wrote: {out_top}", file=sys.stderr)
+print(f"[INFO] wrote: {out_samp}", file=sys.stderr)
+PY
+
+ls -lh $OUTDIR
+
+
+##
+# hotspot 요약 상위 20개
+zcat $BASE/qc_nonref_hotspots/hotspot_summary.bin5.tsv.gz | head -n 21
+
+# pure rate 낮은(= not-pure 많음) hotspot 상위
+zcat $BASE/qc_nonref_hotspots/hotspot_summary.bin5.tsv.gz \
+| awk -F'\t' 'NR==1 || $8 < 0.5' | head
+
+# 특정 motif만 보기 (예: AAAT)
+zcat $BASE/qc_nonref_hotspots/hotspot_summary.bin5.tsv.gz | awk -F'\t' 'NR==1 || $3=="AAAT"' | head
+
+# 상위 hotspot의 샘플 리스트 확인
+zcat $BASE/qc_nonref_hotspots/hotspot_samples.top100.tsv.gz | head
+
+
+
+3) 해석 가이드(중요)
+	•	NSamples가 132에 가까운 hotspot
+	•	“모든 샘플에서 반복되는 non-ref” → 실제로는 표현/정렬/반복영역 이슈일 가능성이 큽니다.
+	•	이런 것들은 보통 TR catalogue에 “새 locus”로 넣기 전에 아티팩트 여부를 먼저 검증하는 게 안전합니다.
+	•	PureRate가 낮은 hotspot
+	•	not-pure 비율이 높으면 “VNTR/불완전 반복” 또는 “alignment artifact” 가능성이 증가합니다.
+	•	이 경우는 reference 기반 repeat catalog와 별도로 검증 우선순위를 둬서 다루는 걸 권합니다.
+
+⸻
+
+원하시면, 위 결과(hotspot_summary.bin5.tsv.gz)를 입력으로 해서:
+	•	NSamples >= X AND PureRate >= Y 조건을 만족하는 non-ref만 골라
+	•	nonref.candidate_catalog.bed.gz 형태로 만들어서 (IGV 트랙 + 후속 재평가용)

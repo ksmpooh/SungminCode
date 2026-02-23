@@ -1,0 +1,48 @@
+cd /ADATA/pangenome/assembly
+
+ls *fa | sed 's/.fa//g' | xargs -I {} -P 10 bash -c "minimap2 -x asm20 -c -t 8 /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa {}.fa > chm13_annotation/{}.T2TCHM13_align.paf"
+minimap2 -x asm20 -c -t 8 /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa /CDATA/pangenome/flagger_test/test/assembly/KPPD019.assembly.merge.fa > ref2asm.paf
+
+
+find /ADATA/pangenome/assembly/chm13_annotation/all -type f -name "*.paf" -print0 \
+| xargs -0 -I {} -P 30 bash -c '
+  in="{}"
+  out="$(dirname "$in")/$(basename "$in" .paf).only_P_I.paf"
+  awk -v TAB=$'\''\t'\'' '"'"'$0 ~ (TAB "tp:A:P") || $0 ~ (TAB "tp:A:I")'"'"' "$in" > "$out"
+'
+
+
+/ADATA/pangenome/assembly/chm13_annotation/P_I_contig/KPPD039.2.T2TCHM13_align.only_P_I.paf
+
+/CDATA/pangenome/flagger_test/final_result/contig_name_change/only_dup/KPPD126.flagger_prediction.contig_change.only_dup.bed
+
+
+
+cd /ADATA/pangenome/assembly/chm13_annotation/P_I_contig/
+
+.T2TCHM13_align.only_P_I.paf
+paftools.js liftover asm_vs_ref.PI.paf assembly_TR.bed > ref_TR.bed
+
+KPPD001.1 KPPD001
+KPPD001.2 KPPD001
+KPPD002.1 KPPD002
+KPPD002.2 KPPD002
+...
+KPPD132.1 KPPD132
+KPPD132.2 KPPD132
+
+for i in $(seq -w 1 132); do
+  echo "KPPD${i}.1 KPPD${i}"
+  echo "KPPD${i}.2 KPPD${i}"
+done > list.txt
+
+
+
+while read id sample; do
+  bash -c "paftools.js liftover \
+    /ADATA/pangenome/assembly/chm13_annotation/P_I_contig/${id}.T2TCHM13_align.only_P_I.paf \
+    /CDATA/pangenome/flagger_test/final_result/contig_name_change/only_dup/${sample}.flagger_prediction.contig_change.only_dup.bed \
+    > 01.T2TCHM13_liftover_VS_flagger_dupRegion/${id}.T2TCHM13_liftover_VS_flagger_dupRegion.bed" &
+  ((++n % 30 == 0)) && wait
+done < list.txt
+wait

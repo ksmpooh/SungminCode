@@ -36,7 +36,7 @@ library(smplot2)
 
 snps_allele %>% ggplot(aes(x=allele1_frequency_reference,y=allele1_frequency_input)) +
   geom_point() + 
-#  geom_smooth(method = "lm", se = FALSE, color = "red") +   # 상관 직선
+#  geom_smooth(method = "lm", se = FALSE, color = "red") +   # ???? ????
     labs(title = "SNPs frequency comparison\n (common SNPs: 170)",x="KOTRY allele frequency(n=3,817)",y="Reference allele frequency: KIR*IMP") + 
   geom_abline(intercept = 0, slope = 1, linetype = "dotted", color = "gray40", size = 0.8) +  # ??? y=x ??????????????????
   sm_statCorr(
@@ -226,10 +226,30 @@ setwd("/Users/ksmpooh/Desktop/KCDC/transplantation/allogenomic/2025_AR/MICA/")
 mica <- read.table("aftermichiganIMP/results_PMRA/MICA_imputed.tsv",header = T)
 micb <- read.table("aftermichiganIMP/results_PMRA/MICB_imputed.tsv",header = T)
 head(mica)
+head(micb)
 
-mica %>% mutate(gene = "MICA") %>% left_join(micb %>% mutate(gene = "MICB")) %>% 
-  left_join(ys_id_info %>% rename(sample.id = ID)) %>% #head()
+
+
+
+mica %>% mutate(gene = "MICA") %>% left_join(micb %>% mutate(gene = "MICB")) %>%
+  left_join(ys_id_info %>% rename(sample.id = ID)) %>% head()
   mutate(KBA_ID = ifelse(is.na(KBA_ID),sample.id,KBA_ID)) %>% mutate(KBA_ID = ifelse(KBA_ID == 2,"NIH19KT6374",KBA_ID)) %>% #head()
   filter(KBA_ID %in% final_id$KBA_ID) %>% #count(KBA_ID) %>% #dim()
-  left_join(ref) %>% 
+  left_join(ref) %>% # count(gene)
   select(bCODE,gene,prob,matching,allele1,allele2) %>% writexl::write_xlsx("KOTRY.2882sample.MICAimp.prepocessing.xlsx")
+  
+
+mica %>% rename(ID = sample.id) %>% rename(MICA.hap1 = allele1,MICA.hap2 = allele2) %>% select(ID,MICA.hap1,MICA.hap2) -> mica
+micb %>% rename(ID = sample.id) %>% rename(MICB.hap1 = allele1,MICB.hap2 = allele2) %>% select(ID,MICB.hap1,MICB.hap2) -> micb
+
+mica %>% left_join(micb) %>% #head()
+  left_join(ys_id_info) %>% #head()
+  mutate(KBA_ID = ifelse(is.na(KBA_ID),ID,KBA_ID)) %>% mutate(KBA_ID = ifelse(KBA_ID == 2,"NIH19KT6374",KBA_ID)) %>% #head()
+  filter(KBA_ID %in% final_id$KBA_ID) %>% #count(KBA_ID) %>% #dim()
+  left_join(ref) %>% #filter(is.na(bCODE))
+  select(bCODE,MICA.hap1,MICA.hap2,MICB.hap1,MICB.hap2) %>%
+  writexl::write_xlsx("KOTRY.2882sample.MICAimp.prepocessing_20251209.xlsx")
+
+
+
+

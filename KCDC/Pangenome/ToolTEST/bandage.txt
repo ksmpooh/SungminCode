@@ -1,0 +1,271 @@
+##3
+kor132.chm13v2.gfa.gz
+kor132.chm13v2.gbz
+kor132.chm13v2.xg
+kor132.chm13v2.snarls
+kor132.chm13v2.paf
+kor132.chm13v2.gaf.gz
+kor132.chm13v2.sv.gfa.gz
+
+cd /RDATA1/Pangenome/03.graph2
+
+/ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3
+
+vg paths -x graph.xg -L | grep -E "chr6|CHM13|GRCh38"
+
+vg paths -x kor132.chm13v2.xg -L | grep -E "chr6|CHM13|GRCh38"
+
+CHM13v2#0#chr1
+CHM13v2#0#chr10
+CHM13v2#0#chr11
+CHM13v2#0#chr12
+CHM13v2#0#chr13
+CHM13v2#0#chr14
+CHM13v2#0#chr15
+CHM13v2#0#chr16
+CHM13v2#0#chr17
+CHM13v2#0#chr18
+CHM13v2#0#chr19
+CHM13v2#0#chr2
+CHM13v2#0#chr20
+CHM13v2#0#chr21
+CHM13v2#0#chr22
+CHM13v2#0#chr3
+CHM13v2#0#chr4
+CHM13v2#0#chr5
+CHM13v2#0#chr6
+CHM13v2#0#chr7
+CHM13v2#0#chr8
+CHM13v2#0#chr9
+CHM13v2#0#chrM
+CHM13v2#0#chrX
+CHM13v2#0#chrY
+GRCh38#0#chr1[585988]
+
+
+
+
+
+docker run --rm -it \
+  -v "$PWD":"$PWD" -w "$PWD" \
+  quay.io/vgteam/vg:v1.67.0 \
+  vg chunk \
+    -x kor132.chm13v2.xg \
+    -g kor132.chm13v2.gbz \
+    -p CHM13v2#0#chr6:32000000-33300000 \
+    -o HLA_ClassII_CHM13.vg
+
+
+# CHM13 annotation gff3에서 RHD / RHCE gene 라인 찾기
+grep -E $'\tgene\t' /ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3 | grep -E 'gene_name=RHD|gene_name=RHCE|Name=RHD|Name=RHCE' > rhd_rhce.gene.gff
+
+awk -F'\t' '
+BEGIN{min=1e18; max=0; chr=""}
+{chr=$1; if($4<min)min=$4; if($5>max)max=$5}
+END{print chr, min, max}
+' OFS='\t' rhd_rhce.gene.gff
+
+chr1	25108664	25266535
+
+
+CHR=$(awk 'NR==1{print $1}' rhd_rhce.gene.gff | head -1)
+START=$(awk -F'\t' 'BEGIN{min=1e18}{if($4<min)min=$4}END{print min}' rhd_rhce.gene.gff)
+END=$(awk -F'\t' 'BEGIN{max=0}{if($5>max)max=$5}END{print max}' rhd_rhce.gene.gff)
+
+PAD=200000
+WIN_START=$((START-PAD)); if [ $WIN_START -lt 1 ]; then WIN_START=1; fi
+WIN_END=$((END+PAD))
+
+echo "${CHR}:${WIN_START}-${WIN_END}"
+
+
+#chr1:24908664-25466535
+
+docker run --rm -it \
+   -v "$PWD":"$PWD" -w "$PWD" \
+   quay.io/vgteam/vg:v1.67.0 \
+   vg chunk \
+     -x kor132.chm13v2.xg \
+     -S kor132.chm13v2.snarls \
+     -p CHM13v2#0#chr1:24908664-25466535 \
+     -O gfa > rhd_rhce.gfa
+
+
+/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa.gz
+
+
+
+
+awk -F'\t' '
+BEGIN{OFS="\t"}
+$3=="gene"{
+  name="NA";
+  n=split($9,a,";");
+  for(i=1;i<=n;i++){
+    if(a[i]~ /^gene_name=/){
+      split(a[i],b,"=");
+      name=b[2];
+    }
+  }
+  print $1,$4-1,$5,name
+}
+' rhd_rhce.gene.gff > rhd_rhce.gene.bed
+
+
+CHM13_FA=/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa.gz
+
+
+bedtools getfasta \
+  -fi $CHM13_FA \
+  -bed rhd_rhce.gene.bed \
+  -name \
+  -fo rhd_rhce.genomic.fa
+
+
+#####
+C4
+
+
+GFF=/ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3
+
+awk -F'\t' '
+$3=="gene" {
+  gn=""; nm="";
+  n=split($9,a,";");
+  for(i=1;i<=n;i++){
+    if(a[i] ~ /^gene_name=/){ split(a[i],b,"="); gn=b[2]; }
+    else if(a[i] ~ /^Name=/){ split(a[i],b,"="); nm=b[2]; }
+  }
+  if(gn=="C4A" || gn=="C4B" || nm=="C4A" || nm=="C4B") print
+}' "$GFF" > c4ab.gene.gff
+
+cut -f1 c4ab.gene.gff | sort -u
+
+
+
+
+
+awk -F'\t' '
+BEGIN{min=1e18; max=0; chr=""}
+{chr=$1; if($4<min)min=$4; if($5>max)max=$5}
+END{print chr, min, max}
+' OFS='\t' c4ab.gene.gff
+
+#chr6	31835263	31888625
+
+##
+
+CHR=$(awk 'NR==1{print $1}' c4ab.gene.gff)
+START=$(awk -F'\t' 'BEGIN{min=1e18}{if($4<min)min=$4}END{print min}' c4ab.gene.gff)
+END=$(awk -F'\t' 'BEGIN{max=0}{if($5>max)max=$5}END{print max}' c4ab.gene.gff)
+
+PAD=200000
+WIN_START=$((START-PAD)); if [ $WIN_START -lt 1 ]; then WIN_START=1; fi
+WIN_END=$((END+PAD))
+
+echo "${CHR}:${WIN_START}-${WIN_END}" > c4ab.window.txt
+cat c4ab.window.txt
+
+
+
+REGION=$(cat c4ab.window.txt)
+
+docker run --rm -it \
+  -v "$PWD":"$PWD" -w "$PWD" \
+  quay.io/vgteam/vg:v1.67.0 \
+  vg chunk \
+    -x kor132.chm13v2.xg \
+    -S kor132.chm13v2.snarls \
+    -p CHM13v2#0#${REGION} \
+    -O gfa \
+  > c4ab.gfa
+
+
+
+awk -F'\t' '
+BEGIN{OFS="\t"}
+$3=="gene"{
+  name="NA";
+  n=split($9,a,";");
+  for(i=1;i<=n;i++){
+    if(a[i] ~ /^gene_name=/){ split(a[i],b,"="); name=b[2]; }
+    else if(a[i] ~ /^Name=/ && name=="NA"){ split(a[i],b,"="); name=b[2]; }
+  }
+  print $1,$4-1,$5,name
+}
+' c4ab.gene.gff > c4ab.gene.bed
+
+
+CHM13_FA=/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa.gz
+
+bedtools getfasta \
+  -fi "$CHM13_FA" \
+  -bed c4ab.gene.bed \
+  -name \
+  -fo c4ab.genomic.fa
+
+
+
+### KIR
+
+GFF=/ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3
+CHM13_FA=/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa.gz
+
+awk -F'\t' '
+$3=="gene" {
+  gn=""; nm="";
+  n=split($9,a,";");
+  for(i=1;i<=n;i++){
+    if(a[i] ~ /^gene_name=/){ split(a[i],b,"="); gn=b[2]; }
+    else if(a[i] ~ /^Name=/){ split(a[i],b,"="); nm=b[2]; }
+  }
+
+  if(
+    gn ~ /^KIR[23][DLSP]/ || nm ~ /^KIR[23][DLSP]/
+  ) print
+}
+' "$GFF" > kir.gene.gff
+
+
+CHR=$(awk 'NR==1{print $1}' kir.gene.gff)
+START=$(awk -F'\t' 'BEGIN{min=1e18}{if($4<min)min=$4}END{print min}' kir.gene.gff)
+END=$(awk -F'\t' 'BEGIN{max=0}{if($5>max)max=$5}END{print max}' kir.gene.gff)
+
+PAD=300000   # KIR은 반복/확장 심해서 300kb 권장
+WIN_START=$((START-PAD)); if [ $WIN_START -lt 1 ]; then WIN_START=1; fi
+WIN_END=$((END+PAD))
+
+echo "${CHR}:${WIN_START}-${WIN_END}" > kir.window.txt
+cat kir.window.txt
+
+
+####
+LPAL2   chr6	CAT	gene	161703622	161771954
+LPA chr6	CAT	gene	161783172	162011762
+docker run --rm -it \
+  -v "$PWD":"$PWD" -w "$PWD" \
+  quay.io/vgteam/vg:v1.67.0 \
+  vg chunk \
+    -x kor132.chm13v2.xg \
+    -S kor132.chm13v2.snarls \
+    -p CHM13v2#0#chr6:161703622-162011762 \
+    -O gfa \
+  > LPA.gfa
+
+
+chr6	161703622	161771954   LPAL2
+chr6	161783172	162011762   LPA
+
+
+bedtools getfasta \
+  -fi "$CHM13_FA" \
+  -bed lpa.bed \
+  -name \
+  -fo lpa.genomic.fa
+
+
+bedtools getfasta \
+  -fi "$CHM13_FA" \
+  -bed chm13.region.bed \
+  -name \
+  -fo chm13.genomic.fa

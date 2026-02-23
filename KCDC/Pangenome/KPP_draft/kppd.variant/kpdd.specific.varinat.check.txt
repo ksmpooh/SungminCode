@@ -492,3 +492,323 @@ KPPD132.GRCh38.noAT.norm.wave.ref.sort.dedupPosOpt.merge.fix.kpp132.filTag.main_
 total chm13 compare
 
 
+
+##################
+2026019 다시 준비
+
+
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=kor132.chm13v2.GRCh38.wave.bcf
+OUT=kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf
+
+bcftools view -Ou -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY,chrM "$IN" \
+| bcftools view -Ou -s ^CHM13v2 \
+| bcftools +fill-tags -Ou -- -t AN,AC,AF,F_MISSING \
+| bcftools view -Ou -i 'INFO/AC>0' \
+| bcftools norm -Ob -f "$REF" -m -any -o "$OUT"
+
+bcftools index -f "$OUT"
+
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=hprc-v1.0-mc.grch38.vcfbub.a100k.wave.bcf
+OUT=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.bcf
+
+bcftools view -Ou -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY,chrM "$IN" \
+| bcftools view -Ou -s ^CHM13 \
+| bcftools +fill-tags -Ou -- -t AN,AC,AF,F_MISSING \
+| bcftools view -Ou -i 'INFO/AC>0' \
+| bcftools norm -Ob -f "$REF" -m -any -o "$OUT"
+
+bcftools index -f "$OUT"
+
+
+bcftools sort -Ob -o hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.bcf
+bcftools index hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf
+
+
+kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf 
+bcftools norm -Ob -m +any -o kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.bcf kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf;bcftools index kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.bcf;bcftools stats kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.bcf > kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.bcf.stats
+bcftools norm -Ob -m +any -o hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.merged.bcf hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf;bcftools index hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.merged.bcf;bcftools stats hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.merged.bcf > hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.merged.bcf.stats
+
+bcftools annotate -Ob \
+  -x INFO/AN,INFO/AC,INFO/AF,INFO/F_MISSING \
+  -o kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.anno.bcf \
+  kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.bcf
+
+
+
+bcftools annotate -Ob \
+  -x INFO/AN,INFO/AC,INFO/AF,INFO/F_MISSING \
+  -o hprc.cleaned_for_stats.bcf \
+  hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.merged.bcf
+
+bcftools index -f hprc.cleaned_for_stats.bcf
+
+bcftools stats hprc.cleaned_for_stats.bcf > hprc.cleaned_for_stats.bcf.stats
+
+
+ls *bcf | xargs -I {} -P 8 bash -c "bcftools stats {} > {}.stats"
+
+ls *.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\n' -o {}.tab {}"
+
+
+#######
+re qc with CHM13
+
+bcftools view -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY,chrM -Ob -o hprc-v1.0-mc.grch38.vcfbub.a100k.wave.maincontig.bcf hprc-v1.0-mc.grch38.vcfbub.a100k.wave.bcf
+bcftools view -r chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY,chrM -Ob -o kor132.chm13v2.GRCh38.wave.maincontig.bcf kor132.chm13v2.GRCh38.wave.bcf
+
+ls *maincontig*bcf | xargs -I {} -P 2 bcftools index {}
+
+
+bcftools norm -Ob -m +any -o kor132.chm13v2.GRCh38.wave.maincontig.merge.bcf kor132.chm13v2.GRCh38.wave.maincontig.bcf
+bcftools index kor132.chm13v2.GRCh38.wave.maincontig.merge.bcf
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/new/qc
+
+ls -1 kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.merged.anno.bcf \
+| xargs -I {} -P 2 bash -lc '
+  in="{}"
+  retag="${in%.bcf}.retag.bcf"
+
+  bcftools +fill-tags -Ob -o "$retag" "$in" -- -t AN,AC,AF,F_MISSING \
+  && bcftools index -f "$retag" \
+  && bcftools stats "$retag" > "${in}.stats"
+'
+
+ls *retag.bcf | xargs -I {} -P 2 bash -c "bcftools stats {} > {}.stats"
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=kor132.chm13v2.GRCh38.wave.maincontig.merge.retag.bcf
+PFX=kor132.chm13v2.GRCh38.wave.maincontig.merge.retag.split.norm
+
+bcftools norm -Ou -f "$REF" -m -any "$IN" \
+| tee >(bcftools view -Ob -v snps   -o ${PFX}.snps.bcf) \
+      >(bcftools view -Ob -v indels -o ${PFX}.indels.bcf) \
+> /dev/null
+
+bcftools index -f ${PFX}.snps.bcf
+bcftools index -f ${PFX}.indels.bcf
+
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=hprc-v1.0-mc.grch38.vcfbub.a100k.wave.maincontig.retag.bcf
+PFX=hprc-v1.0-mc.grch38.vcfbub.a100k.wave.maincontig.retag
+
+SPLIT=${PFX}.all.split.norm.sorted.bcf
+
+bcftools norm -Ou -f "$REF" -m -any "$IN" \
+| bcftools sort -Ob -o "$SPLIT"
+
+bcftools index -f "$SPLIT"
+
+bcftools view -Ob -v snps   -o ${PFX}.snps.bcf   "$SPLIT"
+bcftools view -Ob -v indels -o ${PFX}.indels.bcf "$SPLIT"
+
+bcftools index -f ${PFX}.snps.bcf
+bcftools index -f ${PFX}.indels.bcf
+
+
+
+ls *snps.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\n' -o {}.tab {}"
+ls *indels.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\n' -o {}.tab {}"
+
+
+
+
+###########
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/qc_nochm13
+
+IN=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf
+OUT=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.retag.bcf
+
+bcftools norm -Ou -m -any "$IN" \
+| bcftools +fill-tags -Ou -- -t AN,AC,AF,F_MISSING \
+| bcftools view -Ou -i 'INFO/AC>0' \
+| bcftools norm -Ou -m +any \
+| bcftools sort -Ob -o "$OUT"
+
+bcftools index -f "$OUT"
+
+
+IN=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.retag.bcf
+FIX=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.bcf
+
+bcftools annotate -Ou -x INFO/AN,INFO/AC,INFO/AF,INFO/F_MISSING "$IN" \
+| bcftools +fill-tags -Ou -- -t AN,AC,AF,F_MISSING \
+| bcftools sort -Ob -o "$FIX"
+
+bcftools index -f "$FIX"
+
+bcftools stats "$FIX" > "$FIX.stats"
+
+
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.bcf
+PFX=hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm
+SPLIT=${PFX}.bcf
+
+bcftools norm -Ou -f "$REF" -m -any "$IN" \
+| bcftools sort -Ob -o "$SPLIT"
+
+bcftools index -f "$SPLIT"
+
+bcftools view -Ob -v snps   -o ${PFX}.snps.bcf   "$SPLIT"
+bcftools view -Ob -v indels -o ${PFX}.indels.bcf "$SPLIT"
+
+bcftools index -f ${PFX}.snps.bcf
+bcftools index -f ${PFX}.indels.bcf
+
+
+
+hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.indels.bcf.tab
+hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.snps.bcf.tab
+hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.tab
+kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.indels.bcf.tab
+kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.snps.bcf.tab
+kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.tab
+
+
+#### sequencing data
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+IN=KPPD.longread_pbmm2_GRCh38.deepvariant.GLnexus_jointcalling.132samples.bcf
+OUT=KPPD.longread_pbmm2_GRCh38.deepvariant.GLnexus_jointcalling.132samples.splitnorm.bcf
+
+bcftools norm -Ob -f "$REF" -m -any \
+  -o "$OUT" "$IN"
+
+bcftools index -f "$OUT"
+
+
+REF=/BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa
+IN=KPPD.longread_pbmm2_CHM13v2.deepvariant.bcf
+OUT=KPPD.longread_pbmm2_CHM13v2.deepvariant.splitnorm.bcf
+
+bcftools norm -Ob -f "$REF" -m -any \
+  -o "$OUT" "$IN"
+
+bcftools index -f "$OUT"
+
+
+#########
+bcftools +fill-tags -Ob \
+  -o input.withCounts.bcf \
+  input.bcf \
+  -- -t AN,AC,NS,F_MISSING
+
+bcftools index -f input.withCounts.bcf
+
+
+ls *splitnorm.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c \
+"bcftools +fill-tags -Ob -o {}.Anno.bcf {}.bcf -- -t AN,AC,NS,F_MISSING;bcftools index -f {}.bcf"
+
+
+
+ls *splitnorm.bcf | sed 's/.bcf//g' | xargs -I {} -P 2 bash -c \
+"bcftools +fill-tags -Ob -o {}.Anno_af.bcf {}.bcf -- -t AF,AN,AC,NS,F_MISSING;bcftools index -f {}.Anno_af.bcf"
+
+
+ls *Anno_af.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/AQ\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\n' -o {}.tab {}"
+ls *indels.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\n' -o {}.tab {}"
+
+
+########
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/qc_nochm13
+
+
+
+#IN="hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.indels.bcf.tab"
+IN="kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.indels.bcf.tab"
+PFX="${IN%.tab}"
+
+awk -F'\t' '
+BEGIN { OFS="\t" }
+
+# header line
+NR==1 {
+  print > "'"$PFX"'.lenGE50.tab"
+  print > "'"$PFX"'.lenLT50.tab"
+  next
+}
+
+{
+  ref_len = length($4)
+  alt_len = length($5)
+
+  if (ref_len >= 50 || alt_len >= 50)
+    print > "'"$PFX"'.lenGE50.tab"
+  else
+    print > "'"$PFX"'.lenLT50.tab"
+}
+' "$IN"
+
+
+
+## CPC
+/BDATA/smkim/pangenome/kppd.variant.check/CPC/ori
+'vcfbub -a 100000 --wave -i {IN} -o {OUT}'
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+IN="CPC.Phase1.CHM13v2.contig_change.maincontig.bcf"
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+IN="CPC.Phase1.CHM13v2.contig_change.maincontig.bcf"
+
+# CHM13v2 reference fasta (left-align/normalize용)
+REF=/BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa
+
+PFX="${IN%.bcf}"
+
+# 1) GRCh38 샘플 제거
+STEP1="${PFX}.noGRCh38.bcf"
+bcftools view -Ou -s ^GRCh38 "$IN" \
+| bcftools sort -Ob -o "$STEP1"
+bcftools index -f "$STEP1"
+
+# 2) multiallelic split + normalize/left-align (REF 필요)
+STEP2="${PFX}.noGRCh38.split.norm.bcf"
+bcftools norm -Ou -f "$REF" -m -any "$STEP1" \
+| bcftools sort -Ob -o "$STEP2"
+bcftools index -f "$STEP2"
+
+# 3) 태그 추가/재계산: AC,AN,NS,AF,MAF,F_MISSING,TYPE
+STEP3="${PFX}.noGRCh38.split.norm.tag.bcf"
+bcftools +fill-tags -Ou "$STEP2" -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE \
+| bcftools sort -Ob -o "$STEP3"
+bcftools index -f "$STEP3"
+
+# 4) AC==0 제거 (split 상태에서 allele 단위로 정확)
+STEP4="${PFX}.noGRCh38.split.norm.tag.ACgt0.bcf"
+bcftools view -Ou -i 'INFO/AC>0' "$STEP3" \
+| bcftools sort -Ob -o "$STEP4"
+bcftools index -f "$STEP4"
+
+# 5) 다시 multiallelic merge (+any)
+STEP5="${PFX}.noGRCh38.split.norm.tag.ACgt0.merged.bcf"
+bcftools norm -Ou -m +any "$STEP4" \
+| bcftools sort -Ob -o "$STEP5"
+bcftools index -f "$STEP5"
+
+# 6) (권장) merge 이후 태그 재계산(병합하면서 INFO가 꼬이는 케이스 방지)
+STEP6="${PFX}.noGRCh38.final.bcf"
+bcftools +fill-tags -Ou "$STEP5" -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE \
+| bcftools sort -Ob -o "$STEP6"
+bcftools index -f "$STEP6"
+
+echo "DONE"
+echo "1) $STEP1"
+echo "2) $STEP2"
+echo "3) $STEP3"
+echo "4) $STEP4"
+echo "5) $STEP5"
+echo "6) $STEP6"

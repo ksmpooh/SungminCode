@@ -250,7 +250,7 @@ kpp_indel_bin <- read_table("/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/korean.v
 kpp_snp_bin <- factor(kpp_snp_bin$AF_bin, levels = kpp_snp_bin$AF_bin)
 ggplot(kpp_snp_bin, aes(x = AF_bin, y = n)) +
   geom_col(fill = "skyblue") +
-  labs(title = "MAF ºóµµ ±¸°£º° Count",
+  labs(title = "MAF ???? ?????? Count",
        x = "AF Bin",
        y = "Count") +
   theme_minimal() +
@@ -260,3 +260,49 @@ head(kpp_snp_bin)
 kpp_snp_bin %>% summarise(sum(n))
 
 kpp_indel_bin %>% summarise(sum(n))
+
+##### new 2026
+#hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.indels.bcf.tab
+#hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.snps.bcf.tab
+#hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.tab
+#kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.indels.bcf.tab
+#kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.snps.bcf.tab
+#kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.tab
+setwd("/BDATA/smkim/pangenome/kppd.variant.check/new/qc_nochm13")
+setwd("/BDATA/smkim/pangenome/kppd.variant.check/new/qc_nochm13/check")
+
+hprc <- read_table("hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.bcf.tab")
+kpp <- read_table("kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.tab")
+#colnames(hprc) <- c("CHROM","POS","ID","REF","ALT","AC","AN","NS","AF","MAF","F_MISSING")
+#colnames(kpp) <- c("CHROM","POS","ID","REF","ALT","AC","AN","NS","AF","MAF","F_MISSING")
+header <- c("CHROM","POS","node","REF","ALT","FILTER","AC","AN","NS","AF","F_MISSING")
+
+colnames(hprc) <- header
+colnames(kpp) <- header
+
+hprc_snp <- read_table("hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.snps.bcf.tab")
+kpp_snp <- read_table("kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.snps.bcf.tab")
+
+colnames(hprc_snp) <- header
+colnames(kpp_snp) <- header
+
+
+
+hprc_indel <- read_table("hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.indels.bcf.lenLT50.tab")
+kpp_indel <- read_table("kor132.noCHM13v2.chr1-22XYM.recalcAF.AFgt0.norm.bcf.indels.bcf.lenLT50.tab")
+
+
+colnames(hprc_snp) <- header
+colnames(kpp_snp) <- header
+
+colnames(hprc_indel) <- header
+colnames(kpp_indel) <- header
+
+cpc_snp <- read_table("/BDATA/smkim/pangenome/kppd.variant.check/FINAL/main_T2T/CPC/CPC.Phase1.CHM13v2.main_contig.onlyCPC.filtered.leftalign.snps.tab")
+cpc_indel <- read_table("/BDATA/smkim/pangenome/kppd.variant.check/FINAL/main_T2T/CPC/CPC.Phase1.CHM13v2.main_contig.onlyCPC.filtered.leftalign.indel.tab")
+
+
+colnames(cpc_snp) <- c("CHROM","POS","node","REF","ALT","FILTER","AC","AN","NS","AF")
+colnames(cpc_indel) <- c("CHROM","POS","node","REF","ALT","FILTER","AC","AN","NS","AF")
+
+

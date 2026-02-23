@@ -100,6 +100,8 @@ else  # GRCh38
             split(fields[i], a, "="); gene_biotype = a[2]
         } else if (fields[i] ~ /^extra_copy_number=/) {
             split(fields[i], a, "="); extra_copy_number = a[2]
+        } else if (fields[i] ~ /^sequence_ID=/) {
+            split(fields[i], a, "="); sequence_ID = a[2]
         } else if (fields[i] ~ /^coverage=/) {
             split(fields[i], a, "="); coverage = a[2]
         }else if (fields[i] ~ /^level=/) {
@@ -108,6 +110,8 @@ else  # GRCh38
             split(fields[i], a, "="); valid_ORFs = a[2]
         }
     }
-    print $1, gene_name, gene_biotype, extra_copy_number, coverage, level, valid_ORFs
+    print $1, gene_name, gene_biotype, extra_copy_number, sequence_ID, coverage, level, valid_ORFs
   }' "$input" > liftoff_processing/gene/$(basename "$input").afterliftoff_gene
 fi
+
+## sequence_ID 추가해야함..하하하하하하하핳

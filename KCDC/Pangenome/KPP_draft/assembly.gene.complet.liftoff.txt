@@ -39,6 +39,10 @@ liftoff -g /ADATA/pangenome/db/chm13/chm13v2.0_RefSeq_Liftoff_v5.2.gff3 -o test/
 liftoff -g [gene_anntation_DB.gff] -o [output name.gff3] -dir [tmp_folder] -sc 0.9 -polish\
 -u [unmapped gene list] -p [threads] -copies [input.fasta] [reference genome]
 
+cd /BDATA/smkim/liftoff
+liftoff -g gencode/gencode.v47.primary_assembly.annotation.gff3 -o chm13v2.GRCh38_with_excludepartial.liftoff.gffs -dir with_excludepartial -sc 0.9 -polish -exclude_partial \
+-u chm13v2.GRCh38_with_excludepartial.unMap.liftoff.txt -p 32 -copies chm13v2.0_maskedY_rCRS.fa gencode/GRCh38.primary_assembly.genome.fa
+
 
 
 db
@@ -370,7 +374,7 @@ cat HPRC/T2T_CHM13/transcript/*transcript > merge/HPRC_T2T_transcripts_merge.txt
 cat HPRC/GRCh38/gene/*gene > merge/HPRC_GRCh38_gene_merge.txt
 cat HPRC/GRCh38/transcript/*transcript > merge/HPRC_GRCh38_transcript_merge.txt
 
-
+231231
 cat CPC/GRCh38/gene/*gene > merge/CPC_GRCh38_gene_merge.txt
 
 cd /ADATA/pangenome/annotation/merge
@@ -549,7 +553,7 @@ ref %>% mutate(ID = str_split_fixed(X1,"tg",2)[,1]) %>%
 panscan make_dup_mtx --gencode_gff3 gencode.gff3 --fofn assemblies.fofn --ref_fa hg38_ref.fa --threads 64
 
 
-panscan make_dup_mtx --gencode_gff3 /ADATA/smkim/pangenome/db/gencode/gencode.v47.primary_assembly.annotation.gff3 --fofn test.fa.fn --ref_fa /ADATA/smkim/pangenome/db/gencode/GRCh38.primary_assembly.genome.fa --threads 64
+panscan make_dup_mtx --gencode_gff3 /ADATA/smkim/pangenome/db/gencode/gencode.v47.primary_assembly.annotation.gff3 --fofn input.txt.fofn --ref_fa /ADATA/smkim/pangenome/db/gencode/GRCh38.primary_assembly.genome.fa --threads 32
 
 panscan gene_dup --csv_file gene-dup-matrix.csv --ip1 gene_dup/hprc-matrix.csv --ip2 gene_dup/cpc-matrix.csv 
 panscan gene_dup --csv_file gene-dup-matrix-final.csv --ip1 /BDATA/smkim/TOOLs/panscan/gene_dup/hprc-matrix.csv --ip2 /BDATA/smkim/TOOLs/panscan/gene_dup/cpc-matrix.csv
@@ -560,3 +564,73 @@ panscan gene_dup --csv_file gene-dup-matrix-final.csv --ip1 /BDATA/smkim/TOOLs/p
 
 hprc-matrix.csv
 cpc-matrix.csv
+
+######## 2025 10 13 re check
+
+cd /CDATA/pangenome/liftoff
+
+#cat KPPD/T2T_CHM13/gene/*gene > merge/KPPD_T2T_gene_merge.txt
+#cat KPPD/T2T_CHM13/transcript/*transcript > merge/KPPD_T2T_transcripts_merge.txt
+
+cat result/kppd/gene/*gene > merge/KPPD_GRCh38_gene_merge.txt
+cat result/kppd/transcript/*transcript > merge/KPPD_GRCh38_transcript_merge.txt
+
+#cat HPRC/T2T_CHM13/gene/*gene > merge/HPRC_T2T_gene_merge.txt
+#cat HPRC/T2T_CHM13/transcript/*transcript > merge/HPRC_T2T_transcripts_merge.txt
+cat result/hprc/gene/*gene > merge/HPRC_GRCh38_gene_merge.txt
+cat result/hprc/transcript/*transcript > merge/HPRC_GRCh38_transcript_merge.txt
+
+
+cat CPC/GRCh38/gene/*gene > merge/CPC_GRCh38_gene_merge.txt
+
+cd /ADATA/pangenome/annotation/merge
+awk '$5>=0.9{print $0}' CPC_GRCh38_gene_merge.txt > CPC_GRCh38_gene_merge.cov0.9.txt
+
+cd /ADATA/pangenome/annotation/merge
+
+
+
+
+liftofftools clusters -r <reference.fa> -t <target.fa> -rg <reference.gff3> -tg <target.gff3>
+
+liftofftools clusters -r /CDATA/pangenome/liftoff/db/gencode/GRCh38.primary_assembly.genome.fa \
+-t /BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa \
+-rg /CDATA/pangenome/liftoff/db/gencode/gencode.v47.primary_assembly.annotation.gff3_db \
+-tg chm13v2.GRCh38.liftoff.gff3_polished \
+-dir liftofftools_test
+
+
+
+
+## after with flagger region
+
+awk -F'\t' '
+$5=="gene" {
+    # attributes는 11번째 필드
+    attr = $11
+
+    # 기본값
+    gene_type = gene_name = level = coverage = sequence_ID = valid_ORFs = extra_copy_number = "NA"
+
+    # 세미콜론 기준으로 속성 분리 (세미콜론 뒤 공백도 허용)
+    n = split(attr, fields, /;[[:space:]]*/)
+
+    for (i = 1; i <= n; i++) {
+        # key=value 형태에서 value만 추출
+        if (fields[i] ~ /^gene_type=/)        { split(fields[i], a, "="); gene_type         = a[2] }
+        else if (fields[i] ~ /^gene_name=/)    { split(fields[i], a, "="); gene_name         = a[2] }
+        else if (fields[i] ~ /^level=/)        { split(fields[i], a, "="); level             = a[2] }
+        else if (fields[i] ~ /^coverage=/)     { split(fields[i], a, "="); coverage          = a[2] }
+        else if (fields[i] ~ /^sequence_ID=/)  { split(fields[i], a, "="); sequence_ID       = a[2] }
+        else if (fields[i] ~ /^valid_ORFs=/)   { split(fields[i], a, "="); valid_ORFs        = a[2] }
+        else if (fields[i] ~ /^extra_copy_number=/) { split(fields[i], a, "="); extra_copy_number = a[2] }
+    }
+
+    # protein_coding만 출력
+    if (gene_type == "protein_coding") {
+        print $1, $2, $3, gene_type, gene_name, level, coverage, sequence_ID, valid_ORFs, extra_copy_number
+    }
+}
+' OFS='\t' output.txt > protein_coding_genes.txt
+
+

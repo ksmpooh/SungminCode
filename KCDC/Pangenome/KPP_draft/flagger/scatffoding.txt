@@ -1,0 +1,72 @@
+
+
+
+zcat input.fa.gz | sed 's/^>/>kpp001_/'
+
+
+zcat KPPD019.hap1.fa.gz | sed 's/^>chr/>KPPD019_h1_chr/' > KPPD019.hap1.change.fa
+zcat KPPD019.hap2.fa.gz | sed 's/^>chr/>KPPD019_h2_chr/' > KPPD019.hap2.change.fa
+
+
+
+
+bash winnowmap.sh KPPD019.merge.change.fa KPPD019.raw.hifi.fastq.gz KPPD019
+
+
+
+
+
+
+sample_id	hap1	hap2	bam
+KPPD019_scatfolding /ADATA/smkim/flagger/KPPD019.hap1.change.fa /ADATA/smkim/flagger/KPPD019.hap2.change.fa /ADATA/smkim/flagger/KPPD019.sorted.bam
+
+'''
+'''
+  python3 mk.py \
+  --sample-sheet smaple.tsv \
+  --cromwell-jar /ADATA/smkim/flagger/flagger/cromwell-85.jar \
+  --wdl /ADATA/smkim/flagger/flagger/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl \
+  --out-root /ADATA/smkim/flagger/flagger/test/wdl \
+  --max-threads 128 \
+  --max-mem-gb 256 \
+  --ref-dir /ADATA/smkim/flagger/flagger/flagger-1.1.0/misc \
+  --projection-ref-fasta //ADATA/smkim/flagger/flagger/chm13v2.0_maskedY_rCRS.fa \
+  --alpha-tsv /ADATA/smkim/flagger/flagger/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+  --enable-call-cache
+'''
+
+
+##3 
+rDNA
+
+grep -iE 'rrna|rdna|ribosomal|45s|28s|18s|5\.8s|rRNA' KPPD019.merge.listoff > rdna_like.gff3
+
+# GFF3: 1-based closed -> BED: 0-based half-open
+awk -F'\t' 'BEGIN{OFS="\t"} $0 !~ /^#/ {print $1, $4-1, $5}' rdna_like.gff3 \
+| sort -k1,1 -k2,2n \
+| bedtools merge -i - > rdna.liftoff.merged.bed
+
+
+awk '($3-$2)>=1000' rdna.liftoff.merged.bed > rdna.liftoff.merged.min1kb.bed
+
+
+###
+
+##contig 106
+cd /CDATA/pangenome/flagger_test/test/option
+
+  python3 mk.py \
+  --sample-sheet sample.tsv \
+  --cromwell-jar /CDATA/pangenome/flagger_test/cromwell-85.jar \
+  --wdl /CDATA/pangenome/flagger_test/flagger-1.1.0/wdls/workflows/hmm_flagger_end_to_end.wdl \
+  --out-root /CDATA/pangenome/flagger_test/test/option \
+  --max-threads 128 \
+  --max-mem-gb 256 \
+  --ref-dir /CDATA/pangenome/flagger_test/test/ref \
+  --projection-ref-fasta /CDATA/pangenome/flagger_test/test/ref/chm13v2.0_maskedY_rCRS.fa \
+  --alpha-tsv /CDATA/pangenome/flagger_test/test/ref/alpha_optimum_trunc_exp_gaussian_w_16000_n_50.HiFi_DC_1.2_DEC_2024.v1.1.0.tsv \
+  --enable-call-cache
+
+/CDATA/pangenome/flagger_test/test/winnomap/KPPD019.winnowmap.sorted.bam
+/CDATA/pangenome/flagger_test/KPPD019.2.fa
+/CDATA/pangenome/flagger_test/KPPD019.1.fa
