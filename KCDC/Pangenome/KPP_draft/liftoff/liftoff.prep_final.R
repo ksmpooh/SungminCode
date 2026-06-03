@@ -528,6 +528,7 @@ df_new_proteincoding %>% filter(Flagger == "Hap") %>%
   1      6.27           6        4       12
   '''
 
+
 df_new_proteincoding %>% 
   count(ID,hgnc_id) %>%  filter(n != 1) %>% #head
   count(ID) %>% summarise(mean(n),median(n),min(n),max(n))

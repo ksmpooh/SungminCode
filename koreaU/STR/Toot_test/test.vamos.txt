@@ -1,0 +1,32 @@
+/BDATA/smkim/TOOLs/vamos/vamos/src/vamos --read -b /CDATA/pangenome/longread/02.hiphase/KPPD001.pbmm2_GRCh38_maincontig_withunmapped.hiphase.bam -r /BDATA/smkim/TOOLs/vamos/vamos_db/vamos.effMotifs-0.1.GRCh38.tsv -s KPPD001 -o KPPD001.test.vcf -t 32
+
+/BDATA/smkim/TOOLs/vamos/vamos_db/vamos.effMotifs-0.1.GRCh38.tsv
+/BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta
+###
+/ADATA/pangenome/assembly/KPPD001.1.fa
+# 1. Haplotype 1 콘티그 매핑 및 정렬
+minimap2 -ax asm5 -t 32 --eqx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /ADATA/pangenome/assembly/KPPD001.1.fa | \
+samtools view -bS - | \
+samtools sort -@ 4 -o KPPD.hap1.mapped_to_grch38.bam
+
+samtools index KPPD.hap1.mapped_to_grch38.bam
+
+# 2. Haplotype 2 콘티그 매핑 및 정렬
+
+time minimap2 -ax asm5 -t 32 --eqx /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta /ADATA/pangenome/assembly/KPPD001.2.fa | \
+samtools view -bS - | \
+samtools sort -@ 4 -o KPPD.hap2.mapped_to_grch38.bam
+
+samtools index KPPD.hap2.mapped_to_grch38.bam
+
+
+/BDATA/smkim/TOOLs/vamos/vamos/src/vamos --contig -b KPPD.hap1.mapped_to_grch38.bam -r /BDATA/smkim/TOOLs/vamos/vamos_db/vamos.effMotifs-0.1.GRCh38.tsv -s KPPD001_h1 -o KPPD.assembly.hap1.vcf -t 32
+/BDATA/smkim/TOOLs/vamos/vamos/src/vamos --contig -b KPPD.hap2.mapped_to_grch38.bam -r /BDATA/smkim/TOOLs/vamos/vamos_db/vamos.effMotifs-0.1.GRCh38.tsv -s KPPD001_h2 -o KPPD.assembly.hap2.vcf -t 32
+
+
+bgzip -c KPPD.assembly.hap1.vcf > KPPD.assembly.hap1.vcf.gz && tabix -p vcf KPPD.assembly.hap1.vcf.gz
+bgzip -c KPPD.assembly.hap2.vcf > KPPD.assembly.hap2.vcf.gz && tabix -p vcf KPPD.assembly.hap2.vcf.gz
+
+
+# 2. bcftools merge를 이용해 하나의 Diploid VCF로 병합
+bcftools merge -m none KPPD.assembly.hap1.vcf.gz KPPD.assembly.hap2.vcf.gz -O z -o KPPD001.assembly.diploid.vcf.gz --force-samples

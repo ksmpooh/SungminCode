@@ -8,20 +8,20 @@
 #4. plink extract snp
 
 
-#### bash 01.geno.sh [ori_geno_dir] [ssp_geno_dir] [adv_dir] [merge_output prefix]
+#### bash 01.geno.sh [ori_geno_dir] [ssp_geno_dir] [adv_dir] [merge_output prefix] [KBA version]
 
 if [ $# -ne 4 ]; then
  echo "Usage: $0 [ori_geno_dir] [ssp_geno_dir] [adv_dir]"
- echo "ex) bash 01.geno.sh /DATA/genocall /DATA/genocall/SSP /DATA/genocall/adv KOTRY.AR_2025_KRKD.1stQC" 
+ echo "ex) bash 01.geno.sh /DATA/genocall /DATA/genocall/SSP /DATA/genocall/adv KOTRY.AR_2025_KRKD.1stQC [KBAv1.1, KBAv2.0A, KBAv2.0B] " 
  exit -1
 else
  echo "ori_geno_dir : $1"
  echo "ssp_geno_dir : $2"
  echo "adv_dir : $3"
  echo "merge_output prefix : $4"
+ echo "KBA version : $5"
  echo "ok"
 fi
-
 
 
 ori_geno_dir=$1
@@ -36,6 +36,9 @@ grep -v -f <(cat $1/classification/Recommended.ps $2/classification/Recommended.
 #Axiom_KBAv1.1_adv
 #plink --file Axiom_KBAv1.1 --extract ../classification/ --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out test
 
+
+### case 1 : KBAv1.1
+
 plink --file $1/plink/Axiom_KBAv1.1 --extract $1/classification/Recommended.ps --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_Original_call
 plink --file $2/plink/Axiom_KBAv1.1_SSP --extract ssp.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_SSP_call
 plink --file $3/plink/Axiom_KBAv1.1_adv --extract adv.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv1.1_adv_call
@@ -44,6 +47,32 @@ echo "Axiom_KBAv1.1_SSP_call" > merge.list
 echo "Axiom_KBAv1.1_adv_call" >> merge.list
 
 plink --bfile Axiom_KBAv1.1_Original_call --merge-list merge.list --make-bed --out $4
+
+
+
+### case 2 : KBAv2.0A
+
+plink --file $1/plink/Axiom_KBAv2.0A --extract $1/classification/Recommended.ps --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0A_Original_call
+plink --file $2/plink/Axiom_KBAv2.0A_SSP --extract ssp.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0A_SSP_call
+plink --file $3/plink/Axiom_KBAv2.0A_adv --extract adv.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0A_adv_call
+
+echo "Axiom_KBAv2.0A_SSP_call" > merge.list
+echo "Axiom_KBAv2.0A_adv_call" >> merge.list
+
+plink --bfile Axiom_KBAv2.0A_Original_call --merge-list merge.list --make-bed --out $4
+
+
+
+### case 3 : KBAv2.0B
+
+plink --bfile $1/vcf/Axiom_KBAv2.0B.FINAL_genocall --extract $1/classification/Recommended.ps --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0B_Original_call
+plink --bfile $2/vcf/Axiom_KBAv2.0B.FINAL_SSP --extract ssp.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0B_SSP_call
+plink --bfile $3/vcf/Axiom_KBAv2.0B.FINAL_adv --extract adv.snp.select.txt --allow-extra-chr --no-fid --no-parents --no-pheno --no-sex --make-bed --out Axiom_KBAv2.0B_adv_call
+
+echo "Axiom_KBAv2.0B_SSP_call" > merge.list
+echo "Axiom_KBAv2.0B_adv_call" >> merge.list
+
+plink --bfile Axiom_KBAv2.0B_Original_call --merge-list merge.list --make-bed --out $4
 
 
 

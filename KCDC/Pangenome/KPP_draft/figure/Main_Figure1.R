@@ -368,7 +368,7 @@ ggplot(plot_df, aes(x = hap1, y = hap2)) +
         legend.justification = c("left", "top")) +
   guides(shape = guide_legend(override.aes = list(color = "black"))) -> a
 
-a
+#a
 
 plot_df
 inspector
@@ -475,19 +475,11 @@ f1.e
 # url https://docs.google.com/spreadsheets/d/13ng9s0i83w5V6ckM_tNUyn22WsHl-qNunYpfRrOxJ0Q/edit?usp=sharing
 
 #bed_prop
-eas <- read_table("/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/EAS_10sample.winnowmap.flagger_region.txt")
-head(eas)
-
-
 bed_prop <- readxl::read_xlsx("~/Desktop/KCDC/pangenome/KPPD/figure/Figure1_DATA.winnowmap.flagger_region.xlsx")
 dim(bed_prop)
 bed_prop
 
-bed_prop$cohort = "KPP"
-eas$cohort = "HPRC.EAS"
-
-bed_prop %>% select(-type) %>%
-  rbind(eas) -> bed_prop
+bed_prop$cohort <- "KPP"
 
 fill_colors <- c("Hap"="#66c2a5","Col"="#fc8d62","Dup"="#8da0cb","Err"="#e78ac3")
 fill_labels <- c("Hap"="Haploid","Col"="Collapsed","Dup"="Duplicated","Err"="Erroneous")
@@ -499,68 +491,43 @@ df_all <- bed_prop %>%
   mutate(
     hap     = paste0(ID, "_", haplotype),
     sum_mb  = length / 1e6,
-    region  = factor(region, levels = c("Hap", "Col", "Dup", "Err")),
-    pattern = factor(ifelse(cohort == "HPRC.EAS", "stripe", "none"),
-                     levels = c("none", "stripe"))
+    region  = factor(region, levels = c("Hap", "Col", "Dup", "Err"))
   )
 
 ## -----------------------------
-## 2) 정렬을 "강제"로 만들기:
-##    KPPD(및 기타) 전체 + spacer + HPRC.EAS 전체
-##    각각 total_mb 내림차순
+## 2) KPP만 total_mb 기준 내림차순 정렬
 ## -----------------------------
 totals <- df_all %>%
   group_by(hap, cohort) %>%
   summarise(total_mb = sum(sum_mb), .groups = "drop")
 
-ord_kppd <- totals %>%
-  filter(cohort != "HPRC.EAS") %>%
+ord_total <- totals %>%
   arrange(desc(total_mb)) %>%
   pull(hap)
 
-ord_hprc <- totals %>%
-  filter(cohort == "HPRC.EAS") %>%
-  arrange(desc(total_mb)) %>%
-  pull(hap)
+cohort_cols <- c("KPP" = "#1F4E9E")
 
-spacer_hap <- "___SPACER___"
-ord_total  <- c(ord_hprc,spacer_hap, ord_kppd)
-
-## spacer row(0값) 추가
-df_spacer <- df_all %>%
-  slice(1) %>%
+df_all2 <- df_all %>%
   mutate(
-    hap     = spacer_hap,
-    sum_mb  = 0,
-    region  = factor("Hap", levels = levels(df_all$region)),
-    pattern = factor("none", levels = levels(df_all$pattern)),
-    cohort  = "SPACER"
+    hap = factor(as.character(hap), levels = ord_total),
+    outline = cohort
   )
-
-cohort_cols <- c("KPP" = "#1F4E9E", "HPRC.EAS" = "#C00000")
-
-df_all2 <- bind_rows(df_all, df_spacer) %>%
-  mutate(hap = factor(as.character(hap), levels = ord_total)) %>%
-  mutate(outline = ifelse(cohort %in% names(cohort_cols), cohort, NA_character_))
 
 p_top <- ggplot(df_all2, aes(x = hap, y = sum_mb, fill = region)) +
   geom_col(
-    aes(color = outline),   # ✅ 테두리만 cohort 색
+    aes(color = outline),
     width = 0.9,
-    linewidth = 0.35        # 테두리 두께(원하면 0.5~0.8로)
+    linewidth = 0.35
   ) +
-  coord_cartesian(ylim = c(2850, 3100), expand = FALSE) +
-  scale_y_continuous(breaks = seq(2900, 3100, by = 100)) + 
+  coord_cartesian(ylim = c(2800, 3100), expand = FALSE) +
+  scale_y_continuous(breaks = seq(2800, 3100, by = 100)) +
   scale_fill_manual(
     values = fill_colors,
     breaks = names(fill_labels),
     labels = fill_labels,
     drop = FALSE
   ) +
-  scale_color_manual(
-    values = cohort_cols,
-    na.value = NA           # ✅ SPACER는 테두리 없음
-  ) +
+  scale_color_manual(values = cohort_cols) +
   labs(y = "Total length (Mb)                       ") +
   theme_step1() +
   theme(
@@ -571,24 +538,7 @@ p_top <- ggplot(df_all2, aes(x = hap, y = sum_mb, fill = region)) +
     axis.line.x  = element_blank(),
     legend.position = "right"
   ) +
-  # ✅ cohort 테두리 색 legend는 숨기고(fill legend만 남김)
-  guides(color = "none") + 
-  #annotate(
-   # "text",
-  #  x = 145,
- #   y = 3050,
-#    label = "KPPD",
-   # vjust = -1.5,
-  #  fontface = "italic"
-  #) +
-  annotate(
-    "text",
-    x = 10,
-    y = 3050,
-    label = "HPRC\n(EAS)",
-    vjust = 0,
-    fontface = "italic"
-  )
+  guides(color = "none")
 
 p_top
 
@@ -600,18 +550,14 @@ p_bottom <- ggplot(df_all2, aes(x = hap, y = sum_mb, fill = region)) +
     linewidth = 0.25
   ) +
   coord_cartesian(ylim = c(0, 500), expand = FALSE) +
-  scale_y_continuous(
-    breaks = c(0,200,400)) + 
+  scale_y_continuous(breaks = c(0, 200, 400)) +
   scale_fill_manual(
     values = fill_colors,
     breaks = names(fill_labels),
     labels = fill_labels,
     drop = FALSE
   ) +
-  scale_color_manual(
-    values = cohort_cols,
-    na.value = NA
-  ) +
+  scale_color_manual(values = cohort_cols) +
   labs(x = "Assemblies", y = NULL) +
   theme_step1() +
   theme(
@@ -627,6 +573,8 @@ f1.h <- (p_top + theme(plot.margin = margin(5, 5, 7, 5))) /
   plot_layout(heights = c(2, 1), guides = "collect")
 
 f1.h
+
+
 
 
 
@@ -699,9 +647,13 @@ liftoff %>% left_join(df2 %>% select(Sample,sex) %>% unique()) %>% #head()
                               "Noncoding_genes" = "Noncoding\ngenes",
                               "Protein_coding_trans" = "Protein-coding\ntranscripts", 
                               "Noncoding_trans" = "Noncoding\ntranscripts")) +
+#  scale_y_continuous(
+    #breaks = seq(80, 100, by = 5),   # 필요 범위에 맞게 상한 조절
+    #expand = expansion(mult = c(0, 0.05))
+  #) +
   scale_y_continuous(
-    breaks = seq(90, 100, by = 5),   # 필요 범위에 맞게 상한 조절
-    expand = expansion(mult = c(0, 0.05))
+    limits = c(90, 100),
+    breaks = c(90, 95, 100)
   ) +
   theme_step1() +
   theme(axis.title.x = element_blank(),
@@ -791,7 +743,7 @@ df %>%
     axis.ticks.x = element_blank()
  ) -> f1.f
 
-
+f1.h
 
 f1.f
 library(png)
@@ -860,7 +812,7 @@ ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.a2.PCA.png",
   plot = f1.a2,
   device = "png",
-  width = 8,      # inch
+  width = 7,      # inch
   height = 6,     # inch
   dpi = 300
 )
@@ -869,12 +821,13 @@ ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.b.contig_length.png",
   plot = f1.b,
   device = "png",
-  width = 6,      # inch
+  width = 7,      # inch
   height = 6,     # inch
   dpi = 300
 )
 
 cowplot::plot_grid(a,b) -> f1.c
+f1.c
 ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.c.auN.png",
   plot = a,
@@ -893,13 +846,22 @@ ggsave(
   dpi = 300
 )
 
+ggsave(
+  filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.c.png",
+  plot = f1.c,
+  device = "png",
+  width = 14,      # inch
+  height = 6,     # inch
+  dpi = 300
+)
 
+#7 7 8
 
 ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.d.Cummulative.png",
   plot = f1.d,
   device = "png",
-  width = 8,      # inch
+  width = 7,      # inch
   height = 6,     # inch
   dpi = 300
 )
@@ -909,7 +871,7 @@ ggsave(
   plot = f1.e,
   device = "png",
   width = 10,      # inch
-  height = 4,     # inch
+  height = 3,     # inch
   dpi = 300
 ) 
 
@@ -918,8 +880,8 @@ ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.f.repeatmaskers.png",
   plot = f1.f,
   device = "png",
-  width = 16,      # inch
-  height = 10,     # inch
+  width = 11,      # inch
+  height = 6,     # inch
   dpi = 300
 )
 
@@ -935,12 +897,12 @@ ggsave(
   dpi = 300
 )
 
-
+f1.h
 ggsave(
   filename = "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/Figure1.h.flagger.png",
   plot = f1.h,
   device = "png",
-  width = 18,      # inch
+  width = 21,      # inch
   height = 4,     # inch
   dpi = 300
 )
@@ -949,7 +911,7 @@ setwd("/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/test/")
 
 
 DPI   <- 300
-W_STD <- 7
+W_STD <- 5
 H_STD <- 5
 OUT   <- "/Users/ksmpooh/Desktop/KCDC/pangenome/KPPD/figure/Figure1/panels"
 dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
@@ -978,7 +940,7 @@ save_panel_scaled <- function(p, fname, w, h,
     bg       = "white"
   )
 }
-21
+
 save_panel_scaled(f1.a2, "Figure1.a.png", w = W_STD,      h = H_STD)
 save_panel_scaled(f1.b,  "Figure1.b.png", w = W_STD,      h = H_STD)
 save_panel_scaled(f1.c,  "Figure1.c.png", w = W_STD*2,    h = H_STD)

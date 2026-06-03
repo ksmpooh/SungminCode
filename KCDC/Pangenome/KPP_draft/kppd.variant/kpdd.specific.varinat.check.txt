@@ -243,6 +243,70 @@ bcftools view -v snps -Ob -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftove
 bcftools view -v indels -Ob -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.indels.bcf CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.bcf
 
 
+CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.bcf
+
+
+REF=/BDATA/smkim/pangenome/REF/GCA_000001405.15_GRCh38_no_alt_analysis_set.cleaned.fna
+
+IN=CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.bcf
+OUT=${IN%.bcf}.leftalign.bcf
+
+bcftools norm \
+  -f "$REF" \
+  -Ob -o "$OUT" \
+  "$IN"
+
+bcftools index -f "$OUT"
+
+
+CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.bcf
+
+bcftools view -v snps -Ob -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.snps.bcf CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.bcf
+bcftools view -v indels -Ob -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.indels.bcf CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.bcf
+
+
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%AC\t%AN\t%NS\n' -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.snps.tab CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.snps.bcf
+bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%AC\t%AN\t%NS\n' -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.indels.tab CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.indels.bcf
+
+
+
+
+IN="CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.indels.tab"
+OUT="${IN%.tab}.maincontig.tab"
+
+awk -F':' '
+BEGIN{OFS=":"}
+NR==1 {print; next}
+$1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y|M)$/
+' "$IN" > "$OUT"
+
+
+IN="CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.indels.maincontig.tab"
+OUT="${IN%.tab}.lenLT50.tab"
+
+awk -F':' '
+BEGIN{OFS=":"}
+NR==1 {print; next}
+length($3) <= 50 && length($4) <= 50
+' "$IN" > "$OUT"
+
+
+
+
+
+
+
+IN="CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.snps.tab"
+OUT="${IN%.tab}.maincontig.tab"
+
+awk -F':' '
+BEGIN{OFS=":"}
+NR==1 {print; next}
+$1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y|M)$/
+' "$IN" > "$OUT"
+
+
+
 
 
 bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/MAF\t%INFO/F_MISSING\n' -o CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.snps.tab CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.noGRCh38.filTag.norm.refil.filtered.snps.vcf.gz 
@@ -754,55 +818,72 @@ NR==1 {
 
 
 
-#!/usr/bin/env bash
-set -euo pipefail
-
-IN="CPC.Phase1.CHM13v2.contig_change.maincontig.bcf"
 
 #!/usr/bin/env bash
 set -euo pipefail
 
 IN="CPC.Phase1.CHM13v2.contig_change.maincontig.bcf"
-
-# CHM13v2 reference fasta (left-align/normalize용)
 REF=/BDATA/smkim/pangenome/REF/chm13v2.0_maskedY_rCRS.fa
 
 PFX="${IN%.bcf}"
 
-# 1) GRCh38 샘플 제거
+############################################
+# 1) GRCh38 샘플 제거 (여기서 한 번만 sort)
+############################################
 STEP1="${PFX}.noGRCh38.bcf"
-bcftools view -Ou -s ^GRCh38 "$IN" \
+
+bcftools view -s ^GRCh38 -Ou "$IN" \
 | bcftools sort -Ob -o "$STEP1"
+
 bcftools index -f "$STEP1"
 
-# 2) multiallelic split + normalize/left-align (REF 필요)
+############################################
+# 2) multiallelic split + left-align
+# (정렬 유지되므로 sort 불필요)
+############################################
 STEP2="${PFX}.noGRCh38.split.norm.bcf"
-bcftools norm -Ou -f "$REF" -m -any "$STEP1" \
-| bcftools sort -Ob -o "$STEP2"
+
+bcftools norm -Ob -f "$REF" -m -any "$STEP1" -o "$STEP2"
 bcftools index -f "$STEP2"
 
-# 3) 태그 추가/재계산: AC,AN,NS,AF,MAF,F_MISSING,TYPE
+############################################
+# 3) 태그 추가 (정렬 유지)
+############################################
 STEP3="${PFX}.noGRCh38.split.norm.tag.bcf"
-bcftools +fill-tags -Ou "$STEP2" -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE \
-| bcftools sort -Ob -o "$STEP3"
+
+bcftools +fill-tags "$STEP2" -Ob -o "$STEP3" \
+  -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+
 bcftools index -f "$STEP3"
 
-# 4) AC==0 제거 (split 상태에서 allele 단위로 정확)
+############################################
+# 4) AC==0 제거 (정렬 유지)
+############################################
 STEP4="${PFX}.noGRCh38.split.norm.tag.ACgt0.bcf"
-bcftools view -Ou -i 'INFO/AC>0' "$STEP3" \
-| bcftools sort -Ob -o "$STEP4"
+
+bcftools view -Ob -i 'INFO/AC>0' "$STEP3" -o "$STEP4"
 bcftools index -f "$STEP4"
 
-# 5) 다시 multiallelic merge (+any)
+############################################
+# 5) multiallelic merge
+# (+any 후에는 안전하게 sort 1회 권장)
+############################################
 STEP5="${PFX}.noGRCh38.split.norm.tag.ACgt0.merged.bcf"
+
 bcftools norm -Ou -m +any "$STEP4" \
 | bcftools sort -Ob -o "$STEP5"
+
 bcftools index -f "$STEP5"
 
-# 6) (권장) merge 이후 태그 재계산(병합하면서 INFO가 꼬이는 케이스 방지)
+############################################
+# 6) merge 이후 태그 재계산
+# (정렬 유지 → sort 불필요)
+############################################
 STEP6="${PFX}.noGRCh38.final.bcf"
-bcftools +fill-tags -Ou "$STEP5" -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE \
-| bcftools sort -Ob -o "$STEP6"
+
+bcftools +fill-tags "$STEP5" -Ob -o "$STEP6" \
+  -- -t AC,AN,NS,AF,MAF,F_MISSING,TYPE
+
 bcftools index -f "$STEP6"
 
 echo "DONE"
@@ -812,3 +893,153 @@ echo "3) $STEP3"
 echo "4) $STEP4"
 echo "5) $STEP5"
 echo "6) $STEP6"
+
+
+
+#######
+
+
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/01.chm13_variant_info
+rsync -avhP /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/ori/kor132.chm13v2.wave.clean.norm.sort.tag.bcf.noAC.tab ./
+rsync -avhP /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/ori/kor132.chm13v2.wave.clean.norm.sort.tag.bcf.noAC.tab ./
+
+
+
+## GRCh38 기준으로 추출
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant
+
+rsync -avhP /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/ori/hprc* ./
+rsync -avhP /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/ori/kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.tab ./
+
+
+### snp indel
+IN="kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.tab"
+PFX="${IN%.tab}"
+
+# SNP
+awk -F'\t' 'NR==1 || $12=="SNP"' OFS='\t' "$IN" > "${PFX}.snps.tab"
+
+# INDEL
+awk -F'\t' 'NR==1 || $12=="INDEL"' OFS='\t' "$IN" > "${PFX}.indels.tab"
+
+
+## 50 이상 지우기
+IN="hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.indels.bcf.tab"
+OUT="${IN%.tab}.lenLT50.tab"
+
+awk -F'\t' 'BEGIN{OFS="\t"}NR==1 {print; next}length($4) <= 50 && length($5) <= 50' "$IN" > "$OUT"
+
+
+IN="kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.indels.tab"
+OUT="${IN%.tab}.lenLT50.tab"
+
+awk -F'\t' 'BEGIN{OFS="\t"}NR==1 {print; next}length($4) <= 50 && length($5) <= 50' "$IN" > "$OUT"
+
+
+
+
+
+### R
+## GRCh38
+/BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant/
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant/kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.indels.lenLT50.tab
+/BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant/hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.indels.bcf.lenLT50.tab
+/BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant/kor132.chm13v2.GRCh38.wave.clean.norm.sort.tag.bcf.noAC.maincontig.snps.tab
+/BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/02.grch38_variant/hprc-v1.0.noCHM13.chr1-22XYM.recalcAF.AFgt0.norm.sorted.ACgt0.merged.finaltag.norm.snps.bcf.tab
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/CPC/CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.indels.maincontig.lenLT50.tab
+/BDATA/smkim/pangenome/kppd.variant.check/CPC/CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.snps.maincontig.tab
+
+/BDATA/smkim/pangenome/kppd.variant.check/CPC/CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.snps.tab
+/BDATA/smkim/pangenome/kppd.variant.check/CPC/CPC.Phase1.CHM13v2.contig_change.maincontig.liftoverhsToGRCh38.onlyCPC.filtered.norm.leftalign.indels.tab
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/gnomad
+
+/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.indel.chr1-22XY.lenLE50.id
+/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.snp.id
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.snps.chr1-22XY.id
+/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.indels.chr1-22XY.lenLE50.id
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/dbsnp/norm/dbsnp.snp.id
+
+########
+/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.snp.id
+/BDATA/smkim/pangenome/kppd.variant.check/dbsnp/norm/dbsnp.snp.id
+/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.snps.chr1-22XY.id
+
+
+/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.indel.chr1-22XY.lenLE50.id
+/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.indels.chr1-22XY.lenLE50.id
+###########
+
+
+set -euo pipefail
+
+F1=/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.snp.id
+F2=/BDATA/smkim/pangenome/kppd.variant.check/dbsnp/norm/dbsnp.snp.id
+F3=/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.snps.chr1-22XY.id
+
+THREADS=48
+TMPDIR=/tmp
+
+# 1. 각각 병렬 정렬 (중복 제거 포함)
+sort -T "$TMPDIR" -S 50% --parallel=$THREADS -u "$F1" -o f1.sorted &
+sort -T "$TMPDIR" -S 50% --parallel=$THREADS -u "$F2" -o f2.sorted &
+sort -T "$TMPDIR" -S 50% --parallel=$THREADS -u "$F3" -o f3.sorted &
+
+wait
+
+# 2. 정렬된 파일 merge + unique
+sort -T "$TMPDIR" -S 50% --parallel=$THREADS -m -u \
+    f1.sorted f2.sorted f3.sorted \
+    > union.snp.id
+
+rm f1.sorted f2.sorted f3.sorted
+
+######
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+iF1=/BDATA/smkim/pangenome/kppd.variant.check/1kgp/1kgp.indel.chr1-22XY.lenLE50.id
+iF2=/BDATA/smkim/pangenome/kppd.variant.check/gnomad/gnomad.v4.1.indels.chr1-22XY.lenLE50.id
+
+THREADS=32
+TMPDIR=tmp
+
+# 1️⃣ 각각 병렬 정렬 + 중복 제거
+LC_ALL=C sort -T "$TMPDIR" -S 50% --parallel=$THREADS -u "$iF1" -o if1.sorted &
+LC_ALL=C sort -T "$TMPDIR" -S 50% --parallel=$THREADS -u "$iF2" -o if2.sorted &
+wait
+
+# 2️⃣ merge + unique
+LC_ALL=C sort -T "$TMPDIR" -S 50% --parallel=$THREADS -m -u \
+    if1.sorted if2.sorted \
+    > union.indel.lenLE50.id
+
+rm if1.sorted if2.sorted
+
+
+
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/03.after_graph_kppd_specific
+
+bash run.compare.txt kpp.indel.graph.specific.txt union.indel.lenLE50.id
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/03.after_graph_kppd_specific/snp
+bash run.forsnp.txt kpp.snp.graph.specific.txt f1.sorted
+bash run.forsnp.txt kpp.snp.graph.specific.only.txt f2.sorted
+bash run.forsnp.txt kpp.snp.graph.specific.only.only.txt f3.sorted
+
+
+### FINAL vs MRG
+
+cd /BDATA/smkim/pangenome/kppd.variant.check/new/FINAL/04.final_compare_KPPD.specific

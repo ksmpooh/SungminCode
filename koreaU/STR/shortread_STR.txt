@@ -374,3 +374,4 @@ ls *bam | sed 's/.bam//g' | xargs -I {} -P 10 bash -c "/BDATA/smkim/TOOLs/PanDep
 -b /BDATA/smkim/STR/db/catalog.GRCh38.with_adjacent_repeats.TRGT.onlywithID.bed \
 -t 8 -c -r /BDATA/smkim/HLAseq/REF/human_GRCh38_no_alt_analysis_set/human_GRCh38_no_alt_analysis_set.basic.fasta \
 -o /BDATA/smkim/STR/EH_shortread/pandepth/{}.bam.pandepth.patho"
+

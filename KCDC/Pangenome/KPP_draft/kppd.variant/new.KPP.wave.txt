@@ -1,0 +1,548 @@
+conda activate bcftools
+cd /BDATA/smkim/pangenome/graph/KPPD/new_wave
+
+
+############################################################################## vcfbub
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+IN02=/BDATA/smkim/pangenome/graph/KPPD/02.noAT
+OUT01=$ROOT/01.vcfbub_bychr
+LOG=$ROOT/log/01.vcfbub_bychr
+
+mkdir -p "$OUT01" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 24 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN02'/kor132.chm13v2.${chr}.noAT.vcf.gz"
+out="'$OUT01'/kor132.chm13v2.${chr}.vcfbub.vcf.gz"
+stdout="'$LOG'/${chr}.stdout.log"
+stderr="'$LOG'/${chr}.stderr.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$stderr"; exit 0; }
+
+vcfbub -l 0 -a 100000 -i "$in" \
+  1> >(bgzip -c > "$out") \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+############################################################################## multiallelic split + sort
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+IN01=$ROOT/01.vcfbub_bychr
+OUT02=$ROOT/02.split_multi_bychr
+LOG=$ROOT/log/02.split_multi_bychr
+
+mkdir -p "$OUT02" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN01'/kor132.chm13v2.${chr}.vcfbub.vcf.gz"
+tmp="'$OUT02'/kor132.chm13v2.${chr}.vcfbub.split.tmp.vcf.gz"
+out="'$OUT02'/kor132.chm13v2.${chr}.vcfbub.split.vcf.gz"
+stdout="'$LOG'/${chr}.stdout.log"
+stderr="'$LOG'/${chr}.stderr.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$stderr"; exit 0; }
+
+bcftools norm -m -any -Oz -o "$tmp" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+bcftools sort -Oz -o "$out" "$tmp" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+rm -f "$tmp" "$tmp.tbi" 2>/dev/null || true
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+############################################################################## chunks
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+IN02=$ROOT/02.split_multi_bychr
+CHUNKROOT=$ROOT/03.chunks_bychr
+
+mkdir -p "$CHUNKROOT"
+export CHUNKSIZE=100000
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN02'/kor132.chm13v2.${chr}.vcfbub.split.vcf.gz"
+outdir="'$CHUNKROOT'/$chr"
+
+[ -s "$in" ] || exit 0
+
+mkdir -p "$outdir"
+bcftools view -h "$in" > "$outdir/header.vcf"
+bcftools view -H "$in" | split -l '"$CHUNKSIZE"' -d -a 5 - "$outdir/body_"
+'
+
+
+############################################################################## chunk vcfwave
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+CHUNKROOT=$ROOT/03.chunks_bychr
+WAVEROOT=$ROOT/04.wave_chunks
+LOG=$ROOT/log/04.wave_chunks
+
+mkdir -p "$WAVEROOT" "$LOG"
+
+export WAVE_I=1000
+export WAVE_T=12
+export BGZIP_T=2
+export CHUNK_JOBS=16
+
+find "$CHUNKROOT" -type f -name "body_*" -print \
+| grep chr1 \
+| shuf \
+| xargs -I{} -P "$CHUNK_JOBS" bash -c '
+set -euo pipefail
+body="{}"
+chr=$(basename "$(dirname "$body")")
+hdr="'"$CHUNKROOT"'/$chr/header.vcf"
+
+outdir="'"$WAVEROOT"'/$chr"
+mkdir -p "$outdir"
+
+base=$(basename "$body")
+tmpvcf="$outdir/${base}.vcf"
+outgz="$outdir/${base}.wave.vcf.gz"
+stderr="'"$LOG"'/${chr}.${base}.stderr.log"
+
+[[ -s "$outgz" ]] && exit 0
+
+cat "$hdr" "$body" > "$tmpvcf"
+
+vcfwave -I '"$WAVE_I"' -t '"$WAVE_T"' "$tmpvcf" \
+  1> >(bgzip -@ '"$BGZIP_T"' -c > "$outgz") \
+  2>> "$stderr"
+
+rm -f "$tmpvcf"
+'
+
+
+
+############################################################################## chunk merge
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+WAVEROOT=$ROOT/04.wave_chunks
+OUT05=$ROOT/05.wave_bychr
+LOG=$ROOT/log/05.wave_merge
+
+mkdir -p "$OUT05" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 24 bash -c '
+set -euo pipefail
+chr="{}"
+
+indir="'"$WAVEROOT"'/$chr"
+out="'$OUT05'/kor132.chm13v2.${chr}.wave.vcf.gz"
+log="'$LOG'/${chr}.merge.log"
+
+[[ -d "$indir" ]] || { echo "[skip] no dir $indir" >> "$log"; exit 0; }
+
+ls "$indir"/body_*.wave.vcf.gz 2>/dev/null | sort > "$indir/wave.list"
+[[ -s "$indir/wave.list" ]] || { echo "[skip] no chunks for $chr" >> "$log"; exit 0; }
+
+bcftools concat -f "$indir/wave.list" -Ou 2>> "$log" \
+| bcftools sort -Oz -o "$out" 2>> "$log"
+
+tabix -f -p vcf "$out" 2>> "$log"
+'
+
+############################################################################## leftaline
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+IN05=$ROOT/05.wave_bychr
+OUT06=$ROOT/06.leftalign_bychr
+LOG=$ROOT/log/06.leftalign_bychr
+
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+mkdir -p "$OUT06" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 24 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN05'/kor132.chm13v2.${chr}.wave.vcf.gz"
+tmp="'$OUT06'/kor132.chm13v2.${chr}.wave.leftalign.tmp.vcf.gz"
+out="'$OUT06'/kor132.chm13v2.${chr}.wave.leftalign.vcf.gz"
+log="'$LOG'/${chr}.norm.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$log"; exit 0; }
+
+bcftools norm \
+  --threads 16 \
+  -f "'$REF'" \
+  -c w \
+  -Oz -o "$tmp" \
+  "$in" \
+  2> "$log"
+
+bcftools sort -Oz -o "$out" "$tmp" 2>> "$log"
+tabix -f -p vcf "$out" 2>> "$log"
+
+rm -f "$tmp"
+'
+##############################################################################  merge duplicates (repeat)
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+SCRIPT=/BDATA/smkim/SCRIPTs/pangenome/merge_duplicates.py
+
+IN06=$ROOT/06.leftalign_bychr
+OUT07=$ROOT/07.merge_dup_repeat
+LOG=$ROOT/log/07.merge_dup_repeat
+
+mkdir -p "$OUT07" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 24 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN06'/kor132.chm13v2.${chr}.wave.leftalign.vcf.gz"
+out="'$OUT07'/kor132.chm13v2.${chr}.mergedup.repeat.vcf.gz"
+log="'$LOG'/${chr}.mergedup.repeat.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$log"; exit 0; }
+
+python "'$SCRIPT'" \
+  -i "$in" \
+  -o "$out" \
+  -c repeat \
+  2>> "$log"
+
+tabix -f -p vcf "$out" 2>> "$log"
+'
+
+############################################################################## small large split
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+IN07=$ROOT/07.merge_dup_repeat
+OUT08=$ROOT/08.final
+
+mkdir -p "$OUT08"/{small,large,all,stats}
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 24 bash -c '
+set -euo pipefail
+chr="{}"
+in="'$IN07'/kor132.chm13v2.${chr}.mergedup.repeat.vcf.gz"
+
+[ -s "$in" ] || exit 0
+
+outS="'$OUT08'/small/kor132.chm13v2.${chr}.small.vcf.gz"
+outL="'$OUT08'/large/kor132.chm13v2.${chr}.large.vcf.gz"
+
+bcftools view \
+  -i '"'"'((strlen(REF)==1 && strlen(ALT)==1) || (strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))<50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)<50))'"'"' \
+  -Oz -o "$outS" "$in"
+tabix -f -p vcf "$outS"
+
+bcftools view \
+  -i '"'"'((strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))>=50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)>=50))'"'"' \
+  -Oz -o "$outL" "$in"
+tabix -f -p vcf "$outL"
+'
+############################################################################## concat all
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/KPPD/new_wave
+OUT08=$ROOT/08.final
+OUT09=$ROOT/09.concat
+IN07=$ROOT/07.merge_dup_repeat
+
+mkdir -p "$OUT09"
+
+CHRLIST=$OUT09/chr.list
+printf "chr%s\n" {1..22} X Y M > "$CHRLIST"
+
+bcftools concat -a -Oz \
+  -o "$OUT09/kor132.chm13v2.small.allchr.vcf.gz" \
+  $(awk '{print "'$OUT08'/small/kor132.chm13v2."$1".small.vcf.gz"}' "$CHRLIST")
+tabix -f -p vcf "$OUT09/kor132.chm13v2.small.allchr.vcf.gz"
+
+bcftools concat -a -Oz \
+  -o "$OUT09/kor132.chm13v2.large.allchr.vcf.gz" \
+  $(awk '{print "'$OUT08'/large/kor132.chm13v2."$1".large.vcf.gz"}' "$CHRLIST")
+tabix -f -p vcf "$OUT09/kor132.chm13v2.large.allchr.vcf.gz"
+
+bcftools concat -a -Oz \
+  -o "$OUT09/kor132.chm13v2.all.repeat.vcf.gz" \
+  $(awk '{print "'$IN07'/kor132.chm13v2."$1".mergedup.repeat.vcf.gz"}' "$CHRLIST")
+tabix -f -p vcf "$OUT09/kor132.chm13v2.all.repeat.vcf.gz"
+
+
+###
+# 10) final stats
+########################################
+VCF_SMALL="$OUT09/kor132.chm13v2.small.allchr.vcf.gz"
+VCF_LARGE="$OUT09/kor132.chm13v2.large.allchr.vcf.gz"
+VCF_ALL="$OUT09/kor132.chm13v2.all.repeat.vcf.gz"
+
+STATSDIR="$OUT09/10.stats_all"
+mkdir -p "$STATSDIR"
+
+echo "[run] stats output dir: $STATSDIR" >&2
+
+########################################
+# 1) bcftools stats
+########################################
+conda activate bcftools
+
+bcftools stats "$VCF_SMALL" > "$STATSDIR/kor132.chm13v2.small.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_LARGE" > "$STATSDIR/kor132.chm13v2.large.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_ALL"   > "$STATSDIR/kor132.chm13v2.all.bcftools.stats.txt"
+
+########################################
+# 2) rtg vcfstats --allele-lengths
+########################################
+conda activate rtgtools_env
+
+rtg vcfstats --allele-lengths "$VCF_SMALL" > "$STATSDIR/kor132.chm13v2.small.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_LARGE" > "$STATSDIR/kor132.chm13v2.large.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_ALL"   > "$STATSDIR/kor132.chm13v2.all.rtg.vcfstats.txt"
+
+echo "[done] stats written to $STATSDIR" >&2
+
+
+### Truvari
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/final_vs_newkpp
+RAW=$BASE/00.raw
+WORK=$BASE/01.work/small
+RES=$BASE/02.result/small
+
+mkdir -p "$RAW" "$WORK" "$RES"
+
+KPP=/BDATA/smkim/pangenome/graph/KPPD/new_wave/09.concat/kor132.chm13v2.small.allchr.vcf.gz
+CPC=/BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.small.allchr.vcf.gz
+
+cp -f "$KPP" "$RAW/"
+cp -f "$KPP".tbi "$RAW/" 2>/dev/null || true
+cp -f "$CPC" "$RAW/"
+cp -f "$CPC".tbi "$RAW/" 2>/dev/null || true
+
+KPP_LOCAL=$RAW/$(basename "$KPP")
+CPC_LOCAL=$RAW/$(basename "$CPC")
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' "$KPP_LOCAL" \
+  | sort -u > "$WORK/KPP.small.key.tsv"
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' "$CPC_LOCAL" \
+  | sort -u > "$WORK/CPCHPRC.small.key.tsv"
+
+comm -12 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/shared.small.key.tsv"
+
+comm -23 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/KPP.unique.small.key.tsv"
+
+comm -13 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/CPCHPRC.unique.small.key.tsv"
+
+{
+  echo -n "KPP total small: "
+  wc -l < "$WORK/KPP.small.key.tsv"
+
+  echo -n "CPCHPRC total small: "
+  wc -l < "$WORK/CPCHPRC.small.key.tsv"
+
+  echo -n "shared small: "
+  wc -l < "$RES/shared.small.key.tsv"
+
+  echo -n "KPP unique small: "
+  wc -l < "$RES/KPP.unique.small.key.tsv"
+
+  echo -n "CPCHPRC unique small: "
+  wc -l < "$RES/CPCHPRC.unique.small.key.tsv"
+} | tee "$RES/summary.small.txt"
+
+
+
+##
+#!/usr/bin/env bash
+conda activate truvari_env
+set -euo pipefail
+
+KPP_DIR=/BDATA/smkim/pangenome/graph/KPPD/new_wave/08.final/large
+CPC_DIR=/BDATA/smkim/pangenome/graph/CPC/vcfbub/11.final/large
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs_newkpp/02.result/large_bychr
+LOGDIR=$OUTDIR/log
+
+mkdir -p "$OUTDIR" "$LOGDIR"
+
+printf "%s\n" chr{1..22} chrX chrY chrM \
+| xargs -I{} -P 32 bash -c '
+  set -euo pipefail
+
+  chr="{}"
+  kpp="'$KPP_DIR'/kor132.chm13v2.${chr}.large.vcf.gz"
+  cpc="'$CPC_DIR'/CPC.HPRC.Phase1.${chr}.large.vcf.gz"
+  out="'$OUTDIR'/${chr}.truvari"
+
+  echo "[run] ${chr}" >&2
+
+  if [[ ! -f "$kpp" ]]; then
+    echo "[skip] missing KPP: $kpp" >&2
+    exit 0
+  fi
+
+  if [[ ! -f "$cpc" ]]; then
+    echo "[skip] missing CPC/HPRC: $cpc" >&2
+    exit 0
+  fi
+
+  truvari bench \
+    -b "$kpp" \
+    -c "$cpc" \
+    -o "$out" \
+    -r 1000 \
+    -C 1000 \
+    -O 0.8 \
+    -p 0.8 \
+    -P 0.0 \
+    -s 50 \
+    -S 15 \
+    --sizemax 100000 \
+    > "'$LOGDIR'/${chr}.stdout.log" \
+    2> "'$LOGDIR'/${chr}.stderr.log"
+'
+
+
+####
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs/02.result/large_bychr
+
+KPP_TOTAL=$(jq -s 'map(."base cnt") | add' "$OUTDIR"/chr*.truvari/summary.json)
+CPC_TOTAL=$(jq -s 'map(."comp cnt") | add' "$OUTDIR"/chr*.truvari/summary.json)
+SHARED=$(jq -s 'map(."TP-base") | add' "$OUTDIR"/chr*.truvari/summary.json)
+KPP_UNIQ=$(jq -s 'map(.FN) | add' "$OUTDIR"/chr*.truvari/summary.json)
+CPC_UNIQ=$(jq -s 'map(.FP) | add' "$OUTDIR"/chr*.truvari/summary.json)
+
+echo "KPP total large: $KPP_TOTAL"
+echo "CPCHPRC total large: $CPC_TOTAL"
+echo "shared large: $SHARED"
+echo "KPP unique large: $KPP_UNIQ"
+echo "CPCHPRC unique large: $CPC_UNIQ"
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs_newkpp/02.result/large_bychr
+
+KPP_TOTAL=$(jq -s 'map(."base cnt") | add' "$OUTDIR"/chr*.truvari/summary.json)
+CPC_TOTAL=$(jq -s 'map(."comp cnt") | add' "$OUTDIR"/chr*.truvari/summary.json)
+SHARED=$(jq -s 'map(."TP-base") | add' "$OUTDIR"/chr*.truvari/summary.json)
+KPP_UNIQ=$(jq -s 'map(.FN) | add' "$OUTDIR"/chr*.truvari/summary.json)
+CPC_UNIQ=$(jq -s 'map(.FP) | add' "$OUTDIR"/chr*.truvari/summary.json)
+
+echo "KPP total large: $KPP_TOTAL"
+echo "CPCHPRC total large: $CPC_TOTAL"
+echo "shared large: $SHARED"
+echo "KPP unique large: $KPP_UNIQ"
+echo "CPCHPRC unique large: $CPC_UNIQ"
+
+
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs/02.result/large_bychr
+OUT=$OUTDIR/bychr.summary.tsv
+
+echo -e "chr\tKPP_total\tCPCHPRC_total\tshared\tKPP_unique\tCPCHPRC_unique\tprecision\trecall\tf1" > "$OUT"
+
+for chr in chr{1..22} chrX chrY chrM; do
+  json="$OUTDIR/${chr}.truvari/summary.json"
+  [[ -s "$json" ]] || continue
+
+  kpp_total=$(jq '."base cnt"' "$json")
+  cpc_total=$(jq '."comp cnt"' "$json")
+  shared=$(jq '."TP-base"' "$json")
+  kpp_unique=$(jq '.FN' "$json")
+  cpc_unique=$(jq '.FP' "$json")
+  precision=$(jq '.precision' "$json")
+  recall=$(jq '.recall' "$json")
+  f1=$(jq '.f1' "$json")
+
+  echo -e "${chr}\t${kpp_total}\t${cpc_total}\t${shared}\t${kpp_unique}\t${cpc_unique}\t${precision}\t${recall}\t${f1}"
+done >> "$OUT"
+
+
+
+set -euo pipefail
+
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs_newkpp/02.result/large_bychr
+OUT=$OUTDIR/bychr.summary.tsv
+
+echo -e "chr\tKPP_total\tCPCHPRC_total\tshared\tKPP_unique\tCPCHPRC_unique\tprecision\trecall\tf1" > "$OUT"
+
+for chr in chr{1..22} chrX chrY chrM; do
+  json="$OUTDIR/${chr}.truvari/summary.json"
+  [[ -s "$json" ]] || continue
+
+  kpp_total=$(jq '."base cnt"' "$json")
+  cpc_total=$(jq '."comp cnt"' "$json")
+  shared=$(jq '."TP-base"' "$json")
+  kpp_unique=$(jq '.FN' "$json")
+  cpc_unique=$(jq '.FP' "$json")
+  precision=$(jq '.precision' "$json")
+  recall=$(jq '.recall' "$json")
+  f1=$(jq '.f1' "$json")
+
+  echo -e "${chr}\t${kpp_total}\t${cpc_total}\t${shared}\t${kpp_unique}\t${cpc_unique}\t${precision}\t${recall}\t${f1}"
+done >> "$OUT"
+
+
+
+
+
+
+bash /BDATA/smkim/SCRIPTs/after.rtg.ststs.sh kor132.chm13v2.all.rtg.vcfstats.txt kor132.chm13v2.all.rtg.vcfstats.sumstats.txt
+bash /BDATA/smkim/SCRIPTs/after.rtg.ststs.sh kor132.chm13v2.large.allchr.rtg.vcfstats.txt kor132.chm13v2.large.allchr.rtg.vcfstats.sumstats.txt
+bash /BDATA/smkim/SCRIPTs/after.rtg.ststs.sh kor132.chm13v2.small.allchr.rtg.vcfstats.txt kor132.chm13v2.small.allchr.rtg.vcfstats.sumstats.txt
+
+

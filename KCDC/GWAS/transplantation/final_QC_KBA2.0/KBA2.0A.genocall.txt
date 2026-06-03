@@ -1,0 +1,235 @@
+
+cd /DATA/smkim/YS_KOTRY/01.KBAv2.0A
+mkdir 02.1stQC
+
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/02.snpolisher.marker_select.sh /DATA/smkim/YS_KOTRY/01.KBAv2.0A/01.genocall/1stQC/genotype /DATA/smkim/YS_KOTRY/01.KBAv2.0A/01.genocall/1stQC/SSP /DATA/smkim/YS_KOTRY/01.KBAv2.0A/01.genocall/1stQC/adv KOTRY_YS.KR_KBAv2A.1stQC KBAv2.0A
+
+
+
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC --missing --out MISS
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC --het --out HET
+
+
+Rscript --vanilla /BDATA/smkim/GWAS/SCRIPTs/genocall/miss-het.plot.v2.R MISS.imiss HET.het KOTRY_YS.KBA2A.1stQC.miss_het_1st.pdf -c 97 -h 14.5 16
+
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC --remove rmLQSamples.txt --make-bed --out KOTRY_YS.KR_KBAv2A.1stQC.rmLQSamples
+
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune
+flashpca_x86-64 --bfile KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune -n 50 --outpc KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune.PCA.txt
+
+
+mkdir PCA1
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes --maf 0.25 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.1 --not-chr 6,14 --out PCA1/pruning
+
+plink --bfile KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes --extract  PCA1/pruning.prune.in --not-chr 6,14 --make-bed --out PCA1/KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune
+flashpca_x86-64 --bfile PCA1/KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune -n 50 --outpc PCA1/KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune.PCA1.txt
+
+
+
+
+
+R
+pca <- read.table("KOTRY_YS.KR_KBAv2A.1stQC.rmLQSampes.prune.PCA.txt", header=T)
+rmList <- pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+dim(pca)
+
+
+
+
+
+
+
+/DATA/smkim/YS_KOTRY/02.KBAv2.0B/02.1stQC
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/02.snpolisher.marker_select.sh /DATA/smkim/YS_KOTRY/02.KBAv2.0B/01.genocall/1stQC/genotype /DATA/smkim/YS_KOTRY/02.KBAv2.0B/01.genocall/1stQC/SSP /DATA/smkim/YS_KOTRY/02.KBAv2.0B/01.genocall/1stQC/adv KOTRY_YS.KR_KBAv2B.1stQC KBAv2.0B
+
+plink --bfile KOTRY_YS.KR_KBAv2B.1stQC --missing --out MISS
+plink --bfile KOTRY_YS.KR_KBAv2B.1stQC --het --out HET
+Rscript --vanilla /BDATA/smkim/GWAS/SCRIPTs/genocall/miss-het.plot.v2.R MISS.imiss HET.het KOTRY_YS.KBA2B.1stQC.miss_het_1st.pdf 95
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### KOTRY ori 1.1 + 2.0A KRKD
+cd /DATA/smkim/KOTRY/01.KBAv2.0A/02.1stQC
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/02.snpolisher.marker_select.sh /BDATA/smkim/KOTRY/1st/genotype /BDATA/smkim/KOTRY/1st/SSP /BDATA/smkim/KOTRY/1st/adv KOTRY.KR_KBAv1_KBAv2A.1stQC KBAv1.1
+
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC --missing --out KOTRY.KR_KBAv1_KBAv2A.1stQC.MISS
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC --het --out KOTRY.KR_KBAv1_KBAv2A.1stQC.HET
+
+
+Rscript --vanilla /BDATA/smkim/GWAS/SCRIPTs/genocall/miss-het.plot.v2.R KOTRY.KR_KBAv1_KBAv2A.1stQC.MISS.imiss KOTRY.KR_KBAv1_KBAv2A.1stQC.HET.het KOTRY.KR_KBAv1_KBAv2A.1stQC.pdf -c 97 -h 15 18
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC --remove rmLQSamples.txt --make-bed --out KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples
+
+
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples.prune
+flashpca_x86-64 --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples.prune -n 50 --outpc KOTRY.KR_KBAv1_KBAv2A.1stQC.PCA.txt
+
+
+grep -f /DATA/smkim/KOTRY/00.rawDATA/sampleINFO/KBAv1.KR.ID KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples.fam  > KR.samples
+grep -f /DATA/smkim/KOTRY/00.rawDATA/sampleINFO/KBAv1.KD.ID KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples.fam  > KD.samples
+
+
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples --keep KR.samples --make-bed --out KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KR
+plink --bfile KOTRY.KR_KBAv1_KBAv2A.1stQC.rmLQSamples --keep KD.samples --make-bed --out KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KD
+
+
+plink --bfile KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KR --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out KRKD/KR.pruning
+plink --bfile KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KD --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out KRKD/KD.pruning
+
+
+plink --bfile KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KR --extract  KRKD/KR.pruning.prune.in --not-chr 6,14 --make-bed --out KRKD/KR.prune
+plink --bfile KRKD/KOTRY.KRKD_KBAv2B.1stQC.rmLQSamples.KD --extract  KRKD/KD.pruning.prune.in --not-chr 6,14 --make-bed --out KRKD/KD.prune
+
+flashpca_x86-64 --bfile KRKD/KR.prune -n 50 --outpc KRKD/KOTRY.KBAv1.KR.PCA.txt
+flashpca_x86-64 --bfile KRKD/KD.prune -n 50 --outpc KRKD/KOTRY.KBAv1.KD.PCA.txt
+
+
+
+pca <- read.table("KRKD/KOTRY.KBAv1.KR.PCA.txt", header=T)
+#pdf("PCA_2nd.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+#          xlim=c(-0.1, 0.1), ylim=c(-0.1,0.1),
+     xlab="PC1", ylab="PC2", main="(KBA v1.0, v2.0A) KR QC PCA", cex=1, pch=16)
+abline(v=-0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.05, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+
+#dev.off()
+rmList <- pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA_KR.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+dim(pca)
+
+
+pca <- read.table("KRKD/KOTRY.KBAv1.KD.PCA.txt", header=T)
+#pdf("PCA_2nd.pdf", height = 10, width = 10)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+          #xlim=c(-0.1, 0.1), ylim=c(-0.1,0.1),
+     xlab="PC1", ylab="PC2", main="(KBA v1.0, v2.0A) KD QC PCA", cex=1, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+
+#dev.off()
+rmList <- pca[pca$PC1 < -0.1 | 0.1 < pca$PC1 | pca$PC2 < -0.1 | 0.1 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA_KD.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+cat 02.1stQC/rmLQSamples.txt 02.1stQC/KRKD/rmPCA*txt | awk '{print $1}' > 1stQCout.txt
+
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/select.2ndQC.ID.sh /DATA/smkim/KOTRY/01.KBAv2.0A/KOTRY.KRKD.celall.txt /DATA/smkim/KOTRY/01.KBAv2.0A/1stQCout.txt
+
+
+
+### 2nd call
+
+cd /DATA/smkim/KOTRY/01.KBAv2.0A/03.2ndQC
+
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/geno.sh /DATA/smkim/KOTRY/01.KBAv2.0A/filtered_f1.txt /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/genotype
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/geno.ssp.sh /DATA/smkim/KOTRY/01.KBAv2.0A/filtered_f1.txt /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/SSP
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/adv.sh /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/SSP /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/adv
+
+
+
+bash /BDATA/smkim/GWAS/SCRIPTs/genocall/02.snpolisher.marker_select.sh /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/genotype /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/SSP /BDATA/smkim/KOTRY/2nd/KBAv1.1_2.0A_KOTRY/adv ./KOTRY.KRKD_KBAv1_v2A.2ndQC KBAv1.1
+
+
+plink --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC --missing --out MISS
+plink --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC --het --out HET
+
+KOTRY.KRKD_KBAv1_v2A.2ndQC.het
+KOTRY.KRKD_KBAv1_v2A.2ndQC.imiss
+
+Rscript --vanilla /BDATA/smkim/GWAS/SCRIPTs/genocall/miss-het.plot.v2.R MISS.imiss HET.het KOTRY.KRKD_KBAv2B.2ndQC.miss_het_1st.pdf -c 97 -h 15 18
+
+plink --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC --maf 0.1 --geno 0.01 --hwe 0.001 --indep-pairwise 50 5 0.5 --not-chr 6,14 --out pruning
+
+plink --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC --extract  pruning.prune.in --not-chr 6,14 --make-bed --out KOTRY.KRKD_KBAv1_v2A.2ndQC.prune
+flashpca_x86-64 --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC.prune -n 50 --outpc KOTRY.KRKD_KBAv1_v2A.2ndQC.txt
+
+
+###
+pca <- read.table("KOTRY/2nd/KOTRY.KRKD_KBAv1_v2A.2ndQC.txt", header=T)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+#     xlim=c(-0.1, 0.1), ylim=c(-0.1,0.1),
+    xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="(KBA v1.0, v2.0A) KR + KD 2nd QC PCA", cex=1, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.5 | 0.5 < pca$PC1 | pca$PC2 < -0.5 | 0.5 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.5 | 0.5 < pca$PC1 | pca$PC2 < -0.5 | 0.5 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+
+#dev.off()
+rmList <- pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+###
+
+pca <- read.table("KOTRY/2nd/KOTRY.KRKD_KBAv1_v2A.2ndQC.txt", header=T)
+plot(pca$PC1, pca$PC2, col=rgb(0,0,1,0.5),
+#     xlim=c(-0.1, 0.1), ylim=c(-0.1,0.1),
+    xlim=c(-1, 1), ylim=c(-1,1),
+     xlab="PC1", ylab="PC2", main="(KBA v1.0, v2.0A) KR + KD 2nd QC PCA", cex=1, pch=16)
+abline(v=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(v=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+abline(h=-0.1, col=rgb(1,0,0,0.5), lty=3, lwd=2)
+
+points(pca[pca$PC1 < -0.5 | 0.5 < pca$PC1 | pca$PC2 < -0.5 | 0.5 < pca$PC2,]$PC1,
+       pca[pca$PC1 < -0.5 | 0.5 < pca$PC1 | pca$PC2 < -0.5 | 0.5 < pca$PC2,]$PC2,
+       col=rgb(1,0,0,0.7), cex=1, pch=16)
+
+#dev.off()
+rmList <- pca[pca$PC1 < -0.05 | 0.05 < pca$PC1 | pca$PC2 < -0.05 | 0.05 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+
+
+###
+pca <- read.table("KOTRY.KRKD_KBAv1_v2A.2ndQC.txt", header=T)
+
+rmList <- pca[pca$PC1 < -0.5 | 0.5 < pca$PC1 | pca$PC2 < -0.5 | 0.5 < pca$PC2,]
+dim(rmList)
+write.table(rmList[,c(1:2)], "rmPCA.txt", col.names= FALSE, row.names=FALSE, sep="\t", quote=FALSE)
+####
+
+
+plink --bfile KOTRY.KRKD_KBAv1_v2A.2ndQC --remove rmPCA.txt --make-bed --out KOTRY.KRKD_KBAv1_v2A.2ndQC.rmPCA
+
+
+awk '{split($1,a,"_");split(a[7],b,".");print $1,$1,b[1],b[1]}' KOTRY.KRKD_KBAv1_v2A.2ndQC.rmPCA.fam > id.change.txt

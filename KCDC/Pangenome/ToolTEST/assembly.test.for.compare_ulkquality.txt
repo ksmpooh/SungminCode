@@ -1,0 +1,42 @@
+#필요없는 리드 seqkit로 없애는 법
+conda activate seqkit_env
+FASTQ=PG240004_LCL_ULK.merge.fastq.gz
+seqkit seq --threads 100 --min-qual 15 $FASTQ > ${FASTQ%%.fastq.gz}.15q.fastq
+pigz ${FASTQ%%.fastq.gz}.10q.fastq
+
+seqkit seq --min-len 10000 $FASTQ > ${FASTQ%%.fastq.gz}.min10kb.fastq
+
+#롱리드 품질 Nanoplot으로 확인하는 법
+conda activate nanoplot_env
+for FILE in $(ls | grep fastq.gz )
+do echo $FILE
+FILE2=${FILE%%.fastq.gz}
+echo $FILE2
+NanoPlot --verbose --raw --huge --tsv_stats --threads 100 --outdir ${FILE2}_nanoplot --prefix ${FILE2}_ --fastq $FILE
+done
+
+
+# HiFi - ULK hifiasm0.25로 어셈블리 만드는 법
+DIR_READ=/BDATA/pangenome/test
+READ_HIFI=PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz
+READ_ULK=PG240004_LCL_ULK.merge.15q.fastq.gz
+SAMPLE=${READ_HIFI%%.Revio_hifi_reads.rawfastq.merge.fastq.gz}
+DIR_OUTPUT=/BDATA/pangenome/test/assembly_output/
+LOG=hifiasm0.25_${SAMPLE}_BLD-HiFi_LCL-ULK-15Q.log
+/ADATA/pangenome/tool/hifiasm-0.25.0/hifiasm -t 100 --dual-scaf --telo-m CCCTAA --ul ${DIR_READ}/${READ_ULK} -o ${DIR_OUTPUT}/${SAMPLE}.hifi_bld.ulk_lcl_15q ${DIR_READ}/${READ_HIFI} 2> ${DIR_OUTPUT}/$LOG
+
+
+
+DIR_READ=/BDATA/pangenome/test
+READ_HIFI=PG240004.Revio_hifi_reads.rawfastq.merge.fastq.gz
+READ_ULK=PG240004_LCL_ULK.merge.20q.fastq.gz
+SAMPLE=${READ_HIFI%%.Revio_hifi_reads.rawfastq.merge.fastq.gz}
+DIR_OUTPUT=/BDATA/pangenome/test/assembly_output/
+LOG=hifiasm0.25_${SAMPLE}_BLD-HiFi_LCL-ULK-20Q.log
+/ADATA/pangenome/tool/hifiasm-0.25.0/hifiasm -t 100 --dual-scaf --telo-m CCCTAA --ul ${DIR_READ}/${READ_ULK} -o ${DIR_OUTPUT}/${SAMPLE}.hifi_bld.ulk_lcl_20q ${DIR_READ}/${READ_HIFI} 2> ${DIR_OUTPUT}/$LOG
+
+
+
+
+ /BDATA/pangenome/test
+ 207번에서 15Q 20Q로 테스트 같이 해요!

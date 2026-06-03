@@ -1,0 +1,359 @@
+mkdir -p /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/{01.input,02.screen,03.subset,04.map,05.pattern,06.summary}
+mkdir -p /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/{01.input,02.screen,03.subset,04.map,05.pattern,06.summary}
+
+ln -sf /ADATA/smkim/pangenome/bandage/c4ab.gfa \
+  /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/c4ab.gfa
+
+ln -sf /ADATA/smkim/pangenome/bandage/haplotype/C4AB/modules_manual \
+  /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/modules_manual
+
+
+  ln -sf /ADATA/smkim/pangenome/bandage/c4ab.gfa \
+  /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/01.input/c4ab.gfa
+
+ln -sf /ADATA/smkim/pangenome/bandage/haplotype/C4AB/modules_manual \
+  /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/01.input/modules_manual
+
+
+
+cat /ADATA/smkim/pangenome/bandage/c4ab.genomic.fa \
+    /ADATA/smkim/pangenome/bandage/kppd_locus/C4_HERVK/HERVK_C4.simple.fa \
+> /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/c4ab_screen_query.fa
+
+ln -sf /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/c4ab_screen_query.fa \
+  /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/01.input/c4ab_screen_query.fa
+
+ls /BDATA/pangenome/scaffolding/raw_fa/KPPD*.hap*.fa | sort > \
+/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/fasta.list
+
+ls /BDATA/pangenome/scaffolding/raw_fa/*.hap*.fa | grep -v '/KPPD' | sort > \
+/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/01.input/fasta.list
+
+
+##
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/02.screen/run_screen_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD
+IN=$BASE/01.input
+OUT=$BASE/02.screen
+LIST=$IN/fasta.list
+QUERY=$IN/c4ab_screen_query.fa
+
+mkdir -p "$OUT/paf" "$OUT/hit_ids" "$OUT/log"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .fa)
+  paf="$OUT/paf/${bn}.paf"
+  ids="$OUT/hit_ids/${bn}.ids.txt"
+  log="$OUT/log/${bn}.log"
+
+  echo "[screen] $bn"
+
+  minimap2 -x asm20 -N 50 -p 0.1 --secondary=yes \
+    "$fa" "$QUERY" > "$paf" 2> "$log"
+
+  awk 'BEGIN{FS="\t"} $10>=500 {print $6}' "$paf" | sort -u > "$ids"
+}
+export -f run_one
+export OUT QUERY
+
+cat "$LIST" | xargs -I{} -P 16 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/02.screen/run_screen_parallel.sh
+
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/02.screen/run_screen_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC
+IN=$BASE/01.input
+OUT=$BASE/02.screen
+LIST=$IN/fasta.list
+QUERY=$IN/c4ab_screen_query.fa
+
+mkdir -p "$OUT/paf" "$OUT/hit_ids" "$OUT/log"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .fa)
+  paf="$OUT/paf/${bn}.paf"
+  ids="$OUT/hit_ids/${bn}.ids.txt"
+  log="$OUT/log/${bn}.log"
+
+  echo "[screen] $bn"
+
+  minimap2 -x asm20 -N 50 -p 0.1 --secondary=yes \
+    "$fa" "$QUERY" > "$paf" 2> "$log"
+
+  awk 'BEGIN{FS="\t"} $10>=500 {print $6}' "$paf" | sort -u > "$ids"
+}
+export -f run_one
+export OUT QUERY
+
+cat "$LIST" | xargs -I{} -P 16 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/02.screen/run_screen_parallel.sh
+
+
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/02.screen/run_screen_parallel.sh
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/02.screen/run_screen_parallel.sh
+
+
+cat /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/01.input/fasta.list \
+    /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/01.input/fasta.list \
+| sort -u | xargs -I{} -P 86 samtools faidx {}
+
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/make_subset_chr6_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD
+IN=$BASE/01.input
+SCR=$BASE/02.screen/hit_ids_chr6
+OUT=$BASE/03.subset
+LIST=$IN/fasta.list
+
+mkdir -p "$OUT/fasta_chr6" "$OUT/log_chr6"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .fa)
+  ids="$SCR/${bn}.ids.txt"
+  outfa="$OUT/fasta_chr6/${bn}.c4ab_chr6.fa"
+  log="$OUT/log_chr6/${bn}.log"
+
+  echo "[subset-chr6] $bn"
+
+  if [ ! -s "$ids" ]; then
+    : > "$outfa"
+    echo "no_chr6_hits" > "$log"
+    exit 0
+  fi
+
+  samtools faidx "$fa" $(cat "$ids") > "$outfa" 2> "$log"
+}
+export -f run_one
+export SCR OUT
+
+cat "$LIST" | xargs -I{} -P 16 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/make_subset_chr6_parallel.sh
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/make_subset_chr6_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD
+IN=$BASE/01.input
+SCR=$BASE/02.screen/hit_ids_chr6
+OUT=$BASE/03.subset
+LIST=$IN/fasta.list
+
+mkdir -p "$OUT/fasta_chr6" "$OUT/log_chr6"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .fa)
+  ids="$SCR/${bn}.ids.txt"
+  outfa="$OUT/fasta_chr6/${bn}.c4ab_chr6.fa"
+  log="$OUT/log_chr6/${bn}.log"
+
+  echo "[subset-chr6] $bn"
+
+  if [ ! -s "$ids" ]; then
+    : > "$outfa"
+    echo "no_chr6_hits" > "$log"
+    exit 0
+  fi
+
+  samtools faidx "$fa" $(cat "$ids") > "$outfa" 2> "$log"
+}
+export -f run_one
+export SCR OUT
+
+cat "$LIST" | xargs -I{} -P 16 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/make_subset_chr6_parallel.sh
+
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/03.subset/make_subset_chr6_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC
+IN=$BASE/01.input
+SCR=$BASE/02.screen/hit_ids_chr6
+OUT=$BASE/03.subset
+LIST=$IN/fasta.list
+
+mkdir -p "$OUT/fasta_chr6" "$OUT/log_chr6"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .fa)
+  ids="$SCR/${bn}.ids.txt"
+  outfa="$OUT/fasta_chr6/${bn}.c4ab_chr6.fa"
+  log="$OUT/log_chr6/${bn}.log"
+
+  echo "[subset-chr6] $bn"
+
+  if [ ! -s "$ids" ]; then
+    : > "$outfa"
+    echo "no_chr6_hits" > "$log"
+    exit 0
+  fi
+
+  samtools faidx "$fa" $(cat "$ids") > "$outfa" 2> "$log"
+}
+export -f run_one
+export SCR OUT
+
+cat "$LIST" | xargs -I{} -P 16 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/03.subset/make_subset_chr6_parallel.sh
+
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/make_subset_chr6_parallel.sh
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/03.subset/make_subset_chr6_parallel.sh
+
+
+
+grep '^>' /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/03.subset/fasta_chr6/KPPD001.hap1.c4ab_chr6.fa
+grep '^>' /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/03.subset/fasta_chr6/HG002.hap1.c4ab_chr6.fa
+
+
+
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/run_graphaligner_chr6_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD
+IN=$BASE/01.input
+SUB=$BASE/03.subset/fasta_chr6
+OUT=$BASE/04.map
+GRAPH=$IN/c4ab.gfa
+
+mkdir -p "$OUT/gaf_chr6" "$OUT/log_chr6"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .c4ab_chr6.fa)
+  gaf="$OUT/gaf_chr6/${bn}.gaf"
+  log="$OUT/log_chr6/${bn}.log"
+
+  echo "[graphaligner-chr6] $bn"
+
+  if [ ! -s "$fa" ]; then
+    : > "$gaf"
+    echo "empty_subset" > "$log"
+    exit 0
+  fi
+
+  if ! grep -q '^>' "$fa"; then
+    : > "$gaf"
+    echo "no_fasta_header" > "$log"
+    exit 0
+  fi
+
+  GraphAligner \
+    -g "$GRAPH" \
+    -f "$fa" \
+    -a "$gaf" \
+    -x vg \
+    -t 6 \
+    > "$log" 2>&1
+}
+export -f run_one
+export GRAPH OUT
+
+ls "$SUB"/*.c4ab_chr6.fa | xargs -I{} -P 50 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/run_graphaligner_chr6_parallel.sh
+
+
+cat > /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/run_graphaligner_chr6_parallel.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC
+IN=$BASE/01.input
+SUB=$BASE/03.subset/fasta_chr6
+OUT=$BASE/04.map
+GRAPH=$IN/c4ab.gfa
+
+mkdir -p "$OUT/gaf_chr6" "$OUT/log_chr6"
+
+run_one() {
+  fa="$1"
+  bn=$(basename "$fa" .c4ab_chr6.fa)
+  gaf="$OUT/gaf_chr6/${bn}.gaf"
+  log="$OUT/log_chr6/${bn}.log"
+
+  echo "[graphaligner-chr6] $bn"
+
+  if [ ! -s "$fa" ]; then
+    : > "$gaf"
+    echo "empty_subset" > "$log"
+    exit 0
+  fi
+
+  if ! grep -q '^>' "$fa"; then
+    : > "$gaf"
+    echo "no_fasta_header" > "$log"
+    exit 0
+  fi
+
+  GraphAligner \
+    -g "$GRAPH" \
+    -f "$fa" \
+    -a "$gaf" \
+    -x vg \
+    -t 6 \
+    > "$log" 2>&1
+}
+export -f run_one
+export GRAPH OUT
+
+ls "$SUB"/*.c4ab_chr6.fa | xargs -I{} -P 50 bash -c 'run_one "$@"' _ {}
+echo "[done]"
+EOF
+
+chmod +x /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/run_graphaligner_chr6_parallel.sh
+
+
+conda activate GraphAligner
+
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/run_graphaligner_chr6_parallel.sh
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/run_graphaligner_chr6_parallel.sh
+
+
+
+conda activate GraphAligner
+
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/run_graphaligner_window_parallel.sh
+bash /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/run_graphaligner_window_parallel.sh
+
+
+ls /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/window_gaf | head
+ls /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/window_gaf | head
+
+head /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/KPPD/04.map/window_gaf/KPPD001.hap1.gaf
+head /ADATA/smkim/pangenome/bandage/haplotype/C4AB/scaffolding/HPRC/04.map/window_gaf/HG002.hap1.gaf

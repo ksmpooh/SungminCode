@@ -1,0 +1,247 @@
+NUTM2F::chr9:106487811-106498251
+NUTM2G::chr9:109100631-109114736
+HERC6::chr4:91709823-91774756
+GFOD2::chr16:73469303-73514085
+
+GFF=/ADATA/pangenome/db/chm13/chm13.draft_v2.0.gene_annotation.gff3
+CHM13_FA=/ADATA/pangenome/db/chm13/chm13v2.0_maskedY_rCRS.fa.gz
+
+
+/DDATA/pangenome/graph/merge$ ls
+kor132_hprc47_cpc58.chm13v2.d47.dist                   kor132_hprc47_cpc58.chm13v2.d47.snarls
+kor132_hprc47_cpc58.chm13v2.d47.gfa                    kor132_hprc47_cpc58.chm13v2.gbz
+kor132_hprc47_cpc58.chm13v2.d47.gfa.paths              kor132_hprc47_cpc58.chm13v2.gfa
+kor132_hprc47_cpc58.chm13v2.d47.gfa.stats              kor132_hprc47_cpc58.chm13v2.hapl
+kor132_hprc47_cpc58.chm13v2.d47.giraffe.gbz            kor132_hprc47_cpc58.chm13v2.no_nested.dist
+kor132_hprc47_cpc58.chm13v2.d47.giraffe.gbz.stats      kor132_hprc47_cpc58.chm13v2.ri
+kor132_hprc47_cpc58.chm13v2.d47.shortread.withzip.min  kor132_hprc47_cpc58.chm13v2.snarls
+
+
+/DDATA/pangenome/graph/hprc$ ls hprc-v1.0*
+hprc-v1.0-mc-chm13.gfa.gz               hprc-v1.0-mc-chm13-minaf.0.1.giraffe.gbz
+hprc-v1.0-mc-chm13.gfa.paths            hprc-v1.0-mc-chm13-minaf.0.1.giraffe.gbz.paths
+hprc-v1.0-mc-chm13-minaf.0.1.dist       hprc-v1.0-mc-chm13-minaf.0.1.giraffe.gbz.stat
+hprc-v1.0-mc-chm13-minaf.0.1.gfa.gz     hprc-v1.0-mc-chm13-minaf.0.1.shortread.withzip.min
+hprc-v1.0-mc-chm13-minaf.0.1.gfa.paths  hprc-v1.0-mc-chm13-minaf.0.1.shortread.zipcodes
+hprc-v1.0-mc-chm13-minaf.0.1.gfa.stat   hprc-v1.0-mc-chm13-minaf.0.1.snarls
+
+
+
+genome@genome207:/ADATA/smkim/pangenome/bandage/graph$ ls
+kor132_hprc47_cpc58.chm13v2.full.gbz     kor132_hprc47_cpc58.chm13v2.full.snarls  kor132_hprc47_cpc58.chm13v2.snarls
+kor132_hprc47_cpc58.chm13v2.full.gfa.gz  kor132_hprc47_cpc58.chm13v2.full.xg      kor132_hprc47_cpc58.chm13v2.xg
+
+
+
+
+/DDATA/pangenome/asm/KPPD001_h1.fa.gz
+/DDATA/pangenome/asm/KPPD001_h2.fa.gz
+.gzi fai 다 있다
+
+KPPD001 ~ 132 까지 다 있다.
+그리고 
+
+
+ls *fa
+HG002.1.fa    HG00733.2.fa  HG01123.1.fa  HG01361.2.fa  HG02080.1.fa  HG02486.2.fa  HG02723.1.fa  HG03486.2.fa  NA19240.1.fa
+HG002.2.fa    HG00735.1.fa  HG01123.2.fa  HG01891.1.fa  HG02080.2.fa  HG02559.1.fa  HG02723.2.fa  HG03492.1.fa  NA19240.2.fa
+HG00438.1.fa  HG00735.2.fa  HG01175.1.fa  HG01891.2.fa  HG02109.1.fa  HG02559.2.fa  HG02818.1.fa  HG03492.2.fa  NA20129.1.fa
+HG00438.2.fa  HG00741.1.fa  HG01175.2.fa  HG01928.1.fa  HG02109.2.fa  HG02572.1.fa  HG02818.2.fa  HG03516.1.fa  NA20129.2.fa
+HG005.1.fa    HG00741.2.fa  HG01243.1.fa  HG01928.2.fa  HG02145.1.fa  HG02572.2.fa  HG02886.1.fa  HG03516.2.fa  NA21309.1.fa
+HG005.2.fa    HG01071.1.fa  HG01243.2.fa  HG01952.1.fa  HG02145.2.fa  HG02622.1.fa  HG02886.2.fa  HG03540.1.fa  NA21309.2.fa
+HG00621.1.fa  HG01071.2.fa  HG01258.1.fa  HG01952.2.fa  HG02148.1.fa  HG02622.2.fa  HG03098.1.fa  HG03540.2.fa
+HG00621.2.fa  HG01106.1.fa  HG01258.2.fa  HG01978.1.fa  HG02148.2.fa  HG02630.1.fa  HG03098.2.fa  HG03579.1.fa
+HG00673.1.fa  HG01106.2.fa  HG01358.1.fa  HG01978.2.fa  HG02257.1.fa  HG02630.2.fa  HG03453.1.fa  HG03579.2.fa
+HG00673.2.fa  HG01109.1.fa  HG01358.2.fa  HG02055.1.fa  HG02257.2.fa  HG02717.1.fa  HG03453.2.fa  NA18906.1.fa
+HG00733.1.fa  HG01109.2.fa  HG01361.1.fa  HG02055.2.fa  HG02486.1.fa  HG02717.2.fa  HG03486.1.fa  NA18906.2.fa
+genome@genome207:/ADATA/pangenome/00.rawDATA/HPRC/phaseI/assembly$
+
+/RDATA1/Pangenome/02.assembly_QC/liftoff/HPRC_phaseI/gencode_CHM13$ ls *polished
+CHM13Y.gencode_CHM13.liftoff.gff3_polished     HG02109.2.gencode_CHM13.liftoff.gff3_polished
+HG002.1.gencode_CHM13.liftoff.gff3_polished    HG02145.1.gencode_CHM13.liftoff.gff3_polished
+HG002.2.gencode_CHM13.liftoff.gff3_polished    HG02145.2.gencode_CHM13.liftoff.gff3_polished
+HG00438.1.gencode_CHM13.liftoff.gff3_polished  HG02148.1.gencode_CHM13.liftoff.gff3_polished
+HG00438.2.gencode_CHM13.liftoff.gff3_polished  HG02148.2.gencode_CHM13.liftoff.gff3_polished
+HG005.1.gencode_CHM13.liftoff.gff3_polished    HG02257.1.gencode_CHM13.liftoff.gff3_polished
+HG005.2.gencode_CHM13.liftoff.gff3_polished    HG02257.2.gencode_CHM13.liftoff.gff3_polished
+HG00621.1.gencode_CHM13.liftoff.gff3_polished  HG02486.1.gencode_CHM13.liftoff.gff3_polished
+HG00621.2.gencode_CHM13.liftoff.gff3_polished  HG02486.2.gencode_CHM13.liftoff.gff3_polished
+HG00673.1.gencode_CHM13.liftoff.gff3_polished  HG02559.1.gencode_CHM13.liftoff.gff3_polished
+HG00673.2.gencode_CHM13.liftoff.gff3_polished  HG02559.2.gencode_CHM13.liftoff.gff3_polished
+HG00733.1.gencode_CHM13.liftoff.gff3_polished  HG02572.1.gencode_CHM13.liftoff.gff3_polished
+HG00733.2.gencode_CHM13.liftoff.gff3_polished  HG02572.2.gencode_CHM13.liftoff.gff3_polished
+HG00735.1.gencode_CHM13.liftoff.gff3_polished  HG02622.1.gencode_CHM13.liftoff.gff3_polished
+HG00735.2.gencode_CHM13.liftoff.gff3_polished  HG02622.2.gencode_CHM13.liftoff.gff3_polished
+HG00741.1.gencode_CHM13.liftoff.gff3_polished  HG02630.1.gencode_CHM13.liftoff.gff3_polished
+HG00741.2.gencode_CHM13.liftoff.gff3_polished  HG02630.2.gencode_CHM13.liftoff.gff3_polished
+HG01071.1.gencode_CHM13.liftoff.gff3_polished  HG02717.1.gencode_CHM13.liftoff.gff3_polished
+HG01071.2.gencode_CHM13.liftoff.gff3_polished  HG02717.2.gencode_CHM13.liftoff.gff3_polished
+HG01106.1.gencode_CHM13.liftoff.gff3_polished  HG02723.1.gencode_CHM13.liftoff.gff3_polished
+HG01106.2.gencode_CHM13.liftoff.gff3_polished  HG02723.2.gencode_CHM13.liftoff.gff3_polished
+HG01109.1.gencode_CHM13.liftoff.gff3_polished  HG02818.1.gencode_CHM13.liftoff.gff3_polished
+HG01109.2.gencode_CHM13.liftoff.gff3_polished  HG02818.2.gencode_CHM13.liftoff.gff3_polished
+HG01123.1.gencode_CHM13.liftoff.gff3_polished  HG02886.1.gencode_CHM13.liftoff.gff3_polished
+HG01123.2.gencode_CHM13.liftoff.gff3_polished  HG02886.2.gencode_CHM13.liftoff.gff3_polished
+HG01175.1.gencode_CHM13.liftoff.gff3_polished  HG03098.1.gencode_CHM13.liftoff.gff3_polished
+HG01175.2.gencode_CHM13.liftoff.gff3_polished  HG03098.2.gencode_CHM13.liftoff.gff3_polished
+HG01243.1.gencode_CHM13.liftoff.gff3_polished  HG03453.1.gencode_CHM13.liftoff.gff3_polished
+HG01243.2.gencode_CHM13.liftoff.gff3_polished  HG03453.2.gencode_CHM13.liftoff.gff3_polished
+HG01258.1.gencode_CHM13.liftoff.gff3_polished  HG03486.1.gencode_CHM13.liftoff.gff3_polished
+HG01258.2.gencode_CHM13.liftoff.gff3_polished  HG03486.2.gencode_CHM13.liftoff.gff3_polished
+HG01358.1.gencode_CHM13.liftoff.gff3_polished  HG03492.1.gencode_CHM13.liftoff.gff3_polished
+HG01358.2.gencode_CHM13.liftoff.gff3_polished  HG03492.2.gencode_CHM13.liftoff.gff3_polished
+HG01361.1.gencode_CHM13.liftoff.gff3_polished  HG03516.1.gencode_CHM13.liftoff.gff3_polished
+HG01361.2.gencode_CHM13.liftoff.gff3_polished  HG03516.2.gencode_CHM13.liftoff.gff3_polished
+HG01891.1.gencode_CHM13.liftoff.gff3_polished  HG03540.1.gencode_CHM13.liftoff.gff3_polished
+HG01891.2.gencode_CHM13.liftoff.gff3_polished  HG03540.2.gencode_CHM13.liftoff.gff3_polished
+HG01928.1.gencode_CHM13.liftoff.gff3_polished  HG03579.1.gencode_CHM13.liftoff.gff3_polished
+HG01928.2.gencode_CHM13.liftoff.gff3_polished  HG03579.2.gencode_CHM13.liftoff.gff3_polished
+HG01952.1.gencode_CHM13.liftoff.gff3_polished  NA18906.1.gencode_CHM13.liftoff.gff3_polished
+HG01952.2.gencode_CHM13.liftoff.gff3_polished  NA18906.2.gencode_CHM13.liftoff.gff3_polished
+HG01978.1.gencode_CHM13.liftoff.gff3_polished  NA19240.1.gencode_CHM13.liftoff.gff3_polished
+HG01978.2.gencode_CHM13.liftoff.gff3_polished  NA19240.2.gencode_CHM13.liftoff.gff3_polished
+HG02055.1.gencode_CHM13.liftoff.gff3_polished  NA20129.1.gencode_CHM13.liftoff.gff3_polished
+HG02055.2.gencode_CHM13.liftoff.gff3_polished  NA20129.2.gencode_CHM13.liftoff.gff3_polished
+HG02080.1.gencode_CHM13.liftoff.gff3_polished  NA21309.1.gencode_CHM13.liftoff.gff3_polished
+HG02080.2.gencode_CHM13.liftoff.gff3_polished  NA21309.2.gencode_CHM13.liftoff.gff3_polished
+HG02109.1.gencode_CHM13.liftoff.gff3_polished
+
+/RDATA1/Pangenome/02.assembly_QC/liftoff/KPPD_T2T$ ls *polished
+KPPD001.1.chm13v2_gencode.liftoff.gff3_polished  KPPD067.1.chm13v2_gencode.liftoff.gff3_polished
+KPPD001.2.chm13v2_gencode.liftoff.gff3_polished  KPPD067.2.chm13v2_gencode.liftoff.gff3_polished
+KPPD002.1.chm13v2_gencode.liftoff.gff3_polished  KPPD068.1.chm13v2_gencode.liftoff.gff3_polished
+KPPD002.2.chm13v2_gencode.liftoff.gff3_polished  KPPD068.2.chm13v2_gencode.liftoff.gff3_polished
+KPPD003.1.chm13v2_gencode.liftoff.gff3_polished  KPPD069.1.chm13v2_gencode.liftoff.gff3_polished
+KPPD003.2.chm13v2_gencode.liftoff.gff3_polished  KPPD069.2.chm13v2_gencode.liftoff.gff3_polished
+KPPD004.1.chm13v2_gencode.liftoff.gff3_polished  KPPD070.1.chm13v2_gencode.liftoff.gff3_polished
+KPPD004.2.chm13v2_gencode.liftoff.gff3_polished  KPPD070.2.chm13v2_gencode.liftoff.gff3_polished
+
+
+
+
+chr6:31635263-32088625
+C4A/B HERV-K
+
+
+###206번
+
+/ADATA/smkim/pangenome/bandage/hprc$ ls *
+hprc-v1.0-mc-chm13.gfa.gz  hprc-v1.0-mc-chm13.snarls  hprc-v1.0-mc-chm13.xg
+
+/BDATA/pangenome/graph/merge$ ls
+kor132_hprc47_cpc58.chm13v2.gfa.gz  kor132_hprc47_cpc58.chm13v2.snarls  kor132_hprc47_cpc58.chm13v2.xg
+
+
+/ADATA/smkim/pangenome/bandage/final$ ls */*
+00.bed/region1.OR2A1_ARHGEF5.50kb_buffer.bed  00.bed/region3.AMY_cluster.50kb_buffer.bed  00.bed/region5.KIR_cluster.50kb_buffer.bed
+00.bed/region2.RHD_RHCE.50kb_buffer.bed       00.bed/region4.C4AB.50kb_buffer.bed         00.bed/region6.NUTM2F_NUTM2G.50kb_buffer.bed
+
+/ADATA/smkim/pangenome$ ls
+bandage  chm13v2.0_maskedY_rCRS.fa.gz  chm13v2.0_maskedY_rCRS.fa.gz.fai  chm13v2.0_maskedY_rCRS.fa.gz.gzi
+
+
+
+
+
+
+
+
+106:
+/ADATA/pangenome/liftoff/genocode_chm13/
+
+
+/ADATA/pangenome/liftoff/genocode_chm13$ ls hprc/* | head
+hprc/CHM13Y.gencode_CHM13.liftoff.gff3_polished
+hprc/HG002.1.gencode_CHM13.liftoff.gff3_polished
+hprc/HG002.2.gencode_CHM13.liftoff.gff3_polished
+hprc/HG00438.1.gencode_CHM13.liftoff.gff3_polished
+hprc/HG00438.2.gencode_CHM13.liftoff.gff3_polished
+hprc/HG005.1.gencode_CHM13.liftoff.gff3_polished
+hprc/HG005.2.gencode_CHM13.liftoff.gff3_polished
+hprc/HG00621.1.gencode_CHM13.liftoff.gff3_polished
+hprc/HG00621.2.gencode_CHM13.liftoff.gff3_polished
+hprc/HG00673.1.gencode_CHM13.liftoff.gff3_polished
+genome@genome106:/ADATA/pangenome/liftoff/genocode_chm13$ ls kppd/* | head
+kppd/KPPD001.1.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD001.2.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD002.1.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD002.2.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD003.1.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD003.2.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD004.1.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD004.2.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD005.1.chm13v2_gencode.liftoff.gff3_polished
+kppd/KPPD005.2.chm13v2_gencode.liftoff.gff3_polished
+
+
+### 
+
+두개 서버 공통
+
+/ADATA/smkim/pangenome/bandage/liftoff$ ls * |head
+CHM13Y.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG002.1.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG002.2.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG00438.1.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG00438.2.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG005.1.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG005.2.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG00621.1.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+HG00621.2.gencode_CHM13.liftoff.gff3_polished.target_hits.tsv
+
+
+#### assembly.fa 위치
+
+205:
+KPPD
+/BDATA/pangenome/asm$ ls *gz | head
+KPPD001_h1.fa.gz
+KPPD001_h2.fa.gz
+KPPD002_h1.fa.gz
+KPPD002_h2.fa.gz
+KPPD003_h1.fa.gz
+KPPD003_h2.fa.gz
+KPPD004_h1.fa.gz
+KPPD004_h2.fa.gz
+KPPD005_h1.fa.gz
+KPPD005_h2.fa.gz
+
+HPRC
+/ADATA/pangenome/00.rawDATA/HPRC/phaseI/assembly$ ls *fa | head
+HG002.1.fa
+HG002.2.fa
+HG00438.1.fa
+HG00438.2.fa
+HG005.1.fa
+HG005.2.fa
+
+
+
+
+207번
+
+KPPD: /DDATA/pangenome/asm/
+/DDATA/pangenome/asm$ ls *gz | head
+KPPD001_h1.fa.gz
+KPPD001_h2.fa.gz
+KPPD002_h1.fa.gz
+KPPD002_h2.fa.gz
+KPPD003_h1.fa.gz
+KPPD003_h2.fa.gz
+KPPD004_h1.fa.gz
+KPPD004_h2.fa.gz
+KPPD005_h1.fa.gz
+KPPD005_h2.fa.gz
+
+HPRC
+/ADATA/pangenome/00.rawDATA/HPRC/phaseI/assembly$ ls *fa | head
+HG002.1.fa
+HG002.2.fa
+HG00438.1.fa
+HG00438.2.fa
+HG005.1.fa
+HG005.2.fa
+HG00621.1.fa
+HG00621.2.fa
+HG00673.1.fa
+HG00673.2.fa

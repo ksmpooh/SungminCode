@@ -1,0 +1,1784 @@
+KPPD
+
+cd /BDATA/smkim/pangenome/graph
+bash run_chr_pipeline.sh /BDATA/smkim/pangenome/graph/kor132.chm13v2.vcf.gz /BDATA/smkim/pangenome/graph/KPPD
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/01.split
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+bcftools view -r {} /BDATA/smkim/pangenome/graph/kor132.chm13v2.vcf.gz \
+  -Oz -o /BDATA/smkim/pangenome/graph/KPPD/01.split/kor132.chm13v2.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/01.split/kor132.chm13v2.{}.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/02.noAT
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools annotate \
+  -x INFO/AT \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/01.split/kor132.chm13v2.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz
+'
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/03.norm
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools norm \
+  --check-ref s \
+  --fasta-ref /BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa \
+  --multiallelics -any \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/03.norm/kor132.chm13v2.{}.noAT.norm.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/04.sort
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+bcftools sort \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/04.sort/kor132.chm13v2.{}.noAT.norm.sort.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/03.norm/kor132.chm13v2.{}.noAT.norm.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/04.sort/kor132.chm13v2.{}.noAT.norm.sort.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/05.pre_split
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view \
+  -v snps \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.raw_snp.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/04.sort/kor132.chm13v2.{}.noAT.norm.sort.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.raw_snp.vcf.gz
+'
+
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view \
+  -V snps \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.complex.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/04.sort/kor132.chm13v2.{}.noAT.norm.sort.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.complex.vcf.gz
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/06.decompose
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+rtg vcfdecompose \
+  --break-indels \
+  --break-mnps \
+  -i /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.complex.vcf.gz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf \
+  -t /BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa.sdf && \
+bgzip -f /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf.gz
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/07.post_split
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view \
+  -v snps \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.decomp_snp.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.decomp_snp.vcf.gz
+'
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view -v indels \
+  /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf.gz | \
+bcftools filter -i '"'"'abs(strlen(ALT)-strlen(REF)) <= 50'"'"' \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_le50.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_le50.vcf.gz
+'
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view -v indels \
+  /BDATA/smkim/pangenome/graph/KPPD/06.decompose/kor132.chm13v2.{}.complex.decomposed.vcf.gz | \
+bcftools filter -i '"'"'abs(strlen(ALT)-strlen(REF)) > 50'"'"' \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_gt50.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_gt50.vcf.gz
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/08.snp_merge
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools concat -a \
+  /BDATA/smkim/pangenome/graph/KPPD/05.pre_split/kor132.chm13v2.{}.raw_snp.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.decomp_snp.vcf.gz | \
+bcftools norm -d exact \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD/08.snp_merge/kor132.chm13v2.{}.all_snp.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD/08.snp_merge/kor132.chm13v2.{}.all_snp.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/09.small_variant
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+out=/BDATA/smkim/pangenome/graph/KPPD/09.small_variant/kor132.chm13v2.{}.small_variant.vcf.gz
+if [[ ! -s "$out" ]]; then
+  bcftools concat -a \
+    /BDATA/smkim/pangenome/graph/KPPD/08.snp_merge/kor132.chm13v2.{}.all_snp.vcf.gz \
+    /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_le50.vcf.gz | \
+  bcftools norm -d exact \
+    -Oz \
+    -o "$out" && \
+  tabix -f -p vcf "$out"
+fi
+'
+
+
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD/10.stats
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+n=$(bcftools view -H /BDATA/smkim/pangenome/graph/KPPD/08.snp_merge/kor132.chm13v2.{}.all_snp.vcf.gz | wc -l)
+echo -e "{}\t${n}"
+' > /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.all_snp.count.tsv
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+n=$(bcftools view -H /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_le50.vcf.gz | wc -l)
+echo -e "{}\t${n}"
+' > /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.indel_le50.count.tsv
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+n=$(bcftools view -H /BDATA/smkim/pangenome/graph/KPPD/09.small_variant/kor132.chm13v2.{}.small_variant.vcf.gz | wc -l)
+echo -e "{}\t${n}"
+' > /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.small_variant.count.tsv
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+n=$(bcftools view -H /BDATA/smkim/pangenome/graph/KPPD/07.post_split/kor132.chm13v2.{}.indel_gt50.vcf.gz | wc -l)
+echo -e "{}\t${n}"
+' > /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.indel_gt50.count.tsv
+
+
+
+echo -n "SNP total: "
+awk '{sum+=$2} END{print sum}' /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.all_snp.count.tsv
+
+echo -n "indel<=50 total: "
+awk '{sum+=$2} END{print sum}' /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.indel_le50.count.tsv
+
+echo -n "small variant total: "
+awk '{sum+=$2} END{print sum}' /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.small_variant.count.tsv
+
+echo -n "indel>50 total: "
+awk '{sum+=$2} END{print sum}' /BDATA/smkim/pangenome/graph/KPPD/10.stats/kppd.indel_gt50.count.tsv
+
+
+
+
+##########################CPC
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/CPC_split
+OUT02=$BASE/02.sort
+OUT03=$BASE/03.norm_raw
+mkdir -p $OUT03
+
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+ls $OUT02/CHM13v2.chr*.withhdr.sort.vcf.gz \
+| xargs -I{} -P 6 bash -c '
+  in="{}"
+  bn=$(basename "$in")
+  out="'$OUT03'/${bn%.vcf.gz}.norm.vcf.gz"
+  bcftools norm --threads 8 --check-ref x --fasta-ref "'$REF'" --multiallelics -any \
+    -Oz -o "$out" "$in"
+'
+
+
+OUT04=$BASE/04.norm_sort
+mkdir -p $OUT04
+
+ls $OUT03/*.norm.vcf.gz \
+| xargs -I{} -P 6 bash -c '
+  in="{}"
+  bn=$(basename "$in")
+  out="'$OUT04'/${bn%.vcf.gz}.sort.vcf.gz"
+  bcftools sort -Oz -o "$out" "$in" \
+    && tabix -f -p vcf "$out"
+'
+
+
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/CPC_split
+IN04=$BASE/04.norm_sort
+OUT05=$BASE/05.pre_split
+mkdir -p "$OUT05"
+
+# chr list (CPC는 contig가 CHM13v2.chr* 형태)
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I {} -P 12 bash -c '
+  chr="{}"
+  in="'$IN04'/${chr}.renamed.withhdr.sort.norm.sort.vcf.gz"
+
+  # 입력 파일 존재 체크 (없으면 skip)
+  [ -s "$in" ] || { echo "[skip] missing $in" >&2; exit 0; }
+
+  # 1) raw SNP
+  out_snp="'$OUT05'/${chr}.CPC.raw_snp.vcf.gz"
+  bcftools view -v snps -Oz -o "$out_snp" "$in" && tabix -f -p vcf "$out_snp"
+
+  # 2) complex (= non-SNP)
+  out_cplx="'$OUT05'/${chr}.CPC.complex.vcf.gz"
+  bcftools view -V snps -Oz -o "$out_cplx" "$in" && tabix -f -p vcf "$out_cplx"
+'
+
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/CPC_split
+IN05=$BASE/05.pre_split
+OUT06=$BASE/06.decompose
+SDF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa.sdf
+
+mkdir -p "$OUT06"
+
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I {} -P 12 bash -c '
+  chr="{}"
+  in="'$IN05'/${chr}.CPC.complex.vcf.gz"
+  out_vcf="'$OUT06'/${chr}.CPC.complex.decomposed.vcf"
+
+  [ -s "$in" ] || { echo "[skip] missing $in" >&2; exit 0; }
+
+  rtg vcfdecompose \
+    --break-indels \
+    --break-mnps \
+    -i "$in" \
+    -o "$out_vcf" \
+    -t "'$SDF'" && \
+  bgzip -f "$out_vcf" && \
+  tabix -f -p vcf "${out_vcf}.gz"
+
+'
+
+
+
+
+
+##############################
+CPC vcflib wave 
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/CPC_split
+IN04=$BASE/04.norm_sort
+WBASE=$BASE/vcfwave
+
+mkdir -p \
+  $WBASE/00.in \
+  $WBASE/log/00.in
+
+# chr 리스트 (CHM13v2.* contig 그대로 사용)
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 8 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN04'/${chr}.renamed.withhdr.sort.norm.sort.vcf.gz"
+out="'$WBASE'/00.in/CPC.${chr}.vcf.gz"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing $in" >&2
+  exit 0
+fi
+
+# copy 대신 symlink (용량/시간 절약)
+ln -sf "$(readlink -f "$in")" "$out"
+ln -sf "$(readlink -f "$in.tbi")" "$out.tbi"
+'
+
+
+## 02 split chr
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN01GZ=$ROOT/01.vcfbub/CPC.HPRC.Phase1.CHM13v2.vcfbub.vcf.gz
+OUTCHR=$ROOT/02.vcfbub_bychr
+
+mkdir -p "$OUTCHR" "$ROOT/log/02.split_bychr"
+
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 12 bash -c '
+set -euo pipefail
+chr="{}"
+out="'$OUTCHR'/CPC.HPRC.Phase1.${chr}.vcfbub.vcf.gz"
+stdout="'$ROOT'/log/02.split_bychr/${chr}.stdout.log"
+stderr="'$ROOT'/log/02.split_bychr/${chr}.stderr.log"
+
+echo "[run] split $chr" > "$stderr"
+
+tabix -h "'$IN01GZ'" "$chr" \
+  1> >(bgzip -@ 8 -c > "$out") \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+## 03 rm AT
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN02=$ROOT/02.vcfbub_bychr
+OUT03=$ROOT/03.rmAT_bychr
+
+mkdir -p "$OUT03" "$ROOT/log/03.rmAT_bychr"
+
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 12 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN02'/CPC.HPRC.Phase1.${chr}.vcfbub.vcf.gz"
+out="'$OUT03'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.vcf.gz"
+
+stdout="'$ROOT'/log/03.rmAT_bychr/${chr}.stdout.log"
+stderr="'$ROOT'/log/03.rmAT_bychr/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] rm INFO/AT $chr" > "$stderr"
+
+bcftools annotate -x INFO/AT -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+## 04 norm sort
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN03=$ROOT/03.rmAT_bychr
+OUT04=$ROOT/04.split_multi_bychr
+
+mkdir -p "$OUT04" "$ROOT/log/04.split_multi_bychr"
+
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 26 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN03'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.vcf.gz"
+tmp="'$OUT04'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.split.tmp.vcf.gz"
+out="'$OUT04'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.split.vcf.gz"
+
+stdout="'$ROOT'/log/04.split_multi_bychr/${chr}.stdout.log"
+stderr="'$ROOT'/log/04.split_multi_bychr/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] norm -m -any + sort $chr" > "$stderr"
+
+# 1) multiallelic -> biallelic
+bcftools norm -m -any -Oz -o "$tmp" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+# 2) 정렬(중요!)
+bcftools sort -Oz -o "$out" "$tmp" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+rm -f "$tmp" "$tmp.tbi" 2>/dev/null || true
+
+# 3) 인덱스
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN04=$ROOT/04.split_multi_bychr
+OUT05=$ROOT/05.rename_bychr
+REN=/BDATA/smkim/pangenome/graph/CPC/cpc.chrom.rename.reverse.txt
+
+mkdir -p "$OUT05" "$ROOT/log/05.rename_bychr"
+
+printf "CHM13v2.chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 26 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN04'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.split.vcf.gz"
+out="'$OUT05'/CPC.HPRC.Phase1.${chr}.vcfbub.rmAT.split.renamed.vcf.gz"
+
+stdout="'$ROOT'/log/05.rename_bychr/${chr}.stdout.log"
+stderr="'$ROOT'/log/05.rename_bychr/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] rename $chr" > "$stderr"
+
+bcftools annotate --rename-chrs "'$REN'" -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+## wave cunk
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN05=$ROOT/05.rename_bychr
+
+CHUNKROOT=$ROOT/06.chunks_bychr
+LOG=$ROOT/log/06.chunk
+
+mkdir -p "$CHUNKROOT" "$LOG"
+
+
+
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN05=$ROOT/05.rename_bychr
+CHUNKROOT=$ROOT/06.chunks_bychr
+LOG=$ROOT/log/06.chunk
+
+export CHUNKSIZE=100000
+
+# chr 목록(모두 chunk로 나눔; chrM/chrY도 여기 포함해도 됨)
+printf "chr%s\n" {1..22} X Y M \
+| xargs -I{} -P 26 bash -c '
+set -euo pipefail
+chr="{}"
+
+# 입력 파일 자동 탐색 (파일명 규칙 흔들려도 대응)
+in=$(ls "'$IN05'"/CPC.HPRC.Phase1.*${chr}*.split.renamed.vcf.gz 2>/dev/null | head -n1)
+if [[ -z "${in:-}" ]]; then
+  echo "[skip] missing input for $chr" >&2
+  exit 0
+fi
+
+outdir="'$CHUNKROOT'/$chr"
+mkdir -p "$outdir"
+
+hdr="$outdir/header.vcf"
+echo "[chunk] $chr : write header" >&2
+bcftools view -h "$in" > "$hdr"
+
+echo "[chunk] $chr : split body into ${CHUNKSIZE}-line chunks" >&2
+bcftools view -H "$in" \
+| split -l '"$CHUNKSIZE"' -d -a 5 - "$outdir/body_"
+
+# 메타 저장(나중에 merge 때 유용)
+echo "$in" > "$outdir/input.path"
+'
+
+############
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+CHUNKROOT=$ROOT/06.chunks_bychr
+WAVEROOT=$ROOT/07.wave_chunks
+LOG=$ROOT/log/07.wave_chunks
+
+mkdir -p "$WAVEROOT" "$LOG"
+
+export WAVE_I=1000
+export WAVE_T=12        # chunk 하나당 thread
+export BGZIP_T=2
+export CHUNK_JOBS=16   # 동시에 돌릴 chunk 개수(=병렬 수)
+
+# 모든 body chunk를 작업 목록으로 만들어 병렬 실행
+find "$CHUNKROOT" -type f -name "body_*" -print \
+| shuf \
+| xargs -I{} -P "$CHUNK_JOBS" bash -c '
+set -euo pipefail
+body="{}"
+chr=$(basename "$(dirname "$body")")
+hdr="'"$CHUNKROOT"'/$chr/header.vcf"
+
+outdir="'"$WAVEROOT"'/$chr"
+mkdir -p "$outdir"
+
+base=$(basename "$body")         # body_00000
+tmpvcf="$outdir/${base}.vcf"     # header+body 합친 임시 VCF
+outgz="$outdir/${base}.wave.vcf.gz"
+stderr="'"$LOG"'/${chr}.${base}.stderr.log"
+
+# 이미 성공 산출물이 있으면 skip(재시도 편하게)
+if [[ -s "$outgz" ]]; then
+  exit 0
+fi
+
+cat "$hdr" "$body" > "$tmpvcf"
+
+vcfwave -I '"$WAVE_I"' -t '"$WAVE_T"' "$tmpvcf" \
+  1> >(bgzip -@ '"$BGZIP_T"' -c > "$outgz") \
+  2>> "$stderr"
+
+rm -f "$tmpvcf"
+'
+
+
+
+### afteer wave chunk merge
+set -euo pipefail
+
+WAVEROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub/07.wave_chunks    # 너의 chunk wave 출력 위치로 맞춰
+OUTMERGE=/BDATA/smkim/pangenome/graph/CPC/vcfbub/08.wave_bychr     # chr별 최종
+LOG=/BDATA/smkim/pangenome/graph/CPC/vcfbub/log/08.wave_merge
+
+mkdir -p "$OUTMERGE" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 26 bash -c '
+set -euo pipefail
+chr="{}"
+
+indir="'"$WAVEROOT"'/$chr"
+out="'"$OUTMERGE"'/CPC.HPRC.Phase1.${chr}.wave.vcf.gz"
+log="'"$LOG"'/${chr}.merge.log"
+
+# chunk가 없으면 skip
+if [[ ! -d "$indir" ]]; then
+  echo "[skip] no dir $indir" >> "$log"
+  exit 0
+fi
+
+# chunk 목록 생성 (반드시 정렬)
+ls "$indir"/body_*.wave.vcf.gz 2>/dev/null | sort > "$indir/wave.list"
+if [[ ! -s "$indir/wave.list" ]]; then
+  echo "[skip] no wave chunks for $chr" >> "$log"
+  exit 0
+fi
+
+echo "[merge] $chr -> $out" > "$log"
+
+# concat -> sort -> bgzip
+bcftools concat -f "$indir/wave.list" -Ou 2>>"$log" \
+| bcftools sort -Oz -o "$out" 2>>"$log"
+
+tabix -f -p vcf "$out" 2>>"$log"
+'
+
+
+
+##### after merge leftalign
+
+set -euo pipefail
+
+IN08=/BDATA/smkim/pangenome/graph/CPC/vcfbub/08.wave_bychr
+OUT09=/BDATA/smkim/pangenome/graph/CPC/vcfbub/09.leftalign_bychr
+LOG09=/BDATA/smkim/pangenome/graph/CPC/vcfbub/log/09.leftalign_bychr
+
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+mkdir -p "$OUT09" "$LOG09"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN08'/CPC.HPRC.Phase1.${chr}.wave.vcf.gz"
+tmp="'$OUT09'/CPC.HPRC.Phase1.${chr}.wave.leftalign.tmp.vcf.gz"
+out="'$OUT09'/CPC.HPRC.Phase1.${chr}.wave.leftalign.vcf.gz"
+log="'$LOG09'/${chr}.norm.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$log"; exit 0; }
+
+# left-align / normalize by reference
+bcftools norm \
+  --threads 8 \
+  -f "'$REF'" \
+  -c w \
+  -Oz -o "$tmp" \
+  "$in" \
+  2> "$log"
+
+# enforce coordinate sort after normalization
+bcftools sort -Oz -o "$out" "$tmp" 2>> "$log"
+tabix -f -p vcf "$out" 2>> "$log"
+
+rm -f "$tmp"
+'
+
+###### merge duplicated
+set -euo pipefail
+
+ROOT=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+SCRIPT=/BDATA/smkim/SCRIPTs/pangenome/merge_duplicates.py
+
+IN09=$ROOT/09.leftalign_bychr
+OUT10=$ROOT/10.merge_dup_repeat
+LOG=$ROOT/log/10.merge_dup_repeat
+
+mkdir -p "$OUT10" "$LOG"
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+set -euo pipefail
+chr="{}"
+
+in="'$IN09'/CPC.HPRC.Phase1.${chr}.wave.leftalign.vcf.gz"
+out="'$OUT10'/CPC.HPRC.Phase1.${chr}.mergedup.repeat.vcf.gz"
+log="'$LOG'/${chr}.mergedup.repeat.log"
+
+[ -s "$in" ] || { echo "[skip] missing $in" >> "$log"; exit 0; }
+
+python "'$SCRIPT'" \
+  -i "$in" \
+  -o "$out" \
+  -c repeat \
+  2>> "$log"
+
+tabix -f -p vcf "$out" 2>> "$log"
+'
+
+
+####### final split
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+IN10=$BASE/10.merge_dup_repeat
+
+OUT11=$BASE/11.final
+mkdir -p "$OUT11"/{small,large,all,stats}
+mkdir -p "$OUT11"/stats
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+set -euo pipefail
+chr="{}"
+in="'$IN10'/CPC.HPRC.Phase1.${chr}.mergedup.repeat.vcf.gz"
+
+[ -s "$in" ] || exit 0
+
+outS="'$OUT11'/small/CPC.HPRC.Phase1.${chr}.small.vcf.gz"
+outL="'$OUT11'/large/CPC.HPRC.Phase1.${chr}.large.vcf.gz"
+
+# small
+bcftools view \
+  -i '"'"'((strlen(REF)==1 && strlen(ALT)==1) || (strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))<50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)<50))'"'"' \
+  -Oz -o "$outS" "$in"
+tabix -f -p vcf "$outS"
+
+# large
+bcftools view \
+  -i '"'"'((strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))>=50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)>=50))'"'"' \
+  -Oz -o "$outL" "$in"
+tabix -f -p vcf "$outL"
+'
+
+
+
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+OUT11=$BASE/11.final
+OUT12=$BASE/12.concat
+mkdir -p "$OUT12"/stats
+
+# chr 리스트 파일 하나 만들어두면 concat이 깔끔해짐
+CHRLIST=$OUT12/chr.list
+printf "chr%s\n" {1..22} X Y M > "$CHRLIST"
+
+# small allchr
+bcftools concat -a -Oz \
+  -o "$OUT12/CPC.HPRC.Phase1.small.allchr.vcf.gz" \
+  $(awk '{print "'$OUT11'/small/CPC.HPRC.Phase1."$1".small.vcf.gz"}' "$CHRLIST")
+
+tabix -f -p vcf "$OUT12/CPC.HPRC.Phase1.small.allchr.vcf.gz"
+
+# large allchr
+bcftools concat -a -Oz \
+  -o "$OUT12/CPC.HPRC.Phase1.large.allchr.vcf.gz" \
+  $(awk '{print "'$OUT11'/large/CPC.HPRC.Phase1."$1".large.vcf.gz"}' "$CHRLIST")
+
+tabix -f -p vcf "$OUT12/CPC.HPRC.Phase1.large.allchr.vcf.gz"
+
+# all repeat allchr (mergedup.repeat 그대로)
+bcftools concat -a -Oz \
+  -o "$OUT12/CPC.HPRC.Phase1.all.repeat.vcf.gz" \
+  $(awk '{print "'$BASE'/10.merge_dup_repeat/CPC.HPRC.Phase1."$1".mergedup.repeat.vcf.gz"}' "$CHRLIST")
+
+tabix -f -p vcf "$OUT12/CPC.HPRC.Phase1.all.repeat.vcf.gz"
+
+
+
+
+
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/vcfbub
+OUT12=$BASE/12.concat
+
+# 입력 3종
+VCF_SMALL="$OUT12/CPC.HPRC.Phase1.small.allchr.vcf.gz"
+VCF_LARGE="$OUT12/CPC.HPRC.Phase1.large.allchr.vcf.gz"
+VCF_ALL="$OUT12/CPC.HPRC.Phase1.all.repeat.vcf.gz"
+
+# stats 폴더 (새로 만들어서 여기로 몰아넣기)
+STATSDIR="$OUT12/13.stats_all"
+mkdir -p "$STATSDIR"
+
+echo "[run] stats output dir: $STATSDIR" >&2
+
+########################################
+# 1) bcftools stats (small/large/all)
+########################################
+conda activate bcftools
+
+bcftools stats "$VCF_SMALL" > "$STATSDIR/CPC.HPRC.Phase1.small.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_LARGE" > "$STATSDIR/CPC.HPRC.Phase1.large.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_ALL"   > "$STATSDIR/CPC.HPRC.Phase1.all.repeat.bcftools.stats.txt"
+
+########################################
+# 2) rtg vcfstats --allele-lengths (small/large/all)
+########################################
+conda activate rtgtools_env
+
+rtg vcfstats --allele-lengths "$VCF_SMALL" > "$STATSDIR/CPC.HPRC.Phase1.small.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_LARGE" > "$STATSDIR/CPC.HPRC.Phase1.large.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_ALL"   > "$STATSDIR/CPC.HPRC.Phase1.all.repeat.rtg.vcfstats.txt"
+
+echo "[done] stats written to $STATSDIR" >&2
+
+
+
+
+
+
+
+
+
+
+############################### only CPC################################
+
+cat > cpc.chrom.rename.reverse.txt <<'EOF'
+CHM13v2.chr1    chr1
+CHM13v2.chr2    chr2
+CHM13v2.chr3    chr3
+CHM13v2.chr4    chr4
+CHM13v2.chr5    chr5
+CHM13v2.chr6    chr6
+CHM13v2.chr7    chr7
+CHM13v2.chr8    chr8
+CHM13v2.chr9    chr9
+CHM13v2.chr10   chr10
+CHM13v2.chr11   chr11
+CHM13v2.chr12   chr12
+CHM13v2.chr13   chr13
+CHM13v2.chr14   chr14
+CHM13v2.chr15   chr15
+CHM13v2.chr16   chr16
+CHM13v2.chr17   chr17
+CHM13v2.chr18   chr18
+CHM13v2.chr19   chr19
+CHM13v2.chr20   chr20
+CHM13v2.chr21   chr21
+CHM13v2.chr22   chr22
+CHM13v2.chrX    chrX
+CHM13v2.chrY    chrY
+CHM13v2.chrM    chrM
+EOF
+
+
+bcftools annotate \
+  --rename-chrs cpc.chrom.rename.reverse.txt \
+  -Oz -o CPC.Phase1.CHM13v2.renamed.vcf.gz \
+  CPC.Phase1.CHM13v2.vcf.gz
+
+tabix -f -p vcf CPC.Phase1.CHM13v2.renamed.vcf.gz
+
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+INVCF=$BASE/CPC.Phase1.CHM13v2.renamed.vcf.gz
+
+mkdir -p \
+  $BASE/01.split_chr \
+  $BASE/log/01.split_chr
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+INVCF=$BASE/CPC.Phase1.CHM13v2.renamed.vcf.gz
+
+out=$BASE/01.split_chr/CPC.Phase1.CHM13v2.renamed.${chr}.vcf.gz
+stdout=$BASE/log/01.split_chr/${chr}.stdout.log
+stderr=$BASE/log/01.split_chr/${chr}.stderr.log
+
+echo "[run] split $chr" > "$stderr"
+
+if bcftools index -n "$INVCF" >/dev/null 2>&1; then
+  bcftools view -r "$chr" -Oz -o "$out" "$INVCF" \
+    1> "$stdout" \
+    2>> "$stderr"
+
+  tabix -f -p vcf "$out" \
+    1>> "$stdout" \
+    2>> "$stderr"
+else
+  echo "[error] input VCF is not indexed: $INVCF" >> "$stderr"
+  exit 1
+fi
+'
+
+
+### vcfbub
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  $BASE/02.vcfbub \
+  $BASE/log/02.vcfbub
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in=$BASE/01.split_chr/CPC.Phase1.CHM13v2.renamed.${chr}.vcf.gz
+out=$BASE/02.vcfbub/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.vcf.gz
+stdout=$BASE/log/02.vcfbub/${chr}.stdout.log
+stderr=$BASE/log/02.vcfbub/${chr}.stderr.log
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] vcfbub $chr" > "$stderr"
+
+vcfbub -l 0 -a 100000 -i "$in" \
+  1> >(bgzip -c > "$out") \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+### rm AT
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  $BASE/03.rmAT \
+  $BASE/log/03.rmAT
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in=$BASE/02.vcfbub/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.vcf.gz
+out=$BASE/03.rmAT/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.vcf.gz
+stdout=$BASE/log/03.rmAT/${chr}.stdout.log
+stderr=$BASE/log/03.rmAT/${chr}.stderr.log
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] remove INFO/AT $chr" > "$stderr"
+
+bcftools annotate -x INFO/AT -Oz -o "$out" "$in" \
+  1> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+##### multi
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  $BASE/04.split_multi \
+  $BASE/log/04.split_multi
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in=$BASE/03.rmAT/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.vcf.gz
+out=$BASE/04.split_multi/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.vcf.gz
+stdout=$BASE/log/04.split_multi/${chr}.stdout.log
+stderr=$BASE/log/04.split_multi/${chr}.stderr.log
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] split multiallelic $chr" > "$stderr"
+
+bcftools norm -m -any -Oz -o "$out" "$in" \
+  1> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+### wave (옵션값 수정))
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  "$BASE/05.wave" \
+  "$BASE/log/05.wave"
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in="$BASE/04.split_multi/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.vcf.gz"
+out="$BASE/05.wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.vcf.gz"
+stdout="$BASE/log/05.wave/${chr}.stdout.log"
+stderr="$BASE/log/05.wave/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] vcfwave -I 1000 $chr" > "$stderr"
+
+vcfwave -I 1000 -t 32 "$in" \
+  1> >(bgzip -c > "$out") \
+  2>> "$stderr"
+'
+
+
+
+
+# Chr2 문제 있음
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  $BASE/06.sort_wave \
+  $BASE/log/06.sort_wave
+
+printf "%s\n" {1..22} X Y M | xargs -I{} -P 26 bash -c '
+set -euo pipefail
+
+chr="chr{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in=$BASE/05.wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.vcf.gz
+out=$BASE/06.sort_wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.vcf.gz
+stdout=$BASE/log/06.sort_wave/${chr}.stdout.log
+stderr=$BASE/log/06.sort_wave/${chr}.stderr.log
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] sort wave $chr" > "$stderr"
+
+bcftools sort -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+#### Y M 문제
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+mkdir -p \
+  "$BASE/07.norm_ref" \
+  "$BASE/log/07.norm_ref"
+
+printf "chr%s\n" {1..22} X | xargs -P 26 -I{} bash -c '
+set -euo pipefail
+
+chr="{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+in="$BASE/06.sort_wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.vcf.gz"
+out="$BASE/07.norm_ref/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.norm.vcf.gz"
+stdout="$BASE/log/07.norm_ref/${chr}.stdout.log"
+stderr="$BASE/log/07.norm_ref/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] norm_ref $chr" > "$stderr"
+
+bcftools norm -f "$REF" -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+mkdir -p \
+  "$BASE/08.sort_norm" \
+  "$BASE/log/08.sort_norm"
+
+printf "chr%s\n" {1..22} X | xargs -P 26 -I{} bash -c '
+set -euo pipefail
+
+chr="{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+
+in="$BASE/07.norm_ref/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.norm.vcf.gz"
+out="$BASE/08.sort_norm/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.norm.sort.vcf.gz"
+stdout="$BASE/log/08.sort_norm/${chr}.stdout.log"
+stderr="$BASE/log/08.sort_norm/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] sort_norm $chr" > "$stderr"
+
+bcftools sort -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+
+tabix -f -p vcf "$out" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+mkdir -p \
+  "$BASE/07.norm_ref_warn" \
+  "$BASE/log/07.norm_ref_warn"
+
+printf "chr%s\n" {1..22} X Y M | xargs -P 26 -I{} bash -c '
+set -euo pipefail
+
+chr="{}"
+BASE=/BDATA/smkim/pangenome/graph/CPC/onlyCPC
+REF=/BDATA/smkim/pangenome/graph/99.ref/chm13v2.0_maskedY_rCRS.fa
+
+if [[ "$chr" == "chrY" || "$chr" == "chrM" ]]; then
+  in="$BASE/06.sort_wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.vcf.gz"
+else
+  in="$BASE/06.sort_wave/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.vcf.gz"
+fi
+
+out="$BASE/07.norm_ref_warn/CPC.Phase1.CHM13v2.renamed.${chr}.vcfbub.rmAT.split.wave.sort.normw.vcf.gz"
+stdout="$BASE/log/07.norm_ref_warn/${chr}.stdout.log"
+stderr="$BASE/log/07.norm_ref_warn/${chr}.stderr.log"
+
+if [[ ! -s "$in" ]]; then
+  echo "[skip] missing input: $in" >> "$stderr"
+  exit 0
+fi
+
+echo "[run] norm_ref_warn $chr" > "$stderr"
+
+bcftools norm --check-ref w -f "$REF" -Oz -o "$out" "$in" \
+  1>> "$stdout" \
+  2>> "$stderr"
+'
+
+
+
+####################################### HPRC ######################################################
+
+cd /BDATA/smkim/pangenome/graph/hprc
+
+tabix -f -p vcf hprc-v1.1-mc-chm13.vcfbub.a100k.wave.vcf.gz
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/01.split
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+bcftools view -r {} /BDATA/smkim/pangenome/graph/hprc/hprc-v1.1-mc-chm13.vcfbub.a100k.wave.vcf.gz \
+  -Oz -o /BDATA/smkim/pangenome/graph/hprc/01.split/hprc-v1.1-mc-chm13.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/hprc/01.split/hprc-v1.1-mc-chm13.{}.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/02.noAT
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+bcftools annotate \
+  -x INFO/AT \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/hprc/02.noAT/hprc-v1.1-mc-chm13.{}.noAT.vcf.gz \
+  /BDATA/smkim/pangenome/graph/hprc/01.split/hprc-v1.1-mc-chm13.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/hprc/02.noAT/hprc-v1.1-mc-chm13.{}.noAT.vcf.gz
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/03.norm
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools norm -m -any \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.{}.norm.vcf.gz \
+  /BDATA/smkim/pangenome/graph/hprc/02.noAT/hprc-v1.1-mc-chm13.{}.noAT.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.{}.norm.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/04.classify/snp
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+in=/BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.{}.norm.vcf.gz
+out=/BDATA/smkim/pangenome/graph/hprc/04.classify/snp/hprc-v1.1-mc-chm13.{}.snp.vcf.gz
+
+bcftools view -i '\''TYPE="SNP"'\'' -Oz -o "$out" "$in" &&
+tabix -f -p vcf "$out"
+'
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/04.classify/mnp
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+in=/BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.{}.norm.vcf.gz
+out=/BDATA/smkim/pangenome/graph/hprc/04.classify/mnp/hprc-v1.1-mc-chm13.{}.mnp.vcf.gz
+
+bcftools view -i '\''TYPE="MNP"'\'' -Oz -o "$out" "$in" &&
+tabix -f -p vcf "$out"
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/04.classify/other
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+in=/BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.{}.norm.vcf.gz
+out=/BDATA/smkim/pangenome/graph/hprc/04.classify/other/hprc-v1.1-mc-chm13.{}.other.vcf.gz
+
+bcftools view -i '\''TYPE="OTHER"'\'' -Oz -o "$out" "$in" &&
+tabix -f -p vcf "$out"
+'
+
+####
+mkdir -p /BDATA/smkim/pangenome/graph/hprc/05.small_large/{small,large,tmp}
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 26 bash -c '
+chr="{}"
+in=/BDATA/smkim/pangenome/graph/hprc/03.norm/hprc-v1.1-mc-chm13.${chr}.norm.vcf.gz
+
+small_txt=/BDATA/smkim/pangenome/graph/hprc/05.small_large/tmp/hprc-v1.1-mc-chm13.${chr}.small.vcf
+large_txt=/BDATA/smkim/pangenome/graph/hprc/05.small_large/tmp/hprc-v1.1-mc-chm13.${chr}.large.vcf
+
+small_gz=/BDATA/smkim/pangenome/graph/hprc/05.small_large/small/hprc-v1.1-mc-chm13.${chr}.small.vcf.gz
+large_gz=/BDATA/smkim/pangenome/graph/hprc/05.small_large/large/hprc-v1.1-mc-chm13.${chr}.large.vcf.gz
+
+# 기존 실패 파일 있으면 제거
+rm -f "$small_txt" "$large_txt" "$small_gz" "$large_gz" "${small_gz}.tbi" "${large_gz}.tbi"
+
+# header
+bcftools view -h "$in" > "$small_txt"
+bcftools view -h "$in" > "$large_txt"
+
+# body
+bcftools view -H "$in" | \
+awk -F"\t" -v small_out="$small_txt" -v large_out="$large_txt" "
+BEGIN{OFS=\"\t\"}
+{
+  ref=\$4
+  alt=\$5
+  ref_len=length(ref)
+  alt_len=length(alt)
+
+  # bcftools norm -m -any 이후 ALT 1개 가정
+  type=\"\"
+  if (\$8 ~ /(^|;)TYPE=SNP(;|$)/) type=\"SNP\"
+  else if (\$8 ~ /(^|;)TYPE=MNP(;|$)/) type=\"MNP\"
+  else if (\$8 ~ /(^|;)TYPE=INDEL(;|$)/) type=\"INDEL\"
+  else if (\$8 ~ /(^|;)TYPE=OTHER(;|$)/) type=\"OTHER\"
+
+  if (type==\"SNP\") {
+    size=1
+  } else if (type==\"MNP\") {
+    size=(ref_len>alt_len ? ref_len : alt_len)
+  } else {
+    diff=alt_len-ref_len
+    if (diff<0) diff=-diff
+
+    if (diff>0) size=diff
+    else size=(ref_len>alt_len ? ref_len : alt_len)
+  }
+
+  if (size < 50) print >> small_out
+  else           print >> large_out
+}
+"
+
+bgzip -f "$small_txt"
+bgzip -f "$large_txt"
+
+tabix -f -p vcf "$small_gz"
+tabix -f -p vcf "$large_gz"
+'
+
+######################################## only KPPD################################
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/01.split
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools view -r {} /BDATA/smkim/pangenome/graph/kor132.chm13v2.wave.vcf.gz \
+  -Oz -o /BDATA/smkim/pangenome/graph/KPPD_wave/01.split/kor132.chm13v2.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/01.split/kor132.chm13v2.{}.vcf.gz
+'
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/02.noAT
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 30 bash -c '
+bcftools annotate \
+  -x INFO/AT \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/01.split/kor132.chm13v2.{}.vcf.gz &&
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/05.small_large/{small,large}
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+chr="{}"
+in=/BDATA/smkim/pangenome/graph/KPPD_wave/01.split/kor132.chm13v2.${chr}.vcf.gz
+
+small_txt=/BDATA/smkim/pangenome/graph/KPPD_wave/05.small_large/small/kor132.chm13v2.${chr}.small.vcf
+large_txt=/BDATA/smkim/pangenome/graph/KPPD_wave/05.small_large/large/kor132.chm13v2.${chr}.large.vcf
+
+small_gz=${small_txt}.gz
+large_gz=${large_txt}.gz
+
+rm -f "$small_txt" "$large_txt" "$small_gz" "$large_gz" "${small_gz}.tbi" "${large_gz}.tbi"
+
+bcftools view -h "$in" > "$small_txt"
+bcftools view -h "$in" > "$large_txt"
+
+bcftools view -H "$in" | \
+awk -F"\t" -v small_out="$small_txt" -v large_out="$large_txt" "
+BEGIN{OFS=\"\t\"}
+{
+  ref=\$4
+  alt=\$5
+  ref_len=length(ref)
+  alt_len=length(alt)
+
+  # bcftools stats 기준 type 추정
+  # multiallelic 0 이므로 ALT 1개라고 보고 계산
+  if (ref_len==1 && alt_len==1) {
+    size=1
+  } else if (ref_len==alt_len) {
+    size=(ref_len>alt_len ? ref_len : alt_len)   # MNP / same-length complex
+  } else {
+    diff=alt_len-ref_len
+    if (diff<0) diff=-diff
+    if (diff>0) size=diff
+    else size=(ref_len>alt_len ? ref_len : alt_len)
+  }
+
+  if (size < 50) print >> small_out
+  else           print >> large_out
+}
+"
+
+bgzip -f "$small_txt"
+bgzip -f "$large_txt"
+
+tabix -f -p vcf "$small_gz"
+tabix -f -p vcf "$large_gz"
+'
+
+### sort 다시 
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+bcftools sort \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort/kor132.chm13v2.{}.noAT.sort.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/02.noAT/kor132.chm13v2.{}.noAT.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort/kor132.chm13v2.{}.noAT.sort.vcf.gz
+'
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+python /BDATA/smkim/SCRIPTs/pangenome/merge_duplicates.py \
+  -i /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort/kor132.chm13v2.{}.noAT.sort.vcf.gz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup/kor132.chm13v2.{}.mergedup.vcf.gz \
+  -c position
+  --keep-order 
+'
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 12 bash -c '
+python /BDATA/smkim/SCRIPTs/pangenome/merge_duplicates.py \
+  -i /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort/kor132.chm13v2.{}.noAT.sort.vcf.gz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup/kor132.chm13v2.{}.mergedup.vcf.gz \
+  -c position
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+python /BDATA/smkim/SCRIPTs/pangenome/merge_duplicates.py \
+  -i /BDATA/smkim/pangenome/graph/KPPD_wave/03.sort/kor132.chm13v2.{}.noAT.sort.vcf.gz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.{}.mergedup.repeat.vcf.gz \
+  -c repeat
+'
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/{small,large}
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/stats
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+bcftools view \
+  -i '"'"'((strlen(REF)==1 && strlen(ALT)==1) || (strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))<50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)<50))'"'"' \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.{}.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.{}.mergedup.repeat.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.{}.small.vcf.gz
+'
+
+printf "chr%s\n" {1..22} X Y M | \
+xargs -I {} -P 25 bash -c '
+bcftools view \
+  -i '"'"'((strlen(REF)!=strlen(ALT) && abs(strlen(ALT)-strlen(REF))>=50) || (strlen(REF)==strlen(ALT) && strlen(REF)>1 && strlen(REF)>=50))'"'"' \
+  -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.{}.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.{}.mergedup.repeat.vcf.gz && \
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.{}.large.vcf.gz
+'
+
+
+
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat
+mkdir -p /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/stats
+
+bcftools concat -a -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr1.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr2.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr3.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr4.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr5.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr6.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr7.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr8.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr9.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr10.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr11.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr12.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr13.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr14.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr15.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr16.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr17.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr18.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr19.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr20.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr21.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chr22.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chrX.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chrY.small.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/small/kor132.chm13v2.chrM.small.vcf.gz
+
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz
+
+
+bcftools concat -a -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.large.allchr.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr1.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr2.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr3.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr4.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr5.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr6.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr7.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr8.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr9.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr10.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr11.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr12.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr13.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr14.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr15.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr16.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr17.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr18.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr19.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr20.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr21.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr22.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chrX.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chrY.large.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chrM.large.vcf.gz
+
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.large.allchr.vcf.gz
+
+bcftools stats \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz \
+  > /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/stats/kor132.chm13v2.small.allchr.stats
+
+bcftools stats \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.large.allchr.vcf.gz \
+  > /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/stats/kor132.chm13v2.large.allchr.stats
+
+
+
+
+bcftools concat -a -Oz \
+  -o /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/kor132.chm13v2.all.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr1.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr2.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr3.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr4.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr5.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr6.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr7.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr8.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr9.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr10.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr11.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr12.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr13.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr14.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr15.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr16.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr17.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr18.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr19.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr20.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr21.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chr22.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chrX.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chrY.mergedup.repeat.vcf.gz \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/04.merge_dup_repeat/kor132.chm13v2.chrM.mergedup.repeat.vcf.gz
+
+tabix -f -p vcf /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/kor132.chm13v2.all.repeat.vcf.gz
+
+conda activate bcftools
+
+bcftools stats \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/kor132.chm13v2.all.repeat.vcf.gz \
+  > /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/stats/kor132.chm13v2.all.repeat.bcftools.stats.txt
+
+  conda activate rtgtools_env
+
+rtg vcfstats --allele-lengths \
+  /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/kor132.chm13v2.all.repeat.vcf.gz \
+  > /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/all/stats/kor132.chm13v2.all.repeat.rtg.vcfstats.txt
+
+
+  #!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/KPPD_wave
+
+# 입력 3종
+VCF_SMALL="$BASE/06.concat/kor132.chm13v2.small.allchr.vcf.gz"
+VCF_LARGE="$BASE/06.concat/kor132.chm13v2.large.allchr.vcf.gz"
+VCF_ALL="$BASE/05.final/all/kor132.chm13v2.all.repeat.vcf.gz"
+
+# stats 폴더
+STATSDIR="$BASE/13.stats_all"
+mkdir -p "$STATSDIR"
+
+echo "[run] stats output dir: $STATSDIR" >&2
+
+########################################
+# 1) bcftools stats (small/large/all)
+########################################
+conda activate bcftools
+
+bcftools stats "$VCF_SMALL" > "$STATSDIR/kor132.chm13v2.small.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_LARGE" > "$STATSDIR/kor132.chm13v2.large.allchr.bcftools.stats.txt"
+bcftools stats "$VCF_ALL"   > "$STATSDIR/kor132.chm13v2.all.bcftools.stats.txt"
+
+########################################
+# 2) rtg vcfstats --allele-lengths (small/large/all)
+########################################
+conda activate rtgtools_env
+
+rtg vcfstats --allele-lengths "$VCF_SMALL" > "$STATSDIR/kor132.chm13v2.small.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_LARGE" > "$STATSDIR/kor132.chm13v2.large.allchr.rtg.vcfstats.txt"
+rtg vcfstats --allele-lengths "$VCF_ALL"   > "$STATSDIR/kor132.chm13v2.all.rtg.vcfstats.txt"
+
+echo "[done] stats written to $STATSDIR" >&2
+
+
+
+
+
+################################# 최종비교
+
+/BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.large.allchr.vcf.gz
+/BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz
+
+/BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.small.allchr.vcf.gz
+/BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.all.repeat.vcf.gz
+
+## small
+
+BASE=/BDATA/smkim/pangenome/graph/final_vs
+mkdir -p $BASE/00.raw $BASE/01.work $BASE/02.result/small
+
+cp /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz $BASE/00.raw/
+cp /BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz.tbi $BASE/00.raw/ 2>/dev/null || true
+
+cp /BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.small.allchr.vcf.gz $BASE/00.raw/
+cp /BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.small.allchr.vcf.gz.tbi $BASE/00.raw/ 2>/dev/null || true
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE=/BDATA/smkim/pangenome/graph/final_vs
+RAW=$BASE/00.raw
+WORK=$BASE/01.work/small
+RES=$BASE/02.result/small
+
+mkdir -p "$RAW" "$WORK" "$RES"
+
+KPP=/BDATA/smkim/pangenome/graph/KPPD_wave/06.concat/kor132.chm13v2.small.allchr.vcf.gz
+CPC=/BDATA/smkim/pangenome/graph/CPC/vcfbub/12.concat/CPC.HPRC.Phase1.small.allchr.vcf.gz
+
+cp -f "$KPP" "$RAW/"
+cp -f "$KPP".tbi "$RAW/" 2>/dev/null || true
+cp -f "$CPC" "$RAW/"
+cp -f "$CPC".tbi "$RAW/" 2>/dev/null || true
+
+KPP_LOCAL=$RAW/$(basename "$KPP")
+CPC_LOCAL=$RAW/$(basename "$CPC")
+
+# key 추출
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' "$KPP_LOCAL" \
+  | sort -u > "$WORK/KPP.small.key.tsv"
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' "$CPC_LOCAL" \
+  | sort -u > "$WORK/CPCHPRC.small.key.tsv"
+
+# 공통
+comm -12 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/shared.small.key.tsv"
+
+# KPP unique
+comm -23 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/KPP.unique.small.key.tsv"
+
+# CPC/HPRC unique
+comm -13 "$WORK/KPP.small.key.tsv" "$WORK/CPCHPRC.small.key.tsv" \
+  > "$RES/CPCHPRC.unique.small.key.tsv"
+
+# count
+{
+  echo -n "KPP total small: "
+  wc -l < "$WORK/KPP.small.key.tsv"
+
+  echo -n "CPCHPRC total small: "
+  wc -l < "$WORK/CPCHPRC.small.key.tsv"
+
+  echo -n "shared small: "
+  wc -l < "$RES/shared.small.key.tsv"
+
+  echo -n "KPP unique small: "
+  wc -l < "$RES/KPP.unique.small.key.tsv"
+
+  echo -n "CPCHPRC unique small: "
+  wc -l < "$RES/CPCHPRC.unique.small.key.tsv"
+} | tee "$RES/summary.small.txt"
+
+
+KPP total small: 25206416
+CPCHPRC total small: 31190121
+shared small: 12514756
+KPP unique small: 12691660
+CPCHPRC unique small: 18675365
+
+
+#####################
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+KPP_DIR=/BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large
+CPC_DIR=/BDATA/smkim/pangenome/graph/CPC/vcfbub/11.final/large
+OUTDIR=/BDATA/smkim/pangenome/graph/final_vs/02.result/large_bychr
+LOGDIR=$OUTDIR/log
+
+mkdir -p "$OUTDIR" "$LOGDIR"
+
+printf "%s\n" chr{1..22} chrX chrY chrM \
+| xargs -I{} -P 32 bash -c '
+  set -euo pipefail
+
+  chr="{}"
+  kpp="'$KPP_DIR'/kor132.chm13v2.${chr}.large.vcf.gz"
+  cpc="'$CPC_DIR'/CPC.HPRC.Phase1.${chr}.large.vcf.gz"
+  out="'$OUTDIR'/${chr}.truvari"
+
+  echo "[run] ${chr}" >&2
+
+  if [[ ! -f "$kpp" ]]; then
+    echo "[skip] missing KPP: $kpp" >&2
+    exit 0
+  fi
+
+  if [[ ! -f "$cpc" ]]; then
+    echo "[skip] missing CPC/HPRC: $cpc" >&2
+    exit 0
+  fi
+
+  truvari bench \
+    -b "$kpp" \
+    -c "$cpc" \
+    -o "$out" \
+    -r 1000 \
+    -C 1000 \
+    -O 0.8 \
+    -p 0.8 \
+    -P 0.0 \
+    -s 50 \
+    -S 15 \
+    --sizemax 100000 \
+    > "'$LOGDIR'/${chr}.stdout.log" \
+    2> "'$LOGDIR'/${chr}.stderr.log"
+'
+
+truvari bench -r 1000 -C 1000 -O 0.8 -p 0.8 -P 0.0 -s 50 -S 15
+--sizemax 100000
+A reciprocal overl
+
+
+
+
+
+
+
+truvari bench \
+  -b /BDATA/smkim/pangenome/graph/KPPD_wave/05.final/large/kor132.chm13v2.chr2.large.vcf.gz \
+  -c /BDATA/smkim/pangenome/graph/CPC/vcfbub/11.final/large/CPC.HPRC.Phase1.chr2.large.vcf.gz \
+  -o chr2_test \
+  -r 2000 \
+  -C 2000 \
+  -O 0.0 \
+  -p 0.0 \
+  -P 0.0 \
+  -s 50 \
+  -S 15 \
+  --sizemax 100000

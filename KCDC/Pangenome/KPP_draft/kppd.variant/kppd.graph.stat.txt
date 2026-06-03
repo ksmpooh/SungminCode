@@ -18,7 +18,10 @@ CPC v1 그래프 VCF 위치
 /RDATA1/Pangenome/00.db/1kgp/errorFix/1kGP_high_coverage_Illumina.chr#.filtered.SNV_INDEL_SV_phased_panel.fix.vcf.gz
 
 
-
+/RDATA1/Pangenome/00.db/cmrg/GRCh38_mrg_full_gene.bed
+MRG : Medically-Relevant Genes
+/RDATA1/Pangenome/00.db/cmrg/GRCh38_CMRG_benchmark_gene_coordinates.bed
+CMRG : Challenging Medically-Relevant Genes
 
 ## 207
 ### ghraoph stats
@@ -42,3 +45,8 @@ ls *.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%
 ls *.bcf | xargs -I {} -P 8 bash -c "bcftools query --print-header -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/NS\t%INFO/AF\t%INFO/F_MISSING\t%INFO/TYPE\n' -o /ADATA/smkim/pangenome/graph/01.graph_varint_count/{}.tab {}"
 
 LEN
+
+
+##########################################################
+
+### FiNAL Specific

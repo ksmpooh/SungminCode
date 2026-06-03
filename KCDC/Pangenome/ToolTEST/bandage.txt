@@ -269,3 +269,25 @@ bedtools getfasta \
   -bed chm13.region.bed \
   -name \
   -fo chm13.genomic.fa
+
+
+######
+
+GraphAligner \
+  -g locus_gfa/AMY2A.gfa \
+  -f gene_fasta/AMY2A.fa \
+  -a AMY2A_vs_graph.gaf \
+  -t 72 \
+  -x vg
+
+
+
+docker run --rm \
+  -v /BDATA/pangenome/graph/merge/:/merge_graph_dir \
+  -v /ADATA/smkim/pangenome/bandage/final/02.subgraph_merge_test:/outdir \
+  quay.io/vgteam/vg:v1.67.0 \
+  vg chunk \
+    -x /indir/kor132_hprc47_cpc58.chm13v2.xg \
+    -S /indir/kor132_hprc47_cpc58.chm13v2.snarls \
+    -p 'CHM13v2#0#chr7:145444371-145610799' \
+    -O gfa > /ADATA/smkim/pangenome/bandage/final/02.subgraph_merge_test/region1.test.gfa

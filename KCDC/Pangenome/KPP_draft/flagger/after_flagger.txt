@@ -292,3 +292,111 @@ bash run.gene.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt GAGE1
 bash run.gene.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt GAGE12B gage12b.grid.tsv
 
 bash run.v4.sh CPC.all.merge.with_flagger.gene_protein_coding.select.txt genes.head.txt cpc_head_counts.tsv
+
+
+### final flagger 8K
+cd /CDATA/pangenome/flagger_test/03.result
+
+mkdir contig_change
+ls *bed | xargs -I {} -P 40 bash -c "sed 's/#1#/\_/g' {} | sed 's/#2#/\_/g' > contig_change/{}"
+
+
+#Usage: python run.py [flagger input] [liftoff.h1.input] [liftoff.h2.input] [output]
+seq 1 132 | awk '{printf "KPPD%03d\n", $1}' | xargs -I {} -P 40 bash -c "python run.2.py /CDATA/pangenome/flagger_test/03.result/contig_change/{}.winnowmap.sorted.corrected.downsample_1.0.hmm_flagger_prediction.bed /ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/with_flagger/{}.liffoff_with_flaggerregion.txt"
+seq 1 132 | awk '{printf "KPPD%03d\n", $1}' | xargs -I {} -P 40 bash -c "python /ADATA/pangenome/liftoff/SCIPRTs/merge.with.liftoff.flagger.py /CDATA/pangenome/flagger_test/03.result/contig_change/{}.winnowmap.sorted.corrected.downsample_1.0.hmm_flagger_prediction.bed /ADATA/pangenome/liftoff/00.rawDATA/{}.1.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/00.rawDATA/{}.2.gencode_GRCh38.liftoff.gff3_polished /ADATA/pangenome/liftoff/with_flagger_8K/{}.liffoff_with_flaggerregion.txt"
+
+
+
+
+cd /ADATA/pangenome/liftoff/with_flagger_8K
+mkdir all_merge
+
+
+mkdir -p tmp_merge
+
+ls KPPD*.liffoff_with_flaggerregion.txt | \
+xargs -n 1 -P 16 -I {} bash -c '
+awk -F"\t" '\''$5=="gene" && $11 ~ /gene_type=protein_coding/'\'' "{}" > tmp_merge/$(basename {}).pcoding
+'
+
+cat tmp_merge/*.pcoding > all_merge/merge.with_flagger.gene_protein_coding.txt
+rm -r tmp_merge
+
+
+
+awk -F'\t' '
+BEGIN {
+    OFS="\t"
+    print "Flagger","Flagger_prop","contig","gene_name","level","tag","coverage","sequence_ID","valid_ORFs","extra_copy_number"
+}
+{
+    gene_name="NA"; level="NA"; tag="NA"; coverage="NA";
+    sequence_ID="NA"; valid_ORFs="NA"; extra_copy_number="NA";
+
+    n = split($11, a, ";")
+    for (i = 1; i <= n; i++) {
+        split(a[i], kv, "=")
+        if (kv[1] == "gene_name") gene_name = kv[2]
+        else if (kv[1] == "level") level = kv[2]
+        else if (kv[1] == "tag") tag = kv[2]
+        else if (kv[1] == "coverage") coverage = kv[2]
+        else if (kv[1] == "sequence_ID") sequence_ID = kv[2]
+        else if (kv[1] == "valid_ORFs") valid_ORFs = kv[2]
+        else if (kv[1] == "extra_copy_number") extra_copy_number = kv[2]
+    }
+
+    print $1, $2, $3, gene_name, level, tag, coverage, sequence_ID, valid_ORFs, extra_copy_number
+}
+' merge.with_flagger.gene_protein_coding.txt \
+> merge.with_flagger.gene_protein_coding.selected.txt
+
+
+
+{
+    head -n 1 merge.with_flagger.gene_protein_coding.selected.txt
+    tail -n +2 merge.with_flagger.gene_protein_coding.selected.txt | \
+    awk -F'\t' '
+    {
+        split($1,t,",")
+        split($2,r,",")
+        if (t[1]=="Hap" && r[1] >= 0.9)
+            print
+    }'
+}  > merge.with_flagger.gene_protein_coding.selected.Hap90.txt
+
+##
+ [1] "NA"
+ [2] "EnsEMBL_merge_exception"
+ [3] "EnsEMBL_merge_exception,overlapping_locus"
+ [4] "Selenoprotein"
+ [5] "annotation_in_progress"
+ [6] "annotation_in_progress,overlapping_locus"
+ [7] "confirm_experimentally"
+ [8] "confirm_experimentally,overlapping_locus"
+ [9] "confirm_experimentally,overlapping_locus,retrogene"
+[10] "ncRNA_host"
+[11] "ncRNA_host,annotation_in_progress"
+[12] "ncRNA_host,confirm_experimentally"
+[13] "ncRNA_host,confirm_experimentally,overlapping_locus"
+[14] "ncRNA_host,fragmented_mixed_strand_locus"
+[15] "ncRNA_host,overlapping_locus"
+[16] "ncRNA_host,overlapping_locus,confirm_experimentally"
+[17] "ncRNA_host,overlapping_locus,readthrough_gene"
+[18] "ncRNA_host,overlapping_locus,retrogene"
+[19] "ncRNA_host,readthrough_gene"
+[20] "ncRNA_host,readthrough_gene,overlapping_locus"
+[21] "ncRNA_host,retrogene"
+[22] "overlapping_locus"
+[23] "overlapping_locus,Selenoprotein"
+[24] "overlapping_locus,annotation_in_progress"
+[25] "overlapping_locus,overlaps_pseudogene"
+[26] "overlapping_locus,overlaps_pseudogene,readthrough_gene"
+[27] "overlapping_locus,readthrough_gene"
+[28] "overlapping_locus,retrogene"
+[29] "overlaps_pseudogene"
+[30] "polymorphic_pseudogene_no_stop"
+[31] "readthrough_gene"
+[32] "readthrough_gene,overlapping_locus"
+[33] "retrogene"
+[34] "retrogene,overlapping_locus"
+
